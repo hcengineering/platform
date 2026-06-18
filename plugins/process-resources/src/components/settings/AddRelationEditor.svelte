@@ -84,6 +84,7 @@
       {process}
       {attribute}
       {context}
+      allowArray
       masterTag={process.masterTag}
       editor={undefined}
       presenterClass={{

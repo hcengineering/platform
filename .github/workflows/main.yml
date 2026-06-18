@@ -97,7 +97,7 @@ jobs:
             node common/scripts/install-run-rush.js install
           fi
 
-      # - name: Cheking model is updated...
+      # - name: Checking model version is updated...
       #   run: node common/scripts/check_model_version.js
 
       - name: Checking for mis-matching dependencies...
@@ -672,7 +672,7 @@ jobs:
           node-version-file: '.nvmrc'
       - uses: pnpm/action-setup@v5
         with:
-          version: latest
+          version: 10
       - name: Cache node modules
         uses: actions/cache@v5
         env:
@@ -968,6 +968,8 @@ jobs:
         run: node common/scripts/install-run-rush.js install
       - name: Building...
         run: node common/scripts/install-run-rush.js build
+      - name: Emit TypeScript declarations
+        run: node common/scripts/install-run-rush.js validate
       - name: Publish to npm
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -13,30 +13,25 @@
 // limitations under the License.
 //
 
+import converter from '@hcengineering/converter'
 import core, {
   type AnyAttribute,
+  type Association,
   type Class,
   type Doc,
   type Hierarchy,
-  type Ref,
   type PersonId,
-  getDisplayTime,
+  type Ref,
   getObjectValue
 } from '@hcengineering/core'
-import { translate, type IntlString, getResource } from '@hcengineering/platform'
+import { getResource } from '@hcengineering/platform'
+import { getClient } from '@hcengineering/presentation'
 import type { AttributeModel } from '@hcengineering/view'
-import converter from '@hcengineering/converter'
-import { getFormattersForClass } from './registry'
-import {
-  formatArrayValue,
-  extractObjectTitleOrName,
-  isIntlString,
-  DocumentAttributeKey,
-  DateFormatOption
-} from './utils'
-import { createMarkdownLink } from '../markdown/link'
 import { loadPersonName } from '../data/personLoader'
+import { createMarkdownLink } from '../markdown/link'
 import type { ValueFormatter } from '../types'
+import { getFormattersForClass } from './registry'
+import { DocumentAttributeKey, extractObjectTitleOrName, formatArrayValue, formatSingleValue } from './utils'
 
 /** Resolved context for formatting: which object we display and its value */
 export interface DisplayContext {
@@ -88,29 +83,6 @@ function getLookupData (card: Doc, ...keys: string[]): any {
   }
 
   return undefined
-}
-
-function formatDateValue (
-  value: number | string | Date,
-  isDateOnly: boolean,
-  language: string | undefined
-): string | undefined {
-  if (!isDateOnly && typeof value === 'number') {
-    return getDisplayTime(value)
-  }
-
-  const parsedDate = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(parsedDate.getTime())) {
-    return undefined
-  }
-
-  const options: Intl.DateTimeFormatOptions = {
-    year: DateFormatOption.Numeric,
-    month: DateFormatOption.Short,
-    day: DateFormatOption.Numeric
-  }
-
-  return parsedDate.toLocaleDateString(language ?? 'default', options)
 }
 
 /**
@@ -188,12 +160,56 @@ function resolveDisplayContext (
     } else {
       value = undefined
     }
+  } else if (attr.key.startsWith('$associations')) {
+    const parts = attr.key.split('.')
+    // Find the last association segment
+    let lastAssocIndex = -1
+    for (let i = 0; i < parts.length; i++) {
+      if (parts[i] === '$associations' && i + 1 < parts.length) {
+        lastAssocIndex = i
+      }
+    }
+    if (lastAssocIndex !== -1) {
+      const assocIdWithDirection = parts[lastAssocIndex + 1]
+      const fragments = assocIdWithDirection.split('_')
+      const assocId = fragments[0] as Ref<Association>
+      const direction = fragments[1] === 'a' ? -1 : 1
+
+      const client = getClient()
+      const assoc = client.getModel().findObject(assocId)
+      if (assoc !== undefined) {
+        const targetClass = direction === -1 ? assoc.classA : assoc.classB
+        const subFieldParts = parts.slice(lastAssocIndex + 2)
+
+        const cardWithAssociations = card as any
+        const assocData = cardWithAssociations.$associations?.[assocIdWithDirection]
+
+        if (assocData !== undefined) {
+          const firstDoc = Array.isArray(assocData) ? assocData[0] : assocData
+          if (firstDoc !== undefined) {
+            if (subFieldParts.length > 0) {
+              const subKey = subFieldParts.join('.')
+              if (Array.isArray(assocData)) {
+                value = assocData.map((d) => getObjectValue(subKey, d)).filter((v) => v !== undefined)
+              } else {
+                value = getObjectValue(subKey, assocData)
+              }
+            } else {
+              value = assocData
+            }
+            displayDoc = firstDoc
+            displayClass = targetClass
+          }
+        }
+      }
+    }
   } else {
     value = getObjectValue(attr.key, card)
   }
 
   const attributeKey = getAttributeKey(attr)
-  const attribute = attr.attribute ?? hierarchy.findAttribute(displayClass, attributeKey)
+  const attribute = hierarchy.findAttribute(displayClass, attributeKey) ?? (attr as any).attribute
+
   const lookupKey = attribute?.name ?? attributeKey
   return { value, displayDoc, displayClass, attribute, lookupKey }
 }
@@ -215,68 +231,28 @@ export async function formatCustomAttributeValue (
 
   const attrType = attribute?.type
 
-  if (
-    typeof value === 'number' &&
-    (attrType?._class === core.class.TypeTimestamp || attrType?._class === core.class.TypeDate)
-  ) {
-    const formattedDate = formatDateValue(value, attrType?._class === core.class.TypeDate, language)
-    if (formattedDate !== undefined) {
-      return formattedDate
-    }
-  }
-
-  if (value instanceof Date) {
-    return formatDateValue(value, true, language) ?? ''
-  }
-
-  if (
-    typeof value === 'string' &&
-    (attrType?._class === core.class.TypeTimestamp || attrType?._class === core.class.TypeDate)
-  ) {
-    const formattedDate = formatDateValue(value, attrType?._class === core.class.TypeDate, language)
-    if (formattedDate !== undefined) {
-      return formattedDate
-    }
-  }
-
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value)
-  }
-
-  if (typeof value === 'string') {
-    if (isIntlString(value)) {
-      try {
-        return await translate(value as unknown as IntlString, {}, language)
-      } catch {
-        console.warn('Failed to translate intl string', value)
-      }
-    }
-
-    const isRef = attrType?._class === core.class.RefTo
-    if (isRef && attribute !== undefined) {
-      const cardWithLookup = card as any
-      const lookupData = cardWithLookup.$lookup?.[attribute.name]
-      if (lookupData !== undefined && lookupData !== null && typeof lookupData === 'object') {
-        const title = await extractObjectTitleOrName(lookupData as Doc, language)
-        const text = title !== '' ? title : value
-        return await createMarkdownLink(hierarchy, lookupData as Doc, text)
-      }
-    }
-
-    return value
-  }
-
   if (Array.isArray(value)) {
-    return await formatArrayValue(value, attrType, attribute, attribute?.name ?? '', card, language)
+    return await formatArrayValue(
+      value,
+      attrType,
+      attribute,
+      attribute?.name ?? '',
+      card,
+      hierarchy,
+      language,
+      undefined,
+      async (d, title) => await createMarkdownLink(hierarchy, d, title)
+    )
   }
 
-  if (typeof value === 'object' && value !== null) {
-    const obj = value as Record<string, any>
-    const titleOrName = await extractObjectTitleOrName(obj, language)
-    return titleOrName !== '' ? titleOrName : String(value)
-  }
-
-  return String(value)
+  return await formatSingleValue(
+    value,
+    attrType,
+    hierarchy,
+    language,
+    undefined,
+    async (d, title) => await createMarkdownLink(hierarchy, d, title)
+  )
 }
 
 /**
@@ -305,69 +281,42 @@ async function formatValueFallback (
   const attribute = ctx.attribute
   const attrType = attribute?.type
 
-  if (
-    typeof value === 'number' &&
-    (attrType?._class === core.class.TypeTimestamp || attrType?._class === core.class.TypeDate)
-  ) {
-    const formattedDate = formatDateValue(value, attrType?._class === core.class.TypeDate, language)
-    if (formattedDate !== undefined) {
-      return formattedDate
-    }
-  }
-
-  if (value instanceof Date) {
-    return formatDateValue(value, true, language) ?? ''
-  }
-
-  if (
-    typeof value === 'string' &&
-    (attrType?._class === core.class.TypeTimestamp || attrType?._class === core.class.TypeDate)
-  ) {
-    const formattedDate = formatDateValue(value, attrType?._class === core.class.TypeDate, language)
-    if (formattedDate !== undefined) {
-      return formattedDate
-    }
-  }
-
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value)
-  }
-
-  if (typeof value === 'string') {
-    const isRef = attrType?._class === core.class.RefTo
-    if (isRef) {
-      const lookupData = getLookupData(card, ctx.lookupKey, attribute?.name ?? '', attr.key)
-      if (lookupData !== undefined && lookupData !== null && typeof lookupData === 'object') {
-        const title = await extractObjectTitleOrName(lookupData as Doc, language)
-        const text = title !== '' ? title : value
-        return await createMarkdownLink(hierarchy, lookupData as Doc, text)
-      }
-    }
-
-    if (isIntlString(value)) {
-      try {
-        return await translate(value as unknown as IntlString, {}, language)
-      } catch {
-        console.warn('Failed to translate intl string', value)
-      }
-    }
-    if (attr.key === DocumentAttributeKey.CreatedBy || attr.key === DocumentAttributeKey.ModifiedBy) {
-      return await loadPersonName(value as PersonId, hierarchy, userCache)
-    }
-    return value
-  }
-
   if (Array.isArray(value)) {
-    return await formatArrayValue(value, attrType, attribute, ctx.lookupKey, card, language)
+    return await formatArrayValue(
+      value,
+      attrType,
+      attribute,
+      ctx.lookupKey,
+      card,
+      hierarchy,
+      language,
+      userCache,
+      async (d, title) => await createMarkdownLink(hierarchy, d, title)
+    )
   }
 
-  if (typeof value === 'object' && value !== null) {
-    const obj = value as Record<string, any>
-    const titleOrName = await extractObjectTitleOrName(obj, language)
-    return titleOrName !== '' ? titleOrName : String(value)
+  if (attr.key === DocumentAttributeKey.CreatedBy || attr.key === DocumentAttributeKey.ModifiedBy) {
+    return await loadPersonName(value as PersonId, hierarchy, userCache)
   }
 
-  return String(value)
+  const isRef = attrType?._class === core.class.RefTo
+  if (isRef) {
+    const lookupData = getLookupData(card, ctx.lookupKey, attribute?.name ?? '', attr.key)
+    if (lookupData !== undefined && lookupData !== null && typeof lookupData === 'object') {
+      const title = await extractObjectTitleOrName(lookupData as Doc, language)
+      const text = title !== '' ? title : value
+      return await createMarkdownLink(hierarchy, lookupData as Doc, text)
+    }
+  }
+
+  return await formatSingleValue(
+    value,
+    attrType,
+    hierarchy,
+    language,
+    userCache,
+    async (d, title) => await createMarkdownLink(hierarchy, d, title)
+  )
 }
 
 /**

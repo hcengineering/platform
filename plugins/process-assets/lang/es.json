@@ -93,6 +93,8 @@
     "Round": "Redondear",
     "Floor": "Redondear hacia abajo",
     "Ceil": "Redondear hacia arriba",
+    "Min": "Min",
+    "Max": "Max",
     "Absolute": "Valor absoluto",
     "LogAction": "Evento",
     "Started": "Iniciado",
@@ -169,7 +171,17 @@
     "MonthFromDate": "Mes desde fecha",
     "DayFromDate": "Día desde fecha",
     "DateDifference": "Diferencia de fechas",
-    "EmptyValue": "Valor vacío"
+    "EmptyValue": "Valor vacío",
+    "TextFromMarkup": "Texto desde markup",
+    "MarkupFromText": "Markup desde texto",
+    "TextFromSelect": "Texto desde selección",
+    "SelectFromText": "Selección desde texto",
+    "AskSubclass": "Preguntar por subclase",
+    "TextFromIdentifier": "Texto desde identificador",
+    "ExportWithSlots": "Exportar con slots",
+    "ExportWithoutSlots": "Exportar sin slots",
+    "RequiredSlots": "Slots requeridos",
+    "Bindings": "Bindings"
   },
   "error": {
     "MethodNotFound": "Método no encontrado: {methodId}",

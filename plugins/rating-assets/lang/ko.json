@@ -1,0 +1,12 @@
+{
+    "string": {
+        "Rating": "즐겨찾기",
+        "RatingWidget": "즐겨찾기 위젯",
+        "RatingWidgetEmpty": "아직 즐겨찾기한 문서가 없습니다. 문서에 즐겨찾기를 추가하면 여기에 표시됩니다(문서의 별 반응을 클릭하세요).",
+        "Level": "레벨",
+        "MonthOps": "{month}: 작업 {ops}회",
+        "MonthNoOps": "{month}, 작업 없음",
+        "AddStar": "즐겨찾기 추가",
+        "AddStarAria": "즐겨찾기 반응 추가"
+    }
+}

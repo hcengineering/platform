@@ -1,4 +1,4 @@
-import { Class, Doc, PersonId, Ref } from './classes'
+import { Class, Doc, Mixin, PersonId, Ref } from './classes'
 
 export interface VersionableDoc extends Doc {
   baseId?: Ref<Doc>
@@ -10,4 +10,7 @@ export interface VersionableDoc extends Doc {
 
 export interface VersionableClass extends Class<Doc> {
   enabled: boolean
+  excludedProperties?: string[]
+  excludedRelations?: string[] // ${associationId}_${a|b}
+  excludeMixins?: Ref<Mixin<Doc>>[]
 }

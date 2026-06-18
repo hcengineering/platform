@@ -83,6 +83,8 @@
     "LayoutAuto": "Automático",
     "SingleColumn": "Uma coluna",
     "TwoColumns": "Duas colunas",
-    "Grid": "Grade"
+    "Grid": "Grade",
+    "RichtextProperties": "Campo de texto",
+    "ShowAllVersions": "Todas as versões"
   }
 }

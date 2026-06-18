@@ -17,7 +17,7 @@
   import { type RegionInfo } from '@hcengineering/account-client'
   import { OK, Severity, Status, getEmbeddedLabel } from '@hcengineering/platform'
   import { LoginInfo } from '@hcengineering/login'
-  import { ButtonMenu, getCurrentLocation, navigate } from '@hcengineering/ui'
+  import { ButtonMenu, Label, MiniToggle, getCurrentLocation, navigate } from '@hcengineering/ui'
   import { workbenchId } from '@hcengineering/workbench'
   import { onMount } from 'svelte'
   import login from '../plugin'
@@ -41,6 +41,7 @@
   let loginInfo: LoginInfo | null | undefined
   let regions: RegionInfo[] = []
   let selectedRegion: string = ''
+  let withDemoContent: boolean = true
 
   onMount(async () => {
     loginInfo = await getAccount()
@@ -61,7 +62,9 @@
     func: async () => {
       status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
 
-      const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion ?? '')
+      const [loginStatus, result] = await createWorkspace(object.workspace, selectedRegion ?? '', {
+        withDemoContent
+      })
       status = loginStatus
 
       if (result != null) {
@@ -72,6 +75,7 @@
   }
 </script>
 
+<!-- svelte-ignore a11y-label-has-associated-control -->
 <Form
   caption={login.string.CreateWorkspace}
   {status}
@@ -105,4 +109,38 @@
       </div>
     {/if}
   </svelte:fragment>
+  <svelte:fragment slot="extra-fields">
+    <label class="demo-toggle">
+      <span class="demo-toggle__label">
+        <Label label={login.string.CreateSampleProjects} />
+      </span>
+      <MiniToggle bind:on={withDemoContent} />
+    </label>
+  </svelte:fragment>
 </Form>
+
+<style lang="scss">
+  .demo-toggle {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 2.5rem;
+    margin-top: 0.5rem;
+    padding: 0 1rem;
+    gap: 0.75rem;
+    background-color: var(--theme-button-default);
+    border: 1px solid var(--theme-button-border);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    color: var(--theme-caption-color);
+  }
+  .demo-toggle__label {
+    flex: 1 1 auto;
+    font-size: 0.75rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    color: var(--theme-caption-color);
+    opacity: 0.8;
+  }
+</style>

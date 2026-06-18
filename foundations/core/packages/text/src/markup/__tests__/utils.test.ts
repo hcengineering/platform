@@ -22,6 +22,7 @@ import {
   isEmptyMarkup,
   isEmptyNode,
   jsonToMarkup,
+  type MarkupMark,
   MarkupMarkType,
   MarkupNode,
   MarkupNodeType,
@@ -299,6 +300,32 @@ describe('jsonToPmNode', () => {
     expect(node.content.childCount).toEqual(1)
     expect(node.content.child(0).type.name).toEqual('text')
     expect(node.content.child(0).text).toEqual('Hello, world!')
+  })
+
+  it('ServerKit schema includes node-uuid mark and parses text carrying it (QMS anchors)', () => {
+    const schema = getSchema(extensions)
+    expect(schema.marks['node-uuid']).toBeDefined()
+    const json: MarkupNode = {
+      type: MarkupNodeType.doc,
+      content: [
+        {
+          type: MarkupNodeType.paragraph,
+          attrs: { textAlign: null as any },
+          content: [
+            {
+              type: MarkupNodeType.text,
+              text: 'hello',
+              marks: [{ type: 'node-uuid' } as unknown as MarkupMark]
+            }
+          ]
+        }
+      ]
+    }
+    const node = jsonToPmNode(json, schema)
+    expect(node.type.name).toEqual('doc')
+    const para = node.content.child(0)
+    const text = para.content.child(0)
+    expect(text.marks.some((m) => m.type.name === 'node-uuid')).toBeTruthy()
   })
 })
 

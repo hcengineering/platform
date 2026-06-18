@@ -36,6 +36,7 @@
   import Lock from './icons/Lock.svelte'
   import Unlock from './icons/Unlock.svelte'
   import card from '../plugin'
+  import MarkupProperties from './MarkupProperties.svelte'
 
   export let value: Card
   export let tag: Tag
@@ -63,6 +64,7 @@
   $: isLocked = value.readonlySections?.includes(tag._id) ?? false
   $: canLock = canLockSection(value.space, $permissionsStore)
   $: canUnlock = canUnlockSection(value.space, $permissionsStore)
+  $: _readonly = readonly || isLocked
 
   async function toggleLock (ev: MouseEvent): Promise<void> {
     ev.stopPropagation()
@@ -89,6 +91,7 @@
         <Button
           icon={isLocked ? Lock : Unlock}
           kind={'link'}
+          disabled={readonly}
           size={'medium'}
           showTooltip={{ label: isLocked ? card.string.UnLockSection : card.string.LockSection }}
           on:click={toggleLock}
@@ -125,7 +128,8 @@
   </div>
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
-  <CardAttributes object={value} _class={tag._id} to={tag.extends} {readonly} {ignoreKeys} />
+  <CardAttributes object={value} _class={tag._id} to={tag.extends} readonly={_readonly} {ignoreKeys} />
+  <MarkupProperties doc={value} readonly={_readonly} {tag} />
 </ExpandCollapse>
 
 <style lang="scss">

@@ -1,0 +1,33 @@
+{
+    "string": {
+        "Cancel": "취소",
+        "Pause": "일시 정지",
+        "Stop": "정지",
+        "Resume": "재개",
+        "Record": "녹화",
+        "Done": "완료",
+        "CancelRecording": "녹화 취소",
+        "CancelRecordingConfirm": "녹화를 취소하시겠습니까?",
+        "RestartRecording": "녹화 다시 시작",
+        "RestartRecordingConfirm": "녹화를 다시 시작하시겠습니까?",
+        "ScreenRecordingName": "화면 녹화 {date}",
+        "CameraRecordingName": "카메라 녹화 {date}",
+        "ClickToSkip": "클릭하여 건너뛰기",
+        "RecordVideo": "영상 녹화",
+        "ShareWithAudio": "오디오와 함께 공유",
+        "ShareScreen": "화면 공유",
+        "StopSharing": "공유 중지",
+        "SelectVideoToRecord": "녹화하려면 카메라를 켜거나 화면을 공유하세요",
+        "CameraSize": "카메라 크기",
+        "CameraPos": "카메라 위치",
+        "Small": "작게",
+        "Medium": "중간",
+        "Large": "크게",
+        "TopLeft": "왼쪽 위",
+        "TopRight": "오른쪽 위",
+        "BottomLeft": "왼쪽 아래",
+        "BottomRight": "오른쪽 아래",
+        "Resolution": "해상도",
+        "Original": "원본"
+    }
+}

@@ -144,7 +144,19 @@ export async function createServer (
   const app = express()
   app.use(cors())
   app.use(express.json({ limit: '50mb' }))
-  app.use(fileUpload({ useTempFiles: true, tempFileDir: tempDir.path }))
+  app.use(
+    fileUpload({
+      useTempFiles: true,
+      tempFileDir: tempDir.path,
+      limits: { fileSize: config.MaxFileSize },
+      abortOnLimit: true,
+      // Returned to the client when a file exceeds MaxFileSize. Caught by the
+      // existing 'File too large' branch in sendErrorToAnalytics below.
+      limitHandler: (_req, res) => {
+        res.status(413).send({ code: 413, message: 'File too large' })
+      }
+    })
+  )
   app.use(keepAlive({ timeout: KEEP_ALIVE_TIMEOUT, max: KEEP_ALIVE_MAX }))
 
   const childLogger = ctx.logger.childLogger?.('requests', { enableConsole: 'true' })

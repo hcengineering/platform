@@ -149,6 +149,7 @@
     "WorkspaceStatusIn1Hour": "1時間後",
     "WorkspaceStatusIn4Hours": "4時間後",
     "WorkspaceStatusEndOfDay": "今日の終わりまで",
-    "WorkspaceStatusPickDate": "日付を選択"
+    "WorkspaceStatusPickDate": "日付を選択",
+    "HideInactive": "非アクティブを非表示"
   }
 }

@@ -1,0 +1,19 @@
+{
+    "string": {
+        "Camera": "카메라",
+        "Microphone": "마이크",
+        "Speaker": "스피커",
+        "DefaultCam": "기본 카메라",
+        "DefaultMic": "기본 마이크",
+        "DefaultSpeaker": "기본 스피커",
+        "TurnOnCam": "카메라 켜기",
+        "TurnOffCam": "카메라 끄기",
+        "TurnOnMic": "마이크 켜기",
+        "TurnOffMic": "마이크 끄기",
+        "NoCam": "카메라 없음",
+        "NoMic": "마이크 없음",
+        "NoSpeaker": "스피커 없음",
+        "On": "켜짐",
+        "Off": "꺼짐"
+    }
+}

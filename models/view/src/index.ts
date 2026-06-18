@@ -890,24 +890,28 @@ export function createModel (builder: Builder): void {
     view.action.Join
   )
 
-  createAction(builder, {
-    action: view.actionImpl.ShowPopup,
-    actionProps: {
-      component: view.component.AddRelationPopup,
-      fillProps: {
-        _objects: 'value'
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.ShowPopup as ViewAction<Record<string, any>>,
+      actionProps: {
+        component: view.component.AddRelationPopup,
+        fillProps: {
+          _objects: 'value'
+        }
+      },
+      label: core.string.AddRelation,
+      input: 'any',
+      icon: view.icon.CopyLink,
+      category: view.category.Editor,
+      target: core.class.Doc,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'associate'
       }
     },
-    label: core.string.AddRelation,
-    input: 'any',
-    icon: view.icon.CopyLink,
-    category: view.category.Editor,
-    target: core.class.Doc,
-    context: {
-      mode: ['context', 'browser'],
-      group: 'associate'
-    }
-  })
+    view.action.AddRelation
+  )
 
   createAction(
     builder,

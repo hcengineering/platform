@@ -51,7 +51,7 @@
   } from '@hcengineering/ui'
   import { Action, ActionCategory, ViewContext } from '@hcengineering/view'
   import { createEventDispatcher, onMount, tick } from 'svelte'
-  import { filterActions, getSelection } from '../actions'
+  import { filterActions, getSelection, normalizeActionContext } from '../actions'
   import view from '../plugin'
   import { focusStore, selectionStore } from '../selection'
   import { openDoc } from '../utils'
@@ -99,7 +99,7 @@
       } else {
         const visibilityTester = await getResource(action.visibilityTester)
 
-        if (await visibilityTester(docs)) {
+        if (await visibilityTester(normalizeActionContext(docs))) {
           resultActions.push(action)
         }
       }

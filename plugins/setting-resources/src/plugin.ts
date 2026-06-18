@@ -137,8 +137,11 @@ export default mergeIds(settingId, setting, {
     GuestSignUpDescription: '' as IntlString,
     GuestChannelsDescription: '' as IntlString,
     GuestChannelsArrayLabel: '' as IntlString,
+    GuestSelectSpaces: '' as IntlString,
     GuestAutoJoinAvailableSpaces: '' as IntlString,
     GuestAutoJoinAvailableSpacesHint: '' as IntlString,
+    GuestAnonymousVisibleSpaces: '' as IntlString,
+    GuestAnonymousVisibleSpacesHint: '' as IntlString,
     ApiAccess: '' as IntlString,
     ApiToken: '' as IntlString,
     GenerateApiToken: '' as IntlString,
@@ -163,6 +166,7 @@ export default mergeIds(settingId, setting, {
     ShowInTitle: '' as IntlString,
     SpaceMembersOnly: '' as IntlString,
     LastOwnerLeaveTitle: '' as IntlString,
-    LastOwnerLeaveMessage: '' as IntlString
+    LastOwnerLeaveMessage: '' as IntlString,
+    OverrideAttribute: '' as IntlString
   }
 })

@@ -19,6 +19,7 @@ import core, {
   Doc,
   DocumentUpdate,
   generateId,
+  Mixin,
   Ref,
   RefTo,
   Space,
@@ -105,6 +106,10 @@ import {
   Insert,
   LastValue,
   LowerCase,
+  MarkupFromString,
+  StringFromIdentifier,
+  Max,
+  Min,
   Modulo,
   MonthFromDate,
   Multiply,
@@ -125,11 +130,14 @@ import {
   Sqrt,
   StringFromBoolean,
   StringFromDate,
+  StringFromMarkup,
   StringFromNumber,
   Subtract,
   Trim,
   UpperCase,
-  YearFromDate
+  YearFromDate,
+  StringFromEnum,
+  EnumFromString
 } from './transform'
 
 async function putEventToQueue (value: Omit<ProcessMessage, 'account'>, control: TriggerControl): Promise<void> {
@@ -348,6 +356,18 @@ export async function OnExecutionRemove (txes: Tx[], control: TriggerControl): P
     for (const todo of todos) {
       res.push(control.txFactory.createTxRemoveDoc(todo._class, todo.space, todo._id))
     }
+    const logs = await control.findAll(control.ctx, process.class.ExecutionLog, {
+      execution: cudTx.objectId
+    })
+    for (const log of logs) {
+      res.push(control.txFactory.createTxRemoveDoc(log._class, log.space, log._id))
+    }
+    const buttons = await control.findAll(control.ctx, process.class.EventButton, {
+      execution: cudTx.objectId
+    })
+    for (const button of buttons) {
+      res.push(control.txFactory.createTxRemoveDoc(button._class, button.space, button._id))
+    }
   }
   return res
 }
@@ -485,7 +505,54 @@ export async function OnCardCreate (txes: Tx[], control: TriggerControl): Promis
     if (obj.baseId !== obj._id) {
       const reassignTxes = await getVersionExecutionTxes(obj, control)
       res.push(...reassignTxes)
+    } else {
+      const newCardTxes = await getNewCardExecutionTxes(obj, control)
+      res.push(...newCardTxes)
     }
+  }
+  return res
+}
+
+async function getNewCardExecutionTxes (card: Card, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const executions = await control.findAll(control.ctx, process.class.Execution, {
+    card: card._id
+  })
+
+  const alreadyStarted = new Set(executions.map((e) => e.process))
+
+  const ancestors = control.hierarchy
+    .getAncestors(card._class)
+    .filter((p) => control.hierarchy.isDerived(p, cardPlugin.class.Card))
+
+  const processes = control.modelDb.findAllSync(process.class.Process, {
+    masterTag: { $in: ancestors },
+    autoStart: true
+  })
+
+  for (const proc of processes) {
+    if (alreadyStarted.has(proc._id)) continue
+    const tx = createExecution(control, proc._id, card._id, card.space)
+    if (tx !== undefined) res.push(tx)
+  }
+  return res
+}
+
+async function getTagAddExecutionTxes (card: Card, mixin: Ref<Mixin<Card>>, control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const executions = await control.findAll(control.ctx, process.class.Execution, {
+    card: card._id,
+    status: ExecutionStatus.Active
+  })
+
+  const alreadyStarted = new Set(executions.map((e) => e.process))
+
+  const processes = control.modelDb.findAllSync(process.class.Process, { masterTag: mixin, autoStart: true })
+
+  for (const proc of processes) {
+    if (alreadyStarted.has(proc._id)) continue
+    const tx = createExecution(control, proc._id, card._id, card.space)
+    if (tx !== undefined) res.push(tx)
   }
   return res
 }
@@ -534,6 +601,39 @@ export async function OnCardUpdate (txes: Tx[], control: TriggerControl): Promis
     )
     const reassignTxes = await reassignToDos(card[0], ops ?? {}, control)
     res.push(...reassignTxes)
+
+    if (tx._class === core.class.TxMixin) {
+      const mixinTx = tx as TxMixin<Card, Card>
+      if (Object.keys(mixinTx.attributes).length === 0) {
+        const mixinTxes = await getTagAddExecutionTxes(card[0], mixinTx.mixin, control)
+        res.push(...mixinTxes)
+      }
+    }
+  }
+  return res
+}
+
+export async function OnCardRemove (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxRemoveDoc) continue
+    const removeTx = tx as TxRemoveDoc<Card>
+    if (!control.hierarchy.isDerived(removeTx.objectClass, cardPlugin.class.Card)) continue
+
+    const executions = await control.findAll(control.ctx, process.class.Execution, { card: removeTx.objectId })
+    for (const execution of executions) {
+      res.push(control.txFactory.createTxRemoveDoc(execution._class, execution.space, execution._id))
+    }
+
+    const logs = await control.findAll(control.ctx, process.class.ExecutionLog, { card: removeTx.objectId })
+    for (const log of logs) {
+      res.push(control.txFactory.createTxRemoveDoc(log._class, log.space, log._id))
+    }
+
+    const buttons = await control.findAll(control.ctx, process.class.EventButton, { card: removeTx.objectId })
+    for (const button of buttons) {
+      res.push(control.txFactory.createTxRemoveDoc(button._class, button.space, button._id))
+    }
   }
   return res
 }
@@ -696,7 +796,14 @@ export default async () => ({
     YearFromDate,
     MonthFromDate,
     DayFromDate,
-    DateDifference
+    DateDifference,
+    Min,
+    Max,
+    StringFromMarkup,
+    MarkupFromString,
+    StringFromIdentifier,
+    StringFromEnum,
+    EnumFromString
   },
   rollbacks: {
     ToDoCloseRollback,
@@ -714,7 +821,8 @@ export default async () => ({
     OnExecutionContinue,
     OnCustomEvent,
     OnExecutionRemove,
-    OnCardCreate
+    OnCardCreate,
+    OnCardRemove
   }
 })
 

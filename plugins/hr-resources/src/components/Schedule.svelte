@@ -37,7 +37,7 @@
     tableToCSV,
     showPopup
   } from '@hcengineering/ui'
-  import view, { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import view, { Viewlet, ViewletPreference, type ViewOptions } from '@hcengineering/view'
   import { ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
 
@@ -65,12 +65,16 @@
   let search = ''
   let resultQuery: DocumentQuery<Staff> = {}
 
-  function updateResultQuery (search: string): void {
-    resultQuery = search === '' ? {} : { name: { $like: '%' + search + '%' } }
+  function updateResultQuery (search: string, viewOptions: ViewOptions | undefined): void {
+    const q: DocumentQuery<Staff> = search === '' ? {} : { name: { $like: '%' + search + '%' } }
+    resultQuery = viewOptions?.hideInactive !== false ? { ...q, active: true } : q
   }
+
+  $: updateResultQuery(search, viewOptions)
 
   const query = createQuery()
 
+  let ancestors: Map<Ref<Department>, Ref<Department>[]> = new Map<Ref<Department>, Ref<Department>[]>()
   let descendants: Map<Ref<Department>, Department[]> = new Map<Ref<Department>, Department[]>()
   let departments: Map<Ref<Department>, Department> = new Map<Ref<Department>, Department>()
 
@@ -80,6 +84,9 @@
   query.query(hr.class.Department, {}, (res) => {
     departments.clear()
     descendants.clear()
+    ancestors.clear()
+
+    // build descendants and departments
     for (const doc of res) {
       if (doc.parent !== undefined && doc._id !== hr.ids.Head) {
         const current = descendants.get(doc.parent) ?? []
@@ -88,8 +95,28 @@
       }
       departments.set(doc._id, doc)
     }
+
+    // build ancestors: for each department, walk up to root
+    const byId = new Map<Ref<Department>, Ref<Department>>()
+    for (const doc of res) {
+      byId.set(doc._id, doc.parent ?? hr.ids.Head)
+    }
+
+    for (const doc of res) {
+      const list: Ref<Department>[] = []
+      let parent: Ref<Department> | undefined = doc._id
+      while (parent !== undefined && parent !== hr.ids.Head) {
+        parent = byId.get(parent)
+        if (parent !== undefined) {
+          list.push(parent)
+        }
+      }
+      ancestors.set(doc._id, list)
+    }
+
     departments = departments
     descendants = descendants
+    ancestors = ancestors
   })
 
   function inc (val: number): void {
@@ -131,6 +158,7 @@
   ]
 
   let viewlet: Viewlet | undefined
+  let viewOptions: ViewOptions | undefined
   let preference: ViewletPreference | undefined
   let loading = false
 
@@ -220,29 +248,21 @@
               if (result.detail !== undefined) display = result.detail.id
             }}
           />
-          {#if display === 'stats'}
-            <ViewletSelector
-              hidden
-              bind:viewlet
-              bind:preference
-              bind:loading
-              viewletQuery={{ _id: hr.viewlet.StaffStats }}
-            />
-            <ViewletSettingButton bind:viewlet />
-          {/if}
+          <ViewletSelector
+            hidden
+            bind:viewlet
+            bind:preference
+            bind:loading
+            viewletQuery={{ _id: hr.viewlet.StaffStats }}
+          />
+          <ViewletSettingButton bind:viewOptions bind:viewlet />
         {/if}
       </svelte:fragment>
 
       <Breadcrumb icon={hr.icon.HR} label={hr.string.Schedule} size={'large'} isCurrent />
 
       <svelte:fragment slot="search">
-        <SearchInput
-          bind:value={search}
-          collapsed
-          on:change={() => {
-            updateResultQuery(search)
-          }}
-        />
+        <SearchInput bind:value={search} collapsed />
       </svelte:fragment>
       <svelte:fragment slot="actions">
         {#if mode === CalendarMode.Month && display === 'stats'}
@@ -303,6 +323,7 @@
     <ScheduleView
       {department}
       {descendants}
+      {ancestors}
       departmentById={departments}
       staffQuery={resultQuery}
       {currentDate}

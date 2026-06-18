@@ -132,7 +132,7 @@
   autoSelect={false}
   items={dropdownItems}
   selected={[...(selectedKeys ?? [])]}
-  label={settingsRes.string.GuestAutoJoinAvailableSpaces}
+  label={settingsRes.string.GuestSelectSpaces}
   showDropdownIcon
   kind={'no-border'}
   size={'large'}

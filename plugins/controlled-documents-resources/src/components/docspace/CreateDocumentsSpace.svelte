@@ -15,7 +15,7 @@
 <script lang="ts">
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
-  import { AccountArrayEditor, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
+  import { AccountArrayEditor, employeeRefByAccountUuidStore, getAnonymousRefs } from '@hcengineering/contact-resources'
   import core, {
     Data,
     DocumentUpdate,
@@ -58,6 +58,7 @@
 
   $: isNew = docSpace === undefined
   $: membersPersons = members.map((m) => $employeeRefByAccountUuidStore.get(m)).filter(notEmpty)
+  $: readOnlyGuestOwnerExcludeItems = getAnonymousRefs($employeeRefByAccountUuidStore, owners)
 
   let typeId: Ref<DocumentSpaceType> | undefined = docSpace?.type ?? documents.spaceType.DocumentSpaceType
   let spaceType: WithLookup<DocumentSpaceType> | undefined
@@ -283,6 +284,7 @@
     </div>
     <AccountArrayEditor
       value={owners}
+      excludeItems={readOnlyGuestOwnerExcludeItems}
       label={core.string.Owners}
       onChange={handleOwnersChanged}
       kind={'regular'}

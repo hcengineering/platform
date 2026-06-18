@@ -34,6 +34,7 @@
   import Lock from './icons/Lock.svelte'
   import Unlock from './icons/Unlock.svelte'
   import card from '../plugin'
+  import MarkupProperties from './MarkupProperties.svelte'
 
   export let value: Card
   export let readonly: boolean = false
@@ -55,14 +56,20 @@
     isCollapsed = false
   }
 
-  $: isLocked = value.readonlySections?.includes(value._class) ?? false
+  $: isLocked = hierarchy.getAncestors(value._class).some((p) => value.readonlySections?.includes(p)) ?? false
+  $: _readonly = readonly || isLocked
   $: canLock = canLockSection(value.space, $permissionsStore)
   $: canUnlock = canUnlockSection(value.space, $permissionsStore)
 
   async function toggleLock (ev: MouseEvent): Promise<void> {
     ev.stopPropagation()
     const op = isLocked ? '$pull' : '$push'
-    await client.update(value, { [op]: { readonlySections: value._class } })
+    const targets = isLocked
+      ? hierarchy.getAncestors(value._class).filter((p) => value.readonlySections?.includes(p))
+      : [value._class]
+    for (const target of targets) {
+      await client.update(value, { [op]: { readonlySections: target } })
+    }
   }
 </script>
 
@@ -79,6 +86,7 @@
           icon={isLocked ? Lock : Unlock}
           kind={'link'}
           size={'medium'}
+          disabled={readonly}
           showTooltip={{ label: isLocked ? card.string.UnLockSection : card.string.LockSection }}
           on:click={toggleLock}
         />
@@ -114,7 +122,8 @@
   </div>
 </div>
 <ExpandCollapse isExpanded={!isCollapsed}>
-  <CardAttributes object={value} _class={value._class} {readonly} {ignoreKeys} {fourRows} showCollaborators />
+  <CardAttributes object={value} _class={value._class} readonly={_readonly} {ignoreKeys} {fourRows} showCollaborators />
+  <MarkupProperties doc={value} readonly={_readonly} tag={undefined} />
 </ExpandCollapse>
 
 <style lang="scss">

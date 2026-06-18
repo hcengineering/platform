@@ -210,23 +210,6 @@ services:
       - SERVER_SECRET=secret
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
-  payment:
-    image: hardcoreeng/payment
-    extra_hosts:
-      - 'huly.local:host-gateway'
-    ports:
-      - 3040:3040
-    environment:
-      - SECRET=secret
-      - PORT=3040
-      - ACCOUNTS_URL=http://huly.local:3000
-      - FRONT_URL=http://huly.local:8087
-      - USE_SANDBOX=true
-      - POLAR_ACCESS_TOKEN=${POLAR_ACCESS_TOKEN}
-      - POLAR_WEBHOOK_SECRET=${POLAR_WEBHOOK_SECRET}
-      - POLAR_SUBSCRIPTION_PLANS=${POLAR_SUBSCRIPTION_PLANS}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
-    restart: unless-stopped
   workspace_cockroach:
     image: hardcoreeng/workspace
     extra_hosts:
@@ -311,6 +294,7 @@ services:
       - COMMUNICATION_API_ENABLED=true
       - BACKUP_URL=http://huly.local:4039/api/backup,
       - EXCLUDED_APPLICATIONS_FOR_ANONYMOUS=[]
+      - DISABLED_FEATURES=auto-translate,mailboxes
       # - DISABLE_SIGNUP=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - PULSE_URL=ws://huly.local:8099/ws

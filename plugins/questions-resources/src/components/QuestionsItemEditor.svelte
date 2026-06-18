@@ -134,10 +134,3 @@
     {/await}
   {/if}
 </form>
-
-<style lang="scss">
-  .actions {
-    height: 0.8rem;
-    overflow: visible;
-  }
-</style>

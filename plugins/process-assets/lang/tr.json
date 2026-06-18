@@ -90,6 +90,8 @@
     "Absolute": "Mutlak",
     "Ceil": "Yukarı yuvarla",
     "Floor": "Aşağı yuvarla",
+    "Min": "Min",
+    "Max": "Max",
     "LogAction": "Olay",
     "Started": "Başlatıldı",
     "Each": "Her biri",
@@ -164,7 +166,17 @@
     "MonthFromDate": "Tarihten ay",
     "DayFromDate": "Tarihten gün",
     "DateDifference": "Tarih farkı",
-    "EmptyValue": "Boş değer"
+    "EmptyValue": "Boş değer",
+    "TextFromMarkup": "Metinden işaretleme",
+    "MarkupFromText": "İşaretlemeden metin",
+    "TextFromSelect": "Seçimden metin",
+    "SelectFromText": "Metinden seçim",
+    "AskSubclass": "Alt sınıfı sor",
+    "TextFromIdentifier": "Tanımlayıcıdan metne",
+    "ExportWithSlots": "Slotlu dışa aktar",
+    "ExportWithoutSlots": "Slotsuz dışa aktar",
+    "RequiredSlots": "Gerekli slotlar",
+    "Bindings": "Bağlamalar"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

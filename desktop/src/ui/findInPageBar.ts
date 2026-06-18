@@ -20,7 +20,8 @@ const DEBOUNCE_MS = 300
 /**
  * Find UI is loaded in a separate BrowserView (see `findInPageOverlayHost.ts`) so
  * `findInPage` on the page webContents does not search the query in this input.
- * Shadow DOM keeps chrome text minimal. Match counts are not shown.
+ * Shadow DOM keeps chrome text minimal. Match count / current index come from
+ * `found-in-page` forwarded as `onFindInPageResult`.
  *
  * Chromium moves focus to the matched text in the **page** webContents after
  * `findInPage`, so the overlay stops receiving keystrokes unless we put focus back
@@ -49,6 +50,11 @@ export function setupDesktopFindInPageBar (electronApi: IPCMainExposed): void {
   input.spellcheck = false
   input.setAttribute('aria-label', 'Find in page')
 
+  const matchCount = document.createElement('span')
+  matchCount.className = 'match-count'
+  matchCount.setAttribute('aria-live', 'polite')
+  matchCount.setAttribute('aria-atomic', 'true')
+
   const nav = document.createElement('div')
   nav.className = 'nav'
   nav.setAttribute('role', 'group')
@@ -76,6 +82,7 @@ export function setupDesktopFindInPageBar (electronApi: IPCMainExposed): void {
   closeBtn.title = 'Close'
 
   root.appendChild(input)
+  root.appendChild(matchCount)
   root.appendChild(nav)
   root.appendChild(closeBtn)
   shadow.appendChild(style)
@@ -87,6 +94,19 @@ export function setupDesktopFindInPageBar (electronApi: IPCMainExposed): void {
 
   function getQuery (): string {
     return input.value.trim()
+  }
+
+  function clearMatchCount (): void {
+    matchCount.textContent = ''
+    matchCount.removeAttribute('title')
+  }
+
+  function describeMatchCount (matches: number, activeOrdinal: number): { label: string, title: string } {
+    if (matches <= 0) {
+      return { label: '0/0', title: 'No matches' }
+    }
+    const cur = activeOrdinal > 0 ? Math.min(activeOrdinal, matches) : 1
+    return { label: `${cur}/${matches}`, title: `Match ${cur} of ${matches}` }
   }
 
   function updateNavState (): void {
@@ -114,6 +134,7 @@ export function setupDesktopFindInPageBar (electronApi: IPCMainExposed): void {
   function hide (): void {
     visible = false
     host.style.display = 'none'
+    clearMatchCount()
     prevBtn.disabled = true
     nextBtn.disabled = true
     try {
@@ -165,6 +186,7 @@ export function setupDesktopFindInPageBar (electronApi: IPCMainExposed): void {
       debounceTimer = undefined
       const q = getQuery()
       if (q === '') {
+        clearMatchCount()
         void electronApi.stopFindInPage('clearSelection').catch(() => {})
         updateNavState()
         return
@@ -226,6 +248,20 @@ export function setupDesktopFindInPageBar (electronApi: IPCMainExposed): void {
     },
     true
   )
+
+  electronApi.onFindInPageResult((result) => {
+    if (!visible) {
+      return
+    }
+    const q = getQuery()
+    if (q === '') {
+      clearMatchCount()
+      return
+    }
+    const { label, title } = describeMatchCount(result.matches, result.activeMatchOrdinal)
+    matchCount.textContent = label
+    matchCount.title = title
+  })
 }
 
 /** Left-pointing chevron; `.next::after` mirrors with `scaleX(-1)` for identical vertical alignment. */
@@ -312,6 +348,28 @@ const shadowStyles = `
 
 .field::placeholder {
   color: transparent;
+}
+
+.match-count {
+  min-width: 1.5rem;
+  padding: 0 2px;
+  font-size: 12px;
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: rgba(0, 0, 0, 0.52);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .match-count {
+    color: rgba(255, 255, 255, 0.48);
+  }
+}
+
+:host-context([data-theme='theme-dark']) .match-count {
+  color: rgba(255, 255, 255, 0.48);
 }
 
 .nav {

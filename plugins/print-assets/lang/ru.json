@@ -3,6 +3,8 @@
     "PrintToPDF": "Печать в PDF",
     "PrintingDocumentOf": "Печать документа {current} из {total}",
     "DownloadAll": "Скачать все",
-    "PrintFailed": "Ошибка печати"
+    "PrintFailed": "Ошибка печати",
+    "PrintSettings": "Настройки печати",
+    "LandscapeMode": "Ландшафтный режим"
   }
 }

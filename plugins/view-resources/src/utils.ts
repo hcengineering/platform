@@ -521,9 +521,16 @@ export function buildConfigAssociation (config: Array<BuildModelKey | string>): 
 function buildaAssociation (stringKey: string, record: Record<string, any>): void {
   const parts = stringKey.split('$associations.').filter((it) => it.length > 0)
   let curr = record
-  for (let part of parts) {
+  for (let i = 0; i < parts.length; i++) {
+    let part = parts[i]
     if (part.endsWith('.')) {
       part = part.slice(0, -1)
+    }
+    // If the part contains a dot, it has a sub-field suffix (e.g., 'assocId_b.name')
+    // Only take the association identifier part before the dot
+    const dotIndex = part.indexOf('.')
+    if (dotIndex !== -1) {
+      part = part.substring(0, dotIndex)
     }
     if (curr[part] === undefined) {
       curr[part] = {}
@@ -631,7 +638,19 @@ async function getRelationPresenter (client: Client, key: BuildModelKey): Promis
   if (parts.length < 2) {
     throw new Error('invalid relation key ' + key.key)
   }
-  const fragments = parts[parts.length - 1].split('_')
+
+  // Find the last association segment
+  let lastAssocIndex = -1
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i] === '$associations' && i + 1 < parts.length) {
+      lastAssocIndex = i
+    }
+  }
+  if (lastAssocIndex === -1) {
+    throw new Error('invalid relation key ' + key.key)
+  }
+
+  const fragments = parts[lastAssocIndex + 1].split('_')
   const assocId = fragments[0] as Ref<Association>
   const assoc = client.getModel().findObject(assocId)
   if (assoc === undefined) {
@@ -641,6 +660,49 @@ async function getRelationPresenter (client: Client, key: BuildModelKey): Promis
   const name = fragments[1] === 'a' ? assoc.nameA : assoc.nameB
 
   const hierarchy = client.getHierarchy()
+
+  // Check if there are sub-field parts after the last association segment
+  const subFieldParts = parts.slice(lastAssocIndex + 2)
+  if (subFieldParts.length > 0) {
+    // Sub-field key: resolve attribute presenter for the specific field
+    const attrName = subFieldParts.join('.')
+    try {
+      const attribute = hierarchy.getAttribute(_class, attrName)
+      const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
+      const presenterRef = findAttributePresenter(client, _class, attrName)
+      if (presenterRef !== undefined) {
+        const presenter = await getResource(presenterRef)
+        return {
+          key: key.key,
+          sortingKey: key.key,
+          _class: attrClass,
+          label: attribute.label,
+          presenter,
+          props: key.props,
+          displayProps: key.displayProps,
+          attribute,
+          collectionAttr: category === 'collection',
+          isLookup: true
+        }
+      }
+    } catch {}
+    // Fall through to object presenter if attribute presenter not found
+    const presenterMixin = hierarchy.classHierarchyMixin(_class, view.mixin.ObjectPresenter)
+    if (presenterMixin?.presenter !== undefined) {
+      const presenter = await getResource(presenterMixin.presenter)
+      return {
+        key: key.key,
+        sortingKey: '',
+        _class,
+        label: getEmbeddedLabel(name + ' › ' + subFieldParts.join('.')),
+        presenter,
+        props: key.props,
+        displayProps: key.displayProps,
+        collectionAttr: false,
+        isLookup: true
+      }
+    }
+  }
 
   const presenterMixin = hierarchy.classHierarchyMixin(_class, view.mixin.CollectionPresenter)
   if (presenterMixin?.presenter === undefined) {
@@ -1100,9 +1162,36 @@ export function getAttributeValue (attribute: AttributeModel, object: Doc, hiera
     )
   }
   if (attribute.key.startsWith(assoc)) {
+    // Check if this is a sub-field key (e.g., $associations.assocId_b.fieldName)
+    const subField = getAssociationSubField(attribute.key)
+    if (subField !== undefined) {
+      return getObjectValue(subField, object)
+    }
     return object
   }
   return getObjectValue(attribute.key, object)
+}
+
+/**
+ * Extract the sub-field name from an association key.
+ * For `$associations.assocId_b.name` returns `name`.
+ * For `$associations.assocId_b` returns undefined.
+ * For `$associations.assocId_b.$associations.assocId2_a.name` returns `name`.
+ */
+function getAssociationSubField (key: string): string | undefined {
+  const parts = key.split('.')
+  // Find the last association segment
+  let lastAssocIndex = -1
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i] === '$associations' && i + 1 < parts.length) {
+      lastAssocIndex = i
+    }
+  }
+  if (lastAssocIndex === -1) return undefined
+  // Parts after the association id fragment
+  const subFieldParts = parts.slice(lastAssocIndex + 2)
+  if (subFieldParts.length === 0) return undefined
+  return subFieldParts.join('.')
 }
 
 export function concatCategories (arr1: CategoryType[], arr2: CategoryType[]): CategoryType[] {
@@ -1156,7 +1245,7 @@ export async function sortCategories (
  * @public
  */
 export function canResolveAttribute<T extends Doc> (
-  hierarchy: Hierarchy,
+  h: Hierarchy,
   _class: Ref<Class<T>>,
   key: string,
   lookup: Lookup<T> | undefined
@@ -1174,9 +1263,13 @@ export function canResolveAttribute<T extends Doc> (
   if (key.length === 0) return true
   const parts = key.split('.')
   if (parts.length === 1) {
-    return hierarchy.findAttribute(_class, key) !== undefined
-  } else if (hierarchy.isDerived(parts[0] as Ref<Class<Doc>>, _class)) {
-    return hierarchy.findAttribute(parts[0] as Ref<Class<Doc>>, parts[1]) !== undefined
+    return h.findAttribute(_class, key) !== undefined
+  } else {
+    const target = parts[0] as Ref<Class<Doc>>
+    const attr = parts[1]
+    if (h.isDerived(target, _class) || (h.isMixin(target) && h.isDerived(_class, h.getBaseClass(target)))) {
+      return h.findAttribute(target, attr) !== undefined
+    }
   }
   return false
 }
@@ -1187,6 +1280,7 @@ export function getKeyLabel<T extends Doc> (
   key: string,
   lookup: Lookup<T> | undefined
 ): IntlString {
+  const h = client.getHierarchy()
   if (key.startsWith('$relation')) {
     // Handle association: $relation.[associationId]
     const parts = key.split('.')
@@ -1204,16 +1298,36 @@ export function getKeyLabel<T extends Doc> (
     const lookupProperty = getLookupProperty(key)
     const lookupKey = { key: lookupProperty[0] }
     return getLookupLabel(client, lookupClass[1], lookupClass[0], lookupKey, lookupProperty[1])
+  } else if (key.startsWith('$associations')) {
+    const parts = key.split('.')
+    if (parts.length < 2) return key as IntlString
+
+    const fragments = parts[1].split('_')
+    const assocId = fragments[0] as Ref<Association>
+    const assoc = client.getModel().findObject(assocId)
+    if (assoc === undefined) return key as IntlString
+
+    const direction = fragments[1]
+    const targetClass = direction === 'a' ? assoc.classA : assoc.classB
+    const assocName = direction === 'a' ? assoc.nameA : assoc.nameB
+
+    if (parts.length > 2) {
+      return getKeyLabel(client, targetClass, parts.slice(2).join('.'), undefined)
+    }
+    return getEmbeddedLabel(assocName)
   } else if (key.length === 0) {
-    const clazz = client.getHierarchy().getClass(_class)
+    const clazz = h.getClass(_class)
     return clazz.label
   } else {
     const parts = key.split('.')
-    if (parts.length === 2 && client.getHierarchy().isDerived(parts[0] as Ref<Class<Doc>>, _class)) {
-      const attribute = client.getHierarchy().getAttribute(parts[0] as Ref<Class<Doc>>, parts[1])
-      return attribute.label
+    if (parts.length === 2) {
+      const target = parts[0] as Ref<Class<Doc>>
+      if (h.isDerived(target, _class) || (h.isMixin(target) && h.isDerived(_class, h.getBaseClass(target)))) {
+        const attribute = h.getAttribute(target, parts[1])
+        return attribute.label
+      }
     }
-    const attribute = client.getHierarchy().getAttribute(_class, key)
+    const attribute = h.getAttribute(_class, key)
     return attribute.label
   }
 }

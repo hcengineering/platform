@@ -97,7 +97,9 @@
 
 <div class="flex-between bottom-divider min-h-12 px-2">
   {#if selectable}
-    <span class="pl-2"><b>{selected.size}</b> <Label label={gmail.string.MessagesSelected} /></span>
+    <span class="pl-2"
+      ><b>{selected.size}</b> <Label label={gmail.string.MessagesSelected} params={{ count: selected.size }} /></span
+    >
     <div class="flex-row-center gap-3">
       <Button label={gmail.string.Cancel} on:click={clear} />
       <Button label={gmail.string.PublishSelected} kind={'primary'} disabled={!selected.size} on:click={share} />

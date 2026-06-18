@@ -165,8 +165,11 @@
     "GuestSignUpDescription": "Permite que usuários anônimos entrem em seu espaço de trabalho como convidados com direitos de edição limitados",
     "GuestChannelsDescription": "Canais onde convidados podem escrever mensagens após ingressar",
     "GuestChannelsArrayLabel": "Selecionar canais",
-    "GuestAutoJoinAvailableSpaces": "Espaços disponíveis",
-    "GuestAutoJoinAvailableSpacesHint": "Cada cartão de aplicação tem a sua própria linha « Espaços disponíveis » para adesão automática de convidados; as alterações aplicam-se de imediato.",
+    "GuestSelectSpaces": "Selecionar espaços",
+    "GuestAutoJoinAvailableSpaces": "Adesão automática a espaços",
+    "GuestAutoJoinAvailableSpacesHint": "Cada cartão de aplicação tem a sua própria linha « Adesão automática a espaços »: escolha onde os convidados são adicionados ao ativarem. As alterações aplicam-se de imediato.",
+    "GuestAnonymousVisibleSpaces": "Espaços visíveis em anónimo",
+    "GuestAnonymousVisibleSpacesHint": "Cada cartão de aplicação tem a sua própria linha: escolha os espaços em que a conta anónima só de leitura é adicionada como membro para que visitantes sem conta os possam abrir. As alterações aplicam-se de imediato.",
     "ManageIdentities": "Gerenciar identidades",
     "Release": "Libertação",
     "ReleaseSocialId": "Liberar ID social",
@@ -227,6 +230,7 @@
     "TwoFactorAuthEnabled": "Autenticação de dois fatores está ativada",
     "TwoFactorAuthDisabled": "Autenticação de dois fatores está desativada",
     "ShowQRCode": "Mostrar código QR",
-    "EnterVerificationCode": "Inserir código de verificação"
+    "EnterVerificationCode": "Inserir código de verificação",
+    "OverrideAttribute": "Sobrescrever atributo"
   }
 }

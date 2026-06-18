@@ -164,7 +164,19 @@
     "MonthFromDate": "Měsíc z data",
     "DayFromDate": "Den z data",
     "DateDifference": "Rozdíl dat",
-    "EmptyValue": "Prázdná hodnota"
+    "EmptyValue": "Prázdná hodnota",
+    "Min": "Min",
+    "Max": "Max",
+    "MarkupFromText": "MarkUp z textu",
+    "TextFromMarkup": "Text z MarkUp",
+    "TextFromSelect": "Text z výběru",
+    "SelectFromText": "Výběr z textu",
+    "AskSubclass": "Zeptat se na podtřídu",
+    "TextFromIdentifier": "Text z identifikátoru",
+    "ExportWithSlots": "Exportovat se sloty",
+    "ExportWithoutSlots": "Exportovat bez slotů",
+    "RequiredSlots": "Požadované sloty",
+    "Bindings": "Vazby"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

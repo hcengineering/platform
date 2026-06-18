@@ -174,8 +174,11 @@
     "GuestSignUpDescription": "Allows anonymous users to join your workspace as guests with limited editing rights",
     "GuestChannelsDescription": "Channels where guests can write messages after joining",
     "GuestChannelsArrayLabel": "Select channels",
-    "GuestAutoJoinAvailableSpaces": "Available spaces",
-    "GuestAutoJoinAvailableSpacesHint": "Each application card has its own “Available spaces” row to pick where workspace guests are added on activation. Changes apply immediately.",
+    "GuestSelectSpaces": "Select spaces",
+    "GuestAutoJoinAvailableSpaces": "Auto-join spaces",
+    "GuestAutoJoinAvailableSpacesHint": "Each application card has its own “Auto-join spaces” row: choose where workspace guests are added when they activate. Changes apply immediately.",
+    "GuestAnonymousVisibleSpaces": "Spaces visible to anonymous",
+    "GuestAnonymousVisibleSpacesHint": "Each application card has its own row: pick spaces where the read-only anonymous account is added as a member so visitors without an account can open them. Changes apply immediately.",
     "ManageIdentities": "Manage identities",
     "Release": "Release",
     "ReleaseSocialId": "Release social ID",
@@ -236,6 +239,7 @@
     "TwoFactorAuthEnabled": "Two-factor authentication is enabled",
     "TwoFactorAuthDisabled": "Two-factor authentication is disabled",
     "ShowQRCode": "Show QR code",
-    "EnterVerificationCode": "Enter verification code"
+    "EnterVerificationCode": "Enter verification code",
+    "OverrideAttribute": "Override attribute"
   }
 }

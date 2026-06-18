@@ -254,6 +254,21 @@ function defineProduct (builder: Builder): void {
   builder.mixin(products.class.Product, core.class.Class, view.mixin.IgnoreActions, {
     actions: [tracker.action.NewRelatedIssue]
   })
+
+  createAction(
+    builder,
+    {
+      action: products.actionImpl.CreateProductVersion,
+      label: products.string.CreateProductVersion,
+      icon: products.icon.ProductVersion,
+      visibilityTester: products.function.CanCreateProductVersion,
+      category: view.category.General,
+      input: 'focus',
+      target: products.class.Product,
+      context: { mode: ['context', 'browser'], group: 'create' }
+    },
+    products.action.CreateProductVersion
+  )
 }
 
 function defineSpaceType (builder: Builder): void {

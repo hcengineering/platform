@@ -64,7 +64,7 @@
     {:else if value}
       <span class="label caption-color overflow-label pointer-events-none">{value}</span>
     {:else}
-      <span class="label content-dark-color pointer-events-none">
+      <span class="label content-dark-color overflow-label pointer-events-none">
         <Label label={placeholder} />
       </span>
     {/if}

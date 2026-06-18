@@ -12,7 +12,6 @@
 // limitations under the License.
 
 import activity from '@hcengineering/activity'
-import communication from '@hcengineering/communication'
 import {
   type CanCreateCardResource,
   type Card,
@@ -23,6 +22,7 @@ import {
   type CardViewDefaults,
   type CreateCardExtension,
   DOMAIN_CARD,
+  type DuplicateSetting,
   type ExportExtension,
   type ExportFunc,
   type FavoriteCard,
@@ -34,6 +34,8 @@ import {
   type Tag
 } from '@hcengineering/card'
 import chunter from '@hcengineering/chunter'
+import communication from '@hcengineering/communication'
+import converter from '@hcengineering/converter'
 import core, {
   AccountRole,
   type Blobs,
@@ -46,6 +48,7 @@ import core, {
   DOMAIN_SPACE,
   IndexKind,
   type MarkupBlobRef,
+  type Mixin as MixinType,
   type MixinData,
   type Rank,
   type Ref,
@@ -77,16 +80,15 @@ import presentation from '@hcengineering/model-presentation'
 import setting from '@hcengineering/model-setting'
 import view, { type Viewlet } from '@hcengineering/model-view'
 import workbench, { WidgetType } from '@hcengineering/model-workbench'
-import converter from '@hcengineering/converter'
+import notification from '@hcengineering/notification'
 import { type Asset, getEmbeddedLabel, type IntlString, type Resource } from '@hcengineering/platform'
 import time, { type ToDo } from '@hcengineering/time'
 import { PaletteColorIndexes } from '@hcengineering/ui/src/colors'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
-import { type BuildModelKey } from '@hcengineering/view'
+import { type BuildModelKey, type ViewOptionModel } from '@hcengineering/view'
 import { createActions } from './actions'
 import { defineActionPermissions, definePermissions } from './permissions'
 import card from './plugin'
-import notification from '@hcengineering/notification'
 
 export { cardId } from '@hcengineering/card'
 
@@ -223,7 +225,23 @@ export class TExportExtension extends TDoc implements ExportExtension {
   func!: Resource<ExportFunc>
 }
 
+@Mixin(card.mixin.DuplicateSetting, card.class.MasterTag)
+export class TDuplicateSetting extends TMasterTag implements DuplicateSetting {
+  excludedProperties?: string[]
+  excludedRelations?: string[] // ${associationId}_${a|b}
+  excludeMixins?: Ref<MixinType<Doc>>[]
+}
+
 export * from './migration'
+
+const showAllVersionsOption: ViewOptionModel = {
+  key: 'showAllVersions',
+  type: 'toggle',
+  defaultValue: false,
+  actionTarget: 'query',
+  action: card.function.ShowAllVersions,
+  label: card.string.ShowAllVersions
+}
 
 const listConfig: (BuildModelKey | string)[] = [
   { key: '' },
@@ -350,6 +368,11 @@ export function createSystemType (
       hiddenKeys: ['content', 'title'],
       sortable: true
     },
+    viewOptions: {
+      groupBy: [],
+      orderBy: [],
+      other: [showAllVersionsOption]
+    },
     baseQuery: {
       isLatest: true
     },
@@ -383,7 +406,7 @@ export function createSystemType (
         ['modifiedOn', SortingOrder.Descending],
         ['rank', SortingOrder.Ascending]
       ],
-      other: []
+      other: [showAllVersionsOption]
     },
     baseQuery: {
       isLatest: true
@@ -397,6 +420,11 @@ export function createSystemType (
   builder.createDoc(view.class.Viewlet, core.space.Model, {
     attachTo: type,
     descriptor: card.viewlet.CardGridDescriptor,
+    viewOptions: {
+      groupBy: [],
+      orderBy: [],
+      other: [showAllVersionsOption]
+    },
     baseQuery: {
       isLatest: true
     },
@@ -422,7 +450,8 @@ export function createModel (builder: Builder): void {
     TFavoriteCard,
     TFavoriteType,
     TCreateCardExtension,
-    TExportExtension
+    TExportExtension,
+    TDuplicateSetting
   )
 
   builder.createDoc(
@@ -681,6 +710,11 @@ export function createModel (builder: Builder): void {
         hiddenKeys: ['content', 'title'],
         sortable: true
       },
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [showAllVersionsOption]
+      },
       baseQuery: {
         isLatest: true
       },
@@ -713,7 +747,7 @@ export function createModel (builder: Builder): void {
           ['modifiedOn', SortingOrder.Descending],
           ['rank', SortingOrder.Ascending]
         ],
-        other: []
+        other: [showAllVersionsOption]
       },
       configOptions: {
         hiddenKeys: ['content', 'title']
@@ -739,7 +773,7 @@ export function createModel (builder: Builder): void {
           ['modifiedOn', SortingOrder.Descending],
           ['rank', SortingOrder.Ascending]
         ],
-        other: []
+        other: [showAllVersionsOption]
       },
       configOptions: {
         strict: true,
@@ -782,6 +816,11 @@ export function createModel (builder: Builder): void {
         hiddenKeys: ['content', 'title'],
         sortable: true
       },
+      viewOptions: {
+        groupBy: [],
+        orderBy: [],
+        other: [showAllVersionsOption]
+      },
       baseQuery: {
         isLatest: true
       },
@@ -821,7 +860,7 @@ export function createModel (builder: Builder): void {
           ['rank', SortingOrder.Ascending],
           ['title', SortingOrder.Descending]
         ],
-        other: []
+        other: [showAllVersionsOption]
       }
     },
     card.viewlet.CardGrid

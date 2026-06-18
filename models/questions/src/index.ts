@@ -24,6 +24,7 @@ import { type Builder } from '@hcengineering/model'
 import core from '@hcengineering/model-core'
 import tracker from '@hcengineering/model-tracker'
 import view, { createAction } from '@hcengineering/model-view'
+import print from '@hcengineering/model-print'
 import {
   TAnswer,
   TAssessment,
@@ -215,7 +216,15 @@ function defineActions (builder: Builder): void {
   )
 
   builder.mixin(questions.class.Question, core.class.Class, view.mixin.IgnoreActions, {
-    actions: [view.action.Open, view.action.OpenInNewTab, view.action.Delete, tracker.action.NewRelatedIssue]
+    actions: [
+      view.action.Open,
+      view.action.OpenInNewTab,
+      view.action.Delete,
+      tracker.action.NewRelatedIssue,
+      view.action.CopyLink,
+      view.action.AddRelation,
+      print.action.Print
+    ]
   })
 
   createAction(

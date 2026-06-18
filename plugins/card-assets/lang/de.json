@@ -83,6 +83,8 @@
     "LayoutAuto": "Auto",
     "SingleColumn": "Einspaltig",
     "TwoColumns": "Zwei spaltig",
-    "Grid": "Gitter"
+    "Grid": "Gitter",
+    "RichtextProperties": "Textfelder",
+    "ShowAllVersions": "Alle Versionen anzeigen"
   }
 }

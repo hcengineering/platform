@@ -131,7 +131,8 @@ export const documentsPlugin = plugin(documentsId, {
     PrintProjectDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
     OpenDocument: '' as Ref<Action<Doc, { signed: boolean }>>,
     OpenDocumentInNewTab: '' as Ref<Action<Doc, { signed: boolean }>>,
-    CopyAsMarkdownTable: '' as Ref<Action<Doc, any>>
+    CopyAsMarkdownTable: '' as Ref<Action<Doc, any>>,
+    CopyDocumentMarkdown: '' as Ref<Action<Doc, any>>
   },
   function: {
     CanChangeDocumentOwner: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,

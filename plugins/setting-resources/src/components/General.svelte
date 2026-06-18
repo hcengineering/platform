@@ -149,7 +149,7 @@
   )
 
   async function changePasswordAgingRules (val: number | undefined): Promise<void> {
-    passwordAgingRule = Math.max(val ?? 1, 1)
+    passwordAgingRule = val !== undefined ? Math.max(val, 1) : undefined
     await accountClient.updatePasswordAgingRule(passwordAgingRule)
   }
 

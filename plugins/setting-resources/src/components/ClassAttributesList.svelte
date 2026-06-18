@@ -31,6 +31,7 @@
   import {
     Action,
     AnySvelteComponent,
+    IconCopy,
     IconDelete,
     IconEdit,
     Menu,
@@ -42,11 +43,13 @@
   import ClassAttributeRow from './ClassAttributeRow.svelte'
   import { makeRank } from '@hcengineering/rank'
   import EditAttribute from './EditAttribute.svelte'
+  import { TypeIdentifier } from '@hcengineering/model'
 
   export let _class: Ref<Class<Doc>>
   export let ofClass: Ref<Class<Doc>> | undefined = undefined
   export let notUseOfClass: boolean = false
   export let selected: AnyAttribute | undefined = undefined
+  export let showAll: boolean = false
 
   export let attributeMapper:
   | {
@@ -73,9 +76,8 @@
 
   function getCustomAttributes (_class: Ref<Class<Doc>>): AnyAttribute[] {
     const cl = hierarchy.getClass(_class)
-    const attributes = Array.from(
-      hierarchy.getAllAttributes(_class, _class === ofClass && !notUseOfClass ? core.class.Doc : cl.extends).values()
-    ).sort((a, b) => {
+    const to = showAll ? ofClass : _class === ofClass && !notUseOfClass ? core.class.Doc : cl.extends
+    const attributes = Array.from(hierarchy.getAllAttributes(_class, to).values()).sort((a, b) => {
       const rankA = a.rank ?? toRank(a._id) ?? ''
       const rankB = b.rank ?? toRank(b._id) ?? ''
       return rankA.localeCompare(rankB)
@@ -95,6 +97,23 @@
 
   export async function editAttribute (attribute: AnyAttribute, exist: boolean): Promise<void> {
     showPopup(EditAttribute, { attribute, exist }, 'top', update)
+  }
+
+  export async function overrideAttribute (source: AnyAttribute): Promise<void> {
+    const newSeq = await client.createDoc(core.class.CustomSequence, core.space.Workspace, {
+      prefix: '',
+      sequence: 0,
+      attachedTo: core.class.CustomSequence
+    })
+    const _id = await client.createDoc(core.class.Attribute, core.space.Model, {
+      ...source,
+      type: TypeIdentifier(newSeq),
+      attributeOf: _class
+    })
+    const attribute = await client.findOne(core.class.Attribute, _id)
+    if (attribute !== undefined) {
+      showPopup(EditAttribute, { attribute, exist: true }, 'top', update)
+    }
   }
 
   export async function removeAttribute (attribute: AnyAttribute, exist: boolean): Promise<void> {
@@ -125,6 +144,15 @@
       }
     ]
     if (attribute.isCustom === true) {
+      if (attribute.attributeOf !== _class && attribute.type._class === core.class.TypeIdentifier) {
+        actions.push({
+          label: settings.string.OverrideAttribute,
+          icon: IconCopy,
+          action: async () => {
+            await overrideAttribute(attribute)
+          }
+        })
+      }
       actions.push({
         label: presentation.string.Remove,
         icon: IconDelete,

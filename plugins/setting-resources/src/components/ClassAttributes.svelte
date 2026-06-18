@@ -47,6 +47,7 @@
   export let showHeader: boolean = true
   export let disabled: boolean = true
   export let isCard: boolean = false
+  export let showAll: boolean = false
   export let attributeMapper:
   | {
     component: AnySvelteComponent
@@ -112,6 +113,10 @@
   const classUpdated = (_clazz: Ref<Class<Doc>>, to: Ref<Class<Doc>>): void => {
     selected = undefined
     const h = client.getHierarchy()
+    if (showAll && !h.isMixin(_class)) {
+      classes = []
+      return
+    }
     const toAncestors = new Set(h.getAncestors(to))
     classes = h
       .getAncestors(_class)
@@ -213,6 +218,7 @@
           {_class}
           {ofClass}
           {attributeMapper}
+          showAll={showAll && !hierarchy.isMixin(_class)}
           {selected}
           on:deselect={handleDeselect}
           on:select={handleSelect}
@@ -230,6 +236,7 @@
             {ofClass}
             {attributeMapper}
             {selected}
+            showAll={showAll && !hierarchy.isMixin(_class)}
             notUseOfClass
             on:deselect={handleDeselect}
             on:select={handleSelect}
@@ -244,6 +251,7 @@
         {ofClass}
         {attributeMapper}
         {selected}
+        showAll={showAll && !hierarchy.isMixin(_class)}
         on:deselect={handleDeselect}
         on:select={handleSelect}
       />

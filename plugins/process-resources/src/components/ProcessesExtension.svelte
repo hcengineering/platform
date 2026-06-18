@@ -14,9 +14,11 @@
 -->
 <script lang="ts">
   import { Card } from '@hcengineering/card'
+  import { PermissionsStore } from '@hcengineering/contact'
+  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
   import core, { Doc, FindOptions, Ref, SortingOrder, TypedSpace } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
-  import { Execution } from '@hcengineering/process'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Execution, Process } from '@hcengineering/process'
   import {
     Button,
     eventToHTMLElement,
@@ -35,11 +37,9 @@
     SelectDirection,
     ViewletsSettingButton
   } from '@hcengineering/view-resources'
+  import { createEventDispatcher } from 'svelte'
   import process from '../plugin'
   import RunProcessPopup from './RunProcessPopup.svelte'
-  import { createEventDispatcher } from 'svelte'
-  import { checkMyPermission, permissionsStore } from '@hcengineering/contact-resources'
-  import { PermissionsStore } from '@hcengineering/contact'
 
   export let card: Card
   export let readonly: boolean = false
@@ -47,8 +47,18 @@
   const viewletId = process.viewlet.CardExecutions
   const dispatch = createEventDispatcher()
 
+  const client = getClient()
+
+  const autoProcesses = client
+    .getModel()
+    .findAllSync(process.class.Process, {
+      automationOnly: true
+    })
+    .map((p: Process) => p._id)
+
   $: query = {
-    card: card._id
+    card: card._id,
+    process: { $nin: autoProcesses }
   }
 
   const options: FindOptions<Execution> = {

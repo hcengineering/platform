@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
+import cardPlugin from '@hcengineering/card'
 import contact, { Employee, Person } from '@hcengineering/contact'
 import core, { Doc, matchQuery, Ref, Timestamp } from '@hcengineering/core'
 import { Execution, parseContext } from '@hcengineering/process'
 import { ProcessControl } from '@hcengineering/server-process'
+import { markupToText } from '@hcengineering/text-core'
 import { getContextValue } from './utils'
-import cardPlugin from '@hcengineering/card'
 
 // #region ArrayReduce
 
@@ -425,6 +426,40 @@ export function Floor (value: number): number {
   return value
 }
 
+export async function Min (
+  value: number,
+  props: Record<string, any>,
+  control: ProcessControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    const val = await getContextValue(props.value, control, execution)
+    if (typeof val !== 'number') return value
+    return Math.min(value, val)
+  } else if (typeof value === 'number' && typeof props.value === 'number') {
+    return Math.min(value, props.value)
+  }
+  return value
+}
+
+export async function Max (
+  value: number,
+  props: Record<string, any>,
+  control: ProcessControl,
+  execution: Execution
+): Promise<number> {
+  const context = parseContext(props.value)
+  if (context !== undefined) {
+    const val = await getContextValue(props.value, control, execution)
+    if (typeof val !== 'number') return value
+    return Math.max(value, val)
+  } else if (typeof value === 'number' && typeof props.value === 'number') {
+    return Math.max(value, props.value)
+  }
+  return value
+}
+
 // #endregion
 
 // #region Func
@@ -537,6 +572,27 @@ export function MonthFromDate (value: Date): number {
 
 export function DayFromDate (value: Date): number {
   return new Date(value).getDate()
+}
+
+export function StringFromMarkup (value: string): string {
+  return markupToText(value)
+}
+
+export function MarkupFromString (value: string): string {
+  return value
+}
+
+export function StringFromIdentifier (value: string): string {
+  return value
+}
+
+export function StringFromEnum (value: string): string {
+  if (value == null) return ''
+  return String(value)
+}
+
+export function EnumFromString (value: string): string {
+  return value
 }
 
 // #endregion

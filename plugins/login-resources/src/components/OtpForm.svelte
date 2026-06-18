@@ -21,6 +21,7 @@
   import { LoginInfo } from '@hcengineering/account-client'
 
   import Tabs from './Tabs.svelte'
+  import { loginFormMinHeight, loginFormPadding } from '../loginFormLayout'
   import { BottomAction, doLoginNavigate, doValidateOtp, OtpLoginSteps, loginOtp } from '../index'
   import login from '../plugin'
   import BottomActionComponent from './BottomAction.svelte'
@@ -238,8 +239,8 @@
 <form
   bind:this={formElement}
   class="container"
-  style:padding={$deviceInfo.docWidth <= 480 ? '.25rem 1.25rem' : '4rem 5rem'}
-  style:min-height={$deviceInfo.docHeight > 720 ? '42rem' : '0'}
+  style:padding={loginFormPadding($deviceInfo.docWidth, $deviceInfo.docHeight)}
+  style:min-height={loginFormMinHeight($deviceInfo.docHeight)}
 >
   <div class="header">
     <Tabs {loginState} {signUpDisabled} />
@@ -334,7 +335,8 @@
   }
 
   .container {
-    overflow: hidden;
+    overflow-x: hidden;
+    min-height: 0;
     display: flex;
     flex-direction: column;
 

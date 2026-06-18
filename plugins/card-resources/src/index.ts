@@ -35,9 +35,9 @@ import {
   getSpaceAccessPublicLink,
   canGetSpaceAccessPublicLink,
   cardFactory,
-  duplicateCard,
   checkChildrenSectionVisibility,
-  createChildAction
+  createChildAction,
+  showAllVersions
 } from './utils'
 import { formatCardValue } from './cardTableFormatter'
 import CardGridView from './components/CardGridView.svelte'
@@ -68,6 +68,7 @@ import CardWidget from './components/CardWidget.svelte'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
 import CardHeaderButton from './components/navigator/CardHeaderButton.svelte'
 import MyCards from './components/navigator/MyCards.svelte'
+import DuplicateCard from './components/DuplicateCard.svelte'
 
 // Card Sections
 import AttachmentsCardSection from './components/sections/AttachmentsSection.svelte'
@@ -140,7 +141,8 @@ export default async (): Promise<Resources> => ({
     CreateSpace,
     CardHeaderButton,
     CreateRolePopup,
-    MyCards
+    MyCards,
+    DuplicateCard
   },
   sectionComponent: {
     AttachmentsSection: AttachmentsCardSection,
@@ -160,7 +162,6 @@ export default async (): Promise<Resources> => ({
   },
   actionImpl: {
     DeleteMasterTag: deleteMasterTag,
-    DuplicateCard: duplicateCard,
     EditSpace: editSpace,
     CreateChild: createChildAction
   },
@@ -177,6 +178,7 @@ export default async (): Promise<Resources> => ({
     GetSpaceAccessPublicLink: getSpaceAccessPublicLink,
     CanGetSpaceAccessPublicLink: canGetSpaceAccessPublicLink,
     CardFactory: cardFactory,
-    FormatCardMarkdownValue: formatCardValue
+    FormatCardMarkdownValue: formatCardValue,
+    ShowAllVersions: showAllVersions
   }
 })

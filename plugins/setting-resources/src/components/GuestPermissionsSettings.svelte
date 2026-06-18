@@ -48,6 +48,7 @@
   } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
   import { onMount } from 'svelte'
+  import AnonymousGuestSpaceInput from './AnonymousGuestSpaceInput.svelte'
   import AvailableSpacesInput from './AvailableSpacesInput.svelte'
   import settingsRes from '../plugin'
 
@@ -381,6 +382,10 @@
                   <div class="sectionHint">
                     <Label label={settingsRes.string.GuestAutoJoinAvailableSpacesHint} />
                   </div>
+                {:else if guestPermissionsTab === 'anonymous'}
+                  <div class="sectionHint">
+                    <Label label={settingsRes.string.GuestAnonymousVisibleSpacesHint} />
+                  </div>
                 {/if}
               </div>
 
@@ -393,7 +398,12 @@
                     guestPermissionsTab === 'guest' &&
                     group.role === AccountRole.Guest &&
                     group.spaceClass !== undefined}
-                  {@const hasPermissionRowsBlock = permissionCount > 0 || hasGuestAutoJoinRow}
+                  {@const hasAnonymousGuestSpacesRow =
+                    guestPermissionsTab === 'anonymous' &&
+                    group.role === AccountRole.ReadOnlyGuest &&
+                    group.spaceClass !== undefined}
+                  {@const hasPermissionRowsBlock =
+                    permissionCount > 0 || hasGuestAutoJoinRow || hasAnonymousGuestSpacesRow}
                   <div class="permissionModuleCard" class:permissionModuleCard-off={!moduleOn}>
                     <div
                       class="permissionModuleCard-header"
@@ -447,6 +457,18 @@
                             </div>
                             <div class="permissionRow-editorCell">
                               <AvailableSpacesInput
+                                {group}
+                                disabled={!moduleOn || anonymousModulePermissionsReadOnly}
+                              />
+                            </div>
+                          </div>
+                        {:else if hasAnonymousGuestSpacesRow}
+                          <div class="permissionRow permissionRow--guestSpaces">
+                            <div class="permissionRow-label">
+                              <Label label={settingsRes.string.GuestAnonymousVisibleSpaces} />
+                            </div>
+                            <div class="permissionRow-editorCell">
+                              <AnonymousGuestSpaceInput
                                 {group}
                                 disabled={!moduleOn || anonymousModulePermissionsReadOnly}
                               />

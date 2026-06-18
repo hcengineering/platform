@@ -981,6 +981,28 @@ export function createModel (builder: Builder): void {
   createAction(
     builder,
     {
+      action: view.actionImpl.CopyDocumentMarkdown,
+      actionProps: {
+        contentClass: documents.class.Document,
+        contentField: 'content'
+      },
+      label: view.string.CopyDocumentMarkdown,
+      icon: view.icon.Print,
+      input: 'focus',
+      category: view.category.General,
+      target: documents.class.Document,
+      query: {},
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    documents.action.CopyDocumentMarkdown
+  )
+
+  createAction(
+    builder,
+    {
       action: documents.actionImpl.DeleteDocument,
       label: view.string.Delete,
       icon: view.icon.Delete,

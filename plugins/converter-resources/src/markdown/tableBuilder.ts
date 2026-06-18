@@ -23,7 +23,7 @@ import type {
   BuildModelKey
 } from '@hcengineering/view'
 import viewPlugin from '@hcengineering/view'
-import { buildConfigLookup, buildModel, getAttributeValue } from '@hcengineering/view-resources'
+import { buildConfigLookup, buildModel, getAttributeValue, buildConfigAssociation } from '@hcengineering/view-resources'
 import type { CopyAsMarkdownTableProps, CopyRelationshipTableAsMarkdownProps } from '../types'
 import { formatValue } from '../formatter'
 import { generateHeaders, loadViewletConfig, buildTableModel } from '../model'
@@ -96,6 +96,36 @@ async function preloadRefLookups (
         }
       }
     }
+  }
+}
+
+async function preloadAssociations (docs: Doc[], model: AttributeModel[], client: Client): Promise<void> {
+  const associationQueries = buildConfigAssociation(model.map((m) => m.key))
+  if (associationQueries === undefined || associationQueries.length === 0) return
+
+  const ids = docs.map((d) => d._id)
+  const firstDoc = docs[0]
+  if (firstDoc === undefined) return
+
+  try {
+    const refreshedDocs = await client.findAll(
+      firstDoc._class,
+      { _id: { $in: ids as any } },
+      {
+        associations: associationQueries
+      }
+    )
+
+    const refreshedMap = new Map(refreshedDocs.map((d) => [d._id, d]))
+
+    for (const doc of docs) {
+      const refreshed = refreshedMap.get(doc._id)
+      if (refreshed !== undefined) {
+        ;(doc as any).$associations = (refreshed as any).$associations
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to preload associations for markdown table', error)
   }
 }
 
@@ -252,6 +282,8 @@ export async function buildMarkdownTableFromDocs (
 
   // Preload referenced documents for RefTo / ArrOf<RefTo> attributes into $lookup
   await preloadRefLookups(docs, displayableModel, hierarchy, client)
+  // Preload associations for $associations keys
+  await preloadAssociations(docs, displayableModel, client)
 
   const language = getCurrentLanguage()
   const userCache = new Map<PersonId, string>()
@@ -358,45 +390,51 @@ export async function buildRelationshipTableMarkdown (
         continue
       }
 
-      const rawValue = getAttributeValue(cell.attribute, doc, hierarchy)
-
-      let docToUse = doc
+      let docToUse: Doc | undefined = doc
       let docClass = props.cardClass
       let attributeToUse = cell.attribute
 
       if (isAssociationKey) {
-        if (rawValue !== undefined && rawValue !== null && typeof rawValue === 'object' && '_class' in rawValue) {
-          docToUse = rawValue as Doc
+        if (cell.object !== undefined) {
+          docToUse = cell.object
           docClass = docToUse._class
-          const parts = cell.attribute.key.split('$associations.')
-          if (parts.length > 1) {
-            const afterAssoc = parts[1].substring(1)
-            const dotIndex = afterAssoc.indexOf('.')
-            if (dotIndex > 0) {
-              const attributeName = afterAssoc.substring(dotIndex + 1)
-              attributeToUse = {
-                ...cell.attribute,
-                key: attributeName
-              }
-            } else {
-              attributeToUse = {
-                ...cell.attribute,
-                key: ''
-              }
+
+          // Strip association prefix for formatValue
+          const parts = cell.attribute.key.split('.')
+          let lastAssocIndex = -1
+          for (let i = 0; i < parts.length; i++) {
+            if (parts[i] === '$associations' && i + 1 < parts.length) {
+              lastAssocIndex = i
             }
+          }
+          if (lastAssocIndex !== -1) {
+            attributeToUse = {
+              ...cell.attribute,
+              key: parts.slice(lastAssocIndex + 2).join('.')
+            }
+          }
+        } else {
+          docToUse = cell.parentObject
+          if (docToUse !== undefined) {
+            docClass = docToUse._class
           }
         }
       }
 
+      if (docToUse === undefined) {
+        if (cell.rowSpan === 0) continue
+        row[attrIndex] = ''
+        continue
+      }
+
       const isFirstColumn = attrIndex === 0
-      const allowEmptyKey = isFirstColumn || isAssociationKey
       let value = await formatValue(
         attributeToUse,
         docToUse,
         hierarchy,
         docClass,
         language,
-        allowEmptyKey,
+        isFirstColumn || isAssociationKey,
         userCache,
         props.valueFormatter
       )

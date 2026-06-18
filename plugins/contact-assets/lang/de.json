@@ -149,6 +149,7 @@
     "WorkspaceStatusIn1Hour": "In 1 Stunde",
     "WorkspaceStatusIn4Hours": "In 4 Stunden",
     "WorkspaceStatusEndOfDay": "Ende des Tages",
-    "WorkspaceStatusPickDate": "Datum wählen"
+    "WorkspaceStatusPickDate": "Datum wählen",
+    "HideInactive": "Inaktive ausblenden"
   }
 }

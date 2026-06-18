@@ -34,6 +34,7 @@ import tippy, { type Instance } from 'tippy.js'
 import 'tippy.js/animations/shift-toward.css'
 import { type Doc as YDoc, type Map as YMap } from 'yjs'
 import { SvelteRenderer } from '../node-view'
+import { hideTextEditorToolbar } from './toolbar/toolbar'
 
 export interface InlineCommentExtensionOptions {
   boundary?: HTMLElement
@@ -946,6 +947,7 @@ function getReferenceRect (view: EditorView, from: number, to: number): DOMRect 
 }
 
 export async function createInlineComment (editor: Editor, event: MouseEvent): Promise<void> {
+  hideTextEditorToolbar(editor)
   editor.view.dispatch(setMeta(editor.state.tr, { newCommentRequested: true }))
 }
 

@@ -39,5 +39,8 @@
     "@livekit/rtc-node": "^0.13.11",
     "dotenv": "^16.4.5",
     "ws": "^8.18.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
   }
 }

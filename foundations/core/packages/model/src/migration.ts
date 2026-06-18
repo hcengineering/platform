@@ -176,22 +176,28 @@ export async function tryMigrate (
   const states = client.migrateState.get(plugin) ?? new Set()
   for (const migration of migrations) {
     if (states.has(migration.state)) continue
-    if (migration.mode == null || migration.mode === mode) {
-      try {
-        client.logger.log('running migration', { plugin, state: migration.state })
-        await migration.func(client, mode)
-      } catch (err: any) {
-        client.logger.error('Failed to run migration', { plugin, state: migration.state, err })
-        Analytics.handleError(err)
-        continue
-      }
+    // Do not persist MigrationState when this migration is not applicable to the
+    // current mode — otherwise it would be skipped forever on the correct mode.
+    if (migration.mode != null && migration.mode !== mode) {
+      continue
     }
+    const startedAt = Date.now()
+    try {
+      client.logger.log('running migration', { plugin, state: migration.state })
+      await migration.func(client, mode)
+    } catch (err: any) {
+      client.logger.error('Failed to run migration', { plugin, state: migration.state, err })
+      Analytics.handleError(err)
+      continue
+    }
+    const finishedAt = Date.now()
     const st: MigrationState = {
       plugin,
       state: migration.state,
+      durationMs: finishedAt - startedAt,
       space: core.space.Configuration,
       modifiedBy: core.account.System,
-      modifiedOn: Date.now(),
+      modifiedOn: finishedAt,
       _class: core.class.MigrationState,
       _id: generateId()
     }
@@ -212,19 +218,23 @@ export async function tryUpgrade (
   const states = state.get(plugin) ?? new Set()
   for (const upgrades of migrations) {
     if (states.has(upgrades.state)) continue
-    const _client = await client()
-    if (upgrades.mode == null || upgrades.mode === mode) {
-      try {
-        await upgrades.func(_client, mode)
-      } catch (err: any) {
-        console.error(err)
-        Analytics.handleError(err)
-        continue
-      }
+    if (upgrades.mode != null && upgrades.mode !== mode) {
+      continue
     }
+    const _client = await client()
+    const startedAt = Date.now()
+    try {
+      await upgrades.func(_client, mode)
+    } catch (err: any) {
+      console.error(err)
+      Analytics.handleError(err)
+      continue
+    }
+    const finishedAt = Date.now()
     const st: Data<MigrationState> = {
       plugin,
-      state: upgrades.state
+      state: upgrades.state,
+      durationMs: finishedAt - startedAt
     }
     const tx = new TxOperations(_client, core.account.System)
     await tx.createDoc(core.class.MigrationState, core.space.Configuration, st)

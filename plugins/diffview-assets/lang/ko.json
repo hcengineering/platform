@@ -1,0 +1,14 @@
+{
+    "string": {
+        "ViewMode": "보기 모드",
+        "Unified": "통합",
+        "Split": "분할",
+        "Viewed": "확인함",
+        "ShowDiff": "차이점 표시",
+        "NoChanges": "파일에 변경 사항이 없습니다",
+        "LargeDiffsAreHidden": "변경 사항이 많은 경우 기본적으로 표시되지 않습니다.",
+        "FileIsTooLarge": "파일이 너무 커서 표시할 수 없습니다.",
+        "FileWasRenamed": "파일 이름만 변경되었습니다.",
+        "FileWasDeleted": "파일이 삭제되었습니다."
+    }
+}

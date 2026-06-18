@@ -297,6 +297,14 @@
     },
     {
       "commandKind": "global",
+      "name": "docker:up:ext",
+      "summary": "Up extended development stack with billing + payment",
+      "description": "Start extended docker compose (docker-compose.yaml + docker-compose.ext.yaml) with the optional billing and payment services enabled. Required env: STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_SUBSCRIPTION_PLANS (or POLAR_* equivalents).",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "cd ./dev && docker compose -f docker-compose.yaml -f docker-compose.ext.yaml up -d --force-recreate"
+    },
+    {
+      "commandKind": "global",
       "name": "docker:up:pg",
       "summary": "Up development stack with PostgreSQL",
       "description": "Start dev docker compose with PostgreSQL override (docker-compose.yaml + docker-compose.pg.yaml, profile=postgres)",

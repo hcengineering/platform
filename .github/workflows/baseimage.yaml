@@ -41,7 +41,7 @@ jobs:
           node-version-file: '.nvmrc'
       - uses: pnpm/action-setup@v5
         with:
-          version: latest
+          version: 10
       - name: Docker build
         run: |
           cd ./dev/base-image
