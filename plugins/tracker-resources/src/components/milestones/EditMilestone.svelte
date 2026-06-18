@@ -86,7 +86,9 @@
       editable
       kind={'regular'}
       size={'medium'}
-      on:change={(e) => { void changeStartDate(e.detail) }}
+      on:change={(e) => {
+        void changeStartDate(e.detail)
+      }}
     />
   </div>
   <div class="date-cell">
@@ -96,7 +98,9 @@
       editable
       kind={'regular'}
       size={'medium'}
-      on:change={(e) => { void changeTargetDate(e.detail) }}
+      on:change={(e) => {
+        void changeTargetDate(e.detail)
+      }}
     />
   </div>
 </div>
@@ -109,6 +113,22 @@
     bind:this={descriptionBox}
     placeholder={tracker.string.IssueDescriptionPlaceholder}
   />
+</div>
+
+<div class="w-full mt-6">
+  <QueryIssuesList
+    focusIndex={50}
+    {object}
+    query={{ milestone: object._id }}
+    shouldSaveDraft
+    hasSubIssues={true}
+    viewletId={tracker.viewlet.MilestoneIssuesList}
+    createParams={{ milestone: object._id }}
+  >
+    <svelte:fragment slot="header">
+      <Label label={tracker.string.Issues} />
+    </svelte:fragment>
+  </QueryIssuesList>
 </div>
 
 <style lang="scss">
@@ -130,19 +150,3 @@
     font-weight: 500;
   }
 </style>
-
-<div class="w-full mt-6">
-  <QueryIssuesList
-    focusIndex={50}
-    {object}
-    query={{ milestone: object._id }}
-    shouldSaveDraft
-    hasSubIssues={true}
-    viewletId={tracker.viewlet.MilestoneIssuesList}
-    createParams={{ milestone: object._id }}
-  >
-    <svelte:fragment slot="header">
-      <Label label={tracker.string.Issues} />
-    </svelte:fragment>
-  </QueryIssuesList>
-</div>

@@ -173,11 +173,7 @@ async function migrateIdentifiers (client: MigrationClient): Promise<void> {
 
 export async function migrateAddStartDate (client: MigrationClient): Promise<void> {
   // Issues live in DOMAIN_TASK; Milestones live in DOMAIN_TRACKER.
-  await client.update(
-    DOMAIN_TASK,
-    { _class: tracker.class.Issue, startDate: { $exists: false } },
-    { startDate: null }
-  )
+  await client.update(DOMAIN_TASK, { _class: tracker.class.Issue, startDate: { $exists: false } }, { startDate: null })
   await client.update(
     DOMAIN_TRACKER,
     { _class: tracker.class.Milestone, startDate: { $exists: false } },

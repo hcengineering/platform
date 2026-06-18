@@ -129,11 +129,7 @@ export enum IssuePriority {
  *
  * @public
  */
-export type DependencyKind =
-  | 'finish-to-start'
-  | 'start-to-start'
-  | 'finish-to-finish'
-  | 'start-to-finish'
+export type DependencyKind = 'finish-to-start' | 'start-to-start' | 'finish-to-finish' | 'start-to-finish'
 
 /**
  * @public
@@ -352,7 +348,7 @@ export interface IssueParentInfo {
  * @public
  */
 export interface IssueRelation extends AttachedDoc<Issue, 'relations'> {
-  target: Ref<Issue>               // successor
+  target: Ref<Issue> // successor
   kind: DependencyKind
   /** Lag in schedule days; can be negative (overlap). */
   lag: number
