@@ -4,8 +4,18 @@ import { NewMilestone } from './types'
 
 export class MilestonesDetailsPage extends CommonTrackerPage {
   inputTitle = (): Locator => this.page.locator('div.popupPanel-body input[type="text"]')
-  buttonStatus = (): Locator => this.page.locator('//span[text()="Status"]/following-sibling::div[1]/button')
-  buttonTargetDate = (): Locator => this.page.locator('//span[text()="Target date"]/following-sibling::div[1]/button')
+  // EditMilestone now renders Status / Start date / Target date inline in the
+  // body (`div.date-cell > span.cell-label + <Editor button>`) instead of the
+  // auto-generated side panel (Gantt schema PR — Milestone.startDate). The
+  // button is the immediate sibling of the label span, no wrapping div.
+  buttonStatus = (): Locator =>
+    this.page.locator('//span[@class="cell-label" and normalize-space(.)="Status"]/following-sibling::button[1]')
+
+  buttonStartDate = (): Locator =>
+    this.page.locator('//span[@class="cell-label" and normalize-space(.)="Start date"]/following-sibling::button[1]')
+
+  buttonTargetDate = (): Locator =>
+    this.page.locator('//span[@class="cell-label" and normalize-space(.)="Target date"]/following-sibling::button[1]')
   inputMilestoneName = (): Locator => this.page.locator('input[placeholder="Milestone name"]')
   inputDescription = (): Locator => this.page.locator('div.inputMsg div.tiptap')
   buttonYesMoveAndDeleteMilestonePopup = (): Locator =>

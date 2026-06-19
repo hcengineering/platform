@@ -14,8 +14,14 @@ export class MilestonesPage extends CommonTrackerPage {
   buttonNewMilestoneSetStatus = (): Locator =>
     this.page.locator('form[id="tracker:string:NewMilestone"] div.antiCard-pool button[type="button"]')
 
+  // NewMilestone form now renders Start Date before Target Date in the pool
+  // (Gantt schema PR added Milestone.startDate). Match the LAST datetime-button
+  // so this resolves to the target-date button without strict-mode violations.
+  buttonNewMilestoneStartDate = (): Locator =>
+    this.page.locator('form[id="tracker:string:NewMilestone"] div.antiCard-pool button.datetime-button').first()
+
   buttonNewMilestoneTargetDate = (): Locator =>
-    this.page.locator('form[id="tracker:string:NewMilestone"] div.antiCard-pool button.datetime-button')
+    this.page.locator('form[id="tracker:string:NewMilestone"] div.antiCard-pool button.datetime-button').last()
 
   buttonNewMilestoneCreate = (): Locator =>
     this.page.locator('form[id="tracker:string:NewMilestone"] button[type="submit"]')
