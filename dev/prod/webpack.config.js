@@ -67,6 +67,12 @@ const devProxy = {
     changeOrigin: true,
     logLevel: 'debug'
   },
+  '/ndax-agent-review': {
+    target: 'http://127.0.0.1:8787',
+    changeOrigin: true,
+    pathRewrite: { '^/ndax-agent-review': '' },
+    logLevel: 'debug'
+  },
   '/rekoni/recognize': {
     target: 'http://huly.local:4004',
     changeOrigin: true,
@@ -90,6 +96,12 @@ const devProxyTest = {
   '/api/v1': {
     target: 'http://huly.local:8083',
     changeOrigin: true,
+    logLevel: 'debug'
+  },
+  '/ndax-agent-review': {
+    target: 'http://127.0.0.1:8787',
+    changeOrigin: true,
+    pathRewrite: { '^/ndax-agent-review': '' },
     logLevel: 'debug'
   },
   '/rekoni/recognize': {
@@ -243,11 +255,34 @@ module.exports = [
       symlinks: true,
       alias: {
         svelte: path.resolve('node_modules', 'svelte/src/runtime'),
-        '@hcengineering/platform-rig/profiles/ui/svelte': path.resolve('node_modules', 'svelte/src/runtime')
+        '@hcengineering/platform-rig/profiles/ui/svelte': path.resolve('node_modules', 'svelte/src/runtime'),
+        'p-queue': path.resolve(
+          __dirname,
+          '../../common/temp/node_modules/.pnpm/p-queue@7.3.4/node_modules/p-queue/dist/index.js'
+        ),
+        devlop: path.resolve(
+          __dirname,
+          '../../common/temp/node_modules/.pnpm/devlop@1.1.0/node_modules/devlop/lib/default.js'
+        ),
+        'fast-equals': path.resolve(
+          __dirname,
+          '../../common/temp/node_modules/.pnpm/fast-equals@5.4.0/node_modules/fast-equals/dist/es/index.mjs'
+        ),
+        '@mermaid-js/parser': path.resolve(
+          __dirname,
+          '../../common/temp/node_modules/.pnpm/@mermaid-js+parser@1.1.1/node_modules/@mermaid-js/parser/dist/mermaid-parser.core.mjs'
+        ),
+        marked: path.resolve(__dirname, '../../common/temp/node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js')
       },
       fallback: {
         crypto: false
       },
+      exportsFields: [],
+      modules: [
+        'node_modules',
+        path.resolve(__dirname, '../../common/temp/node_modules'),
+        path.resolve(__dirname, '../../common/temp/node_modules/.pnpm/node_modules')
+      ],
       extensions: ['.mjs', '.js', '.svelte', '.ts'],
       mainFields: ['svelte', 'browser', 'module', 'main'],
       conditionNames: ['svelte', 'browser', 'import']

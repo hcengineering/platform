@@ -39,6 +39,7 @@
     ButtonItem,
     Component,
     FocusHandler,
+    IconInfo,
     IconMoreH,
     Label,
     TimeSince,
@@ -64,6 +65,7 @@
   import DocumentEditor from './DocumentEditor.svelte'
   import DocumentPresenter from './DocumentPresenter.svelte'
   import DocumentTitle from './DocumentTitle.svelte'
+  import AgentReviewPanel from './sidebar/AgentReviewPanel.svelte'
   import History from './sidebar/History.svelte'
   import References from './sidebar/References.svelte'
 
@@ -207,14 +209,26 @@
     dispatch('open', { ignoreKeys: ['comments', 'name'] })
   })
 
-  const aside: ButtonItem[] = [
+  $: hasAgentReview = doc !== undefined && isAgentDocument(doc)
+  $: aside = [
+    ...(hasAgentReview
+      ? [{
+          id: 'agent-review',
+          icon: IconInfo,
+          showTooltip: { label: document.string.AgentReview, direction: 'bottom' }
+        }]
+      : []),
     {
       id: 'references',
       icon: document.icon.References,
       showTooltip: { label: document.string.Backlinks, direction: 'bottom' }
     }
-  ]
+  ] as ButtonItem[]
   let selectedAside: string | boolean = false
+
+  $: if (!hasAgentReview && selectedAside === 'agent-review') {
+    selectedAside = false
+  }
 
   $: actions = [
     {
@@ -252,6 +266,11 @@
     })
   } else {
     spaceElement = undefined
+  }
+
+  function isAgentDocument (value: Document): boolean {
+    const id = String(value._id)
+    return id.startsWith('ndax:') && id.includes(':doc:')
   }
 </script>
 
@@ -418,7 +437,9 @@
     <RelationsEditor object={doc} readonly={effectiveReadonly} />
 
     <svelte:fragment slot="aside">
-      {#if selectedAside === 'references'}
+      {#if selectedAside === 'agent-review'}
+        <AgentReviewPanel doc={doc._id} />
+      {:else if selectedAside === 'references'}
         <References doc={doc._id} />
       {:else if selectedAside === 'history'}
         <History value={doc} readonly={effectiveReadonly} />

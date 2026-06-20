@@ -20079,6 +20079,9 @@ importers:
       '@hcengineering/attachment-resources':
         specifier: workspace:^0.7.0
         version: link:../attachment-resources
+      '@hcengineering/chunter':
+        specifier: workspace:^0.7.0
+        version: link:../chunter
       '@hcengineering/contact':
         specifier: workspace:^0.7.0
         version: link:../contact
@@ -20118,15 +20121,24 @@ importers:
       '@hcengineering/tags':
         specifier: workspace:^0.7.0
         version: link:../tags
+      '@hcengineering/text':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/text
       '@hcengineering/text-editor':
         specifier: workspace:^0.7.0
         version: link:../text-editor
       '@hcengineering/text-editor-resources':
         specifier: workspace:^0.7.0
         version: link:../text-editor-resources
+      '@hcengineering/text-markdown':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/text-markdown
       '@hcengineering/time':
         specifier: workspace:^0.7.0
         version: link:../time
+      '@hcengineering/tracker':
+        specifier: workspace:^0.7.0
+        version: link:../tracker
       '@hcengineering/ui':
         specifier: workspace:^0.7.0
         version: link:../../packages/ui

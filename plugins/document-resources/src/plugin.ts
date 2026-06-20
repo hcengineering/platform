@@ -49,6 +49,7 @@ export default mergeIds(documentId, document, {
     Labels: '' as IntlString,
     Authors: '' as IntlString,
     Backlinks: '' as IntlString,
+    AgentReview: '' as IntlString,
     History: '' as IntlString,
     AddLabel: '' as IntlString,
     NewTeamspace: '' as IntlString,
