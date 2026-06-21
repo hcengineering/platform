@@ -20,6 +20,8 @@
   import type { SlotModel } from '@hcengineering/process'
   import processPlugin from '../../plugin'
   import { isTypeEqual } from '../../utils'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import card from '@hcengineering/card'
 
   export let requiredSlots: Record<string, SlotModel>
   export let masterTag: Ref<Class<any>>
@@ -105,9 +107,13 @@
           text: p.name ?? p._id
         }))
     } else if (slot.slotKind === 'class' || isClassLike({ _class: slot._class } as any)) {
-      let descendants: string[] = []
+      let descendants: Ref<Class<Doc>>[] = []
       try {
-        descendants = hierarchy.getDescendants(core.class.Obj)
+        if (slot._class === card.class.Tag) {
+          descendants = hierarchy.getAllPossibleMixins(masterTag)
+        } else {
+          descendants = hierarchy.getDescendants(core.class.Obj)
+        }
       } catch (e) {}
 
       const expectedClass = slot._class || core.class.Class
@@ -137,7 +143,8 @@
     showPopup(
       SelectPopup,
       {
-        value: possible.map((p) => ({ id: p.id, label: p.label, text: p.label ? undefined : p.text }))
+        value: possible.map((p) => ({ id: p.id, label: p.label, text: p.label ? undefined : p.text })),
+        searchable: true
       },
       eventToHTMLElement(e),
       (res) => {
@@ -196,12 +203,12 @@
     const assoc = allAssociations.find((a) => a._id === value)
     if (assoc !== undefined) {
       return hierarchy.isDerived(assoc.classA, masterTag)
-        ? assoc.nameA + ' -> ' + assoc.nameB
-        : assoc.nameB + ' -> ' + assoc.nameA
+        ? getEmbeddedLabel(assoc.nameA + ' -> ' + assoc.nameB)
+        : getEmbeddedLabel(assoc.nameB + ' -> ' + assoc.nameA)
     }
 
     const proc = allProcesses.find((p) => p._id === value)
-    if (proc !== undefined) return proc.name
+    if (proc !== undefined) return getEmbeddedLabel(proc.name)
 
     const cls = model.findObject(value as any)
     if (isClassLike(cls)) return (cls as any).label ?? (cls as any).name

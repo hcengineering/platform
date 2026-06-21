@@ -92,7 +92,7 @@
       let descendants: Ref<Class<Doc>>[] = []
       try {
         if (slot._class === card.class.Tag) {
-          descendants = hierarchy.getAllPossibleMixins(slot._class)
+          descendants = hierarchy.getAllPossibleMixins(process.masterTag)
         } else {
           descendants = hierarchy.getDescendants(core.class.Obj)
         }
