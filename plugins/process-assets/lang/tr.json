@@ -176,7 +176,8 @@
     "ExportWithSlots": "Slotlu dışa aktar",
     "ExportWithoutSlots": "Slotsuz dışa aktar",
     "RequiredSlots": "Gerekli slotlar",
-    "Bindings": "Bağlamalar"
+    "Bindings": "Bağlamalar",
+    "AskRequired": "Gerekli alanları sor"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

@@ -181,7 +181,8 @@
     "ExportWithSlots": "Esporta con slot",
     "ExportWithoutSlots": "Esporta senza slot",
     "RequiredSlots": "Slot richiesti",
-    "Bindings": "Binding"
+    "Bindings": "Binding",
+    "AskRequired": "Richiedi campi"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

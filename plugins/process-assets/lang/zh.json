@@ -181,7 +181,8 @@
     "ExportWithSlots": "导出包含槽",
     "ExportWithoutSlots": "导出不含槽",
     "RequiredSlots": "必需槽",
-    "Bindings": "绑定"
+    "Bindings": "绑定",
+    "AskRequired": "询问必需字段"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

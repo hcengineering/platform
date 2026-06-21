@@ -240,6 +240,7 @@
     "TwoFactorAuthDisabled": "İki faktörlü kimlik doğrulama devre dışı",
     "ShowQRCode": "QR kodu göster",
     "EnterVerificationCode": "Doğrulama kodunu gir",
-    "OverrideAttribute": "Özniteliği geçersiz kıl"
+    "OverrideAttribute": "Özniteliği geçersiz kıl",
+    "Required": "Zorunlu"
   }
 }

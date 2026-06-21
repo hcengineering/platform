@@ -240,6 +240,7 @@
     "TwoFactorAuthDisabled": "Two-factor authentication is disabled",
     "ShowQRCode": "Show QR code",
     "EnterVerificationCode": "Enter verification code",
-    "OverrideAttribute": "Override attribute"
+    "OverrideAttribute": "Override attribute",
+    "Required": "Required"
   }
 }

@@ -181,6 +181,7 @@
     "TextFromSelect": "Текст из выбора",
     "SelectFromText": "Выбор из текста",
     "AskSubclass": "Спросить подкласс",
+    "AskRequired": "Запросить все обязательные поля",
     "TextFromIdentifier": "Текст из идентификатора"
   },
   "error": {

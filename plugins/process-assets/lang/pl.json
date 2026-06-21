@@ -181,7 +181,8 @@
     "TextFromSelect": "Tekst z wyboru",
     "SelectFromText": "Wybór z tekstu",
     "AskSubclass": "Poproś o podklasę",
-    "TextFromIdentifier": "Tekst z identyfikatora"
+    "TextFromIdentifier": "Tekst z identyfikatora",
+    "AskRequired": "Poproś o wymagane pola"
   },
   "error": {
     "MethodNotFound": "Nie odnaleziono metody: {methodId}",

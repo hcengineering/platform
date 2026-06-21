@@ -181,7 +181,8 @@
         "ExportWithSlots": "슬롯 포함 내보내기",
         "ExportWithoutSlots": "슬롯 없이 내보내기",
         "RequiredSlots": "필수 슬롯",
-        "Bindings": "바인딩"
+        "Bindings": "바인딩",
+        "AskRequired": "필수 필드 질문"
     },
     "error": {
         "MethodNotFound": "메서드를 찾을 수 없습니다: {methodId}",

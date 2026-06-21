@@ -240,6 +240,7 @@
     "TwoFactorAuthDisabled": "Uwierzytelnienie dwuskładnikowe jest wyłączone",
     "ShowQRCode": "Pokaż kod QR",
     "EnterVerificationCode": "Wpisz kod weryfikacyjny",
-    "OverrideAttribute": "Nadpisz atrybut"
+    "OverrideAttribute": "Nadpisz atrybut",
+    "Required": "Obowiązkowe"
   }
 }

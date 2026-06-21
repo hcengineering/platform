@@ -56,6 +56,7 @@
   let defaultValue: any | undefined = attribute.defaultValue
   let icon: Asset | undefined = attribute.icon
   let automationOnly = attribute.automationOnly ?? false
+  let required = attribute.required ?? false
   let extra: Record<string, any> = {}
   let is: AnyComponent | undefined
 
@@ -93,6 +94,9 @@
     if (automationOnly !== attribute.automationOnly) {
       update.readonly = automationOnly
       update.automationOnly = automationOnly
+    }
+    if (required !== attribute.required) {
+      update.required = required
     }
     for (const [k, v] of Object.entries(extra)) {
       if (attribute[k] === v) continue
@@ -308,6 +312,10 @@
       <Label label={view.string.AutomationOnly} />
     </span>
     <Toggle bind:on={automationOnly} disabled={attribute.isCustom !== true} />
+    <span class="label">
+      <Label label={setting.string.Required} />
+    </span>
+    <Toggle bind:on={required} {disabled} />
     <span class="label">
       <Label label={setting.string.Restricted} />
     </span>

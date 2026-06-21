@@ -240,6 +240,7 @@
     "TwoFactorAuthDisabled": "Двухфакторная аутентификация отключена",
     "ShowQRCode": "Показать QR-код",
     "EnterVerificationCode": "Введите код подтверждения",
-    "OverrideAttribute": "Переопределить атрибут"
+    "OverrideAttribute": "Переопределить атрибут",
+    "Required": "Обязательный"
   }
 }

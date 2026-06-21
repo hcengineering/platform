@@ -286,6 +286,7 @@ export default mergeIds(processId, process, {
     TextFromSelect: '' as IntlString,
     SelectFromText: '' as IntlString,
     AskSubclass: '' as IntlString,
+    AskRequired: '' as IntlString,
     RequiredSlots: '' as IntlString,
     Bindings: '' as IntlString
   },
