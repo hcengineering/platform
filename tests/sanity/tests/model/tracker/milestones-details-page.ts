@@ -8,14 +8,25 @@ export class MilestonesDetailsPage extends CommonTrackerPage {
   // body (`div.date-cell > span.cell-label + <Editor button>`) instead of the
   // auto-generated side panel (Gantt schema PR — Milestone.startDate). The
   // button is the immediate sibling of the label span, no wrapping div.
+  //
+  // NOTE: Svelte 4 appends a scoped `svelte-<hash>` class to elements matched
+  // by component-local CSS selectors, so the rendered DOM is
+  // `<span class="cell-label svelte-XXXXX">`. Strict `@class="cell-label"`
+  // fails against that — use `contains(@class, 'cell-label')` instead.
   buttonStatus = (): Locator =>
-    this.page.locator('//span[@class="cell-label" and normalize-space(.)="Status"]/following-sibling::button[1]')
+    this.page.locator(
+      '//span[contains(concat(" ", normalize-space(@class), " "), " cell-label ") and normalize-space(.)="Status"]/following-sibling::button[1]'
+    )
 
   buttonStartDate = (): Locator =>
-    this.page.locator('//span[@class="cell-label" and normalize-space(.)="Start date"]/following-sibling::button[1]')
+    this.page.locator(
+      '//span[contains(concat(" ", normalize-space(@class), " "), " cell-label ") and normalize-space(.)="Start date"]/following-sibling::button[1]'
+    )
 
   buttonTargetDate = (): Locator =>
-    this.page.locator('//span[@class="cell-label" and normalize-space(.)="Target date"]/following-sibling::button[1]')
+    this.page.locator(
+      '//span[contains(concat(" ", normalize-space(@class), " "), " cell-label ") and normalize-space(.)="Target date"]/following-sibling::button[1]'
+    )
 
   inputMilestoneName = (): Locator => this.page.locator('input[placeholder="Milestone name"]')
   inputDescription = (): Locator => this.page.locator('div.inputMsg div.tiptap')
