@@ -176,7 +176,8 @@
     "ExportWithSlots": "Exportovat se sloty",
     "ExportWithoutSlots": "Exportovat bez slotů",
     "RequiredSlots": "Požadované sloty",
-    "Bindings": "Vazby"
+    "Bindings": "Vazby",
+    "AskRequired": "zeptat se na prázdná povinná pole"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

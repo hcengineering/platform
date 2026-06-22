@@ -181,6 +181,7 @@
     "TextFromSelect": "Text from select",
     "SelectFromText": "Select from text",
     "AskSubclass": "Ask subclass",
+    "AskRequired": "Ask all required fields",
     "TextFromIdentifier": "Text from identifier"
   },
   "error": {

@@ -240,6 +240,7 @@
     "TwoFactorAuthDisabled": "Zweistufige Authentifizierung ist deaktiviert",
     "ShowQRCode": "QR-Code anzeigen",
     "EnterVerificationCode": "Verifizierungscode eingeben",
-    "OverrideAttribute": "Überschreibattribut"
+    "OverrideAttribute": "Überschreibattribut",
+    "Required": "Pflichtfeld"
   }
 }

@@ -238,6 +238,7 @@
     "TwoFactorAuthDisabled": "Dvoufaktorové ověřování je zakázáno",
     "ShowQRCode": "Zobrazit QR kód",
     "EnterVerificationCode": "Zadejte ověřovací kód",
-    "OverrideAttribute": "Přepsat atribut"
+    "OverrideAttribute": "Přepsat atribut",
+    "Required": "Požadované"
   }
 }

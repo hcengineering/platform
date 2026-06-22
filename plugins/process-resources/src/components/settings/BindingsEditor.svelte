@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import card from '@hcengineering/card'
   import core, { AnyAttribute, Class, Doc, Ref } from '@hcengineering/core'
   import { getEmbeddedLabel, IntlString } from '@hcengineering/platform'
   import presentation, { Card, getClient } from '@hcengineering/presentation'
@@ -88,9 +89,13 @@
         .filter((proc) => hierarchy.isDerived(memberOfTag, proc.masterTag))
         .map((p) => ({ id: p._id, name: p.name }))
     } else if (slot.slotKind === 'class') {
-      let descendants: string[] = []
+      let descendants: Ref<Class<Doc>>[] = []
       try {
-        descendants = hierarchy.getDescendants(core.class.Obj)
+        if (slot._class === card.class.Tag) {
+          descendants = hierarchy.getAllPossibleMixins(process.masterTag)
+        } else {
+          descendants = hierarchy.getDescendants(core.class.Obj)
+        }
       } catch (e) {}
       possible = descendants
         .map((id) => model.findObject(id as any))

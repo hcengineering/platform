@@ -240,6 +240,7 @@
     "TwoFactorAuthDisabled": "双因素认证已禁用",
     "ShowQRCode": "显示QR码",
     "EnterVerificationCode": "输入验证码",
-    "OverrideAttribute": "覆盖属性"
+    "OverrideAttribute": "覆盖属性",
+    "Required": "必须"
   }
 }

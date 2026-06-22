@@ -171,6 +171,7 @@ export type ButtonKind =
   | 'contrast'
   | 'stepper'
   | 'attention'
+  | 'warning'
 export type ButtonSize = 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape =
   | 'rectangle'

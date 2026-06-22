@@ -181,7 +181,8 @@
     "ExportWithSlots": "Exporter avec slots",
     "ExportWithoutSlots": "Exporter sans slots",
     "RequiredSlots": "Slots requis",
-    "Bindings": "Bindings"
+    "Bindings": "Bindings",
+    "AskRequired": "Demander les champs requis"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

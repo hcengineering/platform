@@ -353,14 +353,24 @@ export async function AddTag (
   execution: Execution,
   control: ProcessControl
 ): Promise<ExecuteResult> {
-  const { _id, props } = params
+  const { _id, props, requiredProperties } = params
   if (_id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
   const tagId = _id as Ref<Tag>
   const res: Tx[] = []
   const _process = control.client.getModel().findObject(execution.process)
   if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
   // todo fill default for tag and set parent tags
-  const tx = control.client.txFactory.createTxMixin(execution.card, _process.masterTag, execution.space, tagId, props)
+  const mergedProps = { ...props }
+  if (requiredProperties !== undefined && typeof requiredProperties === 'object' && requiredProperties !== null) {
+    Object.assign(mergedProps, requiredProperties)
+  }
+  const tx = control.client.txFactory.createTxMixin(
+    execution.card,
+    _process.masterTag,
+    execution.space,
+    tagId,
+    mergedProps
+  )
   res.push(tx)
   const card = control.cache.get(execution.card)
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
@@ -843,7 +853,7 @@ export async function CreateCard (
   execution: Execution,
   control: ProcessControl
 ): Promise<ExecuteResult> {
-  const { _class, title, content, ...attrs } = params
+  const { _class, title, content, requiredFields, ...attrs } = params
   for (const key in { _class, title }) {
     const val = (params as any)[key]
     if (isEmpty(val)) {
@@ -853,6 +863,9 @@ export async function CreateCard (
   const _process = control.client.getModel().findObject(execution.process)
   if (_process === undefined) {
     throw processError(process.error.RequiredParamsNotProvided, {})
+  }
+  if (requiredFields !== undefined && typeof requiredFields === 'object' && requiredFields !== null) {
+    Object.assign(attrs, requiredFields)
   }
   const resolvedAttrs: Record<string, any> = {}
   for (const key in attrs) {

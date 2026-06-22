@@ -167,6 +167,7 @@ export default mergeIds(settingId, setting, {
     SpaceMembersOnly: '' as IntlString,
     LastOwnerLeaveTitle: '' as IntlString,
     LastOwnerLeaveMessage: '' as IntlString,
-    OverrideAttribute: '' as IntlString
+    OverrideAttribute: '' as IntlString,
+    Required: '' as IntlString
   }
 })

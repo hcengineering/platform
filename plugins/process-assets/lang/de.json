@@ -176,7 +176,8 @@
     "ExportWithSlots": "Slot-Export",
     "ExportWithoutSlots": "Slot-freier Export",
     "RequiredSlots": "Erforderliche Slots",
-    "Bindings": "Bindungen"
+    "Bindings": "Bindungen",
+    "AskRequiredFields": "Erforderliche Felder erfragen"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

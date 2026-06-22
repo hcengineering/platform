@@ -2491,7 +2491,17 @@ export async function getAccountInfo (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  decodeTokenVerbose(ctx, token)
+  const { account: caller, extra } = decodeTokenVerbose(ctx, token)
+
+  if (accountId !== caller) {
+    const isAdmin = extra?.admin === 'true'
+    const isAllowedService = verifyAllowedServices(['workspace', 'tool'], extra, false)
+
+    if (!isAdmin && !isAllowedService) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
   const account = await getAccount(db, accountId)
   if (account === undefined || account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))

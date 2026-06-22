@@ -118,6 +118,7 @@
     "UserProfile": "Kullanıcı profili",
     "DeactivatedAccount": "Devre dışı hesap",
     "LocalTime": "yerel saat",
+    "Timezone": "Saat dilimi",
     "Everyone": "Herkes",
     "Here": "Burada",
     "EveryoneDescription": "Bu {title} içindeki herkesi bilgilendir",

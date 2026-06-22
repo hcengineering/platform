@@ -75,7 +75,7 @@
   }
 
   let keys = Object.keys(params).filter((key) => {
-    return key !== '_class' && key !== 'targetClass'
+    return key !== '_class' && key !== 'targetClass' && key !== 'askRequired' && key !== 'requiredFields'
   })
 
   $: allAttrs = getKeys(targetClass)
@@ -116,7 +116,7 @@
 
   function typeChange (_id: Ref<Class<MasterTag>>): void {
     if (_id === undefined) return
-    const attrKeys = ['_class', 'targetClass', ...getKeys(_id).map((p) => p.name)]
+    const attrKeys = ['_class', 'targetClass', 'askRequired', 'requiredFields', ...getKeys(_id).map((p) => p.name)]
     const oldParams = { ...params }
     params = {}
     for (const key of attrKeys) {
@@ -125,11 +125,21 @@
       }
     }
     keys = Object.keys(params).filter((key) => {
-      return key !== '_class' && key !== 'targetClass'
+      return key !== '_class' && key !== 'targetClass' && key !== 'askRequired' && key !== 'requiredFields'
     })
     if (params.targetClass !== _id) {
       params._class = _id
       params.targetClass = _id
+    }
+    if (params.askRequired) {
+      params.requiredFields = createContext({
+        type: 'userRequest',
+        id: generateContextId(),
+        _class: _id,
+        key: 'requiredFields'
+      })
+    } else {
+      delete params.requiredFields
     }
     step.params = params
     if (step.context != null) {
@@ -155,6 +165,27 @@
     })
     if (e.detail !== undefined) {
       step.params._class = e.detail ? context : targetClass
+      dispatch('change', step)
+    }
+  }
+
+  let askRequired = params.askRequired ?? false
+  $: askRequired = params.askRequired ?? false
+
+  function changeAskRequired (e: CustomEvent<boolean>): void {
+    if (e.detail !== undefined) {
+      params.askRequired = e.detail
+      if (e.detail) {
+        params.requiredFields = createContext({
+          type: 'userRequest',
+          id: generateContextId(),
+          _class: targetClass,
+          key: 'requiredFields'
+        })
+      } else {
+        delete params.requiredFields
+      }
+      step.params = params
       dispatch('change', step)
     }
   }
@@ -191,6 +222,17 @@
       <Toggle on={askSubclass} on:change={changeAskSubclass} />
     </div>
   {/if}
+  <span
+    class="labelOnPanel"
+    use:tooltip={{
+      props: { label: plugin.string.AskRequired }
+    }}
+  >
+    <Label label={plugin.string.AskRequired} />
+  </span>
+  <div>
+    <Toggle on={askRequired} on:change={changeAskRequired} />
+  </div>
 </div>
 <div class="divider" />
 {#key targetClass}

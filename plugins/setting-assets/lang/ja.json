@@ -240,6 +240,7 @@
     "TwoFactorAuthDisabled": "二要素認証は無効です",
     "ShowQRCode": "QRコードを表示",
     "EnterVerificationCode": "確認コードを入力",
-    "OverrideAttribute": "属性を上書き"
+    "OverrideAttribute": "属性を上書き",
+    "Required": "必須"
   }
 }

@@ -118,6 +118,7 @@
     "UserProfile": "ユーザープロフィール",
     "DeactivatedAccount": "アカウントは無効化されました",
     "LocalTime": "現地時間",
+    "Timezone": "タイムゾーン",
     "Everyone": "全員",
     "Here": "ここ",
     "EveryoneDescription": "この{title}のすべてに通知する",

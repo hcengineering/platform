@@ -180,7 +180,8 @@
     "ExportWithSlots": "スロット付きでエクスポート",
     "ExportWithoutSlots": "スロットなしでエクスポート",
     "RequiredSlots": "必須スロット",
-    "Bindings": "バインディング"
+    "Bindings": "バインディング",
+    "AskRequired": "必須フィールドを尋ねる"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

@@ -384,6 +384,32 @@ export function removeRootBarComponent (id: string): void {
   })
 }
 
+export const navFooterExtensions = writable<
+Array<{
+  id: string
+  component: AnyComponent | AnySvelteComponent
+  props?: Record<string, any>
+  order: number
+}>
+>([])
+
+export function pushNavFooterComponent (component: AnyComponent, order?: number): void {
+  navFooterExtensions.update((cur) => {
+    if (cur.find((p) => p.component === component) === undefined) {
+      cur.push({
+        id: component,
+        component,
+        order: order ?? 1000
+      })
+    }
+    return cur
+  })
+}
+
+export function removeNavFooterComponent (id: string): void {
+  navFooterExtensions.update((cur) => cur.filter((p) => p.id !== id))
+}
+
 export function pushRootBarProgressComponent (
   id: string,
   label: IntlString,
