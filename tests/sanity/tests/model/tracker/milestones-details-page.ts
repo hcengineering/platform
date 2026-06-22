@@ -16,6 +16,7 @@ export class MilestonesDetailsPage extends CommonTrackerPage {
 
   buttonTargetDate = (): Locator =>
     this.page.locator('//span[@class="cell-label" and normalize-space(.)="Target date"]/following-sibling::button[1]')
+
   inputMilestoneName = (): Locator => this.page.locator('input[placeholder="Milestone name"]')
   inputDescription = (): Locator => this.page.locator('div.inputMsg div.tiptap')
   buttonYesMoveAndDeleteMilestonePopup = (): Locator =>
