@@ -78,7 +78,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-platform
         with:
@@ -127,7 +127,7 @@ jobs:
         run: node common/scripts/install-run-rush.js validate
 
       - name: Cache build results
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-build-results
         with:
@@ -150,7 +150,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Cache build results
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-build-results
         with:
@@ -173,7 +173,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Cache build results
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-build-results
         with:
@@ -205,7 +205,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Cache build results
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-build-results
         with:
@@ -243,7 +243,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-platform
         with:
@@ -375,7 +375,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-platform
         with:
@@ -472,7 +472,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-platform
         with:
@@ -553,7 +553,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-platform
         with:
@@ -674,7 +674,7 @@ jobs:
         with:
           version: 10
       - name: Cache node modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-platform
         with:
@@ -755,7 +755,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Cache node modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: node
         with:
@@ -858,7 +858,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Cache node modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: node
         with:
@@ -957,7 +957,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Cache node modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         env:
           cache-name: cache-node-platform
         with:
