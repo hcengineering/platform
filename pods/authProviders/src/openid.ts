@@ -84,43 +84,38 @@ export function registerOpenid (
       // err/info/status that would otherwise be swallowed by the strategy.
       // PRIVACY: never log raw code, raw state, tokens, or full ctx.state.user.
       await new Promise<void>((resolve) => {
-        passport.authenticate(
-          'oidc',
-          { failureRedirect: loginUrl },
-          (err: any, user: any, info: any, status: any) => {
-            const diag = {
-              stage: 'oidc_callback',
-              hasErr: err != null,
-              errMessage: err?.message,
-              errName: err?.name,
-              errStack: err?.stack,
-              hasUser: user != null,
-              infoSummary: info?.message ?? String(info ?? ''),
-              statusCode: status,
-              // session + cookie diagnostics (no raw values)
-              hasSession: ctx.session != null,
-              sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
-              hasCookieHeader: ctx.request.headers.cookie != null,
-              cookieHeaderLen: ctx.request.headers.cookie?.length ?? 0,
-              // request shape
-              host: ctx.request.headers.host,
-              forwardedProto: ctx.request.headers['x-forwarded-proto'],
-              // state presence (length only, not value)
-              statePresent: typeof ctx.query?.state === 'string',
-              stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
-              codePresent: typeof ctx.query?.code === 'string'
-            }
-            if (err != null || user == null) {
-              measureCtx.error('OIDC callback failed', diag)
-            } else {
-              measureCtx.info('OIDC callback succeeded — entering handleProviderAuth', {
-                hasSession: diag.hasSession
-              })
-              ctx.state.user = user
-            }
-            resolve()
+        passport.authenticate('oidc', { failureRedirect: loginUrl }, (err: any, user: any, info: any, status: any) => {
+          const diag = {
+            stage: 'oidc_callback',
+            hasErr: err != null,
+            errMessage: err?.message,
+            errName: err?.name,
+            errStack: err?.stack,
+            hasUser: user != null,
+            infoSummary: info?.message ?? String(info ?? ''),
+            statusCode: status,
+            // session + cookie diagnostics (no raw values)
+            hasSession: ctx.session != null,
+            sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
+            hasCookieHeader: ctx.request.headers.cookie != null,
+            // request shape
+            host: ctx.request.headers.host,
+            forwardedProto: ctx.request.headers['x-forwarded-proto'],
+            // state presence (length only, not value)
+            statePresent: typeof ctx.query?.state === 'string',
+            stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
+            codePresent: typeof ctx.query?.code === 'string'
           }
-        )(ctx, async () => {})
+          if (err != null || user == null) {
+            measureCtx.error('OIDC callback failed', diag)
+          } else {
+            measureCtx.info('OIDC callback succeeded — entering handleProviderAuth', {
+              hasSession: diag.hasSession
+            })
+            ctx.state.user = user
+          }
+          resolve()
+        })(ctx, async () => {})
       })
 
       if (ctx.state.user == null) {
@@ -170,7 +165,6 @@ export function registerOpenid (
         hasSession: ctx.session != null,
         sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
         hasCookieHeader: ctx.request.headers.cookie != null,
-        cookieHeaderLen: ctx.request.headers.cookie?.length ?? 0,
         host: ctx.request.headers.host,
         forwardedProto: ctx.request.headers['x-forwarded-proto'],
         statePresent: typeof ctx.query?.state === 'string',

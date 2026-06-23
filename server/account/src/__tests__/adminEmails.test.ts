@@ -74,7 +74,9 @@ describe('admin.ts — env parsing + lookup normalization', () => {
       expect(isAdminEmail('bar@@')).toBe(true)
       expect(warnSpy).toHaveBeenCalledWith(
         'ADMIN_EMAILS contains entries without "@" (kept for backwards compatibility)',
-        { entries: ['foo', 'baz'] }
+        {
+          entries: ['foo', 'baz']
+        }
       )
     } finally {
       warnSpy.mockRestore()
@@ -91,10 +93,9 @@ describe('admin.ts — env parsing + lookup normalization', () => {
     expect(set.has('alice@example.com')).toBe(true)
     expect(set.has('baz')).toBe(true)
     expect(set.size).toBe(3)
-    expect(warn).toHaveBeenCalledWith(
-      'ADMIN_EMAILS contains entries without "@" (kept for backwards compatibility)',
-      { entries: ['foo', 'baz'] }
-    )
+    expect(warn).toHaveBeenCalledWith('ADMIN_EMAILS contains entries without "@" (kept for backwards compatibility)', {
+      entries: ['foo', 'baz']
+    })
   })
 
   test('5. empty env string — empty set, all lookups return false', () => {
