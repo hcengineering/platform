@@ -74,17 +74,61 @@ export function registerOpenid (
     })(ctx, next)
   })
 
-  router.get(
-    redirectURL,
-    async (ctx, next) => {
-      const state = safeParseAuthState(ctx.query?.state)
-      const branding = getBranding(brandings, state?.branding)
+  router.get(redirectURL, async (ctx, next) => {
+    const state = safeParseAuthState(ctx.query?.state)
+    const branding = getBranding(brandings, state?.branding)
+    const loginUrl = concatLink(branding?.front ?? frontUrl, '/login')
 
-      await passport.authenticate('oidc', {
-        failureRedirect: concatLink(branding?.front ?? frontUrl, '/login')
-      })(ctx, next)
-    },
-    async (ctx, next) => {
+    try {
+      // INSTRUMENTATION (Codex-approved): explicit-callback variant captures
+      // err/info/status that would otherwise be swallowed by the strategy.
+      // PRIVACY: never log raw code, raw state, tokens, or full ctx.state.user.
+      await new Promise<void>((resolve) => {
+        passport.authenticate(
+          'oidc',
+          { failureRedirect: loginUrl },
+          (err: any, user: any, info: any, status: any) => {
+            const diag = {
+              stage: 'oidc_callback',
+              hasErr: err != null,
+              errMessage: err?.message,
+              errName: err?.name,
+              errStack: err?.stack,
+              hasUser: user != null,
+              infoSummary: info?.message ?? String(info ?? ''),
+              statusCode: status,
+              // session + cookie diagnostics (no raw values)
+              hasSession: ctx.session != null,
+              sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
+              hasCookieHeader: ctx.request.headers.cookie != null,
+              cookieHeaderLen: ctx.request.headers.cookie?.length ?? 0,
+              // request shape
+              host: ctx.request.headers.host,
+              forwardedProto: ctx.request.headers['x-forwarded-proto'],
+              // state presence (length only, not value)
+              statePresent: typeof ctx.query?.state === 'string',
+              stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
+              codePresent: typeof ctx.query?.code === 'string'
+            }
+            if (err != null || user == null) {
+              measureCtx.error('OIDC callback failed', diag)
+            } else {
+              measureCtx.info('OIDC callback succeeded — entering handleProviderAuth', {
+                hasSession: diag.hasSession
+              })
+              ctx.state.user = user
+            }
+            resolve()
+          }
+        )(ctx, async () => {})
+      })
+
+      if (ctx.state.user == null) {
+        // Strategy failed; redirect explicitly so we never bubble a 500.
+        ctx.redirect(loginUrl + '?error=oidc_callback_failed')
+        return
+      }
+
       const email = ctx.state.user.email
       const verifiedEmail = (ctx.state.user.email_verified as boolean) ? email : ''
       const nameParts = (ctx.state.user.name ?? ctx.state.user.username ?? '').split(' ')
@@ -112,8 +156,30 @@ export function registerOpenid (
       }
 
       await next()
+    } catch (err: any) {
+      // Permanent invalid-callback guard: ANY failure → 302 to /login, never 500.
+      measureCtx.error('OIDC callback failed', {
+        stage: 'oidc_callback',
+        hasErr: true,
+        errMessage: err?.message,
+        errName: err?.name,
+        errStack: err?.stack,
+        hasUser: ctx.state?.user != null,
+        infoSummary: '',
+        statusCode: undefined,
+        hasSession: ctx.session != null,
+        sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
+        hasCookieHeader: ctx.request.headers.cookie != null,
+        cookieHeaderLen: ctx.request.headers.cookie?.length ?? 0,
+        host: ctx.request.headers.host,
+        forwardedProto: ctx.request.headers['x-forwarded-proto'],
+        statePresent: typeof ctx.query?.state === 'string',
+        stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
+        codePresent: typeof ctx.query?.code === 'string'
+      })
+      ctx.redirect(loginUrl + '?error=oidc_callback_failed')
     }
-  )
+  })
 
   return { name, displayName }
 }
