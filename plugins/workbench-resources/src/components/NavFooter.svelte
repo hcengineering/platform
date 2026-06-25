@@ -19,6 +19,7 @@
   import { Component, Icon, Label, navFooterExtensions, showPopup } from '@hcengineering/ui'
   import workbench from '../plugin'
   import HelpAndSupport from './HelpAndSupport.svelte'
+  import ShutdownNotice from './ShutdownNotice.svelte'
 
   export let split: boolean = false
 
@@ -33,6 +34,8 @@
 <div class="antiNav-footer-grower" />
 <div class="antiNav-footer">
   <slot />
+  <!-- Always shown, imported directly so every user sees the hosting shutdown notice. -->
+  <ShutdownNotice />
   {#each extensions as ext (ext.id)}
     <Component is={ext.component} props={ext.props ?? {}} />
   {/each}

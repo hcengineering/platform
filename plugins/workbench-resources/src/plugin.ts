@@ -46,7 +46,15 @@ export default mergeIds(workbenchId, workbench, {
     AccessDenied: '' as IntlString,
     Widget: '' as IntlString,
     WidgetPreference: '' as IntlString,
-    Tab: '' as IntlString
+    Tab: '' as IntlString,
+    ShutdownWarningShort: '' as IntlString,
+    ShutdownWarningTitle: '' as IntlString,
+    ShutdownWarningHint: '' as IntlString,
+    ShutdownNextEventBefore: '' as IntlString,
+    ShutdownNextEventDate: '' as IntlString,
+    ShutdownNextEventAfter: '' as IntlString,
+    ShutdownCommunityHint: '' as IntlString,
+    JoinCommunityCta: '' as IntlString
   },
   component: {
     SpacePanel: '' as AnyComponent,

@@ -44,6 +44,14 @@ import { derived, writable } from 'svelte/store'
 
 export const workspaceCreating = writable<number | undefined>(undefined)
 
+/**
+ * Link to the Huly community (Slack), used by the hosting shutdown notice so users
+ * can ask migration questions and follow further updates.
+ *
+ * @public
+ */
+export const communityLink = 'https://link.huly.io/slack'
+
 export function getSpecialSpaceClass (model: NavigatorModel): Array<Ref<Class<Space>>> {
   const spaceResult = model.spaces.map((x) => x.spaceClass)
   const result = (model.specials ?? [])

@@ -35,6 +35,14 @@
     "ConfigureWidgets": "配置小部件",
     "Tab": "选项卡",
     "WorkspaceIsArchived": "工作区因未使用而归档，请与我们联系以恢复...",
-    "WorkspaceIsMigrating": "工作区正在更新。请稍候..."
+    "WorkspaceIsMigrating": "工作区正在更新。请稍候...",
+    "ShutdownWarningShort": "服务即将关闭 —— 请迁移数据",
+    "ShutdownWarningTitle": "托管版 Huly 即将关闭",
+    "ShutdownWarningHint": "托管版 Huly 服务正在停止运营。请导出并备份所有你无法承受丢失的数据，并尽快迁移到自托管环境或其他服务商。",
+    "ShutdownNextEventBefore": "最近的事件 —— 大约在",
+    "ShutdownNextEventDate": "7月3日",
+    "ShutdownNextEventAfter": "，Cloudflare 的账单可能未付，这可能会导致服务中断。目前尚不确定是否会发生，但最好以防万一，在此之前迁移你的数据。",
+    "ShutdownCommunityHint": "有疑问或想获取最新消息？加入 Huly 社区，讨论迁移并随时了解动态。",
+    "JoinCommunityCta": "加入 Huly 社区"
   }
 }

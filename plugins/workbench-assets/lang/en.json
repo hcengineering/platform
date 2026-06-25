@@ -35,6 +35,14 @@
     "ConfigureWidgets": "Configure widgets",
     "Tab": "Tab",
     "WorkspaceIsArchived": "Workspace is archived because of being unused, Please contact us to restore...",
-    "WorkspaceIsMigrating": "Workspace is being updated. Please wait..."
+    "WorkspaceIsMigrating": "Workspace is being updated. Please wait...",
+    "ShutdownWarningShort": "Service shutting down — migrate data",
+    "ShutdownWarningTitle": "Hosted Huly is shutting down",
+    "ShutdownWarningHint": "The hosted Huly service is being wound down. Please export and back up anything you can't afford to lose, and migrate to a self-hosted setup or another provider as soon as possible.",
+    "ShutdownNextEventBefore": "Nearest event — around ",
+    "ShutdownNextEventDate": "July 3",
+    "ShutdownNextEventAfter": " the Cloudflare bill may go unpaid, which could disrupt the service. It's not certain this will happen, but it's best to play it safe and migrate your data before then.",
+    "ShutdownCommunityHint": "Have questions or want updates? Join the Huly community to discuss migration and stay informed.",
+    "JoinCommunityCta": "Join the Huly community"
   }
 }
