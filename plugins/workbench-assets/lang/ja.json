@@ -38,14 +38,12 @@
     "WorkspaceIsMigrating": "ワークスペースを更新中です。しばらくお待ちください...",
     "ShutdownWarningShort": "サービス終了予定 — データを移行してください",
     "ShutdownWarningTitle": "ホスト版 Huly は終了します",
-    "ShutdownWarningHint": "ホスティングの費用が支払われなくなったため、ホスト版サービスは終了します。失っては困るものはすべてエクスポートしてバックアップし、できるだけ早くセルフホスト環境または別のプロバイダーへ移行してください。",
+    "ShutdownWarningHint": "ホスティングの費用が支払われなくなったため、ホスト版サービスは終了します。失っては困るものはすべてエクスポートしてバックアップし、できるだけ早く移行してください。セルフホスト環境への移行も、ホスティング版への移行も、私たちがお手伝いできます。",
     "ShutdownNextEventBefore": "次のイベント — ",
     "ShutdownNextEventDate": "7月3日",
     "ShutdownNextEventAfter": "頃にCloudflareの料金が未払いになり、サービスに影響が出る可能性があります。必ず起こるとは限りませんが、念のためその前にデータを移行することをおすすめします。",
     "ShutdownCommunityHint": "ご質問や最新情報が必要ですか？ Huly コミュニティに参加して、移行について相談したり最新情報を受け取ったりできます。",
     "JoinCommunityCta": "Huly コミュニティに参加",
-    "ShutdownContactPrefix": "移行に関するお問い合わせ: ",
-    "ShutdownTraceXHint": "ホスト型のまま使い続けたいですか？ データを完全に移行して、独立した欧州ホスティングの Huly フォーク TraceX へ移行できます（ユーザー単位の有料サービスです）。",
-    "ShutdownTraceXContactPrefix": "TraceX への移行: "
+    "ShutdownContactPrefix": "移行に関するお問い合わせ: "
   }
 }

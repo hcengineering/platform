@@ -16,7 +16,7 @@
   import { createEventDispatcher } from 'svelte'
   import { Button, Label } from '@hcengineering/ui'
   import workbench from '../plugin'
-  import { communityLink, migrationContactEmail, traceXContactEmail, traceXLink } from '../utils'
+  import { communityLink, migrationContactEmail } from '../utils'
 
   const dispatch = createEventDispatcher()
 
@@ -44,25 +44,14 @@
       ><Label label={workbench.string.ShutdownNextEventAfter} />
     </div>
 
-    <div class="option">
-      <div class="hint">
-        <Label label={workbench.string.ShutdownTraceXHint} /> <a href={traceXLink} target="_blank" rel="noopener noreferrer"
-          >{traceXLink}</a
-        >
-      </div>
-      <div class="hint">
-        <Label label={workbench.string.ShutdownTraceXContactPrefix} /><a href="mailto:{traceXContactEmail}"
-          >{traceXContactEmail}</a
-        >
-      </div>
-    </div>
-
     <div class="hint">
       <Label label={workbench.string.ShutdownCommunityHint} />
     </div>
 
     <div class="hint">
-      <Label label={workbench.string.ShutdownContactPrefix} /><a href="mailto:{migrationContactEmail}">{migrationContactEmail}</a>
+      <Label label={workbench.string.ShutdownContactPrefix} /><a href="mailto:{migrationContactEmail}"
+        >{migrationContactEmail}</a
+      >
     </div>
 
     <div class="footer">
@@ -111,14 +100,6 @@
       color: var(--theme-content-color);
       font-size: 0.8125rem;
       line-height: 1.4;
-    }
-
-    .option {
-      display: flex;
-      flex-direction: column;
-      gap: 0.375rem;
-      padding-top: 0.75rem;
-      border-top: 1px solid var(--theme-popup-divider);
     }
 
     .footer {

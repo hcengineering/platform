@@ -55,9 +55,7 @@ export default mergeIds(workbenchId, workbench, {
     ShutdownNextEventAfter: '' as IntlString,
     ShutdownCommunityHint: '' as IntlString,
     JoinCommunityCta: '' as IntlString,
-    ShutdownContactPrefix: '' as IntlString,
-    ShutdownTraceXHint: '' as IntlString,
-    ShutdownTraceXContactPrefix: '' as IntlString
+    ShutdownContactPrefix: '' as IntlString
   },
   component: {
     SpacePanel: '' as AnyComponent,
