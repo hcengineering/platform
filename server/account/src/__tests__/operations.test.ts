@@ -1585,7 +1585,7 @@ describe('account operations', () => {
     describe('getLoginCapabilities', () => {
       const restoreEnv = (key: string, prev: string | undefined): void => {
         if (prev === undefined) {
-          delete process.env[key]
+          Reflect.deleteProperty(process.env, key)
         } else {
           process.env[key] = prev
         }

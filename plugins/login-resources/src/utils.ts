@@ -70,7 +70,7 @@ import login from './plugin'
  * Constructs an account client.
  * @param token - The token to use for authentication. If not provided, the token from the metadata will be used. If null, no token will be used.
  */
-export function getAccountClient (
+export function getAccountClient(
   token: string | undefined | null = getMetadata(presentation.metadata.Token)
 ): AccountClient {
   // TODO: make clients cache?
@@ -80,9 +80,28 @@ export function getAccountClient (
 }
 
 /**
+ * Queries the account service for login affordance flags. Used by the login UI
+ * to hide the Sign Up tab and "Continue as guest" button when those flows are
+ * disabled server-side. Falls back to both available on any error to preserve
+ * backwards compatibility with account services that do not implement this
+ * endpoint yet.
+ */
+export async function fetchLoginCapabilities(): Promise<{
+  signUpEnabled: boolean
+  guestLoginAvailable: boolean
+}> {
+  try {
+    const accountClient = getAccountClient(null)
+    return await accountClient.getLoginCapabilities()
+  } catch {
+    return { signUpEnabled: true, guestLoginAvailable: true }
+  }
+}
+
+/**
  * Perform a login operation to required workspace with user credentials.
  */
-export async function doLogin (email: string, password: string): Promise<[Status, LoginInfo | null]> {
+export async function doLogin(email: string, password: string): Promise<[Status, LoginInfo | null]> {
   try {
     const accountClient = getAccountClient(null)
 
@@ -106,7 +125,7 @@ export async function doLogin (email: string, password: string): Promise<[Status
   }
 }
 
-export async function doLoginAsGuest (): Promise<[Status, LoginInfo | null]> {
+export async function doLoginAsGuest(): Promise<[Status, LoginInfo | null]> {
   try {
     Analytics.handleEvent(LoginEvents.LoginGuestStarted)
     const accountClient = getAccountClient(null)
@@ -131,7 +150,7 @@ export async function doLoginAsGuest (): Promise<[Status, LoginInfo | null]> {
   }
 }
 
-export async function signUp (
+export async function signUp(
   email: string,
   password: string,
   first: string,
@@ -158,7 +177,7 @@ export async function signUp (
   }
 }
 
-export async function signUpOtp (email: string, first: string, last: string): Promise<[Status, OtpInfo | null]> {
+export async function signUpOtp(email: string, first: string, last: string): Promise<[Status, OtpInfo | null]> {
   try {
     const otpInfo = await getAccountClient(null).signUpOtp(email, first, last)
 
@@ -176,7 +195,7 @@ export async function signUpOtp (email: string, first: string, last: string): Pr
   }
 }
 
-export async function createWorkspace (
+export async function createWorkspace(
   workspaceName: string,
   region?: string,
   configuration?: WorkspaceConfiguration
@@ -212,11 +231,11 @@ export async function createWorkspace (
   }
 }
 
-function getLastVisitDays (it: Pick<WorkspaceInfoWithStatus, 'lastVisit'>): number {
+function getLastVisitDays(it: Pick<WorkspaceInfoWithStatus, 'lastVisit'>): number {
   return Math.floor((Date.now() - (it.lastVisit ?? 0)) / (1000 * 3600 * 24))
 }
 
-function getWorkspaceSize (it: Pick<WorkspaceInfoWithStatus, 'backupInfo'>): number {
+function getWorkspaceSize(it: Pick<WorkspaceInfoWithStatus, 'backupInfo'>): number {
   let sz = 0
   sz += it.backupInfo?.dataSize ?? 0
   sz += it.backupInfo?.blobsSize ?? 0
@@ -224,7 +243,7 @@ function getWorkspaceSize (it: Pick<WorkspaceInfoWithStatus, 'backupInfo'>): num
   return sz
 }
 
-export async function getWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
+export async function getWorkspaces(): Promise<WorkspaceInfoWithStatus[]> {
   const token = getMetadata(presentation.metadata.Token)
   if (token == null) {
     const loc = getCurrentLocation()
@@ -255,7 +274,7 @@ export async function getWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
   return workspaces
 }
 
-export async function getWorkspacePermissions (permission: string): Promise<WorkspaceUuid[]> {
+export async function getWorkspacePermissions(permission: string): Promise<WorkspaceUuid[]> {
   const token = getMetadata(presentation.metadata.Token)
   if (token == null) {
     return []
@@ -273,7 +292,7 @@ export async function getWorkspacePermissions (permission: string): Promise<Work
   }
 }
 
-export async function performWorkspaceOperation (
+export async function performWorkspaceOperation(
   workspace: string | string[],
   operation: WorkspaceUserOperation,
   ...params: any[]
@@ -300,7 +319,7 @@ export async function performWorkspaceOperation (
   }
 }
 
-export async function getAllWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
+export async function getAllWorkspaces(): Promise<WorkspaceInfoWithStatus[]> {
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     const loc = getCurrentLocation()
@@ -335,12 +354,12 @@ export async function getAllWorkspaces (): Promise<WorkspaceInfoWithStatus[]> {
   return workspaces
 }
 
-export async function isReadOnlyGuestAccount (loginInfo: LoginInfo | null): Promise<boolean> {
+export async function isReadOnlyGuestAccount(loginInfo: LoginInfo | null): Promise<boolean> {
   if (loginInfo === null) return true
   return await getAccountClient(loginInfo.token).isReadOnlyGuest()
 }
 
-export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo | null> {
+export async function getAccount(doNavigate: boolean = true): Promise<LoginInfo | null> {
   const token = getMetadata(presentation.metadata.Token)
   if (token == null) {
     if (doNavigate) {
@@ -386,7 +405,7 @@ export async function getAccount (doNavigate: boolean = true): Promise<LoginInfo
   }
 }
 
-export async function getRegionInfo (doNavigate: boolean = true): Promise<RegionInfo[] | null> {
+export async function getRegionInfo(doNavigate: boolean = true): Promise<RegionInfo[] | null> {
   const token = getMetadata(presentation.metadata.Token)
   if (token == null) {
     if (doNavigate) {
@@ -413,7 +432,7 @@ export async function getRegionInfo (doNavigate: boolean = true): Promise<Region
   }
 }
 
-export async function selectWorkspace (
+export async function selectWorkspace(
   workspaceUrl: string,
   token?: string | null | undefined
 ): Promise<[Status, WorkspaceLoginInfo | null, boolean]> {
@@ -444,11 +463,11 @@ export async function selectWorkspace (
   }
 }
 
-export async function exchangeGuestToken (token: string): Promise<string> {
+export async function exchangeGuestToken(token: string): Promise<string> {
   return await getAccountClient(token).exchangeGuestToken(token)
 }
 
-export async function fetchWorkspace (): Promise<[Status, WorkspaceInfoWithStatus | null, boolean]> {
+export async function fetchWorkspace(): Promise<[Status, WorkspaceInfoWithStatus | null, boolean]> {
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     return [unknownStatus('Please login'), null, true]
@@ -474,7 +493,7 @@ export async function fetchWorkspace (): Promise<[Status, WorkspaceInfoWithStatu
   }
 }
 
-export async function unArchive (workspaceId: string, token: string): Promise<boolean> {
+export async function unArchive(workspaceId: string, token: string): Promise<boolean> {
   try {
     return await getAccountClient(token).performWorkspaceOperation(workspaceId, 'unarchive')
   } catch (err: any) {
@@ -483,7 +502,7 @@ export async function unArchive (workspaceId: string, token: string): Promise<bo
   }
 }
 
-export async function getPerson (): Promise<[Status, Person | null]> {
+export async function getPerson(): Promise<[Status, Person | null]> {
   const token = getMetadata(presentation.metadata.Token)
   if (token === undefined) {
     return [unknownStatus('Please login'), null]
@@ -506,7 +525,7 @@ export async function getPerson (): Promise<[Status, Person | null]> {
   }
 }
 
-export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
+export function setLoginInfo(loginInfo: WorkspaceLoginInfo): void {
   setMetadata(presentation.metadata.Token, loginInfo.token)
   setMetadata(presentation.metadata.WorkspaceUuid, loginInfo.workspace)
   setMetadata(presentation.metadata.WorkspaceDataId, loginInfo.workspaceDataId)
@@ -515,7 +534,7 @@ export function setLoginInfo (loginInfo: WorkspaceLoginInfo): void {
   setMetadataLocalStorage(login.metadata.LastAccount, loginInfo.account)
 }
 
-export function navigateToWorkspace (
+export function navigateToWorkspace(
   workspaceUrl: string,
   loginInfo: WorkspaceLoginInfo | null,
   navigateUrl?: string | null,
@@ -557,7 +576,7 @@ export function navigateToWorkspace (
   }
 }
 
-export async function checkJoined (inviteId: string): Promise<WorkspaceLoginInfo | undefined> {
+export async function checkJoined(inviteId: string): Promise<WorkspaceLoginInfo | undefined> {
   const token = getMetadata(presentation.metadata.Token)
 
   try {
@@ -573,7 +592,7 @@ export async function checkJoined (inviteId: string): Promise<WorkspaceLoginInfo
 /**
  * Fetches workspace name for a valid invite (no auth required). Returns undefined for invalid or expired invites.
  */
-export async function getInviteWorkspaceName (inviteId: string): Promise<string | undefined> {
+export async function getInviteWorkspaceName(inviteId: string): Promise<string | undefined> {
   try {
     const client = getAccountClient(null)
     const info = await client.getInviteInfo(inviteId)
@@ -587,13 +606,13 @@ export async function getInviteWorkspaceName (inviteId: string): Promise<string 
   }
 }
 
-export async function joinByToken (inviteId: string): Promise<WorkspaceLoginInfo> {
+export async function joinByToken(inviteId: string): Promise<WorkspaceLoginInfo> {
   const token = getMetadata(presentation.metadata.Token)
 
   return await getAccountClient(token ?? undefined).joinByToken(inviteId)
 }
 
-export async function checkAutoJoin (
+export async function checkAutoJoin(
   inviteId: string,
   firstName?: string,
   lastName?: string
@@ -614,7 +633,7 @@ export async function checkAutoJoin (
   }
 }
 
-export async function getInviteLink (
+export async function getInviteLink(
   expHours: number,
   mask: string,
   limit: number | undefined,
@@ -641,7 +660,7 @@ export async function getInviteLink (
   return concatLink(host, url)
 }
 
-export async function getInviteLinkId (
+export async function getInviteLinkId(
   expHours: number,
   emailMask: string,
   limit: number,
@@ -666,7 +685,7 @@ export async function getInviteLinkId (
   return inviteLink
 }
 
-export async function join (
+export async function join(
   email: string,
   password: string,
   inviteId: string,
@@ -693,7 +712,7 @@ export async function join (
   }
 }
 
-export async function signUpJoin (
+export async function signUpJoin(
   email: string,
   password: string,
   first: string,
@@ -722,7 +741,7 @@ export async function signUpJoin (
   }
 }
 
-export async function checkHasPassword (): Promise<boolean> {
+export async function checkHasPassword(): Promise<boolean> {
   try {
     return await getAccountClient().checkHasPassword()
   } catch (err: any) {
@@ -731,7 +750,7 @@ export async function checkHasPassword (): Promise<boolean> {
   }
 }
 
-export async function changePassword (oldPassword: string, password: string): Promise<void> {
+export async function changePassword(oldPassword: string, password: string): Promise<void> {
   try {
     await getAccountClient().changePassword(oldPassword, password)
   } catch (err: any) {
@@ -744,7 +763,7 @@ export async function changePassword (oldPassword: string, password: string): Pr
   }
 }
 
-export async function requestPasswordSetup (): Promise<void> {
+export async function requestPasswordSetup(): Promise<void> {
   try {
     await getAccountClient().requestPasswordSetup()
   } catch (err: any) {
@@ -760,7 +779,7 @@ export async function requestPasswordSetup (): Promise<void> {
   }
 }
 
-export async function changeUsername (first: string, last: string): Promise<void> {
+export async function changeUsername(first: string, last: string): Promise<void> {
   try {
     await getAccountClient().changeUsername(first, last)
   } catch (err: any) {
@@ -773,11 +792,11 @@ export async function changeUsername (first: string, last: string): Promise<void
   }
 }
 
-export async function leaveWorkspace (account: AccountUuid): Promise<LoginInfo | null> {
+export async function leaveWorkspace(account: AccountUuid): Promise<LoginInfo | null> {
   return await getAccountClient().leaveWorkspace(account)
 }
 
-export async function sendInvite (email: string, role: AccountRole): Promise<void> {
+export async function sendInvite(email: string, role: AccountRole): Promise<void> {
   try {
     await getAccountClient().sendInvite(email, role)
   } catch (e) {
@@ -786,7 +805,7 @@ export async function sendInvite (email: string, role: AccountRole): Promise<voi
   }
 }
 
-export async function resendInvite (email: string, role: AccountRole): Promise<void> {
+export async function resendInvite(email: string, role: AccountRole): Promise<void> {
   try {
     await getAccountClient().resendInvite(email, role)
   } catch (e) {
@@ -795,7 +814,7 @@ export async function resendInvite (email: string, role: AccountRole): Promise<v
   }
 }
 
-export async function requestPassword (email: string): Promise<Status> {
+export async function requestPassword(email: string): Promise<Status> {
   try {
     await getAccountClient(null).requestPasswordReset(email)
 
@@ -813,7 +832,7 @@ export async function requestPassword (email: string): Promise<Status> {
   }
 }
 
-export async function confirm (confirmationToken: string): Promise<[Status, LoginInfo | null]> {
+export async function confirm(confirmationToken: string): Promise<[Status, LoginInfo | null]> {
   try {
     const loginInfo = await getAccountClient(confirmationToken).confirm()
 
@@ -833,7 +852,7 @@ export async function confirm (confirmationToken: string): Promise<[Status, Logi
   }
 }
 
-export async function restorePassword (token: string, password: string): Promise<[Status, LoginInfo | null]> {
+export async function restorePassword(token: string, password: string): Promise<[Status, LoginInfo | null]> {
   try {
     const loginInfo = await getAccountClient(token).restorePassword(password)
 
@@ -853,7 +872,7 @@ export async function restorePassword (token: string, password: string): Promise
   }
 }
 
-async function handleStatusError (message: string, err: Status): Promise<void> {
+async function handleStatusError(message: string, err: Status): Promise<void> {
   if (
     err.code === platform.status.InvalidPassword ||
     err.code === platform.status.AccountNotFound ||
@@ -866,14 +885,14 @@ async function handleStatusError (message: string, err: Status): Promise<void> {
   Analytics.handleError(new Error(`${message}: ${label}`))
 }
 
-export function getLoc (path: Pages): Location {
+export function getLoc(path: Pages): Location {
   const loc = getCurrentLocation()
   loc.path[1] = path
   loc.path.length = 2
   return loc
 }
 
-export function goTo (path: Pages, clearQuery: boolean = false): void {
+export function goTo(path: Pages, clearQuery: boolean = false): void {
   const loc = getLoc(path)
   if (clearQuery) {
     loc.query = undefined
@@ -881,14 +900,14 @@ export function goTo (path: Pages, clearQuery: boolean = false): void {
   navigate(loc, clearQuery)
 }
 
-export function getHref (path: Pages): string {
+export function getHref(path: Pages): string {
   const url = locationToUrl(getLoc(path))
   const frontUrl = getMetadata(presentation.metadata.FrontUrl)
   const host = frontUrl ?? document.location.origin
   return host + url
 }
 
-export async function afterConfirm (clearQuery = false): Promise<void> {
+export async function afterConfirm(clearQuery = false): Promise<void> {
   const joinedWS = await getWorkspaces()
   if (joinedWS.length === 0) {
     goTo('createWorkspace', clearQuery)
@@ -908,7 +927,7 @@ export async function afterConfirm (clearQuery = false): Promise<void> {
   }
 }
 
-export async function getLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | null> {
+export async function getLoginInfo(): Promise<LoginInfo | WorkspaceLoginInfo | null> {
   try {
     const result = await getAccountClient().getLoginInfoByToken()
 
@@ -930,7 +949,7 @@ export async function getLoginInfo (): Promise<LoginInfo | WorkspaceLoginInfo | 
   }
 }
 
-export function getAutoJoinInfo (): any {
+export function getAutoJoinInfo(): any {
   const query = getCurrentLocation().query
 
   if (query == null) {
@@ -946,7 +965,7 @@ export function getAutoJoinInfo (): any {
   return { token, autoJoin, inviteId, navigateUrl }
 }
 
-export async function getLoginInfoFromQuery (data?: LoginInfoRequestData): Promise<LoginInfoByToken> {
+export async function getLoginInfoFromQuery(data?: LoginInfoRequestData): Promise<LoginInfoByToken> {
   const token = getCurrentLocation().query?.token
 
   if (token == null) {
@@ -964,7 +983,7 @@ export async function getLoginInfoFromQuery (data?: LoginInfoRequestData): Promi
   }
 }
 
-export async function getProviders (): Promise<ProviderInfo[]> {
+export async function getProviders(): Promise<ProviderInfo[]> {
   let providers: ProviderInfo[]
 
   try {
@@ -976,7 +995,7 @@ export async function getProviders (): Promise<ProviderInfo[]> {
   return providers
 }
 
-export async function loginOtp (email: string): Promise<[Status, OtpInfo | null]> {
+export async function loginOtp(email: string): Promise<[Status, OtpInfo | null]> {
   try {
     const otpInfo = await getAccountClient(null).loginOtp(email)
 
@@ -999,7 +1018,7 @@ export async function loginOtp (email: string): Promise<[Status, OtpInfo | null]
   }
 }
 
-export async function doValidateOtp (
+export async function doValidateOtp(
   isSignUp: boolean,
   email: string,
   code: string,
@@ -1027,7 +1046,7 @@ export async function doValidateOtp (
   }
 }
 
-export async function verify2fa (code: string, token: string | undefined): Promise<[Status, LoginInfo | null]> {
+export async function verify2fa(code: string, token: string | undefined): Promise<[Status, LoginInfo | null]> {
   if (token === undefined) {
     return [new Status(Severity.ERROR, platform.status.Unauthorized, {}), null]
   }
@@ -1053,7 +1072,7 @@ export async function verify2fa (code: string, token: string | undefined): Promi
   }
 }
 
-export async function doLoginNavigate (
+export async function doLoginNavigate(
   result: LoginInfo | null,
   updateStatus: (status: Status) => void,
   navigateUrl?: string
@@ -1122,19 +1141,19 @@ export async function doLoginNavigate (
   }
 }
 
-export function isWorkspaceLoginInfo (
+export function isWorkspaceLoginInfo(
   info: WorkspaceLoginInfo | LoginInfo | WorkspaceInviteInfo | LoginInfoRequest | null
 ): info is WorkspaceLoginInfo {
   return !isLoginInfoRequest(info) && (info as any)?.workspace !== undefined && (info as any)?.token !== undefined
 }
 
-export function isLoginInfoRequest (
+export function isLoginInfoRequest(
   info: LoginInfo | WorkspaceLoginInfo | WorkspaceInviteInfo | LoginInfoRequest | null
 ): info is LoginInfoRequest {
   return (info as LoginInfoRequest)?.request
 }
 
-export function getAccountDisplayName (loginInfo: LoginInfo | null | undefined): string {
+export function getAccountDisplayName(loginInfo: LoginInfo | null | undefined): string {
   if (loginInfo == null) {
     return ''
   }

@@ -174,7 +174,7 @@ export async function getLoginCapabilities (
   db: AccountDB,
   branding: Branding | null,
   token: string
-): Promise<{ signUpEnabled: boolean, guestLoginAvailable: boolean }> {
+): Promise<{ signUpEnabled: boolean; guestLoginAvailable: boolean }> {
   const signUpEnabled = process.env.DISABLE_SIGNUP !== 'true'
 
   let guestLoginAvailable = false
@@ -261,10 +261,10 @@ export async function login (
       account: existingAccount.uuid,
       token: isConfirmed
         ? generateToken(
-          existingAccount.tfaSecret != null ? NIL_UUID : existingAccount.uuid,
-          undefined,
-          existingAccount.tfaSecret != null ? { ...extraToken, tfaAccount: existingAccount.uuid } : extraToken
-        )
+            existingAccount.tfaSecret != null ? NIL_UUID : existingAccount.uuid,
+            undefined,
+            existingAccount.tfaSecret != null ? { ...extraToken, tfaAccount: existingAccount.uuid } : extraToken
+          )
         : undefined,
       name: getPersonName(person),
       socialId: emailSocialId._id,
@@ -559,10 +559,10 @@ export async function validateOtp (
 
     const _token = isConfirmed
       ? generateToken(
-        targetAccount?.tfaSecret != null ? NIL_UUID : emailSocialId.personUuid,
-        undefined,
-        targetAccount?.tfaSecret != null ? { ...extraToken, tfaAccount: emailSocialId.personUuid } : extraToken
-      )
+          targetAccount?.tfaSecret != null ? NIL_UUID : emailSocialId.personUuid,
+          undefined,
+          targetAccount?.tfaSecret != null ? { ...extraToken, tfaAccount: emailSocialId.personUuid } : extraToken
+        )
       : undefined
 
     return {
@@ -716,11 +716,11 @@ export async function createInvite (
 
 // TODO: Temporary solution to prevent spam using sendInvite
 const invitesSend = new Map<
-string,
-{
-  lastSend: number
-  totalSend: number
-}
+  string,
+  {
+    lastSend: number
+    totalSend: number
+  }
 >()
 
 export async function sendInvite (
@@ -1196,7 +1196,7 @@ export async function checkAutoJoin (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { inviteId: string, firstName?: string, lastName?: string }
+  params: { inviteId: string; firstName?: string; lastName?: string }
 ): Promise<WorkspaceLoginInfo | WorkspaceInviteInfo> {
   const { inviteId, firstName, lastName } = params
 
@@ -1845,7 +1845,7 @@ export async function generate2faSecret (
   db: AccountDB,
   branding: Branding | null,
   token: string
-): Promise<{ secret: string, url: string }> {
+): Promise<{ secret: string; url: string }> {
   const { account: accountUuid } = decodeTokenVerbose(ctx, token)
   const account = await getAccount(db, accountUuid)
   if (account == null) {
@@ -1869,7 +1869,7 @@ export async function enable2fa (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { secret: string, code: string }
+  params: { secret: string; code: string }
 ): Promise<void> {
   const { secret, code } = params
   const { account: accountUuid } = decodeTokenVerbose(ctx, token)
@@ -2346,23 +2346,23 @@ export async function getLoginWithWorkspaceInfo (
       isSystem || isDocGuest
         ? []
         : userWorkspaces.map((it, idx) => [
-          it.uuid,
-          {
-            url: it.url,
-            dataId: it.dataId,
-            mode: it.status.mode,
-            endpoint: getWorkspaceEndpoint(info, it.uuid, it.region),
-            role: roles.get(it.uuid) ?? null,
-            version: {
-              versionMajor: it.status.versionMajor,
-              versionMinor: it.status.versionMinor,
-              versionPatch: it.status.versionPatch
-            },
-            progress: it.status.processingProgress,
-            branding: it.branding,
-            passwordAgingRule: it.passwordAgingRule
-          }
-        ])
+            it.uuid,
+            {
+              url: it.url,
+              dataId: it.dataId,
+              mode: it.status.mode,
+              endpoint: getWorkspaceEndpoint(info, it.uuid, it.region),
+              role: roles.get(it.uuid) ?? null,
+              version: {
+                versionMajor: it.status.versionMajor,
+                versionMinor: it.status.versionMinor,
+                versionPatch: it.status.versionPatch
+              },
+              progress: it.status.processingProgress,
+              branding: it.branding,
+              passwordAgingRule: it.passwordAgingRule
+            }
+          ])
     ),
     socialIds
   }
@@ -2382,7 +2382,7 @@ export async function getSocialIds (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { confirmed: boolean, includeDeleted: boolean }
+  params: { confirmed: boolean; includeDeleted: boolean }
 ): Promise<SocialId[]> {
   const { confirmed = true, includeDeleted = false } = params
   const { account: accountUuid, sub } = decodeTokenVerbose(ctx, token)
@@ -2430,7 +2430,7 @@ export async function findPersonBySocialId (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { socialId: PersonId, requireAccount?: boolean }
+  params: { socialId: PersonId; requireAccount?: boolean }
 ): Promise<PersonUuid | undefined> {
   const { socialId, requireAccount } = params
 
@@ -2462,7 +2462,7 @@ export async function findSocialIdBySocialKey (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { socialKey: string, requireAccount?: boolean }
+  params: { socialKey: string; requireAccount?: boolean }
 ): Promise<PersonId | undefined> {
   const { socialKey, requireAccount } = params
   decodeTokenVerbose(ctx, token)
@@ -2550,7 +2550,7 @@ export async function ensurePerson (
     firstName: string
     lastName: string
   }
-): Promise<{ uuid: PersonUuid, socialId: PersonId }> {
+): Promise<{ uuid: PersonUuid; socialId: PersonId }> {
   const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
   const allowedService = verifyAllowedServices(
     ['tool', 'workspace', 'schedule', 'mail', 'github', 'hulygram'],
@@ -2608,7 +2608,7 @@ async function createMailbox (
     name: string
     domain: string
   }
-): Promise<{ mailbox: string, socialId: PersonId }> {
+): Promise<{ mailbox: string; socialId: PersonId }> {
   const { name, domain } = params
 
   if (name == null || name === '' || domain == null || domain === '') {
@@ -2836,7 +2836,7 @@ export async function releaseSocialId (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: { personUuid?: PersonUuid, type: SocialIdType, value: string, deleteIntegrations?: boolean }
+  params: { personUuid?: PersonUuid; type: SocialIdType; value: string; deleteIntegrations?: boolean }
 ): Promise<SocialId> {
   const { account, extra } = decodeTokenVerbose(ctx, token)
   let { personUuid } = params
