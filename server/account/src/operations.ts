@@ -152,6 +152,9 @@ export async function loginAsGuest (
   branding: Branding | null,
   token: string
 ): Promise<LoginInfo> {
+  if (process.env.DISABLE_GUEST_LOGIN === 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
   const guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
   if (guestPerson == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -160,6 +163,27 @@ export async function loginAsGuest (
     account: guestPerson.uuid as AccountUuid,
     token: generateToken(guestPerson.uuid, undefined)
   }
+}
+
+/**
+ * Returns login affordance flags so clients can hide sign-up and guest-login
+ * controls when they are disabled by env vars or unavailable (no guest person).
+ */
+export async function getLoginCapabilities (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<{ signUpEnabled: boolean, guestLoginAvailable: boolean }> {
+  const signUpEnabled = process.env.DISABLE_SIGNUP !== 'true'
+
+  let guestLoginAvailable = false
+  if (process.env.DISABLE_GUEST_LOGIN !== 'true') {
+    const guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
+    guestLoginAvailable = guestPerson != null
+  }
+
+  return { signUpEnabled, guestLoginAvailable }
 }
 
 /**
@@ -305,6 +329,9 @@ export async function signUp (
   },
   meta?: Meta
 ): Promise<LoginInfo> {
+  if (process.env.DISABLE_SIGNUP === 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
   const { email, password, firstName, lastName } = params
 
   if (email == null || password == null || firstName == null || email === '' || password === '' || firstName === '') {
@@ -349,6 +376,9 @@ export async function signUpOtp (
     lastName?: string
   }
 ): Promise<OtpInfo> {
+  if (process.env.DISABLE_SIGNUP === 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
   const { email, firstName, lastName } = params
 
   if (email == null || firstName == null || email === '' || firstName === '') {
@@ -3295,6 +3325,7 @@ export type AccountMethods =
   | 'login'
   | 'loginOtp'
   | 'loginAsGuest'
+  | 'getLoginCapabilities'
   | 'signUp'
   | 'signUpOtp'
   | 'validateOtp'
@@ -3377,6 +3408,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     login: wrap(login),
     loginOtp: wrap(loginOtp),
     loginAsGuest: wrap(loginAsGuest),
+    getLoginCapabilities: wrap(getLoginCapabilities),
     ...(hasSignUp ? { signUp: wrap(signUp) } : {}),
     ...(hasSignUp ? { signUpOtp: wrap(signUpOtp) } : {}),
     validateOtp: wrap(validateOtp),
