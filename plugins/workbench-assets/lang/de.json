@@ -38,11 +38,14 @@
     "WorkspaceIsMigrating": "Workspace wird aktualisiert. Bitte warten...",
     "ShutdownWarningShort": "Dienst wird eingestellt — Daten migrieren",
     "ShutdownWarningTitle": "Das gehostete Huly wird eingestellt",
-    "ShutdownWarningHint": "Der gehostete Huly-Dienst wird eingestellt. Bitte exportieren und sichern Sie alles, dessen Verlust Sie sich nicht leisten können, und migrieren Sie so bald wie möglich zu einer selbst gehosteten Lösung oder einem anderen Anbieter.",
+    "ShutdownWarningHint": "Der gehostete Dienst wird eingestellt, da sein Hosting nicht mehr finanziert wird. Bitte exportieren und sichern Sie alles, dessen Verlust Sie sich nicht leisten können, und migrieren Sie so bald wie möglich zu einer selbst gehosteten Lösung oder einem anderen Anbieter.",
     "ShutdownNextEventBefore": "Nächstes Ereignis — um den ",
     "ShutdownNextEventDate": "3. Juli",
     "ShutdownNextEventAfter": " herum könnte die Cloudflare-Rechnung unbezahlt bleiben, was den Dienst stören könnte. Es ist nicht sicher, dass das passiert, aber gehen Sie lieber auf Nummer sicher und migrieren Sie Ihre Daten vorher.",
     "ShutdownCommunityHint": "Haben Sie Fragen oder möchten Sie auf dem Laufenden bleiben? Treten Sie der Huly-Community bei, um die Migration zu besprechen und informiert zu bleiben.",
-    "JoinCommunityCta": "Der Huly-Community beitreten"
+    "JoinCommunityCta": "Der Huly-Community beitreten",
+    "ShutdownContactPrefix": "Fragen zur Migration: ",
+    "ShutdownTraceXHint": "Möchten Sie bei einer gehosteten Option bleiben? Sie können zu TraceX migrieren — einem unabhängigen, in Europa gehosteten Huly-Fork — mit vollständiger Übertragung Ihrer Daten (ein kostenpflichtiger Dienst, pro Benutzer).",
+    "ShutdownTraceXContactPrefix": "TraceX-Migration: "
   }
 }

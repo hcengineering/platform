@@ -38,11 +38,14 @@
     "WorkspaceIsMigrating": "Çalışma alanı güncelleniyor. Lütfen bekleyin...",
     "ShutdownWarningShort": "Hizmet kapatılıyor — verilerinizi taşıyın",
     "ShutdownWarningTitle": "Barındırılan Huly kapatılıyor",
-    "ShutdownWarningHint": "Barındırılan Huly hizmeti kapatılıyor. Kaybetmeyi göze alamayacağınız her şeyi dışa aktarıp yedekleyin ve en kısa sürede kendi sunucunuza veya başka bir sağlayıcıya geçin.",
+    "ShutdownWarningHint": "Barındırma hizmeti artık finanse edilmediği için barındırılan hizmet kapatılıyor. Kaybetmeyi göze alamayacağınız her şeyi dışa aktarıp yedekleyin ve en kısa sürede kendi sunucunuza veya başka bir sağlayıcıya geçin.",
     "ShutdownNextEventBefore": "En yakın olay — ",
     "ShutdownNextEventDate": "3 Temmuz",
     "ShutdownNextEventAfter": " civarında Cloudflare faturası ödenmeyebilir ve bu hizmeti aksatabilir. Bunun olacağı kesin değil, ancak yine de garanti olsun diye verilerinizi bu tarihten önce taşımanız önerilir.",
     "ShutdownCommunityHint": "Sorularınız mı var ya da güncellemeleri takip etmek mi istiyorsunuz? Göçü konuşmak ve haberdar olmak için Huly topluluğuna katılın.",
-    "JoinCommunityCta": "Huly topluluğuna katıl"
+    "JoinCommunityCta": "Huly topluluğuna katıl",
+    "ShutdownContactPrefix": "Taşıma ile ilgili sorular: ",
+    "ShutdownTraceXHint": "Barındırılan bir seçenekte kalmayı mı tercih edersiniz? Verilerinizin tam aktarımıyla, bağımsız ve Avrupa'da barındırılan bir Huly çatallaması olan TraceX'e geçebilirsiniz (kullanıcı başına ücretli bir hizmet).",
+    "ShutdownTraceXContactPrefix": "TraceX'e taşıma: "
   }
 }

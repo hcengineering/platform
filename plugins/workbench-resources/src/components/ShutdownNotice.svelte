@@ -24,21 +24,22 @@
   }
 </script>
 
-<!-- Always shown: the hosted service is being wound down and users must migrate. -->
+<!-- Always shown in the header: the hosted service is being wound down and users must migrate. -->
 <div class="shutdown-notice-wrapper" bind:this={wrapperEl}>
   <Button
     kind={'warning'}
-    size="medium"
+    size="small"
     icon={IconError}
     label={workbench.string.ShutdownWarningShort}
     justify="left"
-    width="100%"
     on:click={handleClick}
   />
 </div>
 
 <style lang="scss">
   .shutdown-notice-wrapper {
-    margin: 0.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    margin: 0 0.5rem;
   }
 </style>

@@ -52,6 +52,28 @@ export const workspaceCreating = writable<number | undefined>(undefined)
  */
 export const communityLink = 'https://link.huly.io/slack'
 
+/**
+ * Direct email contact for hosting migration questions, shown in the shutdown notice.
+ *
+ * @public
+ */
+export const migrationContactEmail = 'huly.migration@gmail.com'
+
+/**
+ * TraceX — an independent, European-hosted Huly fork offered as a hosted migration
+ * option in the shutdown notice.
+ *
+ * @public
+ */
+export const traceXLink = 'https://tracex.co'
+
+/**
+ * Email contact for migrating to TraceX, shown in the shutdown notice.
+ *
+ * @public
+ */
+export const traceXContactEmail = 'charles.rollet@tracex.co'
+
 export function getSpecialSpaceClass (model: NavigatorModel): Array<Ref<Class<Space>>> {
   const spaceResult = model.spaces.map((x) => x.spaceClass)
   const result = (model.specials ?? [])

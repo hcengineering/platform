@@ -5,6 +5,17 @@
 
 ⭐️ Your star shines on us. Star us on GitHub!
 
+> [!IMPORTANT]
+> **Hosted Huly is shutting down — please migrate your data.**
+>
+> The hosted Huly service is being discontinued because its hosting is no longer being funded. If you keep important data on the hosted platform, export and back it up, and migrate to a [self-hosted setup](https://github.com/hcengineering/huly-selfhost) or another provider as soon as possible.
+>
+> The nearest event is around **July 3**, when the Cloudflare bill may go unpaid and the service could be disrupted. This date is approximate and not a guarantee, so it's best to play it safe and migrate ahead of it rather than wait until the last day.
+>
+> Prefer to stay on a hosted option? You can migrate to [TraceX](https://tracex.co) — an independent, European-hosted Huly fork — with a full transfer of your data (a paid, per-user service). For TraceX migration, contact [charles.rollet@tracex.co](mailto:charles.rollet@tracex.co).
+>
+> Have questions or want updates? Join the [Huly community](https://link.huly.io/slack) to discuss migration and stay informed, or email us at [huly.migration@gmail.com](mailto:huly.migration@gmail.com) for migration questions. This affects only the hosted **Huly** service — self-hosted deployments are not affected.
+
 ## About
 
 The Huly Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems.
