@@ -45,7 +45,8 @@ import process, {
   Process,
   processError,
   ProcessToDo,
-  UserResult
+  UserResult,
+  ContextId
 } from '@hcengineering/process'
 import { ExecuteResult, ProcessControl, SuccessExecutionContext } from '@hcengineering/server-process'
 import { isEmptyMarkup } from '@hcengineering/text-core'
@@ -756,6 +757,25 @@ export async function CreateToDo (
   const _process = control.client.getModel().findObject(execution.process)
   if (_process === undefined) return { txes: [], rollback: [], context: null }
   const field = resolveAttributeId(_process, (params as any).field)
+  const todoResults = results ?? []
+  if (params.askRequired === true) {
+    const hierarchy = control.client.getHierarchy()
+    const classId = _process.masterTag
+    const allAttributes = Array.from(hierarchy.getAllAttributes(classId, core.class.Doc).values())
+
+    for (const attr of allAttributes) {
+      if (attr.hidden === true || attr.required !== true) continue
+      if (todoResults.some((r) => r.key === attr.name)) continue
+
+      todoResults.push({
+        _id: generateId() as any as ContextId,
+        name: attr.name,
+        key: attr.name,
+        type: attr.type
+      })
+    }
+  }
+
   const tx = control.client.txFactory.createTxCreateDoc(
     process.class.ProcessToDo,
     time.space.ToDos,
@@ -774,8 +794,9 @@ export async function CreateToDo (
       doneOn: null,
       rank: '',
       withRollback: params.withRollback ?? false,
-      results,
-      field
+      results: todoResults,
+      field,
+      askRequired: params.askRequired
     },
     id
   )

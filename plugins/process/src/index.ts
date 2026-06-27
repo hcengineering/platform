@@ -140,6 +140,7 @@ export interface ProcessToDo extends ToDo {
 
   results?: UserResult[]
   field?: string
+  askRequired?: boolean
 }
 
 export interface ApproveRequest extends ProcessToDo {
