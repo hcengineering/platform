@@ -313,10 +313,7 @@
               label={scriptCopied ? view.string.Copied : setting.string.BackupCopyScript}
               on:click={copyBackupScript}
             />
-            <Button
-              label={tokenCopied ? view.string.Copied : setting.string.BackupCopyToken}
-              on:click={copyToken}
-            />
+            <Button label={tokenCopied ? view.string.Copied : setting.string.BackupCopyToken} on:click={copyToken} />
           </div>
         </div>
       </div>
