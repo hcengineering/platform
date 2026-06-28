@@ -759,9 +759,11 @@ export async function CreateToDo (
   const field = resolveAttributeId(_process, (params as any).field)
   const todoResults = results ?? []
   if (params.askRequired === true) {
-    const hierarchy = control.client.getHierarchy()
+    const h = control.client.getHierarchy()
     const classId = _process.masterTag
-    const allAttributes = Array.from(hierarchy.getAllAttributes(classId, core.class.Doc).values())
+    const allAttributes = Array.from(
+      h.isMixin(classId) ? h.getOwnAttributes(classId).values() : h.getAllAttributes(classId, core.class.Doc).values()
+    )
 
     for (const attr of allAttributes) {
       if (attr.hidden === true || attr.required !== true) continue
