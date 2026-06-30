@@ -200,11 +200,16 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
             void renderLabel({ id, objectclass, label: node.attrs.label })
             resetTooltipHandle(undefined)
           } else {
-            const targetObj = node.attrs.fixed ? obj : (await getReferenceObject(objectclass, id, obj)) ?? obj
+            const targetObj =
+              node.attrs.fixed === true ? obj : ((await getReferenceObject(objectclass, id, obj)) ?? obj)
             const label = await getReferenceLabel(targetObj._class, targetObj._id, targetObj)
             if (label === '') return
 
-            let tooltipOptions: LabelAndProps | undefined = await getReferenceTooltip(targetObj._class, targetObj._id, targetObj)
+            let tooltipOptions: LabelAndProps | undefined = await getReferenceTooltip(
+              targetObj._class,
+              targetObj._id,
+              targetObj
+            )
             if (tooltipOptions.component === undefined) {
               tooltipOptions = undefined
             }

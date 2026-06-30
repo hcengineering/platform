@@ -52,7 +52,12 @@
       {#if versionItems.length > 0}
         <div class="menu-separator" />
         {#each versionItems as version}
-          <button class="px-1 py-2 menu-item" on:click={() => { selectVersion(version) }}>
+          <button
+            class="px-1 py-2 menu-item"
+            on:click={() => {
+              selectVersion(version)
+            }}
+          >
             <div class="w-full flex-between">
               <div class="mr-2 ml-4 flex-row-center">
                 <span class="title mr-1-5">{version.label}</span>
