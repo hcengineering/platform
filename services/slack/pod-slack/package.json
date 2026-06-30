@@ -1,0 +1,40 @@
+{
+  "name": "@hcengineering/pod-slack",
+  "version": "0.7.0",
+  "main": "lib/index.js",
+  "types": "types/index.d.ts",
+  "files": [
+    "lib/**/*",
+    "types/**/*",
+    "tsconfig.json"
+  ],
+  "author": "Hardcore Engineering Inc.",
+  "license": "EPL-2.0",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "run-local": "cross-env ts-node --transpile-only src/index.ts",
+    "dev": "cross-env ts-node-dev --transpile-only --respawn src/index.ts",
+    "test-huly": "cross-env ts-node --transpile-only src/test-huly.ts",
+    "docker:build": "docker build -t hardcoreeng/slack .",
+    "lint": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@hcengineering/api-client": "^0.7.0",
+    "@hcengineering/attachment": "^0.7.0",
+    "@hcengineering/contact": "^0.7.0",
+    "@hcengineering/core": "^0.7.0",
+    "@hcengineering/task": "^0.7.0",
+    "@hcengineering/tracker": "^0.7.0",
+    "@slack/bolt": "^3.22.0",
+    "dotenv": "^16.4.5",
+    "image-size": "^1.2.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.1",
+    "cross-env": "^7.0.3",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.4"
+  }
+}

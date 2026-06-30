@@ -2362,6 +2362,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/pod-slack",
+      "projectFolder": "services/slack/pod-slack",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/openai",
       "projectFolder": "plugins/openai",
       "shouldPublish": false
