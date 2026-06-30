@@ -279,6 +279,7 @@ export default plugin(processId, {
   trigger: {
     OnCardUpdate: '' as Ref<Trigger>, // in fact WhenCardMatches, should migrate in future
     WhenFieldChanges: '' as Ref<Trigger>,
+    WhenRequiredFieldsFilled: '' as Ref<Trigger>,
     OnSubProcessesDone: '' as Ref<Trigger>,
     OnSubProcessMatch: '' as Ref<Trigger>,
     OnToDoClose: '' as Ref<Trigger>,
@@ -294,6 +295,7 @@ export default plugin(processId, {
     ToDo: '' as Resource<CheckFunc>,
     MatchCheck: '' as Resource<CheckFunc>,
     FieldChangedCheck: '' as Resource<CheckFunc>,
+    RequiredFieldsFilledCheck: '' as Resource<CheckFunc>,
     SubProcessesDoneCheck: '' as Resource<CheckFunc>,
     SubProcessMatchCheck: '' as Resource<CheckFunc>,
     Time: '' as Resource<CheckFunc>,

@@ -96,6 +96,7 @@
     "CreateCard": "Vytvořit kartu",
     "WhenCardMatches": "Když karta odpovídá",
     "WhenFieldChanges": "Když se pole změní",
+    "WhenRequiredFieldsFilled": "Když jsou vyplněna všechna povinná pole",
     "Insert": "Vložit",
     "Remove": "Odstranit",
     "RemoveFirst": "Odstranit první",

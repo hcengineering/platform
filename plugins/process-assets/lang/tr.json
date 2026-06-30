@@ -98,6 +98,7 @@
     "CreateCard": "Kart oluştur",
     "WhenCardMatches": "Kart eşleştiğinde",
     "WhenFieldChanges": "Alan değiştiğinde",
+    "WhenRequiredFieldsFilled": "Gerekli alanlar doldurulduğunda",
     "ArraySizeEquals": "Boyut eşittir",
     "ArraySizeGt": "Boyut büyüktür",
     "ArraySizeGte": "Boyut büyük veya eşittir",

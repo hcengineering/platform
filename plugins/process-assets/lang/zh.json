@@ -102,6 +102,7 @@
     "CreateCard": "创建卡片",
     "WhenCardMatches": "当卡片匹配时",
     "WhenFieldChanges": "当字段更改时",
+    "WhenRequiredFieldsFilled": "当必需字段被填充时",
     "ArraySizeEquals": "大小等于",
     "ArraySizeGt": "大小大于",
     "ArraySizeGte": "大小大于等于",

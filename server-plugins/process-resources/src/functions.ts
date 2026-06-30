@@ -16,6 +16,7 @@
 import cardPlugin, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   Association,
+  AnyAttribute,
   checkMixinKey,
   Class,
   Data,
@@ -218,6 +219,36 @@ export function FieldChangedCheck (
 
   const res = matchQuery([card], resolvedParams, _process.masterTag, control.client.getHierarchy(), true)
   return res.length > 0
+}
+
+function isRequiredValueFilled (value: any, attr: AnyAttribute): boolean {
+  if (attr.type?._class === core.class.TypeMarkup) return !isEmptyMarkup(value)
+  if (Array.isArray(value)) return value.length > 0
+  return value !== undefined && value !== null && value !== ''
+}
+
+export function RequiredFieldsFilledCheck (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): boolean {
+  let card = context.card
+  if (card === undefined) return false
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) return false
+  const hierarchy = control.client.getHierarchy()
+  const attributes = Array.from(
+    hierarchy.isMixin(_process.masterTag)
+      ? hierarchy.getOwnAttributes(_process.masterTag).entries()
+      : hierarchy.getAllAttributes(_process.masterTag, core.class.Doc).entries()
+  ).filter(([, attr]) => attr.required === true && attr.hidden !== true)
+
+  if (hierarchy.isMixin(_process.masterTag)) {
+    card = hierarchy.as(card, _process.masterTag)
+  }
+
+  return attributes.every(([key, attr]) => isRequiredValueFilled(getObjectValue(key, card), attr))
 }
 
 export function CheckTime (control: ProcessControl, execution: Execution, params: Record<string, any>): boolean {

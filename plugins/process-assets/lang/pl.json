@@ -98,6 +98,7 @@
     "CreateCard": "Utwórz kartę",
     "WhenCardMatches": "Kiedy karta spełnia warunek",
     "WhenFieldChanges": "Kiedy pole jest zmieniane",
+    "WhenRequiredFieldsFilled": "Kiedy wymagane pola są wypełnione",
     "ArraySizeEquals": "Rozmiar równy",
     "ArraySizeGt": "Rozmiar większy niż",
     "ArraySizeGte": "Rozmiar większy lub równy",

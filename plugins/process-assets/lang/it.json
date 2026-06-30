@@ -102,6 +102,7 @@
     "CreateCard": "Crea scheda",
     "WhenCardMatches": "Quando la scheda corrisponde",
     "WhenFieldChanges": "Quando il campo cambia",
+    "WhenRequiredFieldsFilled": "Quando i campi richiesti sono compilati",
     "ArraySizeEquals": "Dimensione uguale a",
     "ArraySizeGt": "Dimensione maggiore di",
     "ArraySizeGte": "Dimensione maggiore o uguale a",
