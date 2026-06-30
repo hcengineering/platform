@@ -46,9 +46,9 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
       label: getDataAttribute('label'),
       fixed: {
         default: null,
-        parseHTML: element => element.getAttribute('data-fixed') === 'true',
-        renderHTML: attributes => {
-          if (!attributes.fixed) {
+        parseHTML: (element) => element.getAttribute('data-fixed') === 'true',
+        renderHTML: (attributes) => {
+          if (attributes.fixed !== true) {
             return {}
           }
           return {

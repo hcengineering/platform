@@ -59,7 +59,7 @@
     const provider = getReferenceVersionsProvider(doc)
     if (provider !== undefined) {
       const providerFn = await getResource(provider.provider)
-      return await providerFn(client, doc._id, doc)
+      return await providerFn(client, doc._id)
     }
 
     const versionedDoc = getVersionableDoc(doc)
@@ -85,7 +85,7 @@
     return {
       id: item.doc._id,
       objectclass: item.doc._class,
-      label: await getReferenceLabel(item.doc._class, item.doc._id, item.doc)
+      label: await getReferenceLabel(item.doc._class, item.doc._id)
     }
   }
 
