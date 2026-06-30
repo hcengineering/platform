@@ -471,6 +471,10 @@ export function createModel (builder: Builder): void {
     titleProvider: documents.function.DocumentMetaTitleProvider
   })
 
+  builder.mixin(documents.class.DocumentMeta, core.class.Class, view.mixin.ReferenceVersionsProvider, {
+    provider: documents.function.DocumentMetaReferenceVersionsProvider
+  })
+
   builder.mixin(documents.class.DocumentMeta, core.class.Class, view.mixin.LinkProvider, {
     encode: documents.function.GetDocumentMetaLinkFragment
   })
