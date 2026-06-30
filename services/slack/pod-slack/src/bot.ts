@@ -109,7 +109,6 @@ export async function startBot (): Promise<App> {
     logLevel: LogLevel.INFO
   })
 
-  // A message containing "huly" -> react with eyes and create a task from it.
   app.message(async ({ message, client }) => {
     const subtype = (message as any).subtype
     // Skip the bot's own messages and non-user events (edits, deletes, joins),
@@ -122,18 +121,16 @@ export async function startBot (): Promise<App> {
     if (config.NotifyChannel !== '' && m.channel === config.NotifyChannel) return
 
     const text: string = m.text ?? ''
-    if (!/\bhuly\b/i.test(text)) return
-
     const isReply = m.thread_ts !== undefined && m.thread_ts !== m.ts
 
     if (!isReply) {
-      // Top-level "huly ..." -> task from this message (minus the word "huly").
-      const title = text.replace(/\bhuly\b/i, '').trim()
-      await handleAsTask(client, m.channel, m.ts, m.ts, m.user ?? 'unknown', title, m.files ?? [])
+      // Top-level message -> always create a task from it (no keyword needed).
+      await handleAsTask(client, m.channel, m.ts, m.ts, m.user ?? 'unknown', text, m.files ?? [])
       return
     }
 
-    // "huly" in a thread reply -> task for the message directly ABOVE this comment.
+    // Thread reply -> only act if it mentions "huly"; task for the message ABOVE.
+    if (!/\bhuly\b/i.test(text)) return
     try {
       const res: any = await client.conversations.replies({ channel: m.channel, ts: m.thread_ts })
       const msgs: any[] = res.messages ?? []
