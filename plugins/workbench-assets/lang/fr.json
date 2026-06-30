@@ -39,9 +39,9 @@
     "ShutdownWarningShort": "Service en cours d'arrêt — migrez vos données",
     "ShutdownWarningTitle": "Le service hébergé Huly va fermer",
     "ShutdownWarningHint": "Le service hébergé est interrompu car son hébergement n'est plus financé. Veuillez exporter et sauvegarder tout ce que vous ne pouvez pas vous permettre de perdre, et migrer dès que possible — nous pouvons vous aider à passer à une installation auto-hébergée ou à une option hébergée.",
-    "ShutdownNextEventBefore": "Prochain événement — vers le ",
-    "ShutdownNextEventDate": "3 juillet",
-    "ShutdownNextEventAfter": ", la facture Cloudflare pourrait ne pas être payée, ce qui pourrait perturber le service. Ce n'est pas certain, mais il vaut mieux être prudent et migrer vos données avant cette date.",
+    "ShutdownNextEventBefore": "L'arrêt du service est attendu le ",
+    "ShutdownNextEventDate": "20 juillet",
+    "ShutdownNextEventAfter": ". Veuillez veiller à exporter et migrer vos données avant cette date.",
     "ShutdownCommunityHint": "Des questions ou envie de suivre les actualités ? Rejoignez la communauté Huly pour discuter de la migration et rester informé.",
     "JoinCommunityCta": "Rejoindre la communauté Huly",
     "ShutdownContactPrefix": "Questions sur la migration : "

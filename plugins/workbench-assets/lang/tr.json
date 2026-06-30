@@ -39,9 +39,9 @@
     "ShutdownWarningShort": "Hizmet kapatılıyor — verilerinizi taşıyın",
     "ShutdownWarningTitle": "Barındırılan Huly kapatılıyor",
     "ShutdownWarningHint": "Barındırma hizmeti artık finanse edilmediği için barındırılan hizmet kapatılıyor. Kaybetmeyi göze alamayacağınız her şeyi dışa aktarıp yedekleyin ve en kısa sürede taşıyın — kendi sunucunuza (self-hosted) ya da barındırılan bir seçeneğe geçişte size yardımcı olabiliriz.",
-    "ShutdownNextEventBefore": "En yakın olay — ",
-    "ShutdownNextEventDate": "3 Temmuz",
-    "ShutdownNextEventAfter": " civarında Cloudflare faturası ödenmeyebilir ve bu hizmeti aksatabilir. Bunun olacağı kesin değil, ancak yine de garanti olsun diye verilerinizi bu tarihten önce taşımanız önerilir.",
+    "ShutdownNextEventBefore": "Hizmetin kapatılması ",
+    "ShutdownNextEventDate": "20 Temmuz",
+    "ShutdownNextEventAfter": " tarihinde bekleniyor. Lütfen verilerinizi bu tarihten önce dışa aktarıp taşıdığınızdan emin olun.",
     "ShutdownCommunityHint": "Sorularınız mı var ya da güncellemeleri takip etmek mi istiyorsunuz? Göçü konuşmak ve haberdar olmak için Huly topluluğuna katılın.",
     "JoinCommunityCta": "Huly topluluğuna katıl",
     "ShutdownContactPrefix": "Taşıma ile ilgili sorular: "

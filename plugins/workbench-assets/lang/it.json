@@ -31,9 +31,9 @@
     "ShutdownWarningShort": "Servizio in chiusura — migra i dati",
     "ShutdownWarningTitle": "Il servizio Huly in hosting sta chiudendo",
     "ShutdownWarningHint": "Il servizio in hosting sta per chiudere perché il suo hosting non è più finanziato. Esporta e salva una copia di tutto ciò che non puoi permetterti di perdere e migra il prima possibile: possiamo aiutarti a passare a un'installazione self-hosted o a un'opzione in hosting.",
-    "ShutdownNextEventBefore": "Prossimo evento — intorno al ",
-    "ShutdownNextEventDate": "3 luglio",
-    "ShutdownNextEventAfter": " la fattura di Cloudflare potrebbe non essere pagata, il che potrebbe interrompere il servizio. Non è certo che accada, ma è meglio non rischiare e migrare i tuoi dati prima di quella data.",
+    "ShutdownNextEventBefore": "La chiusura del servizio è prevista il ",
+    "ShutdownNextEventDate": "20 luglio",
+    "ShutdownNextEventAfter": ". Assicurati di esportare e migrare i tuoi dati prima di quella data.",
     "ShutdownCommunityHint": "Hai domande o vuoi ricevere aggiornamenti? Unisciti alla community di Huly per parlare della migrazione e restare informato.",
     "JoinCommunityCta": "Unisciti alla community di Huly",
     "ShutdownContactPrefix": "Domande sulla migrazione: "

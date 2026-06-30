@@ -39,9 +39,9 @@
     "ShutdownWarningShort": "Service shutting down — migrate data",
     "ShutdownWarningTitle": "Hosted Huly is shutting down",
     "ShutdownWarningHint": "The hosted service is being discontinued because its hosting is no longer being funded. Please export and back up anything you can't afford to lose, and migrate as soon as possible — we can help you move to either a self-hosted setup or a hosted option.",
-    "ShutdownNextEventBefore": "Nearest event — around ",
-    "ShutdownNextEventDate": "July 3",
-    "ShutdownNextEventAfter": " the Cloudflare bill may go unpaid, which could disrupt the service. It's not certain this will happen, but it's best to play it safe and migrate your data before then.",
+    "ShutdownNextEventBefore": "The service shutdown is expected on ",
+    "ShutdownNextEventDate": "July 20",
+    "ShutdownNextEventAfter": ". Please make sure to export and migrate your data before then.",
     "ShutdownCommunityHint": "Have questions or want updates? Join the Huly community to discuss migration and stay informed.",
     "JoinCommunityCta": "Join the Huly community",
     "ShutdownContactPrefix": "Migration questions: "

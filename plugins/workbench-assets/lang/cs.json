@@ -39,9 +39,9 @@
     "ShutdownWarningShort": "Služba se ukončuje — přeneste data",
     "ShutdownWarningTitle": "Hostovaná služba Huly se ukončuje",
     "ShutdownWarningHint": "Hostovaná služba se ukončuje, protože její hosting již není financován. Exportujte si prosím a zazálohujte vše, co si nemůžete dovolit ztratit, a co nejdříve proveďte migraci — můžeme vám pomoci přejít buď na vlastní hosting (self-hosted), nebo na hostovanou variantu.",
-    "ShutdownNextEventBefore": "Nejbližší událost — kolem ",
-    "ShutdownNextEventDate": "3. července",
-    "ShutdownNextEventAfter": " nemusí být uhrazena faktura za Cloudflare, což může narušit provoz služby. Není jisté, zda k tomu dojde, ale raději buďte v bezpečí a přeneste svá data ještě před tímto datem.",
+    "ShutdownNextEventBefore": "Vypnutí služby se očekává ",
+    "ShutdownNextEventDate": "20. července",
+    "ShutdownNextEventAfter": ". Nezapomeňte prosím svá data exportovat a přenést ještě před tímto datem.",
     "ShutdownCommunityHint": "Máte dotazy nebo chcete dostávat novinky? Připojte se ke komunitě Huly, kde můžete probrat migraci a zůstat v obraze.",
     "JoinCommunityCta": "Připojit se ke komunitě Huly",
     "ShutdownContactPrefix": "Dotazy k migraci: "

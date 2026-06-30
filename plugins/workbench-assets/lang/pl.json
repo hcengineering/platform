@@ -39,9 +39,9 @@
     "ShutdownWarningShort": "Usługa jest wyłączana — przenieś dane",
     "ShutdownWarningTitle": "Hostowana usługa Huly jest wyłączana",
     "ShutdownWarningHint": "Hostowana usługa jest zamykana, ponieważ jej hosting nie jest już finansowany. Wyeksportuj i utwórz kopię zapasową wszystkiego, czego nie możesz stracić, i jak najszybciej wykonaj migrację — możemy pomóc w przejściu na własny hosting (self-hosted) lub na opcję hostowaną.",
-    "ShutdownNextEventBefore": "Najbliższe wydarzenie — około ",
-    "ShutdownNextEventDate": "3 lipca",
-    "ShutdownNextEventAfter": " rachunek za Cloudflare może pozostać nieopłacony, co może zakłócić działanie usługi. Nie jest pewne, czy do tego dojdzie, ale lepiej zachować ostrożność i przenieść dane przed tą datą.",
+    "ShutdownNextEventBefore": "Wyłączenie usługi spodziewane jest ",
+    "ShutdownNextEventDate": "20 lipca",
+    "ShutdownNextEventAfter": ". Pamiętaj, aby wyeksportować i przenieść dane przed tą datą.",
     "ShutdownCommunityHint": "Masz pytania lub chcesz otrzymywać aktualności? Dołącz do społeczności Huly, aby porozmawiać o migracji i być na bieżąco.",
     "JoinCommunityCta": "Dołącz do społeczności Huly",
     "ShutdownContactPrefix": "Pytania dotyczące migracji: "
