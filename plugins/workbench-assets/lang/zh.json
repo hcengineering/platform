@@ -44,6 +44,6 @@
     "ShutdownNextEventAfter": "。请务必在此日期之前导出并迁移你的数据。",
     "ShutdownCommunityHint": "有疑问或想获取最新消息？加入 Huly 社区，讨论迁移并随时了解动态。",
     "JoinCommunityCta": "加入 Huly 社区",
-    "ShutdownContactPrefix": "迁移相关问题："
+    "ShutdownContactPrefix": "有疑问？请联系："
   }
 }

@@ -12,7 +12,7 @@
 >
 > The service shutdown is expected on **July 20**. Please make sure to export and migrate your data before then rather than wait until the last day.
 >
-> Have questions or want updates? Join the [Huly community](https://link.huly.io/slack) to discuss migration and stay informed, or email us at [huly.migration@gmail.com](mailto:huly.migration@gmail.com) for migration questions. This affects only the hosted **Huly** service — self-hosted deployments are not affected.
+> Have questions or want updates? Join the [Huly community](https://link.huly.io/slack) to discuss migration and stay informed, or email us at [artem@hardcoreeng.com](mailto:artem@hardcoreeng.com) with any questions. This affects only the hosted **Huly** service — self-hosted deployments are not affected.
 
 ## About
 

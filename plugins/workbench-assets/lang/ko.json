@@ -44,6 +44,6 @@
         "ShutdownNextEventAfter": "로 예상됩니다. 반드시 그 전에 데이터를 내보내고 이전해 주세요.",
         "ShutdownCommunityHint": "궁금한 점이 있거나 소식을 받고 싶으신가요? Huly 커뮤니티에 참여하여 이전에 대해 논의하고 최신 소식을 확인하세요.",
         "JoinCommunityCta": "Huly 커뮤니티 참여",
-        "ShutdownContactPrefix": "마이그레이션 문의: "
+        "ShutdownContactPrefix": "문의사항은 "
     }
 }
