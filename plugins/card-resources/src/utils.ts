@@ -530,6 +530,10 @@ export async function cardFactory (props: Record<string, any> = {}): Promise<Ref
     return undefined
   }
 
+  if (isBaseTypeWithSubtypes(getClient().getHierarchy(), _class)) {
+    return undefined
+  }
+
   return await createCard(_class, space, props.data, props.content)
 }
 
@@ -557,6 +561,11 @@ export async function createCard (
 ): Promise<Ref<Card>> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
+
+  if (isBaseTypeWithSubtypes(hierarchy, type)) {
+    throw new Error(`Cannot create card with base type ${type}`)
+  }
+
   const title = data.title ?? (await translate(card.string.Card, {}))
 
   const _id = id ?? generateId()
@@ -579,6 +588,29 @@ export async function createCard (
 
   Analytics.handleEvent(CardEvents.CardCreated)
   return _id
+}
+
+export function isBaseTypeWithSubtypes (hierarchy: Hierarchy, type: Ref<MasterTag>): boolean {
+  const clazz = hierarchy.getClass(type) as MasterTag | undefined
+  if (clazz?.baseType !== true) return false
+
+  return hierarchy.getDescendants(type).some((descendant) => {
+    if (descendant === type || hierarchy.isMixin(descendant)) return false
+    const descendantClass = hierarchy.getClass(descendant) as MasterTag | undefined
+    return descendantClass?._class === card.class.MasterTag && descendantClass.removed !== true
+  })
+}
+
+export function getFirstCreatableSubtype (hierarchy: Hierarchy, type: Ref<MasterTag>): Ref<MasterTag> | undefined {
+  return hierarchy.getDescendants(type).find((descendant) => {
+    if (descendant === type || hierarchy.isMixin(descendant)) return false
+    const descendantClass = hierarchy.getClass(descendant) as MasterTag | undefined
+    return (
+      descendantClass?._class === card.class.MasterTag &&
+      descendantClass.removed !== true &&
+      !isBaseTypeWithSubtypes(hierarchy, descendant as Ref<MasterTag>)
+    )
+  }) as Ref<MasterTag> | undefined
 }
 
 export async function createChildCard (object: Card): Promise<void> {
