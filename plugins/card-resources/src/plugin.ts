@@ -14,7 +14,7 @@
 //
 
 import card, { type Card, cardId } from '@hcengineering/card'
-import { type Permission, type Doc, type Ref } from '@hcengineering/core'
+import { type Client, type Permission, type Doc, type Ref } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type ObjectSearchCategory, type ObjectSearchFactory } from '@hcengineering/presentation'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
@@ -62,6 +62,9 @@ export default mergeIds(cardId, card, {
   },
   function: {
     CardFactory: '' as Resource<(props?: Record<string, any>) => Promise<Ref<Doc> | undefined>>,
+    CardReferenceObjectProvider: '' as Resource<
+      <T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<Doc | undefined>
+    >,
     FormatCardMarkdownValue: '' as Resource<ValueFormatter>,
     CheckChildrenSectionVisibility: '' as Resource<(doc: Card) => Promise<boolean>>
   },

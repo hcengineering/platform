@@ -486,6 +486,26 @@ export async function getCardTitle (client: TxOperations, ref: Ref<Card>, doc?: 
   return ids + ' ' + object.title + ' ' + version
 }
 
+export async function cardReferenceObjectProvider<T extends Doc> (
+  client: Client,
+  ref: Ref<T>,
+  doc?: T
+): Promise<Doc | undefined> {
+  const object =
+    (doc as unknown as Card | undefined) ?? (await client.findOne(card.class.Card, { _id: ref as any as Ref<Card> }))
+  if (object === undefined) return
+
+  const versioningEnabled = client
+    .getHierarchy()
+    .classHierarchyMixin(object._class, core.mixin.VersionableClass)?.enabled
+  if (versioningEnabled !== true) return object
+
+  const baseId = object.baseId ?? object._id
+  if (object.isLatest === true) return object
+
+  return (await client.findOne(object._class, { baseId, isLatest: true } as any)) ?? object
+}
+
 export async function getCardLink (doc: Card): Promise<Location> {
   const loc = getCurrentResolvedLocation()
   loc.path.length = 2

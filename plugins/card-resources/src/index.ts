@@ -28,6 +28,7 @@ import {
   editSpace,
   cardCustomLinkEncode,
   cardCustomLinkMatch,
+  cardReferenceObjectProvider,
   openCardInSidebar,
   checkRelationsSectionVisibility,
   checkOldMessagesSectionVisibility,
@@ -169,6 +170,7 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     CardTitleProvider: getCardTitle,
+    CardReferenceObjectProvider: cardReferenceObjectProvider,
     GetCardLink: getCardLink,
     CardCustomLinkMatch: cardCustomLinkMatch,
     CardCustomLinkEncode: cardCustomLinkEncode,

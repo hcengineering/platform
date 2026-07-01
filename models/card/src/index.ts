@@ -963,6 +963,10 @@ export function createModel (builder: Builder): void {
     titleProvider: card.function.CardTitleProvider
   })
 
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ReferenceObjectProvider, {
+    provider: card.function.CardReferenceObjectProvider
+  })
+
   builder.mixin(card.class.Card, core.class.Class, view.mixin.LinkProvider, {
     encode: card.function.GetCardLink
   })

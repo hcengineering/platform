@@ -258,7 +258,7 @@ export default mergeIds(documentsId, documents, {
     ControlledDocumentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     DocumentMetaTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
     DocumentMetaReferenceVersionsProvider: '' as Resource<
-      (client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<ReferenceVersion[]>
+    (client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<ReferenceVersion[]>
     >
   }
 })
