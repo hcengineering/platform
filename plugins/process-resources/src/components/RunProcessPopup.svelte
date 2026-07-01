@@ -40,14 +40,9 @@
     const ancestors = h.getAncestors(card._class) as PossibleProcessClass[]
     const res = new Set<PossibleProcessClass>(ancestors)
 
-    for (const ancestor of ancestors) {
-      const mixins = h
-        .getAllPossibleMixins(ancestor as Ref<Class<Doc>>)
-        .filter((mixin) => h.hasMixin(card, mixin))
-
-      for (const mixin of mixins) {
-        res.add(mixin as PossibleProcessClass)
-      }
+    const mixins = h.getAllPossibleMixins(card._class).filter((mixin) => h.hasMixin(card, mixin))
+    for (const mixin of mixins) {
+      res.add(mixin)
     }
 
     return [...res]

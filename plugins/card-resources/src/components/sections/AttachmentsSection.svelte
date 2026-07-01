@@ -33,7 +33,7 @@
     }
   })
 
-   const client = getClient()
+  const client = getClient()
   const h = client.getHierarchy()
 
   $: updatePermissionForbidden = doc && !canChangeDoc(doc?._class, doc?.space, $permissionsStore)
