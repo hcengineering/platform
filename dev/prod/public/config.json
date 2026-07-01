@@ -12,6 +12,7 @@
   "GITHUB_APP": "uberflow-dev",
   "GITHUB_CLIENTID": "Iv1.43f9cac43bd68617",
   "GITHUB_URL": "http://huly.local:3500",
+  "SLACK_SERVICE_URL": "",
   "LAST_NAME_FIRST": "true",
   "PRINT_URL": "http://huly.local:4005",
   "SIGN_URL": "http://huly.local:4006",

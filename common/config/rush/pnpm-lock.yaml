@@ -1654,6 +1654,15 @@ importers:
       '@hcengineering/sign':
         specifier: workspace:^0.7.0
         version: link:../../plugins/sign
+      '@hcengineering/slack':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/slack
+      '@hcengineering/slack-assets':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/slack-assets
+      '@hcengineering/slack-resources':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/slack-resources
       '@hcengineering/support':
         specifier: workspace:^0.7.0
         version: link:../../plugins/support
@@ -6175,6 +6184,9 @@ importers:
       '@hcengineering/model-setting':
         specifier: workspace:^0.7.0
         version: link:../setting
+      '@hcengineering/model-slack':
+        specifier: workspace:^0.7.0
+        version: link:../slack
       '@hcengineering/model-support':
         specifier: workspace:^0.7.0
         version: link:../support
@@ -12463,6 +12475,76 @@ importers:
       '@hcengineering/view':
         specifier: workspace:^0.7.0
         version: link:../../plugins/view
+    devDependencies:
+      '@hcengineering/platform-rig':
+        specifier: workspace:^0.7.21
+        version: link:../../foundations/utils/packages/platform-rig
+      '@types/jest':
+        specifier: ^29.5.5
+        version: 29.5.14
+      '@types/node':
+        specifier: ^22.18.1
+        version: 22.19.0
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.21.0
+        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.21.0
+        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+      eslint:
+        specifier: ^8.54.0
+        version: 8.57.1
+      eslint-config-standard-with-typescript:
+        specifier: ^40.0.0
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+      eslint-plugin-import:
+        specifier: ^2.26.0
+        version: 2.32.0(eslint@8.57.1)
+      eslint-plugin-n:
+        specifier: ^15.4.0
+        version: 15.7.0(eslint@8.57.1)
+      eslint-plugin-promise:
+        specifier: ^6.1.1
+        version: 6.6.0(eslint@8.57.1)
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      ts-jest:
+        specifier: ^29.1.1
+        version: 29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(babel-jest@29.7.0(@babel/core@7.28.5))(esbuild@0.25.12)(jest-util@30.2.0)(jest@29.7.0(@types/node@22.19.0))(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  ../../models/slack:
+    dependencies:
+      '@hcengineering/core':
+        specifier: workspace:^0.7.26
+        version: link:../../foundations/core/packages/core
+      '@hcengineering/model':
+        specifier: workspace:^0.7.17
+        version: link:../../foundations/core/packages/model
+      '@hcengineering/model-core':
+        specifier: workspace:^0.7.0
+        version: link:../core
+      '@hcengineering/platform':
+        specifier: workspace:^0.7.20
+        version: link:../../foundations/core/packages/platform
+      '@hcengineering/setting':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/setting
+      '@hcengineering/slack':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/slack
+      '@hcengineering/slack-resources':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/slack-resources
+      '@hcengineering/ui':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/ui
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.21
@@ -26570,6 +26652,192 @@ importers:
       ts-jest:
         specifier: ^29.1.1
         version: 29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@30.2.0)(jest@29.7.0)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  ../../plugins/slack:
+    dependencies:
+      '@hcengineering/core':
+        specifier: workspace:^0.7.26
+        version: link:../../foundations/core/packages/core
+      '@hcengineering/platform':
+        specifier: workspace:^0.7.20
+        version: link:../../foundations/core/packages/platform
+      '@hcengineering/setting':
+        specifier: workspace:^0.7.0
+        version: link:../setting
+      '@hcengineering/ui':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/ui
+    devDependencies:
+      '@hcengineering/platform-rig':
+        specifier: workspace:^0.7.21
+        version: link:../../foundations/utils/packages/platform-rig
+      '@types/jest':
+        specifier: ^29.5.5
+        version: 29.5.14
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.21.0
+        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.21.0
+        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+      eslint:
+        specifier: ^8.54.0
+        version: 8.57.1
+      eslint-config-standard-with-typescript:
+        specifier: ^40.0.0
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+      eslint-plugin-import:
+        specifier: ^2.26.0
+        version: 2.32.0(eslint@8.57.1)
+      eslint-plugin-n:
+        specifier: ^15.4.0
+        version: 15.7.0(eslint@8.57.1)
+      eslint-plugin-promise:
+        specifier: ^6.1.1
+        version: 6.6.0(eslint@8.57.1)
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      ts-jest:
+        specifier: ^29.1.1
+        version: 29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@30.2.0)(jest@29.7.0)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  ../../plugins/slack-assets:
+    dependencies:
+      '@hcengineering/platform':
+        specifier: workspace:^0.7.20
+        version: link:../../foundations/core/packages/platform
+      '@hcengineering/slack':
+        specifier: workspace:^0.7.0
+        version: link:../slack
+    devDependencies:
+      '@hcengineering/platform-rig':
+        specifier: workspace:^0.7.21
+        version: link:../../foundations/utils/packages/platform-rig
+      '@types/jest':
+        specifier: ^29.5.5
+        version: 29.5.14
+      '@types/node':
+        specifier: ^22.18.1
+        version: 22.19.0
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.21.0
+        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.21.0
+        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+      eslint:
+        specifier: ^8.54.0
+        version: 8.57.1
+      eslint-config-standard-with-typescript:
+        specifier: ^40.0.0
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+      eslint-plugin-import:
+        specifier: ^2.26.0
+        version: 2.32.0(eslint@8.57.1)
+      eslint-plugin-n:
+        specifier: ^15.4.0
+        version: 15.7.0(eslint@8.57.1)
+      eslint-plugin-promise:
+        specifier: ^6.1.1
+        version: 6.6.0(eslint@8.57.1)
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      ts-jest:
+        specifier: ^29.1.1
+        version: 29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(babel-jest@29.7.0(@babel/core@7.28.5))(esbuild@0.25.12)(jest-util@30.2.0)(jest@29.7.0(@types/node@22.19.0))(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  ../../plugins/slack-resources:
+    dependencies:
+      '@hcengineering/platform':
+        specifier: workspace:^0.7.20
+        version: link:../../foundations/core/packages/platform
+      '@hcengineering/presentation':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/presentation
+      '@hcengineering/slack':
+        specifier: workspace:^0.7.0
+        version: link:../slack
+      '@hcengineering/ui':
+        specifier: workspace:^0.7.0
+        version: link:../../packages/ui
+      svelte:
+        specifier: ^4.2.20
+        version: 4.2.20
+    devDependencies:
+      '@hcengineering/platform-rig':
+        specifier: workspace:^0.7.21
+        version: link:../../foundations/utils/packages/platform-rig
+      '@types/jest':
+        specifier: ^29.5.5
+        version: 29.5.14
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.21.0
+        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.21.0
+        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+      eslint:
+        specifier: ^8.54.0
+        version: 8.57.1
+      eslint-config-standard-with-typescript:
+        specifier: ^40.0.0
+        version: 40.0.0(@typescript-eslint/eslint-plugin@6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3))(eslint-plugin-import@2.32.0(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)(typescript@5.9.3)
+      eslint-plugin-import:
+        specifier: ^2.26.0
+        version: 2.32.0(eslint@8.57.1)
+      eslint-plugin-n:
+        specifier: ^15.4.0
+        version: 15.7.0(eslint@8.57.1)
+      eslint-plugin-promise:
+        specifier: ^6.1.1
+        version: 6.6.0(eslint@8.57.1)
+      eslint-plugin-svelte:
+        specifier: ^2.35.1
+        version: 2.46.1(eslint@8.57.1)(svelte@4.2.20)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      prettier-plugin-svelte:
+        specifier: ^3.4.0
+        version: 3.4.0(prettier@3.6.2)(svelte@4.2.20)
+      sass:
+        specifier: ^1.80.0
+        version: 1.93.3
+      svelte-check:
+        specifier: ^3.6.9
+        version: 3.8.6(@babel/core@7.28.5)(postcss-load-config@4.0.2(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3)))(postcss@8.5.6)(sass@1.93.3)(svelte@4.2.20)
+      svelte-eslint-parser:
+        specifier: ^0.33.1
+        version: 0.33.1(svelte@4.2.20)
+      svelte-loader:
+        specifier: ^3.2.0
+        version: 3.2.4(svelte@4.2.20)
+      svelte-preprocess:
+        specifier: ^5.1.4
+        version: 5.1.4(@babel/core@7.28.5)(postcss-load-config@4.0.2(postcss@8.5.6)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3)))(postcss@8.5.6)(sass@1.93.3)(svelte@4.2.20)(typescript@5.9.3)
+      ts-jest:
+        specifier: ^29.1.1
+        version: 29.4.5(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@30.2.0)(babel-jest@29.7.0(@babel/core@7.28.5))(esbuild@0.25.12)(jest-util@30.2.0)(jest@29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3)))(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -41106,12 +41374,36 @@ importers:
 
   ../../services/slack/pod-slack:
     dependencies:
+      '@hcengineering/api-client':
+        specifier: ^0.7.0
+        version: 0.7.423(bufferutil@4.0.9)(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.3)(utf-8-validate@5.0.10)
+      '@hcengineering/attachment':
+        specifier: ^0.7.0
+        version: 0.7.423
+      '@hcengineering/contact':
+        specifier: ^0.7.0
+        version: 0.7.423
+      '@hcengineering/core':
+        specifier: ^0.7.0
+        version: 0.7.423
+      '@hcengineering/task':
+        specifier: ^0.7.0
+        version: 0.7.423
+      '@hcengineering/tracker':
+        specifier: ^0.7.0
+        version: 0.7.423
       '@slack/bolt':
         specifier: ^3.22.0
         version: 3.22.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       dotenv:
         specifier: ^16.4.5
         version: 16.6.1
+      image-size:
+        specifier: ^1.2.0
+        version: 1.2.1
+      ws:
+        specifier: ^8.18.0
+        version: 8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     devDependencies:
       '@types/node':
         specifier: ^22.18.1
@@ -42628,6 +42920,105 @@ packages:
 
   '@hapi/bourne@3.0.0':
     resolution: {integrity: sha512-Waj1cwPXJDucOib4a3bAISsKJVb15MKi9IvmTI/7ssVEm6sywXGjVJDhl6/umt1pK1ZS7PacXU3A1PmFKHEZ2w==}
+
+  '@hcengineering/account-client@0.7.423':
+    resolution: {integrity: sha512-1G9sAMEbiPpf5M19n1RzLX/dz4Rxr0bkXjWfh0iVhWDc9GKgBRzKeLf8Qw+ji+xa8zNHhdgb4TJQUcAG/32ymg==}
+
+  '@hcengineering/activity@0.7.423':
+    resolution: {integrity: sha512-4Jvb1YZAf08YEyAuMxHeP+gyruQAl+83Phl/o9Anz5QPQSQ1/Dq6wvmGAiSgiUppCq94mxytSCxZT0E0/kxsKw==}
+
+  '@hcengineering/analytics@0.7.423':
+    resolution: {integrity: sha512-ZsY4sfoQCjl66QdpVQ8O4ZsurcdN/rL8nyLZWeprYtXWIvmnfLt9D810YNQIjrQHMXAAeVQTshWUa1b73NLmgw==}
+
+  '@hcengineering/api-client@0.7.423':
+    resolution: {integrity: sha512-xgAOhIEuMxvv4eZjxuwNktQBWwRAegVsQULQK73p80d60ZDmG+bQKZqZaMFx4j+Phky2p7/G5tWDb7jTL4dqgA==}
+
+  '@hcengineering/attachment@0.7.423':
+    resolution: {integrity: sha512-P/7lZ5KCOBY9w1QQ2J6tQaxE0gtWQ4ECSJidAlvDrRzg9N2U2OMx8h3XqP2qLJV7IKpEWBw7jludChEKbNGOcA==}
+
+  '@hcengineering/calendar@0.7.423':
+    resolution: {integrity: sha512-6FMNtUx9GUdZpnV0oWmR074Q1pjKwyFPntPFWbA6FPIjrokY8xBw3eyh7h85pBn++oqTqwPwn95zKAezbj2KHw==}
+
+  '@hcengineering/card@0.7.423':
+    resolution: {integrity: sha512-frP8mk7vvZBQZmr+Gxa92YeIF0jNEf+Gg1rwMG8i3H9wwRei4pSmUMHGpP9gzxwlrvzBWZp1K1i3T/clKbOeaQ==}
+
+  '@hcengineering/chunter@0.7.423':
+    resolution: {integrity: sha512-6zSJButH3Xua0uJv3OP8ic1WVap9v/csbTnLT+mU30CLLQa+JLkcy3jZ89HlWJwXDlbw3SwVx5hBSLdvlidemA==}
+
+  '@hcengineering/client-resources@0.7.423':
+    resolution: {integrity: sha512-Wq2S+dKyx6Dp6dzGkYFk16SRLfe2+2+Dj1S2oVNyfxQmAGDsQWATsT5MH6su4M/nmcOiFpurC4YQ5iTtZQE0yg==}
+
+  '@hcengineering/client@0.7.423':
+    resolution: {integrity: sha512-7JgZIEo6Ka+g0slw6SqOcNitxZnK3NPktPAUow0R2hejXZO+UE0IspvbkjPn3NB4GkdrleBpiYo0PSmYi53Bfg==}
+
+  '@hcengineering/collaborator-client@0.7.423':
+    resolution: {integrity: sha512-aEPTziWcCf+b3KWTy1Lhk2Z75UdqQlkSaI097DjnAhXq9sIF8rBO2cbMk5h8q9prOnPXcxF0AWMeZtpdfvRkgQ==}
+
+  '@hcengineering/contact@0.7.423':
+    resolution: {integrity: sha512-ozoD3vAJB/7x2cYP3oO15qo98gHRcNgM9r3zZ0zLiC62CNpxEVbsJiVX0wg9FkrJWmRp2oLYkNN5rDvHVQOW+g==}
+
+  '@hcengineering/core@0.7.423':
+    resolution: {integrity: sha512-U4g1jcIbDOz4ZUICgbaDE0imcjJdYf7k0Qe9r5K62karb4Bglzsn74mR1IWtenAtyf7k5LYuWBzP2gQuuZnYIw==}
+
+  '@hcengineering/measurements@0.7.423':
+    resolution: {integrity: sha512-miQGTdEr47ha/3cJX3MFbqbfSgnK277yTSCJ+4evTRlEAM1WvcqxBrHB+vDTJxt3enj9hCGdX39BtpLNvDR2gQ==}
+
+  '@hcengineering/notification@0.7.423':
+    resolution: {integrity: sha512-gGFvvthBmi6074ZA6fs7PlENcdfYWLeXfOOkEPavdIxmNh7ilV/k1yAYNXiAGXBlzpfWWgRPkjlCmK23+tBGXA==}
+
+  '@hcengineering/platform@0.7.423':
+    resolution: {integrity: sha512-X+QYV5vuS4KrRAeLYzv6+eVSEU7MzOe2+Tb4aFFruM6NDDhq38iFQ3qTuKI1cuzgwefWNKKeZh8x41VIIkrF4w==}
+
+  '@hcengineering/preference@0.7.423':
+    resolution: {integrity: sha512-zMdOkbyXw0sSkrSJ7Dah2fywCyQAk7898SypQxMOTobrFxqgtBkVH/R0cVcfByH72ylAT+4tjy7LiWgbDAdNrQ==}
+
+  '@hcengineering/rank@0.7.423':
+    resolution: {integrity: sha512-/Kc4LjpaboHoZGGMl2Bt/IaeQskzeN37VzMBBgv8HbrBmOW8P3Wfbvj5alq6KvyyvtZhnjoODL3zTE20EAYYJg==}
+
+  '@hcengineering/rpc@0.7.423':
+    resolution: {integrity: sha512-exoPef84nB3bNTEIP0yX4kIQIjUkfxpGvVceu/tsAoljSEqrwjpxGfJbqSbbeRcYpjWQ7jPIOAJuj9BiMLEhVw==}
+
+  '@hcengineering/setting@0.7.423':
+    resolution: {integrity: sha512-RXpF9ua98dEUP3NXYkZmKaCIFbUD2mq3Ii6u/5AOx1mpZF15Y04nLYTIQYS3XgqivYunVAoUNWhh4yU1mrMIqw==}
+
+  '@hcengineering/tags@0.7.423':
+    resolution: {integrity: sha512-+I00Iw9CB+Ad9RuD4GPYBjOM7c5ay1yQqAFCrPyunGdgkqmCIqoXt+kDpV4vxaSGjRvCjZhZ2R0OhwGRXTYnQw==}
+
+  '@hcengineering/task@0.7.423':
+    resolution: {integrity: sha512-Xbgow5S9rW11ZsDBd1UZcRShZoNwL5hK2+D+9oueV8c3NEYKkJHeS6MZFZYAoroMPcnEivYC/P1CixG6Z6Gkbw==}
+
+  '@hcengineering/templates@0.7.423':
+    resolution: {integrity: sha512-1N6DVmS0zqJs3DvHNC2TnJf60lyXkf/RzywYCWHWYeZyXD77LzevaTPCvQm5KaPaBrKX/dxXW5jVAVD2BM5zbw==}
+
+  '@hcengineering/text-core@0.7.423':
+    resolution: {integrity: sha512-ddYc0AFu+DEn9MQzcVUHC1kCvJdGjED8dH2ByesfRGm8lnN1kCtCUaIwyyzQkdo0zlklHyKaTLKS9vQp1qtpeA==}
+
+  '@hcengineering/text-html@0.7.423':
+    resolution: {integrity: sha512-YFInsEJ9IbwIu2Ks5+sdXrGc63EqLnEAcFCXp43FkCBzmE3dVupDZCle/YGPyhmyHJbJDSshKKuYKJgzIBTARg==}
+
+  '@hcengineering/text-markdown@0.7.423':
+    resolution: {integrity: sha512-AtJO1gC4Y0ELf7glNOoFZFQw3vycOnU4eIISW0QzW9YZc1GLd0mHJk+vWZwa5TVpiC26nnjF8+QDaVjod0mACg==}
+
+  '@hcengineering/text@0.7.423':
+    resolution: {integrity: sha512-0VQUZjujfYs0PgMcMf090W5MYaieM5k/pugidPLbv8A6g2qgHCbdKMNbnCxly8rISITUnY4oEC9dPTVKEdL1UA==}
+
+  '@hcengineering/theme@0.7.423':
+    resolution: {integrity: sha512-aXFJWiBKiNdUECBuhnpeT9ZPD5B15Kqvl9vA759LvjVXRIs34jkK8RmKDVXtchNa6raj1Rbt5XW2Cn/35b+Twg==}
+
+  '@hcengineering/time@0.7.423':
+    resolution: {integrity: sha512-jW8GVeLlhN0c+9Vq3zvhnrO6BSZnv0mR9WQXErsgPaJS+joAv0rfH74yXtA7ppShnG3uTqf38f5H1b4E9l149A==}
+
+  '@hcengineering/tracker@0.7.423':
+    resolution: {integrity: sha512-0WOSN4fDUagVYZJZWOzpYFafXePOARDlcfiTH4vp/qt5cJ8pfvQROuk/5IcR5S0CZUz+Scgcbp1S05cxNf+trw==}
+
+  '@hcengineering/ui@0.7.423':
+    resolution: {integrity: sha512-uOSfDG3b69Q6WgzTq62S/tuiobcTZRopxUHxorXsEfO5/iqSqWb4V61eUexmTBCD+3jAEMquqGcNFW956hXcPg==}
+
+  '@hcengineering/view@0.7.423':
+    resolution: {integrity: sha512-9UCXavJ3pUnzWiYZPL+czdfa6PxkGtknub2uaiN6T7pCMjyMZNPh3AoR4c48HDUeO14njoYrb7CzKeCzhYNCMQ==}
+
+  '@hcengineering/workbench@0.7.423':
+    resolution: {integrity: sha512-YFTPPikH/QNv4C0dgnwAZkRohsZTJVrikGbeVHggSr+6J+AeFgmO26/RBTOVPydTu4ZYqXfNOJozAcRBTgVO7w==}
 
   '@hocuspocus/common@2.15.3':
     resolution: {integrity: sha512-Rzh1HF0a2o/tf90A3w2XNdXd9Ym3aQzMDfD3lAUONCX9B9QOdqdyiORrj6M25QEaJrEIbXFy8LtAFcL0wRdWzA==}
@@ -53314,6 +53705,313 @@ snapshots:
       yargs: 17.7.2
 
   '@hapi/bourne@3.0.0': {}
+
+  '@hcengineering/account-client@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+
+  '@hcengineering/activity@0.7.423':
+    dependencies:
+      '@hcengineering/contact': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/preference': 0.7.423
+      '@hcengineering/ui': 0.7.423
+      '@hcengineering/view': 0.7.423
+
+  '@hcengineering/analytics@0.7.423':
+    dependencies:
+      '@hcengineering/platform': 0.7.423
+
+  '@hcengineering/api-client@0.7.423(bufferutil@4.0.9)(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.3)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@hcengineering/account-client': 0.7.423
+      '@hcengineering/client': 0.7.423
+      '@hcengineering/client-resources': 0.7.423
+      '@hcengineering/collaborator-client': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/text': 0.7.423(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.3)
+      '@hcengineering/text-markdown': 0.7.423
+      snappyjs: 0.7.0
+    optionalDependencies:
+      ws: 8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - bufferutil
+      - prosemirror-inputrules
+      - prosemirror-model
+      - prosemirror-state
+      - prosemirror-view
+      - utf-8-validate
+
+  '@hcengineering/attachment@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/preference': 0.7.423
+      '@hcengineering/ui': 0.7.423
+      '@hcengineering/workbench': 0.7.423
+
+  '@hcengineering/calendar@0.7.423':
+    dependencies:
+      '@hcengineering/contact': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/notification': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/preference': 0.7.423
+      '@hcengineering/setting': 0.7.423
+      '@hcengineering/ui': 0.7.423
+
+  '@hcengineering/card@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/preference': 0.7.423
+      '@hcengineering/ui': 0.7.423
+      '@hcengineering/view': 0.7.423
+
+  '@hcengineering/chunter@0.7.423':
+    dependencies:
+      '@hcengineering/activity': 0.7.423
+      '@hcengineering/contact': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/notification': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/ui': 0.7.423
+      '@hcengineering/view': 0.7.423
+      '@hcengineering/workbench': 0.7.423
+      fast-equals: 5.3.2
+
+  '@hcengineering/client-resources@0.7.423':
+    dependencies:
+      '@hcengineering/analytics': 0.7.423
+      '@hcengineering/client': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/rpc': 0.7.423
+      snappyjs: 0.7.0
+
+  '@hcengineering/client@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+
+  '@hcengineering/collaborator-client@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+
+  '@hcengineering/contact@0.7.423':
+    dependencies:
+      '@hcengineering/card': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/preference': 0.7.423
+      '@hcengineering/templates': 0.7.423
+      '@hcengineering/ui': 0.7.423
+      '@hcengineering/view': 0.7.423
+
+  '@hcengineering/core@0.7.423':
+    dependencies:
+      '@hcengineering/analytics': 0.7.423
+      '@hcengineering/measurements': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      fast-equals: 5.3.2
+
+  '@hcengineering/measurements@0.7.423': {}
+
+  '@hcengineering/notification@0.7.423':
+    dependencies:
+      '@hcengineering/activity': 0.7.423
+      '@hcengineering/contact': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/preference': 0.7.423
+      '@hcengineering/setting': 0.7.423
+      '@hcengineering/ui': 0.7.423
+      '@hcengineering/view': 0.7.423
+
+  '@hcengineering/platform@0.7.423':
+    dependencies:
+      intl-messageformat: 10.7.18
+
+  '@hcengineering/preference@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/ui': 0.7.423
+
+  '@hcengineering/rank@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      lexorank: 1.0.5
+
+  '@hcengineering/rpc@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      msgpackr: 1.11.5
+
+  '@hcengineering/setting@0.7.423':
+    dependencies:
+      '@hcengineering/account-client': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/templates': 0.7.423
+      '@hcengineering/ui': 0.7.423
+
+  '@hcengineering/tags@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/ui': 0.7.423
+      '@hcengineering/view': 0.7.423
+
+  '@hcengineering/task@0.7.423':
+    dependencies:
+      '@hcengineering/contact': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/notification': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/rank': 0.7.423
+      '@hcengineering/ui': 0.7.423
+      '@hcengineering/view': 0.7.423
+
+  '@hcengineering/templates@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/ui': 0.7.423
+
+  '@hcengineering/text-core@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      fast-equals: 5.3.2
+      hash-it: 6.0.0
+
+  '@hcengineering/text-html@0.7.423':
+    dependencies:
+      '@hcengineering/text-core': 0.7.423
+      htmlparser2: 9.1.0
+
+  '@hcengineering/text-markdown@0.7.423':
+    dependencies:
+      '@hcengineering/text-core': 0.7.423
+      '@hcengineering/text-html': 0.7.423
+      fast-equals: 5.3.2
+      markdown-it: 14.1.0
+
+  '@hcengineering/text@0.7.423(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.3)':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/text-core': 0.7.423
+      '@tiptap/core': 2.27.1(@tiptap/pm@2.27.1)
+      '@tiptap/extension-blockquote': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-bold': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-bullet-list': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-code': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-code-block': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/extension-document': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-dropcursor': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/extension-gapcursor': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/extension-hard-break': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-heading': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-highlight': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-history': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/extension-horizontal-rule': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/extension-italic': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-link': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/extension-list-item': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-mention': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)(@tiptap/suggestion@2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1))
+      '@tiptap/extension-ordered-list': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-paragraph': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-strike': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-subscript': 2.27.2(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-superscript': 2.27.2(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-table': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/extension-table-cell': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-table-header': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-table-row': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-task-item': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/extension-task-list': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-text': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-text-align': 2.11.9(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-text-style': 2.11.9(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-typography': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/extension-underline': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))
+      '@tiptap/html': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      '@tiptap/pm': 2.27.1
+      '@tiptap/starter-kit': 2.27.1
+      '@tiptap/suggestion': 2.27.1(@tiptap/core@2.27.1(@tiptap/pm@2.27.1))(@tiptap/pm@2.27.1)
+      fast-equals: 5.3.2
+      prosemirror-codemark: 0.4.2(prosemirror-inputrules@1.5.1)(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.3)
+    transitivePeerDependencies:
+      - prosemirror-inputrules
+      - prosemirror-model
+      - prosemirror-state
+      - prosemirror-view
+
+  '@hcengineering/theme@0.7.423':
+    dependencies:
+      '@hcengineering/analytics': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      svelte: 4.2.20
+
+  '@hcengineering/time@0.7.423':
+    dependencies:
+      '@hcengineering/calendar': 0.7.423
+      '@hcengineering/contact': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/rank': 0.7.423
+      '@hcengineering/task': 0.7.423
+      '@hcengineering/ui': 0.7.423
+
+  '@hcengineering/tracker@0.7.423':
+    dependencies:
+      '@hcengineering/attachment': 0.7.423
+      '@hcengineering/chunter': 0.7.423
+      '@hcengineering/contact': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/preference': 0.7.423
+      '@hcengineering/tags': 0.7.423
+      '@hcengineering/task': 0.7.423
+      '@hcengineering/time': 0.7.423
+      '@hcengineering/ui': 0.7.423
+      '@hcengineering/view': 0.7.423
+      lexorank: 1.0.5
+
+  '@hcengineering/ui@0.7.423':
+    dependencies:
+      '@hcengineering/analytics': 0.7.423
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/theme': 0.7.423
+      autolinker: 4.0.0
+      blurhash: 2.0.5
+      date-fns: 2.30.0
+      date-fns-tz: 2.0.1(date-fns@2.30.0)
+      dompurify: 3.3.0
+      fast-equals: 5.3.2
+      plyr: 3.7.8
+      svelte: 4.2.20
+
+  '@hcengineering/view@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/preference': 0.7.423
+      '@hcengineering/ui': 0.7.423
+
+  '@hcengineering/workbench@0.7.423':
+    dependencies:
+      '@hcengineering/core': 0.7.423
+      '@hcengineering/notification': 0.7.423
+      '@hcengineering/platform': 0.7.423
+      '@hcengineering/preference': 0.7.423
+      '@hcengineering/ui': 0.7.423
+      '@hcengineering/view': 0.7.423
 
   '@hocuspocus/common@2.15.3':
     dependencies:

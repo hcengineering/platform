@@ -5,7 +5,3 @@
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
 //
-// (Deprecated) The standalone HTTP server was replaced by Bolt's built-in
-// HTTP receiver in OAuth mode. Health check is served via Bolt customRoutes.
-//
-export {}

@@ -99,6 +99,7 @@ import { serverProcessId, createModel as serverProcessModel } from '@hcengineeri
 import { serverTimeId, createModel as serverTimeModel } from '@hcengineering/model-server-time'
 
 import aiAssistant, { aiAssistantId, createModel as aiAssistantModel } from '@hcengineering/model-ai-assistant'
+import { slackId, createModel as slackModel } from '@hcengineering/model-slack'
 import documents, { documentsId, createModel as documentsModel } from '@hcengineering/model-controlled-documents'
 import { hulyMailId, createModel as hulyMailModel } from '@hcengineering/model-huly-mail'
 import { mailId, createModel as mailModel } from '@hcengineering/model-mail'
@@ -508,6 +509,7 @@ export default function buildModel (): Builder {
       }
     ],
     [hulyMailModel, hulyMailId],
+    [slackModel, slackId],
     [
       aiAssistantModel,
       aiAssistantId,

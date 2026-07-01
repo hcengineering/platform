@@ -7,12 +7,11 @@
 //
 
 import { startBot, stopBot, postToSlack } from './bot'
-import { startServer } from './server'
 import { connectHuly, closeHuly, startTaskWatcher, isConnected } from './huly'
 import config from './config'
 
 export async function start (): Promise<void> {
-  const server = startServer()
+  // Bolt serves HTTP itself (install / oauth_redirect / events / health).
   await startBot()
 
   // Connect to Huly for task creation.
@@ -22,7 +21,7 @@ export async function start (): Promise<void> {
     console.error('[huly] connection failed — task creation will be unavailable:', String(err))
   }
 
-  // Watch for task assignments and post to the notification channel.
+  // Watch for task assignments/status changes and post to the notification channel.
   let stopWatcher: () => void = () => {}
   if (isConnected() && config.NotifyChannel !== '') {
     stopWatcher = startTaskWatcher(async (text) => {
@@ -35,7 +34,6 @@ export async function start (): Promise<void> {
   const shutdown = (): void => {
     console.log('[slack] shutting down...')
     stopWatcher()
-    server.close()
     void Promise.allSettled([stopBot(), closeHuly()]).finally(() => process.exit(0))
   }
 

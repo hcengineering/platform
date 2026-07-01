@@ -81,6 +81,7 @@ import { emojiId } from '@hcengineering/emoji'
 import billingPlugin, { billingId } from '@hcengineering/billing'
 import { hulyMailId } from '@hcengineering/huly-mail'
 import { aiAssistantId } from '@hcengineering/ai-assistant'
+import slack, { slackId } from '@hcengineering/slack'
 import { ratingId } from '@hcengineering/rating'
 
 import '@hcengineering/activity-assets'
@@ -141,6 +142,7 @@ import '@hcengineering/emoji-assets'
 import '@hcengineering/billing-assets'
 import '@hcengineering/huly-mail-assets'
 import '@hcengineering/ai-assistant-assets'
+import '@hcengineering/slack-assets'
 import '@hcengineering/rating-assets'
 
 import { coreId } from '@hcengineering/core'
@@ -178,6 +180,7 @@ export interface Config {
   ANALYTICS_COLLECTOR_URL?: string
   BRANDING_URL?: string
   TELEGRAM_BOT_URL?: string
+  SLACK_SERVICE_URL?: string
   AI_URL?: string
   DISABLE_SIGNUP?: string
   HIDE_LOCAL_LOGIN?: string
@@ -413,6 +416,7 @@ function configureI18n(): void {
     aiAssistantId,
     async (lang: string) => await import(`@hcengineering/ai-assistant-assets/lang/${lang}.json`)
   )
+  addStringsLoader(slackId, async (lang: string) => await import(`@hcengineering/slack-assets/lang/${lang}.json`))
   addStringsLoader(ratingId, async (lang: string) => await import(`@hcengineering/rating-assets/lang/${lang}.json`))
 }
 
@@ -509,6 +513,7 @@ export async function configurePlatform() {
   }
   setMetadata(telegram.metadata.TelegramURL, config.TELEGRAM_URL ?? 'http://localhost:8086')
   setMetadata(telegram.metadata.BotUrl, config.TELEGRAM_BOT_URL ?? 'http://huly.local:4020')
+  setMetadata(slack.metadata.ServiceUrl, config.SLACK_SERVICE_URL ?? '')
   setMetadata(gmail.metadata.GmailURL, config.GMAIL_URL ?? 'http://localhost:8087')
   setMetadata(calendar.metadata.CalendarServiceURL, config.CALENDAR_URL ?? 'http://localhost:8095')
   setMetadata(calendar.metadata.PublicScheduleURL, config.PUBLIC_SCHEDULE_URL)
@@ -713,6 +718,7 @@ export async function configurePlatform() {
     aiAssistantId,
     async () => await import(/* webpackChunkName: "ai-assistant" */ '@hcengineering/ai-assistant-resources')
   )
+  addLocation(slackId, async () => await import(/* webpackChunkName: "slack" */ '@hcengineering/slack-resources'))
   addLocation(inboxId, async () => await import(/* webpackChunkName: "inbox" */ '@hcengineering/inbox-resources'))
   addLocation(ratingId, async () => await import(/* webpackChunkName: "rating" */ '@hcengineering/rating-resources'))
 

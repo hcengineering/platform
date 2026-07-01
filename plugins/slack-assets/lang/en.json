@@ -1,0 +1,10 @@
+{
+  "string": {
+    "IntegrationLabel": "Slack",
+    "IntegrationDescription": "Create Huly tasks from Slack messages and get task updates in Slack",
+    "ConfigLabel": "Slack",
+    "ConfigDescription": "Slack to Huly task integration",
+    "Connect": "Connect",
+    "Configure": "Slack integration"
+  }
+}

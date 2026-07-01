@@ -7,31 +7,35 @@
 //
 
 export interface Config {
-  /** HTTP port for the health-check / notification endpoint. */
+  /** HTTP port Bolt listens on (serves /slack/install, /slack/oauth_redirect, /slack/events). */
   Port: number
-  /** Slack bot token (xoxb-...). Bot User OAuth Token. */
-  SlackBotToken: string
-  /** Slack signing secret (used to verify HTTP requests; required by Bolt even in Socket Mode). */
+  /** Slack app Client ID (Basic Information -> App Credentials). */
+  SlackClientId: string
+  /** Slack app Client Secret. */
+  SlackClientSecret: string
+  /** Slack signing secret (verifies inbound requests). */
   SlackSigningSecret: string
-  /** Slack app-level token (xapp-...) — required for Socket Mode. */
-  SlackAppToken: string
-  /** Default Slack channel id to post Huly notifications to. */
-  DefaultChannel: string
-  /** Slack channel id where task-completion notifications are posted. */
+  /** Random secret used to sign the OAuth state parameter. */
+  SlackStateSecret: string
+  /** Public HTTPS base URL where this service is reachable (e.g. https://slack.company.com). */
+  PublicUrl: string
+  /** Channel id where task-completion / update notifications are posted. */
   NotifyChannel: string
-  /** Huly accounts service URL, e.g. http://huly.local:3000 (used by Huly integration hooks). */
-  AccountsUrl: string
-  /** Huly instance URL the api-client connects to (front), e.g. http://huly.local:8087 */
-  HulyUrl: string
-  /** Huly login email for the service account. */
-  HulyEmail: string
-  /** Huly login password for the service account. */
-  HulyPassword: string
-  /** Huly workspace name (from the URL: /workbench/<workspace>). */
-  HulyWorkspace: string
-  /** Emoji name (without colons) that, when added to a message, creates a task for it. */
+  /** File path where Slack installations (per-team tokens) are persisted. */
+  InstallStorePath: string
+  /** Emoji name (no colons) that creates a task for a message when reacted. */
   TaskTriggerEmoji: string
-  /** Service identifier used in logs / queue. */
+
+  /** Huly instance URL the api-client connects to (front). */
+  HulyUrl: string
+  /** Huly service-account email. */
+  HulyEmail: string
+  /** Huly service-account password. */
+  HulyPassword: string
+  /** Huly workspace slug tasks are created in. */
+  HulyWorkspace: string
+
+  /** Service identifier used in logs. */
   ServiceId: string
 }
 
@@ -41,24 +45,28 @@ const parseNumber = (str: string | undefined): number | undefined =>
 const config: Config = (() => {
   const params: Partial<Config> = {
     Port: parseNumber(process.env.PORT) ?? 4025,
-    SlackBotToken: process.env.SLACK_BOT_TOKEN,
+    SlackClientId: process.env.SLACK_CLIENT_ID,
+    SlackClientSecret: process.env.SLACK_CLIENT_SECRET,
     SlackSigningSecret: process.env.SLACK_SIGNING_SECRET,
-    SlackAppToken: process.env.SLACK_APP_TOKEN,
-    DefaultChannel: process.env.SLACK_DEFAULT_CHANNEL ?? '',
+    SlackStateSecret: process.env.SLACK_STATE_SECRET,
+    PublicUrl: process.env.PUBLIC_URL ?? '',
     NotifyChannel: process.env.SLACK_NOTIFY_CHANNEL ?? '',
-    AccountsUrl: process.env.ACCOUNTS_URL ?? 'http://huly.local:3000',
+    InstallStorePath: process.env.INSTALL_STORE_PATH ?? './installations.json',
+    TaskTriggerEmoji: (process.env.TASK_TRIGGER_EMOJI ?? 'ticket').replace(/:/g, ''),
     HulyUrl: process.env.HULY_URL ?? 'http://huly.local:8087',
     HulyEmail: process.env.HULY_EMAIL ?? '',
     HulyPassword: process.env.HULY_PASSWORD ?? '',
     HulyWorkspace: process.env.HULY_WORKSPACE ?? '',
-    TaskTriggerEmoji: (process.env.TASK_TRIGGER_EMOJI ?? 'ticket').replace(/:/g, ''),
     ServiceId: process.env.SERVICE_ID ?? 'slack'
   }
 
-  // Only these are strictly required for the bot to start.
-  const required: Array<keyof Config> = ['SlackBotToken', 'SlackSigningSecret', 'SlackAppToken']
+  const required: Array<keyof Config> = [
+    'SlackClientId',
+    'SlackClientSecret',
+    'SlackSigningSecret',
+    'SlackStateSecret'
+  ]
   const missing = required.filter((key) => params[key] === undefined || params[key] === '')
-
   if (missing.length > 0) {
     throw Error(`Missing required env vars: ${missing.join(', ')}`)
   }

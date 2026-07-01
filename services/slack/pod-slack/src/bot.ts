@@ -7,10 +7,24 @@
 //
 
 import { App, LogLevel } from '@slack/bolt'
+import { WebClient } from '@slack/web-api'
 import config from './config'
 import { createTask, attachFile, isConnected } from './huly'
+import { fileInstallationStore, firstBotToken } from './installationStore'
 
 let app: App | undefined
+
+const SLACK_SCOPES = [
+  'app_mentions:read',
+  'channels:history',
+  'channels:read',
+  'groups:history',
+  'chat:write',
+  'commands',
+  'reactions:read',
+  'reactions:write',
+  'files:read'
+]
 
 /**
  * Turn a Slack message into a Huly task: eyes reaction, create task, attach
@@ -50,7 +64,8 @@ async function handleAsTask (
       const url = f.url_private_download ?? f.url_private
       if (url === undefined) continue
       try {
-        const resp = await fetch(url, { headers: { Authorization: `Bearer ${config.SlackBotToken}` } })
+        const token = (client as any).token as string | undefined
+        const resp = await fetch(url, { headers: { Authorization: `Bearer ${token ?? ''}` } })
         const ctype = resp.headers.get('content-type') ?? ''
         if (ctype.includes('text/html')) {
           console.warn('[slack] file download returned HTML — bot likely missing the files:read scope')
@@ -96,17 +111,35 @@ async function fetchMessage (client: any, channel: string, ts: string): Promise<
 }
 
 /**
- * Create and start the Slack Bolt app in Socket Mode.
- * Socket Mode opens an outbound websocket to Slack, so it works for local
- * development behind huly.local without any public URL or tunnel.
+ * Create and start the Slack Bolt app in OAuth mode over HTTP (Events API).
+ * Install:   GET  {PublicUrl}/slack/install         ("Connect / Add to Slack")
+ * Callback:  GET  {PublicUrl}/slack/oauth_redirect   (OAuth redirect URL)
+ * Events:    POST {PublicUrl}/slack/events           (Events + interactivity)
+ * The bot token for each workspace is obtained during install and stored via
+ * the installation store — nothing is hardcoded.
  */
 export async function startBot (): Promise<App> {
   app = new App({
-    token: config.SlackBotToken,
     signingSecret: config.SlackSigningSecret,
-    appToken: config.SlackAppToken,
-    socketMode: true,
-    logLevel: LogLevel.INFO
+    clientId: config.SlackClientId,
+    clientSecret: config.SlackClientSecret,
+    stateSecret: config.SlackStateSecret,
+    scopes: SLACK_SCOPES,
+    installationStore: fileInstallationStore,
+    installerOptions: {
+      directInstall: true // /slack/install redirects straight to Slack's consent screen
+    },
+    logLevel: LogLevel.INFO,
+    customRoutes: [
+      {
+        path: '/health',
+        method: ['GET'],
+        handler: (_req, res) => {
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ status: 'ok', service: config.ServiceId }))
+        }
+      }
+    ]
   })
 
   app.message(async ({ message, client }) => {
@@ -168,24 +201,27 @@ export async function startBot (): Promise<App> {
     await handleAsTask(client, channel, ts, replyTs, msg.user ?? event.user, msg.text ?? '', msg.files ?? [])
   })
 
-  await app.start()
-  console.log('[slack] Bolt app started in Socket Mode')
+  await app.start(config.Port)
+  console.log(`[slack] Bolt app (OAuth) listening on :${config.Port}`)
+  console.log(`[slack] install at ${config.PublicUrl !== '' ? config.PublicUrl : `http://localhost:${config.Port}`}/slack/install`)
   return app
 }
 
 /**
- * Post a message into Slack from Huly (e.g. notifications).
+ * Post a message into Slack from Huly (e.g. notifications). In OAuth mode there
+ * is no single default token, so we use the stored installation's bot token.
  * Returns the message ts on success.
  */
 export async function postToSlack (channel: string, text: string): Promise<string | undefined> {
-  if (app === undefined) throw Error('Slack app not started')
-  const target = channel !== '' ? channel : config.DefaultChannel
-  if (target === '') {
-    console.warn('[slack] postToSlack called with no channel and no SLACK_DEFAULT_CHANNEL')
+  const target = channel !== '' ? channel : config.NotifyChannel
+  if (target === '') return undefined
+  const token = firstBotToken()
+  if (token === undefined) {
+    console.warn('[slack] postToSlack: no installation yet — connect a workspace first')
     return undefined
   }
-  const res = await app.client.chat.postMessage({ channel: target, text })
-  return res.ts
+  const res = await new WebClient(token).chat.postMessage({ channel: target, text })
+  return res.ts as string | undefined
 }
 
 export async function stopBot (): Promise<void> {

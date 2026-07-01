@@ -2367,6 +2367,26 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/slack",
+      "projectFolder": "plugins/slack",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/slack-assets",
+      "projectFolder": "plugins/slack-assets",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/slack-resources",
+      "projectFolder": "plugins/slack-resources",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-slack",
+      "projectFolder": "models/slack",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/openai",
       "projectFolder": "plugins/openai",
       "shouldPublish": false
