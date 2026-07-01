@@ -15,12 +15,16 @@
 
   const dispatch = createEventDispatcher()
 
-  const serviceUrl = getMetadata(slack.metadata.ServiceUrl) ?? ''
+  // Prefer an explicitly configured service URL; otherwise assume the Slack
+  // service is reverse-proxied under the same origin as Huly (path /slack/*),
+  // so no config is needed in that (recommended) deployment.
+  const configured = getMetadata(slack.metadata.ServiceUrl) ?? ''
+  const serviceUrl = (configured !== '' ? configured : (typeof window !== 'undefined' ? window.location.origin : '')).replace(/\/$/, '')
 
   function connect (): void {
     if (serviceUrl === '') return
     // Opens the Slack OAuth install flow served by the pod-slack service.
-    window.open(`${serviceUrl.replace(/\/$/, '')}/slack/install`, '_blank', 'noopener')
+    window.open(`${serviceUrl}/slack/install`, '_blank', 'noopener')
     dispatch('close')
   }
 </script>
@@ -50,15 +54,8 @@
       tasks automatically, the bot reacts with eyes to messages, and mentioning
       “huly” in a thread creates a task for the message above.
     </span>
-    {#if serviceUrl !== ''}
-      <div class="flex">
-        <Button label={slack.string.Connect} kind={'primary'} on:click={connect} />
-      </div>
-    {:else}
-      <span class="content-dark-color">
-        The Slack service URL isn’t configured yet. Set <b>SLACK_SERVICE_URL</b> in the
-        front config, then reconnect — or open <b>&lt;service-url&gt;/slack/install</b> directly.
-      </span>
-    {/if}
+    <div class="flex">
+      <Button label={slack.string.Connect} kind={'primary'} on:click={connect} />
+    </div>
   </div>
 </Card>

@@ -127,7 +127,31 @@ export async function startBot (): Promise<App> {
     scopes: SLACK_SCOPES,
     installationStore: fileInstallationStore,
     installerOptions: {
-      directInstall: true // /slack/install redirects straight to Slack's consent screen
+      directInstall: true, // /slack/install redirects straight to Slack's consent screen
+      callbackOptions: {
+        // Shown after the user clicks "Allow" — confirms and links back to Huly.
+        success: (installation, _options, _req, res) => {
+          const team = installation.team?.name ?? 'your workspace'
+          const back = config.HulyUrl !== '' ? config.HulyUrl : '#'
+          res.writeHead(200, { 'Content-Type': 'text/html' })
+          res.end(
+            `<!doctype html><html><head><meta charset="utf-8"><title>Connected</title></head>` +
+            `<body style="font-family:sans-serif;text-align:center;padding:64px">` +
+            `<h2>✅ Slack connected</h2>` +
+            `<p><b>${team}</b> is now linked to Huly. You can close this tab.</p>` +
+            `<p><a href="${back}" style="display:inline-block;margin-top:16px;padding:10px 18px;` +
+            `background:#4a154b;color:#fff;border-radius:6px;text-decoration:none">Return to Huly</a></p>` +
+            `</body></html>`
+          )
+        },
+        failure: (error, _options, _req, res) => {
+          res.writeHead(500, { 'Content-Type': 'text/html' })
+          res.end(
+            `<!doctype html><html><body style="font-family:sans-serif;text-align:center;padding:64px">` +
+            `<h2>❌ Slack connection failed</h2><p>${String(error)}</p></body></html>`
+          )
+        }
+      }
     },
     logLevel: LogLevel.INFO,
     customRoutes: [

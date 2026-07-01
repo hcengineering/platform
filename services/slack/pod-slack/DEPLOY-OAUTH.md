@@ -8,6 +8,35 @@ API. Workspaces connect via "Add to Slack" — no tokens are hardcoded.
   (behind an ALB / nginx / Caddy with TLS). Slack requires HTTPS for OAuth and events.
 - The Huly instance reachable from this service.
 
+## Recommended: same-domain setup (no front config needed)
+Serve `pod-slack` under the **same domain** as Huly, on the `/slack/*` path. Then
+the "Connect" button in Huly's Settings → Integrations tile uses the same origin
+automatically — you do NOT set `SLACK_SERVICE_URL` anywhere.
+
+Bolt already serves its routes under `/slack/*` (`/slack/install`,
+`/slack/oauth_redirect`, `/slack/events`), so the proxy must **preserve** the
+path (use `handle`, not `handle_path`). Example Caddy config (TLS auto-provisioned):
+```
+huly.company.com {
+    # Slack OAuth + events -> pod-slack (path kept as /slack/*)
+    handle /slack/* {
+        reverse_proxy pod-slack:4025
+    }
+    # Everything else -> Huly front
+    handle {
+        reverse_proxy huly-front:8080
+    }
+}
+```
+Set `PUBLIC_URL=https://huly.company.com` on the pod-slack service.
+
+With this, Slack app URLs are:
+`https://huly.company.com/slack/oauth_redirect` and `https://huly.company.com/slack/events`.
+
+**Separate-subdomain alternative:** run the bot on its own host (e.g.
+`https://slack.company.com`) and set `SLACK_SERVICE_URL=https://slack.company.com`
+in the Huly front's runtime config so the tile button points there.
+
 ## Slack app configuration (api.slack.com/apps)
 Do this AFTER the domain is live.
 
@@ -62,6 +91,26 @@ URL is configured), authorizes, and the workspace is linked. From then on:
 - the 🎫 reaction creates a task for any message,
 - task assignment/status changes post to the notify channel.
 
+## Post-deploy test checklist (run on the live domain)
+1. **Events URL verifies:** in the Slack app → Event Subscriptions, the Request
+   URL `https://DOMAIN/slack/events` shows **Verified** (Bolt answers the challenge).
+2. **Install:** open `https://DOMAIN/slack/install` (or the Connect button in
+   Huly Settings → Integrations once `SLACK_SERVICE_URL` is set) → authorize →
+   redirected back with success; `installations.json` now has an entry.
+3. **Invite the bot** to a channel: `/invite @<app>`.
+4. **Top-level message → task:** post a message → bot reacts 👀 and a task
+   appears in Huly Tracker; a confirmation replies in-thread.
+5. **Human-only 👀:** the bot does not react to other bots' messages.
+6. **Thread trigger:** in a thread, reply mentioning `huly` → a task is created
+   for the message directly above the reply.
+7. **Reaction trigger:** react to any message with `:ticket:` (or
+   `TASK_TRIGGER_EMOJI`) → a task is created for that message.
+8. **Notifications:** assign a task / change its status in Huly → within ~10s an
+   update posts to `SLACK_NOTIFY_CHANNEL`.
+9. **Image attach:** post an image with a caption → the image attaches to the task.
+
 ## Notes
 - One running instance per file store. Scale-out needs a shared installation store.
 - Socket Mode is NOT used in this mode; the app-level token is not needed.
+- Local testing note: the full flow can't be verified on a laptop — Slack must
+  reach the events URL from the internet. Test on the deployed domain.
