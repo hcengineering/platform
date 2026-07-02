@@ -130,7 +130,5 @@ Our team is happy to help with migration. Join the [Huly community](https://link
 
 ## See also
 
-- [`server/backup/README.md`](../../server/backup/README.md) — full CLI
-  reference for `backup-restore`, including environment variables.
 - [huly-selfhost](https://github.com/hcengineering/huly-selfhost) — official
   self-hosted distribution.
