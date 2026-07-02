@@ -67,6 +67,7 @@ export default plugin(serverProcessId, {
     CheckToDoCancelled: '' as Resource<CheckFunc>,
     MatchCardCheck: '' as Resource<CheckFunc>,
     FieldChangedCheck: '' as Resource<CheckFunc>,
+    RequiredFieldsFilledCheck: '' as Resource<CheckFunc>,
     CheckSubProcessesDone: '' as Resource<CheckFunc>,
     CheckSubProcessMatch: '' as Resource<CheckFunc>,
     CheckTime: '' as Resource<CheckFunc>,
@@ -146,6 +147,7 @@ export default plugin(serverProcessId, {
     OnProcessToDoRemove: '' as Resource<TriggerFunc>,
     OnExecutionContinue: '' as Resource<TriggerFunc>,
     OnCustomEvent: '' as Resource<TriggerFunc>,
+    OnExecutionDone: '' as Resource<TriggerFunc>,
     OnExecutionRemove: '' as Resource<TriggerFunc>
   }
 })

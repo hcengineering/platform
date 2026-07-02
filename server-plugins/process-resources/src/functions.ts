@@ -16,6 +16,7 @@
 import cardPlugin, { Card, MasterTag, Tag } from '@hcengineering/card'
 import core, {
   Association,
+  AnyAttribute,
   checkMixinKey,
   Class,
   Data,
@@ -45,7 +46,8 @@ import process, {
   Process,
   processError,
   ProcessToDo,
-  UserResult
+  UserResult,
+  ContextId
 } from '@hcengineering/process'
 import { ExecuteResult, ProcessControl, SuccessExecutionContext } from '@hcengineering/server-process'
 import { isEmptyMarkup } from '@hcengineering/text-core'
@@ -219,6 +221,36 @@ export function FieldChangedCheck (
   return res.length > 0
 }
 
+function isRequiredValueFilled (value: any, attr: AnyAttribute): boolean {
+  if (attr.type?._class === core.class.TypeMarkup) return !isEmptyMarkup(value)
+  if (Array.isArray(value)) return value.length > 0
+  return value !== undefined && value !== null && value !== ''
+}
+
+export function RequiredFieldsFilledCheck (
+  control: ProcessControl,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): boolean {
+  let card = context.card
+  if (card === undefined) return false
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) return false
+  const hierarchy = control.client.getHierarchy()
+  const attributes = Array.from(
+    hierarchy.isMixin(_process.masterTag)
+      ? hierarchy.getOwnAttributes(_process.masterTag).entries()
+      : hierarchy.getAllAttributes(_process.masterTag, core.class.Doc).entries()
+  ).filter(([, attr]) => attr.required === true && attr.hidden !== true)
+
+  if (hierarchy.isMixin(_process.masterTag)) {
+    card = hierarchy.as(card, _process.masterTag)
+  }
+
+  return attributes.every(([key, attr]) => isRequiredValueFilled(getObjectValue(key, card), attr))
+}
+
 export function CheckTime (control: ProcessControl, execution: Execution, params: Record<string, any>): boolean {
   if (params.value === undefined) return false
   return params.value <= Date.now()
@@ -353,14 +385,24 @@ export async function AddTag (
   execution: Execution,
   control: ProcessControl
 ): Promise<ExecuteResult> {
-  const { _id, props } = params
+  const { _id, props, requiredProperties } = params
   if (_id === undefined) throw processError(process.error.RequiredParamsNotProvided, { params: '_id' })
   const tagId = _id as Ref<Tag>
   const res: Tx[] = []
   const _process = control.client.getModel().findObject(execution.process)
   if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
   // todo fill default for tag and set parent tags
-  const tx = control.client.txFactory.createTxMixin(execution.card, _process.masterTag, execution.space, tagId, props)
+  const mergedProps = { ...props }
+  if (requiredProperties !== undefined && typeof requiredProperties === 'object' && requiredProperties !== null) {
+    Object.assign(mergedProps, requiredProperties)
+  }
+  const tx = control.client.txFactory.createTxMixin(
+    execution.card,
+    _process.masterTag,
+    execution.space,
+    tagId,
+    mergedProps
+  )
   res.push(tx)
   const card = control.cache.get(execution.card)
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
@@ -746,6 +788,27 @@ export async function CreateToDo (
   const _process = control.client.getModel().findObject(execution.process)
   if (_process === undefined) return { txes: [], rollback: [], context: null }
   const field = resolveAttributeId(_process, (params as any).field)
+  const todoResults = results ?? []
+  if (params.askRequired === true) {
+    const h = control.client.getHierarchy()
+    const classId = _process.masterTag
+    const allAttributes = Array.from(
+      h.isMixin(classId) ? h.getOwnAttributes(classId).values() : h.getAllAttributes(classId, core.class.Doc).values()
+    )
+
+    for (const attr of allAttributes) {
+      if (attr.hidden === true || attr.required !== true) continue
+      if (todoResults.some((r) => r.key === attr.name)) continue
+
+      todoResults.push({
+        _id: generateId() as any as ContextId,
+        name: attr.name,
+        key: attr.name,
+        type: attr.type
+      })
+    }
+  }
+
   const tx = control.client.txFactory.createTxCreateDoc(
     process.class.ProcessToDo,
     time.space.ToDos,
@@ -764,8 +827,9 @@ export async function CreateToDo (
       doneOn: null,
       rank: '',
       withRollback: params.withRollback ?? false,
-      results,
-      field
+      results: todoResults,
+      field,
+      askRequired: params.askRequired
     },
     id
   )
@@ -843,7 +907,7 @@ export async function CreateCard (
   execution: Execution,
   control: ProcessControl
 ): Promise<ExecuteResult> {
-  const { _class, title, content, ...attrs } = params
+  const { _class, title, content, requiredFields, ...attrs } = params
   for (const key in { _class, title }) {
     const val = (params as any)[key]
     if (isEmpty(val)) {
@@ -853,6 +917,9 @@ export async function CreateCard (
   const _process = control.client.getModel().findObject(execution.process)
   if (_process === undefined) {
     throw processError(process.error.RequiredParamsNotProvided, {})
+  }
+  if (requiredFields !== undefined && typeof requiredFields === 'object' && requiredFields !== null) {
+    Object.assign(attrs, requiredFields)
   }
   const resolvedAttrs: Record<string, any> = {}
   for (const key in attrs) {

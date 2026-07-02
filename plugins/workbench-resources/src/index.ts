@@ -18,6 +18,7 @@ import { type Resources } from '@hcengineering/platform'
 import ApplicationPresenter from './components/ApplicationPresenter.svelte'
 import Archive from './components/Archive.svelte'
 import SpacePanel from './components/navigator/SpacePanel.svelte'
+import ShutdownNotice from './components/ShutdownNotice.svelte'
 import SpecialView from './components/SpecialView.svelte'
 import WorkbenchApp from './components/WorkbenchApp.svelte'
 import { doNavigate, logIn, logOut } from './utils'
@@ -55,7 +56,8 @@ export default async (): Promise<Resources> => ({
     SpecialView,
     Workbench,
     ServerManager,
-    WorkbenchTabs
+    WorkbenchTabs,
+    ShutdownNotice
   },
   function: {
     HasArchiveSpaces: hasArchiveSpaces,

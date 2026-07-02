@@ -311,6 +311,23 @@ export interface ReferenceObjectProvider extends Class<Doc> {
 /**
  * @public
  */
+export interface ReferenceVersion {
+  id: Ref<Doc>
+  objectclass: Ref<Class<Doc>>
+  label: string
+  fixed?: boolean
+}
+
+/**
+ * @public
+ */
+export interface ReferenceVersionsProvider extends Class<Doc> {
+  provider: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<ReferenceVersion[]>>
+}
+
+/**
+ * @public
+ */
 export interface ObjectTooltip extends Class<Doc> {
   provider: Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>
 }

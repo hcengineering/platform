@@ -98,6 +98,7 @@
     "CreateCard": "Utwórz kartę",
     "WhenCardMatches": "Kiedy karta spełnia warunek",
     "WhenFieldChanges": "Kiedy pole jest zmieniane",
+    "WhenRequiredFieldsFilled": "Kiedy wymagane pola są wypełnione",
     "ArraySizeEquals": "Rozmiar równy",
     "ArraySizeGt": "Rozmiar większy niż",
     "ArraySizeGte": "Rozmiar większy lub równy",
@@ -181,7 +182,8 @@
     "TextFromSelect": "Tekst z wyboru",
     "SelectFromText": "Wybór z tekstu",
     "AskSubclass": "Poproś o podklasę",
-    "TextFromIdentifier": "Tekst z identyfikatora"
+    "TextFromIdentifier": "Tekst z identyfikatora",
+    "AskRequired": "Poproś o wymagane pola"
   },
   "error": {
     "MethodNotFound": "Nie odnaleziono metody: {methodId}",

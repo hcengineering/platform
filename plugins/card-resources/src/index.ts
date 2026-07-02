@@ -28,6 +28,7 @@ import {
   editSpace,
   cardCustomLinkEncode,
   cardCustomLinkMatch,
+  cardReferenceObjectProvider,
   openCardInSidebar,
   checkRelationsSectionVisibility,
   checkOldMessagesSectionVisibility,
@@ -57,6 +58,7 @@ import CardEditor from './components/CardEditor.svelte'
 import CardRefPresenter from './components/CardRefPresenter.svelte'
 import ChangeType from './components/ChangeType.svelte'
 import CreateCardButton from './components/CreateCardButton.svelte'
+import CreateCardPopup from './components/CreateCardPopup.svelte'
 import CardArrayEditor from './components/CardArrayEditor.svelte'
 import SpacePresenter from './components/navigator/SpacePresenter.svelte'
 import TypesNavigator from './components/navigator/TypesNavigator.svelte'
@@ -124,6 +126,7 @@ export default async (): Promise<Resources> => ({
     CardsPresenter,
     ChangeType,
     CreateCardButton,
+    CreateCard: CreateCardPopup,
     CardArrayEditor,
     SpacePresenter,
     TypesNavigator,
@@ -167,6 +170,7 @@ export default async (): Promise<Resources> => ({
   },
   function: {
     CardTitleProvider: getCardTitle,
+    CardReferenceObjectProvider: cardReferenceObjectProvider,
     GetCardLink: getCardLink,
     CardCustomLinkMatch: cardCustomLinkMatch,
     CardCustomLinkEncode: cardCustomLinkEncode,

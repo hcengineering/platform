@@ -96,6 +96,7 @@
     "CreateCard": "Vytvořit kartu",
     "WhenCardMatches": "Když karta odpovídá",
     "WhenFieldChanges": "Když se pole změní",
+    "WhenRequiredFieldsFilled": "Když jsou vyplněna všechna povinná pole",
     "Insert": "Vložit",
     "Remove": "Odstranit",
     "RemoveFirst": "Odstranit první",
@@ -176,7 +177,8 @@
     "ExportWithSlots": "Exportovat se sloty",
     "ExportWithoutSlots": "Exportovat bez slotů",
     "RequiredSlots": "Požadované sloty",
-    "Bindings": "Vazby"
+    "Bindings": "Vazby",
+    "AskRequired": "zeptat se na prázdná povinná pole"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

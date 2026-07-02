@@ -92,6 +92,8 @@ import {
   type ObjectValidator,
   type PreviewPresenter,
   type ReferenceObjectProvider,
+  type ReferenceVersion,
+  type ReferenceVersionsProvider,
   type SortFunc,
   type SpaceHeader,
   type SpaceName,
@@ -273,6 +275,11 @@ export class TObjectIdentifier extends TClass implements ObjectIdentifier {
 @Mixin(view.mixin.ReferenceObjectProvider, core.class.Class)
 export class TReferenceObjectProvider extends TClass implements ReferenceObjectProvider {
   provider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<Doc | undefined>>
+}
+
+@Mixin(view.mixin.ReferenceVersionsProvider, core.class.Class)
+export class TReferenceVersionsProvider extends TClass implements ReferenceVersionsProvider {
+  provider!: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<ReferenceVersion[]>>
 }
 
 @Mixin(view.mixin.ObjectTooltip, core.class.Class)
@@ -523,6 +530,7 @@ export function createModel (builder: Builder): void {
     TGroupping,
     TObjectIdentifier,
     TReferenceObjectProvider,
+    TReferenceVersionsProvider,
     TObjectTooltip,
     TObjectIcon,
     TAttrPresenter,

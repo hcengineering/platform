@@ -96,6 +96,7 @@
     "CreateCard": "Karte erstellen",
     "WhenCardMatches": "Wenn Karte übereinstimmt",
     "WhenFieldChanges": "Wenn sich das Feld ändert",
+    "WhenRequiredFieldsFilled": "Wenn erforderliche Felder ausgefüllt sind",
     "Insert": "Einfügen",
     "Remove": "Entfernen",
     "RemoveFirst": "Erstes entfernen",
@@ -176,7 +177,8 @@
     "ExportWithSlots": "Slot-Export",
     "ExportWithoutSlots": "Slot-freier Export",
     "RequiredSlots": "Erforderliche Slots",
-    "Bindings": "Bindungen"
+    "Bindings": "Bindungen",
+    "AskRequiredFields": "Erforderliche Felder erfragen"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

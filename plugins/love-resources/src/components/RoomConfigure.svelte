@@ -241,3 +241,13 @@
     {/if}
   </div>
 </div>
+
+<style lang="scss">
+  .floorGrid-configureRoom__field :global(.employee-presenter),
+  .floorGrid-configureRoom__field :global(.employee-presenter .antiPresenter),
+  .floorGrid-configureRoom__field :global(.employee-presenter .ap-icon) {
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+  }
+</style>

@@ -20,6 +20,7 @@
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
   import view from '@hcengineering/view'
+  import { getFirstCreatableSubtype, isBaseTypeWithSubtypes } from '../utils'
 
   export let value: Ref<MasterTag>
   export let width: string | undefined = undefined
@@ -27,9 +28,11 @@
   export let size: ButtonSize | undefined = undefined
   export let parent: Ref<MasterTag> = card.class.Card
   export let disabled: boolean = false
+  export let excludeBaseTypes: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const dispatch = createEventDispatcher()
 
   function filterClasses (): [DropdownIntlItem, DropdownIntlItem[]][] {
     const descendants = hierarchy.getDescendants(parent).filter((p) => p !== parent)
@@ -41,6 +44,7 @@
       if (_class.label === undefined) continue
       if (_class.kind !== ClassifierKind.CLASS) continue
       if ((_class as MasterTag).removed === true) continue
+      if (excludeBaseTypes && isBaseTypeWithSubtypes(hierarchy, _id as Ref<MasterTag>)) continue
       added.add(_id)
       const descendants = hierarchy.getDescendants(_id)
       const toAdd: Class<Doc>[] = []
@@ -50,6 +54,7 @@
         if (_class.label === undefined) continue
         if (_class.kind !== ClassifierKind.CLASS) continue
         if ((_class as MasterTag).removed === true) continue
+        if (excludeBaseTypes && isBaseTypeWithSubtypes(hierarchy, desc as Ref<MasterTag>)) continue
         added.add(desc)
         toAdd.push(_class)
       }
@@ -78,7 +83,14 @@
   }
 
   const classes = filterClasses()
-  const dispatch = createEventDispatcher()
+
+  $: if (excludeBaseTypes && isBaseTypeWithSubtypes(hierarchy, value)) {
+    const nextType = getFirstCreatableSubtype(hierarchy, value)
+    if (nextType !== undefined) {
+      value = nextType
+      dispatch('change', value)
+    }
+  }
 
   $: selectedClass = hierarchy.getClass(value)
   $: selected = {

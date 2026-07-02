@@ -91,5 +91,5 @@
   <div class="mb-2">
     <Label label={card.string.ChangeTypeWarning} />
   </div>
-  <TypeSelector bind:value={selected} />
+  <TypeSelector bind:value={selected} excludeBaseTypes />
 </CardModal>

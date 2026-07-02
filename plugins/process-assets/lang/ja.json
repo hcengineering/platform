@@ -101,6 +101,7 @@
     "CreateCard": "カードを作成",
     "WhenCardMatches": "カードが一致したとき",
     "WhenFieldChanges": "フィールドが変更されたとき",
+    "WhenRequiredFieldsFilled": "必須フィールドが入力されたとき",
     "ArraySizeEquals": "サイズが等しい",
     "ArraySizeGt": "サイズがより大きい",
     "ArraySizeGte": "サイズが以上",
@@ -180,7 +181,8 @@
     "ExportWithSlots": "スロット付きでエクスポート",
     "ExportWithoutSlots": "スロットなしでエクスポート",
     "RequiredSlots": "必須スロット",
-    "Bindings": "バインディング"
+    "Bindings": "バインディング",
+    "AskRequired": "必須フィールドを尋ねる"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",
