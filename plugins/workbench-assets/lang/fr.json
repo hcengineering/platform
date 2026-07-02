@@ -35,17 +35,6 @@
     "ConfigureWidgets": "Configurer les widgets",
     "Tab": "Onglet",
     "WorkspaceIsArchived": "L'espace de travail est archivé en raison de son inactivité, veuillez nous contacter pour le restaurer...",
-    "WorkspaceIsMigrating": "L'espace de travail est en cours de mise à jour. Veuillez patienter...",
-    "ShutdownWarningShort": "Service en cours d'arrêt — migrez vos données",
-    "ShutdownWarningTitle": "Le service hébergé Huly va fermer",
-    "ShutdownWarningHint": "Le service hébergé est interrompu car son hébergement n'est plus financé. Veuillez exporter et sauvegarder tout ce que vous ne pouvez pas vous permettre de perdre, et migrer dès que possible — nous pouvons vous aider à passer à une installation auto-hébergée ou à une option hébergée.",
-    "ShutdownNextEventBefore": "L'arrêt du service est attendu le ",
-    "ShutdownNextEventDate": "20 juillet",
-    "ShutdownNextEventAfter": ". Veuillez veiller à exporter et migrer vos données avant cette date.",
-    "ShutdownCommunityHint": "Des questions ou envie de suivre les actualités ? Rejoignez la communauté Huly pour discuter de la migration et rester informé.",
-    "JoinCommunityCta": "Rejoindre la communauté Huly",
-    "ShutdownContactPrefix": "Des questions ? Contactez ",
-    "ShutdownBackupGuideHint": "Vous ne savez pas comment migrer vos données ? Consultez le guide étape par étape pour télécharger une sauvegarde et la restaurer sur une autre instance Huly.",
-    "BackupGuideCta": "Guide de sauvegarde et restauration"
+    "WorkspaceIsMigrating": "L'espace de travail est en cours de mise à jour. Veuillez patienter..."
   }
 }

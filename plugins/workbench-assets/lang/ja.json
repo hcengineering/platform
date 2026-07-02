@@ -35,17 +35,6 @@
     "ConfigureWidgets": "ウィジェットを設定",
     "Tab": "タブ",
     "WorkspaceIsArchived": "ワークスペースは未使用のためアーカイブされています。復元するにはお問い合わせください...",
-    "WorkspaceIsMigrating": "ワークスペースを更新中です。しばらくお待ちください...",
-    "ShutdownWarningShort": "サービス終了予定 — データを移行してください",
-    "ShutdownWarningTitle": "ホスト版 Huly は終了します",
-    "ShutdownWarningHint": "ホスティングの費用が支払われなくなったため、ホスト版サービスは終了します。失っては困るものはすべてエクスポートしてバックアップし、できるだけ早く移行してください。セルフホスト環境への移行も、ホスティング版への移行も、私たちがお手伝いできます。",
-    "ShutdownNextEventBefore": "サービスの停止は ",
-    "ShutdownNextEventDate": "7月20日",
-    "ShutdownNextEventAfter": " に予定されています。必ずその前にデータをエクスポートして移行してください。",
-    "ShutdownCommunityHint": "ご質問や最新情報が必要ですか？ Huly コミュニティに参加して、移行について相談したり最新情報を受け取ったりできます。",
-    "JoinCommunityCta": "Huly コミュニティに参加",
-    "ShutdownContactPrefix": "ご質問は ",
-    "ShutdownBackupGuideHint": "データの移行方法がわからない場合は、バックアップをダウンロードして別の Huly インスタンスに復元する手順ガイドをご覧ください。",
-    "BackupGuideCta": "バックアップと復元ガイド"
+    "WorkspaceIsMigrating": "ワークスペースを更新中です。しばらくお待ちください..."
   }
 }

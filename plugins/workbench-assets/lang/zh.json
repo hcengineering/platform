@@ -35,17 +35,6 @@
     "ConfigureWidgets": "配置小部件",
     "Tab": "选项卡",
     "WorkspaceIsArchived": "工作区因未使用而归档，请与我们联系以恢复...",
-    "WorkspaceIsMigrating": "工作区正在更新。请稍候...",
-    "ShutdownWarningShort": "服务即将关闭 —— 请迁移数据",
-    "ShutdownWarningTitle": "托管版 Huly 即将关闭",
-    "ShutdownWarningHint": "由于其托管费用不再得到资助，托管版服务将停止运营。请导出并备份所有你无法承受丢失的数据，并尽快迁移。我们可以协助你迁移到自托管环境或托管版方案。",
-    "ShutdownNextEventBefore": "服务关闭预计在",
-    "ShutdownNextEventDate": "7月20日",
-    "ShutdownNextEventAfter": "。请务必在此日期之前导出并迁移你的数据。",
-    "ShutdownCommunityHint": "有疑问或想获取最新消息？加入 Huly 社区，讨论迁移并随时了解动态。",
-    "JoinCommunityCta": "加入 Huly 社区",
-    "ShutdownContactPrefix": "有疑问？请联系：",
-    "ShutdownBackupGuideHint": "不知道如何迁移数据？请阅读分步指南，了解如何下载备份并将其恢复到另一个 Huly 实例。",
-    "BackupGuideCta": "备份与恢复指南"
+    "WorkspaceIsMigrating": "工作区正在更新。请稍候..."
   }
 }
