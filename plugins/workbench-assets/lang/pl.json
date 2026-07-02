@@ -44,6 +44,8 @@
     "ShutdownNextEventAfter": ". Pamiętaj, aby wyeksportować i przenieść dane przed tą datą.",
     "ShutdownCommunityHint": "Masz pytania lub chcesz otrzymywać aktualności? Dołącz do społeczności Huly, aby porozmawiać o migracji i być na bieżąco.",
     "JoinCommunityCta": "Dołącz do społeczności Huly",
-    "ShutdownContactPrefix": "Masz pytania? Skontaktuj się: "
+    "ShutdownContactPrefix": "Masz pytania? Skontaktuj się: ",
+    "ShutdownBackupGuideHint": "Nie wiesz, jak przenieść swoje dane? Zapoznaj się z instrukcją krok po kroku dotyczącą pobierania kopii zapasowej i przywracania jej w innej instancji Huly.",
+    "BackupGuideCta": "Przewodnik po kopii zapasowej i przywracaniu"
   }
 }

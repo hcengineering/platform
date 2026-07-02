@@ -44,6 +44,8 @@
     "ShutdownNextEventAfter": " tarihinde bekleniyor. Lütfen verilerinizi bu tarihten önce dışa aktarıp taşıdığınızdan emin olun.",
     "ShutdownCommunityHint": "Sorularınız mı var ya da güncellemeleri takip etmek mi istiyorsunuz? Göçü konuşmak ve haberdar olmak için Huly topluluğuna katılın.",
     "JoinCommunityCta": "Huly topluluğuna katıl",
-    "ShutdownContactPrefix": "Sorularınız mı var? İletişim: "
+    "ShutdownContactPrefix": "Sorularınız mı var? İletişim: ",
+    "ShutdownBackupGuideHint": "Verilerinizi nasıl taşıyacağınızdan emin değil misiniz? Bir yedeği indirip başka bir Huly örneğine geri yüklemek için adım adım kılavuzu okuyun.",
+    "BackupGuideCta": "Yedekleme ve geri yükleme kılavuzu"
   }
 }

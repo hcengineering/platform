@@ -44,6 +44,8 @@
     "ShutdownNextEventAfter": ". Nezapomeňte prosím svá data exportovat a přenést ještě před tímto datem.",
     "ShutdownCommunityHint": "Máte dotazy nebo chcete dostávat novinky? Připojte se ke komunitě Huly, kde můžete probrat migraci a zůstat v obraze.",
     "JoinCommunityCta": "Připojit se ke komunitě Huly",
-    "ShutdownContactPrefix": "Máte dotazy? Kontaktujte "
+    "ShutdownContactPrefix": "Máte dotazy? Kontaktujte ",
+    "ShutdownBackupGuideHint": "Nevíte, jak přenést svá data? Přečtěte si podrobný návod ke stažení zálohy a jejímu obnovení v jiné instanci Huly.",
+    "BackupGuideCta": "Průvodce zálohováním a obnovou"
   }
 }

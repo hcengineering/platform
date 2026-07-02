@@ -36,6 +36,8 @@
     "ShutdownNextEventAfter": ". Assicurati di esportare e migrare i tuoi dati prima di quella data.",
     "ShutdownCommunityHint": "Hai domande o vuoi ricevere aggiornamenti? Unisciti alla community di Huly per parlare della migrazione e restare informato.",
     "JoinCommunityCta": "Unisciti alla community di Huly",
-    "ShutdownContactPrefix": "Domande? Contatta "
+    "ShutdownContactPrefix": "Domande? Contatta ",
+    "ShutdownBackupGuideHint": "Non sai come trasferire i tuoi dati? Leggi la guida dettagliata per scaricare un backup e ripristinarlo in un'altra istanza di Huly.",
+    "BackupGuideCta": "Guida a backup e ripristino"
   }
 }

@@ -44,6 +44,8 @@
     "ShutdownNextEventAfter": " erwartet. Bitte exportieren und migrieren Sie Ihre Daten unbedingt vorher.",
     "ShutdownCommunityHint": "Haben Sie Fragen oder möchten Sie auf dem Laufenden bleiben? Treten Sie der Huly-Community bei, um die Migration zu besprechen und informiert zu bleiben.",
     "JoinCommunityCta": "Der Huly-Community beitreten",
-    "ShutdownContactPrefix": "Fragen? Kontaktieren Sie "
+    "ShutdownContactPrefix": "Fragen? Kontaktieren Sie ",
+    "ShutdownBackupGuideHint": "Nicht sicher, wie Sie Ihre Daten übertragen? Lesen Sie die Schritt-für-Schritt-Anleitung zum Herunterladen eines Backups und zur Wiederherstellung in einer anderen Huly-Instanz.",
+    "BackupGuideCta": "Anleitung zu Backup & Wiederherstellung"
   }
 }

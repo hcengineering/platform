@@ -147,6 +147,8 @@
     "BackupCopyScript": "Copier le script de téléchargement",
     "BackupCopyToken": "Copier le jeton",
     "BackupScriptInfo": "Un script shell qui télécharge tous les fichiers de sauvegarde avec curl. Enregistrez-le et exécutez-le dans un terminal ; il demande votre jeton de sauvegarde, aucun secret n'est donc stocké dans le script.",
+    "BackupRestoreGuide": "Guide de sauvegarde et restauration",
+    "BackupRestoreGuideInfo": "Instructions étape par étape pour télécharger cette sauvegarde et la restaurer sur une autre instance Huly.",
     "NonBackupedBlobs": "Non Backed up blobs",
     "Calendar": "Calendrier",
     "StartOfTheWeek": "Début de semaine",

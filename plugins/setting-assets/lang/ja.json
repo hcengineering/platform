@@ -147,6 +147,8 @@
     "BackupCopyScript": "ダウンロードスクリプトをコピー",
     "BackupCopyToken": "トークンをコピー",
     "BackupScriptInfo": "curl ですべてのバックアップファイルをダウンロードするシェルスクリプトです。保存してターミナルで実行してください。バックアップトークンの入力を求められるため、スクリプトに機密情報は保存されません。",
+    "BackupRestoreGuide": "バックアップと復元ガイド",
+    "BackupRestoreGuideInfo": "このバックアップをダウンロードし、別の Huly インスタンスに復元するための手順です。",
     "NonBackupedBlobs": "バックアップされていないブロブ",
     "Calendar": "カレンダー",
     "StartOfTheWeek": "週の開始",

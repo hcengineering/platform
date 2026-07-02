@@ -147,6 +147,8 @@
     "BackupCopyScript": "复制下载脚本",
     "BackupCopyToken": "复制令牌",
     "BackupScriptInfo": "一个使用 curl 下载所有备份文件的 shell 脚本。保存并在终端中运行；它会提示输入您的备份令牌，因此脚本中不会存储任何机密信息。",
+    "BackupRestoreGuide": "备份与恢复指南",
+    "BackupRestoreGuideInfo": "关于下载此备份并将其恢复到另一个 Huly 实例的分步说明。",
     "NonBackupedBlobs": "未备份的 Blob",
     "Calendar": "日历",
     "StartOfTheWeek": "本周开始",

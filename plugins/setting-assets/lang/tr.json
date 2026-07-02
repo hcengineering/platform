@@ -147,6 +147,8 @@
     "BackupCopyScript": "İndirme betiğini kopyala",
     "BackupCopyToken": "Jetonu kopyala",
     "BackupScriptInfo": "Tüm yedek dosyalarını curl ile indiren bir kabuk betiği. Kaydedip bir terminalde çalıştırın; yedek jetonunuzu ister, bu nedenle betikte hiçbir gizli bilgi saklanmaz.",
+    "BackupRestoreGuide": "Yedekleme ve geri yükleme kılavuzu",
+    "BackupRestoreGuideInfo": "Bu yedeği indirmek ve başka bir Huly örneğine geri yüklemek için adım adım talimatlar.",
     "NonBackupedBlobs": "Yedeklenmemiş blob'lar",
     "Calendar": "Takvim",
     "StartOfTheWeek": "Haftanın başlangıcı",

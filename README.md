@@ -10,6 +10,8 @@
 >
 > The hosted Huly service is being discontinued because its hosting is no longer being funded. If you keep important data on the hosted platform, export and back it up, and migrate as soon as possible — we can help you move to either a [self-hosted setup](https://github.com/hcengineering/huly-selfhost) or a hosted option.
 >
+> Not sure how? Follow the [backup & restore guide](docs/guides/backup-restore.en.md) for step-by-step instructions on downloading your backup and restoring it elsewhere.
+>
 > The service shutdown is expected on **July 20**. Please make sure to export and migrate your data before then rather than wait until the last day.
 >
 > Have questions or want updates? Join the [Huly community](https://link.huly.io/slack) to discuss migration and stay informed, or email us at [artem@hardcoreeng.com](mailto:artem@hardcoreeng.com) with any questions. This affects only the hosted **Huly** service — self-hosted deployments are not affected.

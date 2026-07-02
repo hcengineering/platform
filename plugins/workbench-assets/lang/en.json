@@ -44,6 +44,8 @@
     "ShutdownNextEventAfter": ". Please make sure to export and migrate your data before then.",
     "ShutdownCommunityHint": "Have questions or want updates? Join the Huly community to discuss migration and stay informed.",
     "JoinCommunityCta": "Join the Huly community",
-    "ShutdownContactPrefix": "Questions? Contact "
+    "ShutdownContactPrefix": "Questions? Contact ",
+    "ShutdownBackupGuideHint": "Not sure how to move your data? Read the step-by-step guide for downloading a backup and restoring it into another Huly instance.",
+    "BackupGuideCta": "Backup & restore guide"
   }
 }

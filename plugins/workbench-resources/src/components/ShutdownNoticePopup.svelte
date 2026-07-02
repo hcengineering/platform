@@ -16,13 +16,18 @@
   import { createEventDispatcher } from 'svelte'
   import { Button, Label } from '@hcengineering/ui'
   import workbench from '../plugin'
-  import { communityLink, migrationContactEmail } from '../utils'
+  import { backupGuideLink, communityLink, migrationContactEmail } from '../utils'
 
   const dispatch = createEventDispatcher()
 
   function handleJoinCommunity (): void {
     dispatch('close')
     window.open(communityLink, '_blank', 'noopener,noreferrer')
+  }
+
+  function handleOpenBackupGuide (): void {
+    dispatch('close')
+    window.open(backupGuideLink, '_blank', 'noopener,noreferrer')
   }
 </script>
 
@@ -49,12 +54,17 @@
     </div>
 
     <div class="hint">
+      <Label label={workbench.string.ShutdownBackupGuideHint} />
+    </div>
+
+    <div class="hint">
       <Label label={workbench.string.ShutdownContactPrefix} /><a href="mailto:{migrationContactEmail}"
         >{migrationContactEmail}</a
       >
     </div>
 
     <div class="footer">
+      <Button label={workbench.string.BackupGuideCta} on:click={handleOpenBackupGuide} />
       <Button kind="primary" size="medium" label={workbench.string.JoinCommunityCta} on:click={handleJoinCommunity} />
     </div>
   </div>
@@ -105,6 +115,7 @@
     .footer {
       display: flex;
       justify-content: flex-end;
+      gap: 0.5rem;
     }
   }
 </style>

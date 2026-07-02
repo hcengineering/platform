@@ -59,6 +59,15 @@ export const communityLink = 'https://link.huly.io/slack'
  */
 export const migrationContactEmail = 'artem@hardcoreeng.com'
 
+/**
+ * Step-by-step guide for downloading a workspace backup and restoring it into
+ * another Huly instance, linked from the hosting shutdown notice so users can
+ * migrate their data themselves.
+ *
+ * @public
+ */
+export const backupGuideLink = 'https://github.com/hcengineering/platform/blob/develop/docs/guides/backup-restore.en.md'
+
 export function getSpecialSpaceClass (model: NavigatorModel): Array<Ref<Class<Space>>> {
   const spaceResult = model.spaces.map((x) => x.spaceClass)
   const result = (model.specials ?? [])
