@@ -56,11 +56,15 @@ export function splitOidcName (claims: OidcNameClaims): SplitName {
 
   const first: string = isAuthentikDefaultShape
     ? (nameParts[0] ?? '')
-    : (givenRaw !== '' ? givenRaw : (nameParts[0] ?? ''))
+    : givenRaw !== ''
+      ? givenRaw
+      : (nameParts[0] ?? '')
 
   const last: string = isAuthentikDefaultShape
     ? nameParts.slice(1).join(' ')
-    : (familyRaw !== '' ? familyRaw : nameParts.slice(1).join(' '))
+    : familyRaw !== ''
+      ? familyRaw
+      : nameParts.slice(1).join(' ')
 
   return { first, last }
 }
