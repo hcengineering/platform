@@ -82,6 +82,8 @@
     "SectionUnlocked": "Section {section} déverrouillée",
     "LayoutAuto": "Auto",
     "SingleColumn": "Une colonne",
+    "BaseType": "Type de base",
+    "BaseTypeDescription": "Utilisez ce type uniquement comme parent. Les cartes ne peuvent être créées qu'à partir de ses sous-types.",
     "TwoColumns": "Deux colonnes",
     "Grid": "Grille",
     "RichtextProperties": "Champs de texte",

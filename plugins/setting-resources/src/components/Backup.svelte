@@ -15,12 +15,13 @@
 <script lang="ts">
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
-  import presentation, { getFileUrl } from '@hcengineering/presentation'
+  import presentation, { copyTextToClipboard, getFileUrl } from '@hcengineering/presentation'
   import { Breadcrumb, Button, Expandable, Header, Label, Loading, Scroller } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { onMount } from 'svelte'
   import setting from '../plugin'
   import { BackupInfo, BackupSnapshot } from '../types'
+  import { buildStoreZip, collectBackupFileNames, generateBackupScript, generateRestoreReadme } from '../utils/backup'
 
   let loading = true
 
@@ -29,6 +30,9 @@
   const owner = hasAccountRole(getCurrentAccount(), AccountRole.Owner)
   const workspaceUuid = getMetadata(presentation.metadata.WorkspaceUuid) ?? ''
   const workspaceDataId = getMetadata(presentation.metadata.WorkspaceDataId)
+  // The backup files live under the workspace data id (falling back to the uuid).
+  // Use this single id everywhere so the index fetch and file downloads agree.
+  const workspaceId = workspaceDataId ?? workspaceUuid
 
   let backupInfo:
   | {
@@ -83,7 +87,7 @@
   async function updateBackupInfo (): Promise<void> {
     if (owner && backupUrl !== '') {
       try {
-        const response = await fetch(`${backupUrl}/${workspaceDataId ?? workspaceUuid}/index.json`, {
+        const response = await fetch(`${backupUrl}/${workspaceId}/index.json`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`
@@ -118,7 +122,7 @@
     return ''
   }
   function getBackupFileUrl (filename: string): string {
-    return `${backupUrl}/${workspaceUuid}/${filename}`
+    return `${backupUrl}/${workspaceId}/${filename}`
   }
 
   async function doDownload (downloadUrl: string, filename?: string): Promise<void> {
@@ -138,7 +142,11 @@
       }
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
+      // Revoke later: revoking synchronously can cancel the download before the
+      // browser has finished reading the blob (more likely over plain HTTP).
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url)
+      }, 30000)
     } catch (err) {
       console.error('Failed to download:', err)
     } finally {
@@ -154,6 +162,87 @@
     const url = getFileUrl(filename)
     await doDownload(url, filename)
   }
+
+  // Base url proven to work for index.json above; reused for full backup + script.
+  const downloadBase = `${backupUrl}/${workspaceId}`
+
+  let downloading = false
+  let scriptCopied = false
+  let tokenCopied = false
+
+  function copyToken (): void {
+    void copyTextToClipboard(token).then(() => {
+      tokenCopied = true
+      setTimeout(() => {
+        tokenCopied = false
+      }, 2500)
+    })
+  }
+
+  function backupArchiveName (): string {
+    const date = new Date().toISOString().slice(0, 10)
+    return `huly-backup-${workspaceId}-${date}.zip`
+  }
+
+  async function downloadFullBackup (): Promise<void> {
+    if (downloading) {
+      return
+    }
+    downloading = true
+    try {
+      const names = collectBackupFileNames(backupInfo)
+      const entries: { name: string, data: Uint8Array }[] = []
+      for (const name of names) {
+        const response = await fetch(`${downloadBase}/${name}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (!response.ok) {
+          // Skip files that are absent (e.g. optional indices) but keep going.
+          continue
+        }
+        entries.push({ name, data: new Uint8Array(await response.arrayBuffer()) })
+      }
+      // Ship restore instructions inside the archive so it can be restored
+      // into any other Huly setup directly.
+      const readme = generateRestoreReadme({ sourceWorkspace: workspaceId, fileCount: entries.length })
+      entries.push({ name: 'RESTORE.md', data: new TextEncoder().encode(readme) })
+      const zip = buildStoreZip(entries)
+      const blob = new Blob([zip], { type: 'application/zip' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = backupArchiveName()
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      // Revoke later: revoking synchronously can cancel the download of a large
+      // blob before the browser has finished reading it (more likely over HTTP).
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url)
+      }, 30000)
+    } catch (err) {
+      console.error('Failed to download full backup:', err)
+    } finally {
+      downloading = false
+    }
+  }
+
+  function copyBackupScript (): void {
+    const files = collectBackupFileNames(backupInfo)
+    const script = generateBackupScript({
+      baseUrl: downloadBase,
+      files,
+      outDir: `huly-backup-${workspaceId}`,
+      restoreReadme: generateRestoreReadme({ sourceWorkspace: workspaceId, fileCount: files.length })
+    })
+    void copyTextToClipboard(script).then(() => {
+      scriptCopied = true
+      setTimeout(() => {
+        scriptCopied = false
+      }, 2500)
+    })
+  }
+
   let copied = false
   let copied2 = false
 
@@ -190,6 +279,43 @@
         <span class="flex-row-center">
           <Label label={setting.string.BackupSize} />: {getBackupSize(backupInfo?.files ?? [])}
         </span>
+      </div>
+
+      <div class="backup-actions">
+        <div class="backup-action">
+          <div class="backup-action__text">
+            <div class="backup-action__title">
+              <Label label={setting.string.BackupDownloadAll} />
+            </div>
+            <div class="backup-action__info">
+              <Label label={setting.string.BackupDownloadAllInfo} />
+            </div>
+          </div>
+          <Button
+            kind={'primary'}
+            loading={downloading}
+            disabled={downloading}
+            label={downloading ? setting.string.BackupPreparingDownload : setting.string.BackupDownloadAll}
+            on:click={downloadFullBackup}
+          />
+        </div>
+        <div class="backup-action">
+          <div class="backup-action__text">
+            <div class="backup-action__title">
+              <Label label={setting.string.BackupCopyScript} />
+            </div>
+            <div class="backup-action__info">
+              <Label label={setting.string.BackupScriptInfo} />
+            </div>
+          </div>
+          <div class="backup-action__buttons">
+            <Button
+              label={scriptCopied ? view.string.Copied : setting.string.BackupCopyScript}
+              on:click={copyBackupScript}
+            />
+            <Button label={tokenCopied ? view.string.Copied : setting.string.BackupCopyToken} on:click={copyToken} />
+          </div>
+        </div>
       </div>
 
       <Expandable bordered>
@@ -342,7 +468,7 @@
             <Button
               label={copied ? view.string.Copied : view.string.CopyToClipboard}
               on:click={() => {
-                void navigator.clipboard.writeText(getBackupFileUrl('index.html')).then(() => {
+                void copyTextToClipboard(getBackupFileUrl('index.html')).then(() => {
                   copied = true
                   setTimeout(() => {
                     copied = false
@@ -361,7 +487,7 @@
             <Button
               label={copied ? view.string.Copied : view.string.CopyToClipboard}
               on:click={() => {
-                void navigator.clipboard.writeText(getFileUrl('blob.uuid', 'filename.blob')).then(() => {
+                void copyTextToClipboard(getFileUrl('blob.uuid', 'filename.blob')).then(() => {
                   copied = true
                   setTimeout(() => {
                     copied = false
@@ -376,7 +502,7 @@
             <Button
               label={copied2 ? view.string.Copied : view.string.CopyToClipboard}
               on:click={() => {
-                void navigator.clipboard.writeText(token).then(() => {
+                void copyTextToClipboard(token).then(() => {
                   copied2 = true
                   setTimeout(() => {
                     copied2 = false
@@ -406,7 +532,7 @@
                   <Button
                     label={copied2 ? view.string.Copied : view.string.CopyToClipboard}
                     on:click={() => {
-                      void navigator.clipboard.writeText(file.name).then(() => {
+                      void copyTextToClipboard(file.name).then(() => {
                         copied2 = true
                         setTimeout(() => {
                           copied2 = false
@@ -430,6 +556,36 @@
     padding: 1rem;
     background-color: var(--theme-bg-accent);
     border-radius: 0.25rem;
+  }
+  .backup-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.5rem 0 1rem;
+  }
+  .backup-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--theme-bg-accent);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.5rem;
+  }
+  .backup-action__buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+  .backup-action__title {
+    font-weight: 500;
+    color: var(--theme-caption-color);
+  }
+  .backup-action__info {
+    margin-top: 0.125rem;
+    font-size: 0.875rem;
+    color: var(--theme-content-color);
   }
   .domain-files {
     padding: 0.5rem 0;

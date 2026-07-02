@@ -705,6 +705,8 @@ export class WorkspaceWorker {
         pipelineFactory,
         [DOMAIN_BLOB],
         true,
+        this.accountsDbUrl,
+        undefined,
         (_p: number) => {
           if (progress !== Math.round(_p)) {
             progress = Math.round(_p)

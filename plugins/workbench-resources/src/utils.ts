@@ -53,11 +53,11 @@ export const workspaceCreating = writable<number | undefined>(undefined)
 export const communityLink = 'https://link.huly.io/slack'
 
 /**
- * Direct email contact for hosting migration questions, shown in the shutdown notice.
+ * Direct email contact for any questions, shown in the shutdown notice.
  *
  * @public
  */
-export const migrationContactEmail = 'huly.migration@gmail.com'
+export const migrationContactEmail = 'artem@hardcoreeng.com'
 
 export function getSpecialSpaceClass (model: NavigatorModel): Array<Ref<Class<Space>>> {
   const spaceResult = model.spaces.map((x) => x.spaceClass)
