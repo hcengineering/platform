@@ -102,6 +102,7 @@
     "CreateCard": "Создать карточку",
     "WhenCardMatches": "Когда карточка соответствует",
     "WhenFieldChanges": "Когда поле изменено",
+    "WhenRequiredFieldsFilled": "Когда обязательные поля заполнены",
     "ArraySizeEquals": "Количество равно",
     "ArraySizeGt": "Количество больше",
     "ArraySizeGte": "Количество больше или равно",

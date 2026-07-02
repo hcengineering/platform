@@ -35,6 +35,15 @@
     "ConfigureWidgets": "Widgets konfigurieren",
     "Tab": "Tab",
     "WorkspaceIsArchived": "Workspace wurde wegen Inaktivität archiviert. Bitte kontaktieren Sie uns zur Wiederherstellung...",
-    "WorkspaceIsMigrating": "Workspace wird aktualisiert. Bitte warten..."
+    "WorkspaceIsMigrating": "Workspace wird aktualisiert. Bitte warten...",
+    "ShutdownWarningShort": "Dienst wird eingestellt — Daten migrieren",
+    "ShutdownWarningTitle": "Das gehostete Huly wird eingestellt",
+    "ShutdownWarningHint": "Der gehostete Dienst wird eingestellt, da sein Hosting nicht mehr finanziert wird. Bitte exportieren und sichern Sie alles, dessen Verlust Sie sich nicht leisten können, und migrieren Sie so bald wie möglich — wir können Ihnen beim Wechsel zu einer selbst gehosteten Lösung oder einer gehosteten Option helfen.",
+    "ShutdownNextEventBefore": "Die Abschaltung des Dienstes wird am ",
+    "ShutdownNextEventDate": "20. Juli",
+    "ShutdownNextEventAfter": " erwartet. Bitte exportieren und migrieren Sie Ihre Daten unbedingt vorher.",
+    "ShutdownCommunityHint": "Haben Sie Fragen oder möchten Sie auf dem Laufenden bleiben? Treten Sie der Huly-Community bei, um die Migration zu besprechen und informiert zu bleiben.",
+    "JoinCommunityCta": "Der Huly-Community beitreten",
+    "ShutdownContactPrefix": "Fragen? Kontaktieren Sie "
   }
 }

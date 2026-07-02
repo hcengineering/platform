@@ -23,6 +23,7 @@ import core, {
   type DocumentUpdate,
   findProperty,
   generateId,
+  getObjectValue,
   matchQuery,
   type Ref,
   type RefTo,
@@ -960,6 +961,36 @@ export function fieldChangesCheck (
 
   const res = matchQuery([doc], params, doc._class, client.getHierarchy(), true)
   return res.length > 0
+}
+
+function isRequiredValueFilled (value: any, attr: AnyAttribute): boolean {
+  if (attr.type?._class === core.class.TypeMarkup) return !isEmptyMarkup(value)
+  if (Array.isArray(value)) return value.length > 0
+  return value !== undefined && value !== null && value !== ''
+}
+
+export function requiredFieldsFilledCheck (
+  client: Client,
+  execution: Execution,
+  params: Record<string, any>,
+  context: Record<string, any>
+): boolean {
+  let doc = context.card
+  if (doc === undefined) return false
+  const _process = client.getModel().findObject(execution.process)
+  if (_process === undefined) return false
+  const hierarchy = client.getHierarchy()
+  const attributes = Array.from(
+    hierarchy.isMixin(_process.masterTag)
+      ? hierarchy.getOwnAttributes(_process.masterTag).entries()
+      : hierarchy.getAllAttributes(_process.masterTag, core.class.Doc).entries()
+  ).filter(([, attr]) => attr.required === true && attr.hidden !== true)
+
+  if (hierarchy.isMixin(_process.masterTag)) {
+    doc = hierarchy.as(doc, _process.masterTag)
+  }
+
+  return attributes.every(([key, attr]) => isRequiredValueFilled(getObjectValue(key, doc), attr))
 }
 
 export async function subProcessesDoneCheck (

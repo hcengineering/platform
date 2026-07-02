@@ -200,6 +200,7 @@ export default mergeIds(processId, process, {
     WaitUntil: '' as IntlString,
     WhenCardMatches: '' as IntlString,
     WhenFieldChanges: '' as IntlString,
+    WhenRequiredFieldsFilled: '' as IntlString,
     OnEvent: '' as IntlString,
     Result: '' as IntlString,
     RequestResult: '' as IntlString,

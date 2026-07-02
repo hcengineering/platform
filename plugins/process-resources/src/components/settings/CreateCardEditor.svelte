@@ -152,21 +152,48 @@
   $: typeChange(targetClass)
 
   $: subclasses = h.getDescendants(targetClass).filter((c) => !h.isMixin(c) && c !== targetClass)
+  $: baseTargetType = isBaseTypeWithSubtypes(targetClass)
 
   let askSubclass = params._class !== params.targetClass
   $: askSubclass = params._class !== params.targetClass
+  $: if (baseTargetType && !askSubclass) {
+    setAskSubclass()
+  }
 
-  function changeAskSubclass (e: CustomEvent<boolean>): void {
+  function setAskSubclass (): void {
     const context = createContext({
       type: 'userRequest',
       id: generateContextId(),
       _class: targetClass,
       key: '_class'
     })
+    params._class = context
+    step.params = params
+    dispatch('change', step)
+  }
+
+  function changeAskSubclass (e: CustomEvent<boolean>): void {
     if (e.detail !== undefined) {
-      step.params._class = e.detail ? context : targetClass
+      if (!e.detail && baseTargetType) return
+      if (e.detail) {
+        setAskSubclass()
+        return
+      }
+      params._class = targetClass
+      step.params = params
       dispatch('change', step)
     }
+  }
+
+  function isBaseTypeWithSubtypes (_class: Ref<Class<MasterTag>>): boolean {
+    const clazz = h.getClass(_class) as MasterTag | undefined
+    if (clazz?.baseType !== true) return false
+
+    return h.getDescendants(_class).some((descendant) => {
+      if (descendant === _class || h.isMixin(descendant)) return false
+      const descendantClass = h.getClass(descendant) as MasterTag | undefined
+      return descendantClass?._class === cardPlugin.class.MasterTag && descendantClass.removed !== true
+    })
   }
 
   let askRequired = params.askRequired ?? false
@@ -219,7 +246,7 @@
       <Label label={plugin.string.AskSubclass} />
     </span>
     <div>
-      <Toggle on={askSubclass} on:change={changeAskSubclass} />
+      <Toggle on={baseTargetType || askSubclass} disabled={baseTargetType} on:change={changeAskSubclass} />
     </div>
   {/if}
   <span
