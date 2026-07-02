@@ -82,6 +82,8 @@
     "SectionUnlocked": "Sekcja {section} odblokowana",
     "LayoutAuto": "Automatyczny",
     "SingleColumn": "Jedna kolumna",
+    "BaseType": "Typ bazowy",
+    "BaseTypeDescription": "Używaj tego typu tylko jako nadrzędnego. Karty można tworzyć tylko z jego podtypów.",
     "TwoColumns": "Dwie kolumny",
     "Grid": "Siatka",
     "RichtextProperties": "Właściwości tekstu formatowanego",

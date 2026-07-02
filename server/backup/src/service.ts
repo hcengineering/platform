@@ -28,7 +28,7 @@ import {
   type WorkspaceIds,
   type WorkspaceInfoWithStatus
 } from '@hcengineering/core'
-import { getAccountDB } from '@hcengineering/account'
+import { getAccountDB, type AccountDB } from '@hcengineering/account'
 import { getAccountClient } from '@hcengineering/server-client'
 import {
   type DbConfiguration,
@@ -168,6 +168,9 @@ class BackupWorker {
 
     const infoTo = setInterval(() => {
       const avgTime = this.allBackupTime / (this.processed + 1)
+      if (this.activeWorkspaces.size === 0 && this.workspacesToBackup.size === 0) {
+        return
+      }
       ctx.warn('********** backup info **********', {
         processed: this.processed,
         toGo: this.workspacesToBackup.size,
@@ -449,6 +452,8 @@ export async function doRestoreWorkspace (
   pipelineFactory: PipelineFactory,
   skipDomains: string[],
   cleanIndexState: boolean,
+  accountsDbUrl?: string,
+  accountsDbNs?: string,
   notify?: (progress: number) => Promise<void>
 ): Promise<boolean> {
   rootCtx.warn('\nRESTORE WORKSPACE ', {
@@ -457,6 +462,7 @@ export async function doRestoreWorkspace (
   })
   const ctx = rootCtx.newChild('doRestore', {}, { span: false })
   let pipeline: Pipeline | undefined
+  let closeAccountDB: (() => void) | undefined
   try {
     pipeline = await pipelineFactory(
       ctx,
@@ -472,11 +478,15 @@ export async function doRestoreWorkspace (
     }
     const restoreIds = { uuid: bucketName as WorkspaceUuid, dataId: bucketName as WorkspaceDataId, url: '' }
     const storage = await createStorageBackupStorage(ctx, backupAdapter, restoreIds, wsIds.dataId ?? wsIds.uuid)
+    let accountDB: AccountDB | undefined
+    if (accountsDbUrl !== undefined) {
+      ;[accountDB, closeAccountDB] = await getAccountDB(accountsDbUrl, accountsDbNs)
+    }
     const result: boolean = await ctx.with(
       'restore',
       {},
       (ctx) =>
-        restore(ctx, pipeline as Pipeline, wsIds, storage, {
+        restore(ctx, pipeline as Pipeline, wsIds, storage, accountDB, {
           date: -1,
           skip: new Set(skipDomains),
           recheck: false, // Do not need to recheck
@@ -492,6 +502,7 @@ export async function doRestoreWorkspace (
     rootCtx.error('\n\nFAILED to RESTORE', { workspace: wsIds.uuid, err })
     return false
   } finally {
+    closeAccountDB?.()
     if (pipeline !== undefined) {
       await pipeline.close()
     }

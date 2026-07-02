@@ -96,6 +96,7 @@
     "CreateCard": "Karte erstellen",
     "WhenCardMatches": "Wenn Karte übereinstimmt",
     "WhenFieldChanges": "Wenn sich das Feld ändert",
+    "WhenRequiredFieldsFilled": "Wenn erforderliche Felder ausgefüllt sind",
     "Insert": "Einfügen",
     "Remove": "Entfernen",
     "RemoveFirst": "Erstes entfernen",

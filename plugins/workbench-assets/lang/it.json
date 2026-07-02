@@ -1,4 +1,3 @@
-
 {
   "string": {
     "More": "Di più...",
@@ -28,6 +27,15 @@
     "ServerUnderMaintenance": "Il server è in manutenzione",
     "WorkspaceCreating": "Creazione in corso...",
     "AccessDenied": "L'oggetto non esiste o non hai autorizzazione per accedervi.",
-    "WorkspaceIsMigrating": "Il workspace è in fase di aggiornamento. Attendi..."
+    "WorkspaceIsMigrating": "Il workspace è in fase di aggiornamento. Attendi...",
+    "ShutdownWarningShort": "Servizio in chiusura — migra i dati",
+    "ShutdownWarningTitle": "Il servizio Huly in hosting sta chiudendo",
+    "ShutdownWarningHint": "Il servizio in hosting sta per chiudere perché il suo hosting non è più finanziato. Esporta e salva una copia di tutto ciò che non puoi permetterti di perdere e migra il prima possibile: possiamo aiutarti a passare a un'installazione self-hosted o a un'opzione in hosting.",
+    "ShutdownNextEventBefore": "La chiusura del servizio è prevista il ",
+    "ShutdownNextEventDate": "20 luglio",
+    "ShutdownNextEventAfter": ". Assicurati di esportare e migrare i tuoi dati prima di quella data.",
+    "ShutdownCommunityHint": "Hai domande o vuoi ricevere aggiornamenti? Unisciti alla community di Huly per parlare della migrazione e restare informato.",
+    "JoinCommunityCta": "Unisciti alla community di Huly",
+    "ShutdownContactPrefix": "Domande? Contatta "
   }
 }

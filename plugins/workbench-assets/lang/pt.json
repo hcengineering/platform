@@ -35,6 +35,15 @@
     "ConfigureWidgets": "Configurar widgets",
     "Tab": "Aba",
     "WorkspaceIsArchived": "O espaço de trabalho está arquivado por estar inativo, por favor, entre em contato conosco para restaurá-lo...",
-    "WorkspaceIsMigrating": "O espaço de trabalho está sendo atualizado. Por favor, aguarde..."
+    "WorkspaceIsMigrating": "O espaço de trabalho está sendo atualizado. Por favor, aguarde...",
+    "ShutdownWarningShort": "Serviço será encerrado — migre os seus dados",
+    "ShutdownWarningTitle": "O Huly alojado será encerrado",
+    "ShutdownWarningHint": "O serviço alojado será encerrado porque o seu alojamento já não é financiado. Exporte e faça uma cópia de segurança de tudo o que não pode perder e migre o mais rapidamente possível — podemos ajudá-lo a mudar para uma instalação auto-alojada ou para uma opção alojada.",
+    "ShutdownNextEventBefore": "O encerramento do serviço é esperado em ",
+    "ShutdownNextEventDate": "20 de julho",
+    "ShutdownNextEventAfter": ". Certifique-se de exportar e migrar os seus dados antes dessa data.",
+    "ShutdownCommunityHint": "Tem dúvidas ou quer receber novidades? Junte-se à comunidade do Huly para discutir a migração e manter-se informado.",
+    "JoinCommunityCta": "Juntar-se à comunidade do Huly",
+    "ShutdownContactPrefix": "Questões? Contacte "
   }
 }

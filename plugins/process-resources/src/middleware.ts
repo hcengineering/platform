@@ -28,8 +28,9 @@ import core, {
   type TxResult,
   type TxUpdateDoc
 } from '@hcengineering/core'
+import { translate } from '@hcengineering/platform'
 import { BasePresentationMiddleware, type PresentationMiddleware } from '@hcengineering/presentation'
-import { type ApproveRequest, ExecutionStatus, isUpdateTx, type ProcessToDo } from '@hcengineering/process'
+import { ExecutionStatus, isUpdateTx, type ApproveRequest, type ProcessToDo } from '@hcengineering/process'
 import process from './plugin'
 import { createExecution, getNextStateUserInput, pickTransition, requestResult } from './utils'
 
@@ -237,7 +238,27 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
       })
       if (execution === undefined) return
 
-      const context = await requestResult(execution, todo.results, execution.context)
+      let results = todo.results ?? []
+      if (results.length > 0) {
+        results = await Promise.all(
+          results.map(async (r) => {
+            if (r.key !== undefined) {
+              const h = this.client.getHierarchy()
+              const _process = this.client.getModel().findObject(execution.process)
+              if (_process !== undefined) {
+                const attr = h.findAttribute(_process.masterTag, r.key)
+                if (attr?.label !== undefined) {
+                  const name = await translate(attr.label, {})
+                  return { ...r, name }
+                }
+              }
+            }
+            return r
+          })
+        )
+      }
+
+      const context = await requestResult(execution, results, execution.context)
 
       const transitions = this.client.getModel().findAllSync(process.class.Transition, {
         process: execution.process,

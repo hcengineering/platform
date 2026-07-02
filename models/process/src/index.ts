@@ -216,6 +216,9 @@ export class TProcessToDo extends TToDo implements ProcessToDo {
 
   @Prop(TypeBoolean(), process.string.Rollback)
     withRollback!: boolean
+
+  @Prop(TypeBoolean(), process.string.AskRequired)
+    askRequired?: boolean
 }
 
 @Model(process.class.ApproveRequest, process.class.ProcessToDo)
