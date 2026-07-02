@@ -19,6 +19,7 @@
 
   import CreateCardPopupFull from './CreateCardPopupFull.svelte'
   import CreateCardPopupSimple from './CreateCardPopupSimple.svelte'
+  import { getFirstCreatableSubtype, isBaseTypeWithSubtypes } from '../utils'
 
   export let title: string = ''
   export let type: Ref<MasterTag> = card.types.Document
@@ -29,6 +30,11 @@
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+
+  $: if (type != null && isBaseTypeWithSubtypes(hierarchy, type)) {
+    type = getFirstCreatableSubtype(hierarchy, type) ?? type
+    changeType = true
+  }
 
   $: extension =
     type != null

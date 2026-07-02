@@ -150,6 +150,7 @@
     "WorkspaceStatusIn4Hours": "Za 4 godziny",
     "WorkspaceStatusEndOfDay": "Koniec dnia",
     "WorkspaceStatusPickDate": "Wybierz datę",
-    "HideInactive": "Ukryj nieaktywnych"
+    "HideInactive": "Ukryj nieaktywnych",
+    "Timezone": "Strefa czasowa"
   }
 }

@@ -24,7 +24,7 @@
   import { SelectUsersPopup, employeeByIdStore, permissionsStore } from '@hcengineering/contact-resources'
   import view from '@hcengineering/view'
 
-  import { createCard } from '../utils'
+  import { createCard, isBaseTypeWithSubtypes } from '../utils'
   import CardCollaborators from './CardCollaborators.svelte'
   import { TypeSelector } from '../index'
   import { canCreateObject } from '@hcengineering/view-resources'
@@ -142,7 +142,8 @@
     }
   }
 
-  $: allowed = _space != null && canCreateObject(type, _space, $permissionsStore)
+  $: allowed =
+    _space != null && canCreateObject(type, _space, $permissionsStore) && !isBaseTypeWithSubtypes(hierarchy, type)
 </script>
 
 <Modal
@@ -186,7 +187,7 @@
     {#if changeType}
       <div class="hulyModal-content__settingsSet-line">
         <span class="label"><Label label={card.string.MasterTag} /></span>
-        <TypeSelector bind:value={type} />
+        <TypeSelector bind:value={type} excludeBaseTypes />
       </div>
     {/if}
     {#if (space == null || allowChangeSpace) && !(extension?.hideSpace ?? false)}

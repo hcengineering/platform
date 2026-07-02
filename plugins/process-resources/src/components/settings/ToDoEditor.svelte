@@ -64,6 +64,16 @@
     step.params = params
     dispatch('change', step)
   }
+  let askRequired = params.askRequired ?? false
+  $: askRequired = params.askRequired ?? false
+
+  function changeAskRequired (e: CustomEvent<boolean>): void {
+    if (e.detail !== undefined) {
+      params.askRequired = e.detail
+      step.params = params
+      dispatch('change', step)
+    }
+  }
 </script>
 
 <ParamsEditor _class={plugin.class.ProcessToDo} {process} {keys} {params} on:change={changeParams} />
@@ -86,6 +96,12 @@
     <Label label={plugin.string.SyncWithField} />
   </div>
   <Toggle disabled={!userContext} on={params.field !== undefined} on:change={toggleField} />
+</div>
+<div class="grid">
+  <div>
+    <Label label={plugin.string.AskRequired} />
+  </div>
+  <Toggle on={askRequired} on:change={changeAskRequired} />
 </div>
 <div class="divider" />
 <ResultsEditor {process} result={step.results} on:change={changeResults} />

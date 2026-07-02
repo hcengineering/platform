@@ -102,6 +102,7 @@
     "CreateCard": "Créer une carte",
     "WhenCardMatches": "Lorsque la carte correspond",
     "WhenFieldChanges": "Lorsque le champ change",
+    "WhenRequiredFieldsFilled": "Lorsque les champs requis sont remplis",
     "ArraySizeEquals": "Taille égale à",
     "ArraySizeGt": "Taille supérieure à",
     "ArraySizeGte": "Taille supérieure ou égale à",

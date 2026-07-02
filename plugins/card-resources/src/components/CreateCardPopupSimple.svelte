@@ -22,7 +22,7 @@
   import { permissionsStore } from '@hcengineering/contact-resources'
   import view from '@hcengineering/view'
 
-  import { createCard } from '../utils'
+  import { createCard, isBaseTypeWithSubtypes } from '../utils'
   import { TypeSelector } from '../index'
   import { canCreateObject } from '@hcengineering/view-resources'
 
@@ -90,7 +90,8 @@
     label = `${createString} ${typeString}`
   }
 
-  $: allowed = _space != null && canCreateObject(type, _space, $permissionsStore)
+  $: allowed =
+    _space != null && canCreateObject(type, _space, $permissionsStore) && !isBaseTypeWithSubtypes(hierarchy, type)
 </script>
 
 <Card
@@ -118,7 +119,7 @@
       kind={'regular'}
       size={'large'}
     />
-    <TypeSelector bind:value={type} />
+    <TypeSelector bind:value={type} excludeBaseTypes />
   </svelte:fragment>
   <ModernEditbox bind:value={data.title} label={view.string.Title} size="medium" kind="ghost" autoFocus />
   <svelte:fragment slot="pool">

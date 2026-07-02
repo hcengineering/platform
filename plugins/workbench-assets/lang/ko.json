@@ -35,6 +35,15 @@
         "ConfigureWidgets": "위젯 구성",
         "Tab": "탭",
         "WorkspaceIsArchived": "사용하지 않아 보관된 워크스페이스입니다. 복원하려면 문의해 주세요...",
-        "WorkspaceIsMigrating": "워크스페이스 업데이트 중입니다. 잠시만 기다려 주세요..."
+        "WorkspaceIsMigrating": "워크스페이스 업데이트 중입니다. 잠시만 기다려 주세요...",
+        "ShutdownWarningShort": "서비스 종료 예정 — 데이터를 이전하세요",
+        "ShutdownWarningTitle": "호스팅형 Huly가 종료됩니다",
+        "ShutdownWarningHint": "호스팅 비용이 더 이상 지원되지 않아 호스팅형 서비스가 종료됩니다. 잃어서는 안 되는 데이터는 모두 내보내어 백업하고 가능한 한 빨리 이전해 주세요. 자체 호스팅 환경으로든 호스팅형 옵션으로든 이전을 도와드릴 수 있습니다.",
+        "ShutdownNextEventBefore": "서비스 종료는 ",
+        "ShutdownNextEventDate": "7월 20일",
+        "ShutdownNextEventAfter": "로 예상됩니다. 반드시 그 전에 데이터를 내보내고 이전해 주세요.",
+        "ShutdownCommunityHint": "궁금한 점이 있거나 소식을 받고 싶으신가요? Huly 커뮤니티에 참여하여 이전에 대해 논의하고 최신 소식을 확인하세요.",
+        "JoinCommunityCta": "Huly 커뮤니티 참여",
+        "ShutdownContactPrefix": "문의사항은 "
     }
 }

@@ -2,7 +2,7 @@
   import { Markup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import presentation, { MessageViewer, getFileUrl, getImageSize, imageSizeToRatio } from '@hcengineering/presentation'
-  import { EmptyMarkup, mergeKitOptions } from '@hcengineering/text'
+  import { EmptyMarkup } from '@hcengineering/text'
   import textEditor, { RefAction } from '@hcengineering/text-editor'
   import {
     ActionIcon,
@@ -374,35 +374,35 @@
 </div>
 
 <style lang="scss">
-  :global(.tiptap-left-menu) {
-    display: flex;
-    color: var(--theme-trans-color);
-    width: 20px;
-    height: 20px;
-    border-radius: 20%;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    transition:
-      background-color 0.2s,
-      opacity 0.2s;
-    position: absolute;
-    cursor: pointer;
-    transform: translateX(34px); /* Сдвигаем внутрь видимой зоны */
-
-    &:hover {
-      background-color: var(--theme-button-hovered);
-      color: var(--theme-content-color);
-    }
-
-    &.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-  }
-
   .styled-box {
     flex-grow: 1;
+
+    :global(.tiptap-left-menu) {
+      display: flex;
+      color: var(--theme-trans-color);
+      width: 20px;
+      height: 20px;
+      border-radius: 20%;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition:
+        background-color 0.2s,
+        opacity 0.2s;
+      position: absolute;
+      cursor: pointer;
+      transform: translateX(34px); /* Сдвигаем внутрь видимой зоны */
+
+      &:hover {
+        background-color: var(--theme-button-hovered);
+        color: var(--theme-content-color);
+      }
+
+      &.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
 
     .label {
       padding-bottom: 0.25rem;

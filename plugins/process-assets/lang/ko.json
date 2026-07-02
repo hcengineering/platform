@@ -98,6 +98,7 @@
         "CreateCard": "카드 생성",
         "WhenCardMatches": "카드 일치 시",
         "WhenFieldChanges": "필드 변경 시",
+        "WhenRequiredFieldsFilled": "필수 필드가 채워졌을 때",
         "ArraySizeEquals": "크기 같음",
         "ArraySizeGt": "크기가 더 큼",
         "ArraySizeGte": "크기가 이상",

@@ -260,6 +260,8 @@
   onMount(() => {
     pushRootBarComponent('right', view.component.SearchSelector)
     pushRootBarComponent('left', workbench.component.WorkbenchTabs, 30)
+    // Always-visible hosting shutdown notice in the header so every user sees it.
+    pushRootBarComponent('right', workbench.component.ShutdownNotice, 1)
     void getResource(login.function.GetWorkspaces).then(async (getWorkspaceFn) => {
       $workspacesStore = await getWorkspaceFn()
       await updateWindowTitle(getLocation())

@@ -17,6 +17,9 @@
   import { Card } from '@hcengineering/card'
   import { Attachments } from '@hcengineering/attachment-resources'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { getClient } from '@hcengineering/presentation'
+  import { canChangeDoc } from '@hcengineering/view-resources'
+  import { permissionsStore } from '@hcengineering/contact-resources'
 
   export let readonly: boolean = false
   export let doc: Card
@@ -29,6 +32,11 @@
       dispatch('loaded')
     }
   })
+
+  const client = getClient()
+  const h = client.getHierarchy()
+
+  $: updatePermissionForbidden = doc && !canChangeDoc(doc?._class, doc?.space, $permissionsStore)
 </script>
 
 {#if !hidden}
@@ -38,7 +46,9 @@
       _class={doc._class}
       space={doc.space}
       attachments={doc.attachments ?? 0}
-      {readonly}
+      readonly={readonly ||
+        updatePermissionForbidden ||
+        h.getAncestors(doc._class).some((p) => doc.readonlySections?.includes(p))}
       on:attachments={() => dispatch('loaded')}
     />
   </div>
