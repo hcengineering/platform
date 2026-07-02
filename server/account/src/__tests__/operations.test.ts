@@ -1781,7 +1781,13 @@ describe('account operations', () => {
           mockFirstName,
           mockLastName
         )
-        expect(utils.sendEmailConfirmation).toHaveBeenCalledWith(mockCtx, mockDb, mockBranding, mockAccountId, mockEmail)
+        expect(utils.sendEmailConfirmation).toHaveBeenCalledWith(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          mockAccountId,
+          mockEmail
+        )
         expect(mockCtx.warn).not.toHaveBeenCalled()
       })
 

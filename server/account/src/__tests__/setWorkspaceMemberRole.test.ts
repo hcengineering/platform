@@ -2,8 +2,10 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 
-import { MeasureContext, AccountRole, WorkspaceMemberInfo } from '@hcengineering/core'
+import { type MeasureContext, AccountRole, type WorkspaceMemberInfo } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
+
+import { setWorkspaceMemberRole } from '../operations'
 
 const ADMIN_TOKEN = 'admin-token'
 const USER_TOKEN = 'user-token'
@@ -29,8 +31,6 @@ function mockDb (currentRole: AccountRole | null, members: WorkspaceMemberInfo[]
     adminAuditLog: { insert: async () => undefined }
   }
 }
-
-import { setWorkspaceMemberRole } from '../operations'
 
 describe('setWorkspaceMemberRole', () => {
   it('rejects non-admin caller', async () => {

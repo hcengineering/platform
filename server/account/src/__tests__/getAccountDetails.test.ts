@@ -2,8 +2,10 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
+
+import { getAccountDetails } from '../serviceOperations'
 
 const ADMIN_TOKEN = 'admin-token'
 const USER_TOKEN = 'user-token'
@@ -28,8 +30,6 @@ const fakeDb = (account: any): any => ({
   getWorkspaceRoles: async () => new Map(),
   adminAuditLog: { findByTarget: async () => [] }
 })
-
-import { getAccountDetails } from '../serviceOperations'
 
 describe('getAccountDetails', () => {
   it('rejects non-admin caller', async () => {
@@ -84,7 +84,8 @@ describe('getAccountDetails', () => {
       account: { findOne: async () => account },
       socialId: { find: async () => [], findOne: async () => null },
       person: {
-        findOne: async ({ uuid }: any) => personRows.get(uuid) ?? { uuid: TARGET_UUID, firstName: 'Charlie', lastName: 'Citrine' },
+        findOne: async ({ uuid }: any) =>
+          personRows.get(uuid) ?? { uuid: TARGET_UUID, firstName: 'Charlie', lastName: 'Citrine' },
         find: async ({ uuid }: any) => {
           // IN-query: uuid is { $in: [admin1, admin2] }
           if (uuid?.$in != null) return uuid.$in.map((u: string) => personRows.get(u)).filter(Boolean)

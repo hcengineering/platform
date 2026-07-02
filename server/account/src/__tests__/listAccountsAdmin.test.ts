@@ -2,9 +2,11 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
 import type { AccountListRow } from '@hcengineering/account-client'
+
+import { listAccountsAdmin } from '../serviceOperations'
 
 const ADMIN_TOKEN = 'fake-admin-token'
 const USER_TOKEN = 'fake-user-token'
@@ -88,9 +90,7 @@ function buildInMemoryListAccountsAdmin (rows: AccountListRow[]) {
         }
       })
     } else {
-      filtered.sort((a, b) =>
-        `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
-      )
+      filtered.sort((a, b) => `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`))
     }
 
     const limit = params.pagination?.limit ?? 50
@@ -125,7 +125,9 @@ function buildAccounts (
 }
 
 function fakeDb (rows?: AccountListRow[]): any {
-  const allRows = rows ?? buildAccounts([{ uuid: 'u1', firstName: 'Alice', lastName: 'A', email: 'a@x.com', lastActivity: 1700000000000 }])
+  const allRows =
+    rows ??
+    buildAccounts([{ uuid: 'u1', firstName: 'Alice', lastName: 'A', email: 'a@x.com', lastActivity: 1700000000000 }])
   return {
     account: {
       findOne: async () => ({ uuid: 'admin-uuid', disabledAt: null, tokenVersion: 0 })
@@ -134,8 +136,6 @@ function fakeDb (rows?: AccountListRow[]): any {
     listAccountsAdmin: buildInMemoryListAccountsAdmin(allRows)
   }
 }
-
-import { listAccountsAdmin } from '../serviceOperations'
 
 describe('listAccountsAdmin', () => {
   it('returns 403 for non-admin caller', async () => {
@@ -208,12 +208,28 @@ describe('listAccountsAdmin', () => {
       listAccountsAdmin: async (params: any) => {
         capturedParams = params
         return {
-          rows: [{ uuid: 'a1', firstName: 'A', lastName: 'One', status: 'active', authMethods: [], hasPassword: false, workspaceCount: 0, primaryEmail: null, lastActivityAt: null, isAdmin: false }],
+          rows: [
+            {
+              uuid: 'a1',
+              firstName: 'A',
+              lastName: 'One',
+              status: 'active',
+              authMethods: [],
+              hasPassword: false,
+              workspaceCount: 0,
+              primaryEmail: null,
+              lastActivityAt: null,
+              isAdmin: false
+            }
+          ],
           total: 42
         }
       }
     } as any
-    const res = await listAccountsAdmin(ctx, delegateDb, null, ADMIN_TOKEN, { sort: { field: 'name', direction: 'asc' }, pagination: { limit: 10, offset: 0 } })
+    const res = await listAccountsAdmin(ctx, delegateDb, null, ADMIN_TOKEN, {
+      sort: { field: 'name', direction: 'asc' },
+      pagination: { limit: 10, offset: 0 }
+    })
     expect(res.accounts).toHaveLength(1)
     expect(res.total).toBe(42)
     expect(capturedParams.sort?.field).toBe('name')

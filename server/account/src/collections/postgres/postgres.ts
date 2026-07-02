@@ -564,7 +564,7 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
       ORDER BY ts_ms DESC LIMIT $2::int
     `
     const rows = await this.client.unsafe(sql, [target, limit])
-    return rows.map(this.parseRow)
+    return rows.map((row: any) => this.parseRow(row))
   }
 
   async findByAdmin (admin: AccountUuid, limit: number): Promise<AdminAuditLogEntry[]> {
@@ -577,13 +577,16 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
       ORDER BY ts_ms DESC LIMIT $2::int
     `
     const rows = await this.client.unsafe(sql, [admin, limit])
-    return rows.map(this.parseRow)
+    return rows.map((row: any) => this.parseRow(row))
   }
 
   async listAuditAdmin (params: AdminAuditLogListParams): Promise<AdminAuditLogListResult> {
     const conds: string[] = []
     const args: any[] = []
-    const ph = (v: any): string => { args.push(v); return `$${args.length}` }
+    const ph = (v: any): string => {
+      args.push(v)
+      return `$${args.length}`
+    }
 
     const f = params.filter ?? {}
     if (f.adminUuid != null) conds.push(`al.admin_account = ${ph(f.adminUuid)}`)
@@ -661,13 +664,9 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
         const cTs = decoded.slice(0, sepIdx)
         const cId = decoded.slice(sepIdx + 1)
         if (sortDir === 'desc') {
-          conds.push(
-            `(al.ts_ms < ${ph(Number(cTs))} OR (al.ts_ms = ${ph(Number(cTs))} AND al.id < ${ph(cId)}))`
-          )
+          conds.push(`(al.ts_ms < ${ph(Number(cTs))} OR (al.ts_ms = ${ph(Number(cTs))} AND al.id < ${ph(cId)}))`)
         } else {
-          conds.push(
-            `(al.ts_ms > ${ph(Number(cTs))} OR (al.ts_ms = ${ph(Number(cTs))} AND al.id > ${ph(cId)}))`
-          )
+          conds.push(`(al.ts_ms > ${ph(Number(cTs))} OR (al.ts_ms = ${ph(Number(cTs))} AND al.id > ${ph(cId)}))`)
         }
       }
       // Unknown cursor under a non-time sort: silently ignore (the page
@@ -676,7 +675,7 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
 
     const where = conds.length === 0 ? 'TRUE' : conds.join(' AND ')
     const limit = Math.min(Math.max(1, params.limit ?? 50), 200)
-    const limitPh = ph(limit + 1)  // fetch +1 to detect nextCursor
+    const limitPh = ph(limit + 1) // fetch +1 to detect nextCursor
 
     const tbl = this.getTableName()
     const sql = `
@@ -704,9 +703,10 @@ class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
         nextCursor = Buffer.from(`${last.ts_ms}_${last.id}`).toString('base64')
       } else {
         // Offset cursor: previous offset (0 if absent) + page size.
-        const prevOffset = params.cursor != null && Buffer.from(params.cursor, 'base64').toString('utf-8').startsWith('o:')
-          ? Number(Buffer.from(params.cursor, 'base64').toString('utf-8').slice(2))
-          : 0
+        const prevOffset =
+          params.cursor != null && Buffer.from(params.cursor, 'base64').toString('utf-8').startsWith('o:')
+            ? Number(Buffer.from(params.cursor, 'base64').toString('utf-8').slice(2))
+            : 0
         nextCursor = Buffer.from(`o:${prevOffset + limit}`).toString('base64')
       }
     }
@@ -1417,7 +1417,10 @@ export class PostgresAccountDB implements AccountDB {
   }
 
   async listAccountsAdmin (params: ListAccountsAdminQueryParams): Promise<{ rows: AccountListRow[], total: number }> {
-    const adminEmails = (process.env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim()).filter(Boolean)
+    const adminEmails = (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean)
     const { rowsSql, countSql, rowsArgs, countArgs } = buildListAccountsAdminSql(this.ns, params, adminEmails)
     const [rows, count] = await Promise.all([
       this.client.unsafe(rowsSql, rowsArgs),
@@ -1432,10 +1435,7 @@ export class PostgresAccountDB implements AccountDB {
   async pruneAuditOlderThan (beforeMs: number): Promise<number> {
     // Index range scan on admin_audit_log_ts_idx (ts_ms DESC) covers this DELETE.
     // Returns the rowcount so the scheduled job can log progress.
-    const res = await this.client.unsafe(
-      `DELETE FROM ${this.ns}.admin_audit_log WHERE ts_ms < $1`,
-      [beforeMs]
-    )
+    const res = await this.client.unsafe(`DELETE FROM ${this.ns}.admin_audit_log WHERE ts_ms < $1`, [beforeMs])
     return res.count ?? 0
   }
 

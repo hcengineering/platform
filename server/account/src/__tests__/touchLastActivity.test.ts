@@ -27,7 +27,7 @@ describe('touchLastActivity', () => {
     const db = mockDb(null)
     await touchLastActivity(db, TEST_UUID)
     expect(updatedTo).not.toBeNull()
-    expect(updatedTo! > Date.now() - 1000).toBe(true)
+    expect((updatedTo ?? 0) > Date.now() - 1000).toBe(true)
   })
 
   it('updates lastActivityAt when older than throttle (5 minutes)', async () => {
@@ -35,7 +35,7 @@ describe('touchLastActivity', () => {
     const db = mockDb(oldTime)
     await touchLastActivity(db, TEST_UUID)
     expect(updatedTo).not.toBeNull()
-    expect(updatedTo! > oldTime).toBe(true)
+    expect((updatedTo ?? 0) > oldTime).toBe(true)
   })
 
   it('skips update when within throttle window', async () => {

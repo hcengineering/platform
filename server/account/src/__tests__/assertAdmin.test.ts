@@ -1,8 +1,10 @@
 //
 // Copyright © 2026 Hardcore Engineering Inc.
 //
-import { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
+
+import { assertAdmin } from '../serviceOperations'
 
 jest.mock('@hcengineering/server-token', () => ({
   decodeTokenVerbose: (_ctx: any, token: string) => {
@@ -20,8 +22,6 @@ jest.mock('../utils', () => ({
 
 const ctx = { newChild: () => ctx, info: () => {}, error: () => {} } as unknown as MeasureContext
 const fakeDb = { account: { findOne: async () => ({ tokenVersion: 1 }) } } as any
-
-import { assertAdmin } from '../serviceOperations'
 
 describe('assertAdmin', () => {
   it('passes for admin token', async () => {

@@ -35,7 +35,9 @@
       kind={'regular'}
       size={'small'}
       disabled={!hasPrev}
-      on:click={() => go(offset - limit)}
+      on:click={() => {
+        go(offset - limit)
+      }}
     />
     <Button
       iconRight={IconForward}
@@ -43,7 +45,9 @@
       kind={'regular'}
       size={'small'}
       disabled={!hasNext}
-      on:click={() => go(offset + limit)}
+      on:click={() => {
+        go(offset + limit)
+      }}
     />
   </div>
 </div>

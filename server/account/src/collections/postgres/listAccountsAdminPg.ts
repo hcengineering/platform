@@ -19,7 +19,7 @@ import { escapeLike } from '../../util/escapeLike'
 
 // Whitelist of sort columns — never interpolate unsanitised user input.
 const ALLOWED_SORT_FIELDS: Record<string, string> = {
-  name: "LOWER(p.first_name), LOWER(p.last_name)",
+  name: 'LOWER(p.first_name), LOWER(p.last_name)',
   email: 's.primary_email NULLS LAST',
   auth: '(CASE WHEN s.has_email AND s.has_oidc THEN 2 WHEN s.has_oidc THEN 1 ELSE 0 END)',
   workspace_count: 'COALESCE(w.cnt, 0)',
@@ -48,7 +48,9 @@ export function buildListAccountsAdminSql (
     const needle = `%${escapeLike(params.search.trim())}%`
     const i = args.length + 1
     args.push(needle)
-    conds.push(`(p.first_name ILIKE $${i} ESCAPE '\\' OR p.last_name ILIKE $${i} ESCAPE '\\' OR s.primary_email ILIKE $${i} ESCAPE '\\' OR a.uuid::TEXT ILIKE $${i} ESCAPE '\\')`)
+    conds.push(
+      `(p.first_name ILIKE $${i} ESCAPE '\\' OR p.last_name ILIKE $${i} ESCAPE '\\' OR s.primary_email ILIKE $${i} ESCAPE '\\' OR a.uuid::TEXT ILIKE $${i} ESCAPE '\\')`
+    )
   }
 
   // statusIn
@@ -61,7 +63,9 @@ export function buildListAccountsAdminSql (
   if (params.isAdmin === true) {
     conds.push(`LOWER(s.primary_email) = ANY(${ph(adminEmails.map((e) => e.toLowerCase()))}::TEXT[])`)
   } else if (params.isAdmin === false) {
-    conds.push(`(s.primary_email IS NULL OR NOT (LOWER(s.primary_email) = ANY(${ph(adminEmails.map((e) => e.toLowerCase()))}::TEXT[])))`)
+    conds.push(
+      `(s.primary_email IS NULL OR NOT (LOWER(s.primary_email) = ANY(${ph(adminEmails.map((e) => e.toLowerCase()))}::TEXT[])))`
+    )
   }
 
   // authMethodIn
@@ -78,7 +82,9 @@ export function buildListAccountsAdminSql (
   // nameContains — see escapeLike() comment in `search` above for the
   // rationale; same treatment, same ESCAPE clause.
   if (params.nameContains != null && params.nameContains.trim() !== '') {
-    conds.push(`(p.first_name || ' ' || p.last_name) ILIKE ${ph('%' + escapeLike(params.nameContains.trim()) + '%')} ESCAPE '\\'`)
+    conds.push(
+      `(p.first_name || ' ' || p.last_name) ILIKE ${ph('%' + escapeLike(params.nameContains.trim()) + '%')} ESCAPE '\\'`
+    )
   }
 
   // emailContains
@@ -88,7 +94,9 @@ export function buildListAccountsAdminSql (
 
   // workspaceUuidsIn — account must be member of at least one of the listed workspaces
   if (params.workspaceUuidsIn != null && params.workspaceUuidsIn.length > 0) {
-    conds.push(`EXISTS (SELECT 1 FROM ${ns}.workspace_members wm WHERE wm.account_uuid = a.uuid AND wm.workspace_uuid = ANY(${ph(params.workspaceUuidsIn)}::UUID[]))`)
+    conds.push(
+      `EXISTS (SELECT 1 FROM ${ns}.workspace_members wm WHERE wm.account_uuid = a.uuid AND wm.workspace_uuid = ANY(${ph(params.workspaceUuidsIn)}::UUID[]))`
+    )
   }
 
   // wsMin / wsMax

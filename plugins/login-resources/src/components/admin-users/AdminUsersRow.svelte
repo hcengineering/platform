@@ -51,9 +51,10 @@
       const res = await getAccountClient().getAdminEmails()
       adminEmails = res.emails
       adminEmailsLoaded = true
-      adminBadgeTitle = adminEmails.length > 0
-        ? `Configured via ADMIN_EMAILS\nAdmins: ${adminEmails.join(', ')}`
-        : 'Configured via ADMIN_EMAILS\n(no emails configured)'
+      adminBadgeTitle =
+        adminEmails.length > 0
+          ? `Configured via ADMIN_EMAILS\nAdmins: ${adminEmails.join(', ')}`
+          : 'Configured via ADMIN_EMAILS\n(no emails configured)'
     } catch {
       adminEmailsLoaded = true
       adminBadgeTitle = 'Instance administrator'
@@ -63,7 +64,14 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="row body" role="row" aria-rowindex={ariaRowIndex} class:is-active={active} class:is-focused={focused} on:click>
+<div
+  class="row body"
+  role="row"
+  aria-rowindex={ariaRowIndex}
+  class:is-active={active}
+  class:is-focused={focused}
+  on:click
+>
   <div class="cell cell-checkbox" on:click|stopPropagation>
     <CheckBox checked={selected} on:value={onCheckboxToggle} />
   </div>
@@ -75,8 +83,10 @@
       <span
         class="badge admin-badge"
         title={adminBadgeTitle}
-        on:mouseenter={() => { void onAdminBadgeHover() }}
-      >Admin</span>
+        on:mouseenter={() => {
+          void onAdminBadgeHover()
+        }}>Admin</span
+      >
     {/if}
   </div>
   <div class="cell cell-email" title={account.primaryEmail ?? ''}>
@@ -96,8 +106,10 @@
       <span class="orphan-badge" title="Active account with no workspaces">orphan</span>
     {/if}
   </div>
-  <div class="cell cell-activity last-activity-cell"
-       title={account.lastActivityAt != null ? new Date(account.lastActivityAt).toISOString() : 'Never'}>
+  <div
+    class="cell cell-activity last-activity-cell"
+    title={account.lastActivityAt != null ? new Date(account.lastActivityAt).toISOString() : 'Never'}
+  >
     {formatLastActivity(account.lastActivityAt)}
   </div>
   <div class="cell cell-status">
@@ -325,9 +337,11 @@
   }
 
   .status-active {
-    background: rgba(16, 185, 129, 0.10);
+    background: rgba(16, 185, 129, 0.1);
     color: #059669;
-    .status-dot { background: #10b981; }
+    .status-dot {
+      background: #10b981;
+    }
   }
 
   /* Disabled is visually heavier than Active so a single disabled row
@@ -338,6 +352,9 @@
     font-weight: 600;
     border: 1px solid rgba(239, 68, 68, 0.4);
     padding: 0.2rem 0.55rem;
-    .status-dot { background: #dc2626; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18); }
+    .status-dot {
+      background: #dc2626;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18);
+    }
   }
 </style>

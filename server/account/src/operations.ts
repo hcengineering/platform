@@ -37,13 +37,18 @@ import {
   type IntegrationKind
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant, TokenError } from '@hcengineering/server-token'
+import {
+  decodeToken,
+  decodeTokenVerbose,
+  generateToken,
+  type PermissionsGrant,
+  TokenError
+} from '@hcengineering/server-token'
 
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 import {
-  AccountEventType,
   type MailboxSecret,
   type AccountDB,
   type AccountMethodHandler,
@@ -1531,7 +1536,7 @@ export async function sendPasswordResetEmail (
   email: string
 ): Promise<boolean> {
   const front = getFrontUrl(branding)
-  const { mailURL, mailAuth } = getMailUrl()  // THROWS when MAIL_URL missing — matches legacy
+  const { mailURL, mailAuth } = getMailUrl() // THROWS when MAIL_URL missing — matches legacy
 
   const normalizedEmail = cleanEmail(email)
   const token = await generateTokenWithVersion(ctx, db, accountUuid, undefined, {
@@ -1561,7 +1566,9 @@ export async function sendPasswordResetEmail (
     return true
   }
   ctx.error(`Failed to send reset password email: ${response.statusText}`, {
-    email, normalizedEmail, accountUuid
+    email,
+    normalizedEmail,
+    accountUuid
   })
   return false
 }
@@ -1647,7 +1654,9 @@ export async function requestPasswordSetup (
 
   const { mailURL, mailAuth } = getMailUrl()
   const front = getFrontUrl(branding)
-  const resetToken = await generateTokenWithVersion(ctx, db, accountUuid, undefined, { restoreEmail: emailSocialId.value })
+  const resetToken = await generateTokenWithVersion(ctx, db, accountUuid, undefined, {
+    restoreEmail: emailSocialId.value
+  })
   const link = concatLink(front, `/login/recovery?id=${resetToken}`)
   const lang = branding?.language
   const text = await translate(accountPlugin.string.PasswordSetupText, { link }, lang)
@@ -3362,7 +3371,7 @@ export async function setWorkspaceMemberRole (
 
   await db.updateWorkspaceRole(params.accountUuid, params.workspaceUuid, params.newRole)
   await db.adminAuditLog.insert({
-    adminAccount: adminUuid as AccountUuid,
+    adminAccount: adminUuid,
     targetAccount: params.accountUuid,
     action: 'role_change',
     workspaceUuid: params.workspaceUuid,
@@ -3396,7 +3405,7 @@ export async function removeWorkspaceMember (
 
   await db.unassignWorkspace(params.accountUuid, params.workspaceUuid)
   await db.adminAuditLog.insert({
-    adminAccount: adminUuid as AccountUuid,
+    adminAccount: adminUuid,
     targetAccount: params.accountUuid,
     action: 'remove_member',
     workspaceUuid: params.workspaceUuid,
@@ -3431,7 +3440,7 @@ export async function triggerPasswordReset (
   } catch (err: any) {
     ctx.error('Password reset email send failed', { err, accountUuid: params.accountUuid })
     await db.adminAuditLog.insert({
-      adminAccount: adminUuid as AccountUuid,
+      adminAccount: adminUuid,
       targetAccount: params.accountUuid,
       action: 'trigger_password_reset',
       workspaceUuid: null,
@@ -3442,7 +3451,7 @@ export async function triggerPasswordReset (
   }
 
   await db.adminAuditLog.insert({
-    adminAccount: adminUuid as AccountUuid,
+    adminAccount: adminUuid,
     targetAccount: params.accountUuid,
     action: 'trigger_password_reset',
     workspaceUuid: null,
@@ -3582,10 +3591,7 @@ export async function disableAccountInternal (
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
-  await db.account.update(
-    { uuid: params.accountUuid },
-    { disabledAt: Date.now(), $inc: { tokenVersion: 1 } } as any
-  )
+  await db.account.update({ uuid: params.accountUuid }, { disabledAt: Date.now(), $inc: { tokenVersion: 1 } } as any)
   await db.adminAuditLog.insert({
     adminAccount: adminUuid,
     targetAccount: params.accountUuid,
@@ -3776,7 +3782,7 @@ export async function enableAccount (
   batchId?: string
 ): Promise<{ ok: true }> {
   const adminUuid = await requireAdmin(ctx, db, token)
-  return await enableAccountInternal(ctx, db, adminUuid as AccountUuid, params, batchId)
+  return await enableAccountInternal(ctx, db, adminUuid, params, batchId)
 }
 
 export type AccountMethods =

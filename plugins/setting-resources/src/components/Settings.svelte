@@ -192,11 +192,7 @@
 
       <NavFooter split>
         {#if isAdminUser()}
-          <NavItem
-            icon={setting.icon.AdminPanel}
-            label={setting.string.AdminPanel}
-            on:click={openAdminPanel}
-          />
+          <NavItem icon={setting.icon.AdminPanel} label={setting.string.AdminPanel} on:click={openAdminPanel} />
         {/if}
         <NavItem
           icon={setting.icon.SelectWorkspace}

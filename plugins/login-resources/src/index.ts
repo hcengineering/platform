@@ -31,10 +31,17 @@ import {
   getWorkspacePermissions,
   sendInvite,
   leaveWorkspace,
-  resendInvite
+  resendInvite,
+  forceLogoutReason
 } from './utils'
 
 import { type Pages, pages } from '@hcengineering/login'
+
+import { setForceLogoutHandler } from '@hcengineering/client-resources'
+import { setMetadata } from '@hcengineering/platform'
+import { setMetadataLocalStorage } from '@hcengineering/ui'
+import presentation from '@hcengineering/presentation'
+import login from '@hcengineering/login'
 export { pages, type Pages }
 /*!
  * Anticrm Platform™ Login Plugin
@@ -84,13 +91,6 @@ export interface BottomAction {
 }
 
 export * from './utils'
-
-import { setForceLogoutHandler } from '@hcengineering/client-resources'
-import { setMetadata } from '@hcengineering/platform'
-import { setMetadataLocalStorage } from '@hcengineering/ui'
-import presentation from '@hcengineering/presentation'
-import login from '@hcengineering/login'
-import { forceLogoutReason } from './utils'
 
 // Bridge the connection-layer force-logout signal into the Svelte store
 // consumed by LoginApp.svelte / ForceLogoutModal.svelte. Also clears the

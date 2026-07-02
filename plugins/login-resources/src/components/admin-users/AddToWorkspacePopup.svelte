@@ -84,7 +84,9 @@
         selected={role}
         kind={'regular'}
         size={'small'}
-        on:selected={(e) => { role = parseRole(e.detail) }}
+        on:selected={(e) => {
+          role = parseRole(e.detail)
+        }}
       />
     </label>
   {/if}

@@ -11,8 +11,8 @@
   export let thresholdHours: number = 1
 
   const dispatch = createEventDispatcher<{
-    'show-all': void
-    'reset-attempts': void
+    'show-all': null
+    'reset-attempts': null
   }>()
 
   $: visibleCandidates = candidates.slice(0, 2)
@@ -27,7 +27,9 @@
         {#each visibleCandidates as ws}
           <li>
             <strong>{ws.name ?? ws.url}</strong>
-            ({ws.mode}{#if ws.lastProcessingTime != null}, no tick since {new Date(ws.lastProcessingTime).toLocaleString()}{/if})
+            ({ws.mode}{#if ws.lastProcessingTime != null}, no tick since {new Date(
+              ws.lastProcessingTime
+            ).toLocaleString()}{/if})
           </li>
         {/each}
         {#if extraCount > 0}
@@ -36,8 +38,18 @@
       </ul>
     </div>
     <div class="lrw-banner-actions">
-      <Button kind={'regular'} size={'small'} label={getEmbeddedLabel('View all')} on:click={() => dispatch('show-all')} />
-      <Button kind={'regular'} size={'small'} label={getEmbeddedLabel('Reset attempts')} on:click={() => dispatch('reset-attempts')} />
+      <Button
+        kind={'regular'}
+        size={'small'}
+        label={getEmbeddedLabel('View all')}
+        on:click={() => dispatch('show-all')}
+      />
+      <Button
+        kind={'regular'}
+        size={'small'}
+        label={getEmbeddedLabel('Reset attempts')}
+        on:click={() => dispatch('reset-attempts')}
+      />
     </div>
   </div>
 {/if}
@@ -49,7 +61,7 @@
     align-items: flex-start;
     gap: 1rem;
     padding: 0.85rem 1rem;
-    background: rgba(245, 158, 11, 0.10);
+    background: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.35);
     border-radius: 0.5rem;
     color: #b45309;

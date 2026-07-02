@@ -11,7 +11,7 @@
  */
 export function csvEscape (v: unknown): string {
   const s = v == null ? '' : String(v)
-  return (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r'))
+  return s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')
     ? '"' + s.replace(/"/g, '""') + '"'
     : s
 }

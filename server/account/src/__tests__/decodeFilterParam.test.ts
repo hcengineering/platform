@@ -62,18 +62,14 @@ describe('decodeFilterParam', () => {
   })
 
   it('rejects forbidden keys at nested levels (recursive guard)', () => {
-    expect(() => decodeFilterParam(
-      b64('{"lastActivityFilter":{"__proto__":{"polluted":true}}}')
-    )).toThrow(/forbidden key/)
-    expect(() => decodeFilterParam(
-      b64('{"sort":{"nested":{"constructor":1}}}')
-    )).toThrow(/forbidden key/)
+    expect(() => decodeFilterParam(b64('{"lastActivityFilter":{"__proto__":{"polluted":true}}}'))).toThrow(
+      /forbidden key/
+    )
+    expect(() => decodeFilterParam(b64('{"sort":{"nested":{"constructor":1}}}'))).toThrow(/forbidden key/)
   })
 
   it('rejects forbidden keys inside array elements', () => {
-    expect(() => decodeFilterParam(
-      b64('{"workspaceUuidsIn":[{"__proto__":1}]}')
-    )).toThrow(/forbidden key/)
+    expect(() => decodeFilterParam(b64('{"workspaceUuidsIn":[{"__proto__":1}]}'))).toThrow(/forbidden key/)
   })
 
   it('rejects non-base64 characters in input (strict validation)', () => {
@@ -91,7 +87,9 @@ describe('decodeFilterParam', () => {
   })
 
   it('does not pollute Object.prototype after a rejected attempt', () => {
-    try { decodeFilterParam(b64('{"__proto__":{"x":42}}')) } catch {}
+    try {
+      decodeFilterParam(b64('{"__proto__":{"x":42}}'))
+    } catch {}
     expect(({} as any).x).toBeUndefined()
   })
 

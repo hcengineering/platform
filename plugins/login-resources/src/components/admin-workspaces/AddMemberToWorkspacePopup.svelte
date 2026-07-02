@@ -82,7 +82,13 @@
       <p class="muted">No matching accounts.</p>
     {/if}
   </div>
-  <DropdownLabelsIntl items={roleItems} selected={role} on:selected={(e) => { role = parseRole(e.detail) }} />
+  <DropdownLabelsIntl
+    items={roleItems}
+    selected={role}
+    on:selected={(e) => {
+      role = parseRole(e.detail)
+    }}
+  />
   {#if error}<div class="error">{error}</div>{/if}
   <div class="actions">
     <Button label={getEmbeddedLabel('Cancel')} on:click={() => dispatch('close')} />

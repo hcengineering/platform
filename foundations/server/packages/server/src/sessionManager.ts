@@ -211,7 +211,7 @@ export class TSessionManager implements SessionManager {
 
         for (const [, entry] of matching) {
           try {
-            await entry.socket.close()
+            entry.socket.close()
           } catch (err) {
             ctx.warn('failed to close socket for disabled account', { err })
           }

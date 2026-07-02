@@ -259,9 +259,7 @@ export interface ListAccountsAdminParams {
   authMethodIn?: Array<'email_only' | 'oidc' | 'mixed' | 'none'>
   workspaceUuidsIn?: WorkspaceUuid[]
   workspaceCountRange?: { min?: number, max?: number }
-  lastActivityFilter?:
-    | { kind: 'range', fromMs?: number, toMs?: number }
-    | { kind: 'never' }
+  lastActivityFilter?: { kind: 'range', fromMs?: number, toMs?: number } | { kind: 'never' }
   // Active accounts with zero workspaces. Drives the "Orphan accounts"
   // quick-filter button in AdminUsers.
   orphan?: boolean
@@ -272,7 +270,7 @@ export interface ListAccountsAdminParams {
     field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
     direction: 'asc' | 'desc'
   }
-  pagination: { limit: number, offset: number }   // EXISTING required-nested, do NOT flatten
+  pagination: { limit: number, offset: number } // EXISTING required-nested, do NOT flatten
 }
 
 export interface AccountListRow {
@@ -364,7 +362,7 @@ export interface ListAuditAdminParams {
     action?: string
     targetAccountUuid?: AccountUuid
     targetWorkspaceUuid?: WorkspaceUuid
-    from?: number  // ms
+    from?: number // ms
     to?: number
     // V30 — Audit-log filter UX redesign. Substring-match against the
     // identifiers the admin actually sees in the table (name / email /

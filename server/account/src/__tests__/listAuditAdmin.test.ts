@@ -1,11 +1,11 @@
-import { MeasureContext, AccountUuid, WorkspaceUuid } from '@hcengineering/core'
+import { type MeasureContext, type AccountUuid, type WorkspaceUuid } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
+
+import { listAuditAdmin } from '../serviceOperations'
 
 jest.mock('@hcengineering/server-token', () => ({
   decodeTokenVerbose: (_c: any, t: string) =>
-    t === 'admin'
-      ? { account: 'admin-uuid', extra: { admin: 'true' } }
-      : { account: 'u', extra: {} },
+    t === 'admin' ? { account: 'admin-uuid', extra: { admin: 'true' } } : { account: 'u', extra: {} },
   TokenError: class extends Error {}
 }))
 jest.mock('../utils', () => ({
@@ -14,8 +14,6 @@ jest.mock('../utils', () => ({
 }))
 
 const ctx = { newChild: () => ctx, info: () => {}, warn: () => {}, error: () => {} } as unknown as MeasureContext
-
-import { listAuditAdmin } from '../serviceOperations'
 
 const fakeEntries = [
   {
@@ -38,7 +36,8 @@ const fakeEntries = [
 function makeDb (entries = fakeEntries, nextCursor: string | null = null): any {
   return {
     account: {
-      findOne: async (q: any) => q.uuid === 'admin-uuid' ? { uuid: 'admin-uuid', disabledAt: null, tokenVersion: 0, hash: null } : null
+      findOne: async (q: any) =>
+        q.uuid === 'admin-uuid' ? { uuid: 'admin-uuid', disabledAt: null, tokenVersion: 0, hash: null } : null
     },
     socialId: {
       find: async () => [{ personUuid: 'admin-uuid', type: 'email', value: 'admin@test.example.com', verifiedOn: 1 }]
@@ -87,19 +86,21 @@ describe('listAuditAdmin', () => {
   })
 
   it('maps targetWorkspace when workspaceUuid is present', async () => {
-    const entries = [{
-      id: 'e2',
-      tsMs: 1700000002000,
-      adminAccount: 'admin-uuid' as AccountUuid,
-      targetAccount: null,
-      workspaceUuid: 'ws-uuid' as WorkspaceUuid,
-      action: 'archive_workspace',
-      details: null,
-      adminFirstName: 'Test',
-      adminLastName: 'Admin',
-      targetWsName: 'My WS',
-      targetWsUrl: 'my-ws'
-    }]
+    const entries = [
+      {
+        id: 'e2',
+        tsMs: 1700000002000,
+        adminAccount: 'admin-uuid' as AccountUuid,
+        targetAccount: null,
+        workspaceUuid: 'ws-uuid' as WorkspaceUuid,
+        action: 'archive_workspace',
+        details: null,
+        adminFirstName: 'Test',
+        adminLastName: 'Admin',
+        targetWsName: 'My WS',
+        targetWsUrl: 'my-ws'
+      }
+    ]
     const db = makeDb(entries as any)
     const result = await listAuditAdmin(ctx, db, null, 'admin', {})
     expect(result.entries[0].targetWorkspace?.uuid).toBe('ws-uuid')

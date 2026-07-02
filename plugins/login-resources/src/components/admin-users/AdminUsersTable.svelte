@@ -11,7 +11,7 @@
   export let sort: { field: string, direction: 'asc' | 'desc' } | undefined = undefined
   export let loading: boolean = false
   export let columnFilters: Record<string, any> = {}
-  export let selectedUuids: Set<string> = new Set()
+  export let selectedUuids = new Set<string>()
   // Currently-open drawer uuid (single row marker, separate from bulk-
   // selection checkboxes). null → no drawer open.
   export let activeUuid: string | null = null
@@ -33,7 +33,12 @@
     // Do not hijack keys when an input or textarea is focused.
     const tag = (document.activeElement as HTMLElement | null)?.tagName
     if (tag === 'INPUT' || tag === 'TEXTAREA') return
-    if (containerEl == null || (!containerEl.contains(document.activeElement) && document.activeElement !== document.body)) return
+    if (
+      containerEl == null ||
+      (!containerEl.contains(document.activeElement) && document.activeElement !== document.body)
+    ) {
+      return
+    }
     if (accounts.length === 0) return
     if (ev.key === 'ArrowDown') {
       ev.preventDefault()
@@ -92,73 +97,131 @@
 <div aria-live="polite" class="sr-only">
   {#if !loading}Showing {accounts.length} user{accounts.length !== 1 ? 's' : ''}{/if}
 </div>
-<div class="users-table" bind:this={containerEl} tabindex="0" role="grid" aria-rowcount={accounts.length + 1} aria-busy={loading}>
+<div
+  class="users-table"
+  bind:this={containerEl}
+  tabindex="0"
+  role="grid"
+  aria-rowcount={accounts.length + 1}
+  aria-busy={loading}
+>
   <div class="row head">
     <div class="cell cell-checkbox" on:click|stopPropagation>
       <CheckBox checked={allSelected} on:value={onToggleAll} />
     </div>
     <div class="cell cell-name sortable" class:is-sorted={sort?.field === 'name'}>
-      <span class="hdr-label" on:click={() => setSort('name')}>{#if sort?.field === 'name'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Name</span>
+      <span
+        class="hdr-label"
+        on:click={() => {
+          setSort('name')
+        }}
+        >{#if sort?.field === 'name'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Name</span
+      >
       <button
         class="filter-btn"
         class:active={columnFilters?.name != null}
         title="Filter by name"
-        on:click|stopPropagation={(e) => openFilter('name', e.currentTarget)}
+        on:click|stopPropagation={(e) => {
+          openFilter('name', e.currentTarget)
+        }}
       >
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
     <div class="cell cell-email sortable" class:is-sorted={sort?.field === 'email'}>
-      <span class="hdr-label" on:click={() => setSort('email')}>{#if sort?.field === 'email'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Email</span>
+      <span
+        class="hdr-label"
+        on:click={() => {
+          setSort('email')
+        }}
+        >{#if sort?.field === 'email'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Email</span
+      >
       <button
         class="filter-btn"
         class:active={columnFilters?.email != null}
         title="Filter by email"
-        on:click|stopPropagation={(e) => openFilter('email', e.currentTarget)}
+        on:click|stopPropagation={(e) => {
+          openFilter('email', e.currentTarget)
+        }}
       >
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
     <div class="cell cell-auth sortable" class:is-sorted={sort?.field === 'auth'}>
-      <span class="hdr-label" on:click={() => setSort('auth')}>{#if sort?.field === 'auth'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Auth</span>
+      <span
+        class="hdr-label"
+        on:click={() => {
+          setSort('auth')
+        }}
+        >{#if sort?.field === 'auth'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Auth</span
+      >
       <button
         class="filter-btn"
         class:active={columnFilters?.auth != null}
         title="Filter by auth method"
-        on:click|stopPropagation={(e) => openFilter('auth', e.currentTarget)}
+        on:click|stopPropagation={(e) => {
+          openFilter('auth', e.currentTarget)
+        }}
       >
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
     <div class="cell cell-ws sortable" class:is-sorted={sort?.field === 'workspace_count'}>
-      <span class="hdr-label" on:click={() => setSort('workspace_count')}>{#if sort?.field === 'workspace_count'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Workspaces</span>
+      <span
+        class="hdr-label"
+        on:click={() => {
+          setSort('workspace_count')
+        }}
+        >{#if sort?.field === 'workspace_count'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span
+          >{/if}Workspaces</span
+      >
       <button
         class="filter-btn"
         class:active={columnFilters?.workspace_count != null}
         title="Filter by workspace count"
-        on:click|stopPropagation={(e) => openFilter('workspace_count', e.currentTarget)}
+        on:click|stopPropagation={(e) => {
+          openFilter('workspace_count', e.currentTarget)
+        }}
       >
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
     <div class="cell cell-activity sortable" class:is-sorted={sort?.field === 'last_activity'}>
-      <span class="hdr-label" on:click={() => setSort('last_activity')}>{#if sort?.field === 'last_activity'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Last activity</span>
+      <span
+        class="hdr-label"
+        on:click={() => {
+          setSort('last_activity')
+        }}
+        >{#if sort?.field === 'last_activity'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Last
+        activity</span
+      >
       <button
         class="filter-btn"
         class:active={columnFilters?.last_activity != null}
         title="Filter by last activity"
-        on:click|stopPropagation={(e) => openFilter('last_activity', e.currentTarget)}
+        on:click|stopPropagation={(e) => {
+          openFilter('last_activity', e.currentTarget)
+        }}
       >
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
     </div>
     <div class="cell cell-status sortable" class:is-sorted={sort?.field === 'status'}>
-      <span class="hdr-label" on:click={() => setSort('status')}>{#if sort?.field === 'status'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span>{/if}Status</span>
+      <span
+        class="hdr-label"
+        on:click={() => {
+          setSort('status')
+        }}
+        >{#if sort?.field === 'status'}<span class="arrow">{sort.direction === 'asc' ? '↑' : '↓'}</span
+          >{/if}Status</span
+      >
       <button
         class="filter-btn"
         class:active={columnFilters?.status != null}
         title="Filter by status"
-        on:click|stopPropagation={(e) => openFilter('status', e.currentTarget)}
+        on:click|stopPropagation={(e) => {
+          openFilter('status', e.currentTarget)
+        }}
       >
         <Icon icon={IconFilter} size={'x-small'} />
       </button>
@@ -176,7 +239,9 @@
         active={activeUuid === String(account.uuid)}
         focused={idx === focusedIndex}
         ariaRowIndex={idx + 2}
-        on:click={() => onRowClick(account.uuid)}
+        on:click={() => {
+          onRowClick(account.uuid)
+        }}
         on:toggle-selection={onToggleRow}
       />
     {/each}
@@ -197,13 +262,13 @@
        and Last-activity stretch to claim the slack; Workspaces+Status
        stay narrow + fixed. */
     grid-template-columns:
-      44px                 /* Selection checkbox */
+      44px /* Selection checkbox */
       minmax(240px, 1.5fr) /* Name + avatar + admin badge */
-      minmax(240px, 2fr)   /* Email             */
+      minmax(240px, 2fr) /* Email             */
       minmax(140px, 0.7fr) /* Auth              */
-      100px                /* Workspaces (num)  */
-      minmax(140px, 1fr)   /* Last activity     */
-      120px;               /* Status            */
+      100px /* Workspaces (num)  */
+      minmax(140px, 1fr) /* Last activity     */
+      120px; /* Status            */
     align-items: stretch;
     width: 100%;
     background: var(--theme-bg-color);
@@ -279,7 +344,10 @@
     border-radius: 0.25rem;
     /* Stay quiet until used. Hovered or active states call attention. */
     opacity: 0.35;
-    transition: opacity 80ms ease, color 80ms ease, background 80ms ease;
+    transition:
+      opacity 80ms ease,
+      color 80ms ease,
+      background 80ms ease;
 
     &:hover {
       opacity: 1;

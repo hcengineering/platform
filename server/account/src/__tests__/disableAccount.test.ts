@@ -2,8 +2,10 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
+
+import { disableAccount } from '../operations'
 
 const ADMIN_TOKEN = 'admin-token'
 const SELF_TOKEN = 'self-token'
@@ -28,8 +30,6 @@ const mockDb = (account: any): any => ({
   socialId: { find: async () => [{ personUuid: TARGET, type: 'email', value: 'other@example.com' }] },
   adminAuditLog: { insert: async () => undefined }
 })
-
-import { disableAccount } from '../operations'
 
 describe('disableAccount', () => {
   beforeEach(() => {
@@ -73,14 +73,9 @@ describe('disableAccount', () => {
   })
 
   it('still succeeds when producer is undefined (token-version fallback)', async () => {
-    const res = await disableAccount(
-      ctx,
-      mockDb({ uuid: TARGET, tokenVersion: 0 }),
-      null,
-      {},
-      ADMIN_TOKEN,
-      { accountUuid: TARGET }
-    )
+    const res = await disableAccount(ctx, mockDb({ uuid: TARGET, tokenVersion: 0 }), null, {}, ADMIN_TOKEN, {
+      accountUuid: TARGET
+    })
     expect(res).toEqual({ ok: true })
   })
 

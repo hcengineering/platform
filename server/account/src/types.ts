@@ -69,9 +69,9 @@ export interface Account {
   failedLoginAttempts?: number // Number of consecutive failed login attempts
   tfaSecret?: string
   // V27 admin user management:
-  disabledAt?: number | null         // epoch-ms; null = active
-  tokenVersion?: number              // monotonic counter, default 0
-  lastActivityAt?: number | null     // epoch-ms; null = no logins yet
+  disabledAt?: number | null // epoch-ms; null = active
+  tokenVersion?: number // monotonic counter, default 0
+  lastActivityAt?: number | null // epoch-ms; null = no logins yet
 }
 
 // V27 admin user management
@@ -81,8 +81,8 @@ export type AdminAuditAction =
   | 'trigger_password_reset'
   | 'disable'
   | 'enable'
-  | 'create_account'         // new: createAccountAdmin endpoint
-  | 'add_workspace_member'   // new: addWorkspaceMember + bulkAddToWorkspace
+  | 'create_account' // new: createAccountAdmin endpoint
+  | 'add_workspace_member' // new: addWorkspaceMember + bulkAddToWorkspace
   // Workspace-operation audit entries (V28 — targetAccount is null for these)
   | 'archive_workspace'
   | 'unarchive_workspace'
@@ -96,7 +96,7 @@ export interface AdminAuditLogEntry {
   id: string
   tsMs: number
   adminAccount: AccountUuid
-  targetAccount: AccountUuid | null  // nullable: workspace-only audit entries have null here (V28)
+  targetAccount: AccountUuid | null // nullable: workspace-only audit entries have null here (V28)
   action: AdminAuditAction
   workspaceUuid: WorkspaceUuid | null
   details: Record<string, any> | null
@@ -121,13 +121,16 @@ export interface ListAccountsAdminQueryParams {
   wsMin?: number
   wsMax?: number
   lastActivityFilter?:
-    | { kind: 'never' }
-    | { kind: 'before', tsMs: number }
-    | { kind: 'after', tsMs: number }
-    | { kind: 'between', from: number, to: number }
-    | { kind: 'range', fromMs?: number, toMs?: number }  // legacy compat with existing params shape
+  | { kind: 'never' }
+  | { kind: 'before', tsMs: number }
+  | { kind: 'after', tsMs: number }
+  | { kind: 'between', from: number, to: number }
+  | { kind: 'range', fromMs?: number, toMs?: number } // legacy compat with existing params shape
   orphan?: boolean
-  sort?: { field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status', direction: 'asc' | 'desc' }
+  sort?: {
+    field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
+    direction: 'asc' | 'desc'
+  }
   pagination?: { limit?: number, offset?: number }
 }
 
@@ -153,14 +156,16 @@ export interface AdminAuditLogListParams {
 }
 
 export interface AdminAuditLogListResult {
-  entries: Array<AdminAuditLogEntry & {
+  entries: Array<
+  AdminAuditLogEntry & {
     adminFirstName: string
     adminLastName: string
     targetFirstName?: string
     targetLastName?: string
     targetWsName?: string
     targetWsUrl?: string
-  }>
+  }
+  >
   nextCursor: string | null
 }
 

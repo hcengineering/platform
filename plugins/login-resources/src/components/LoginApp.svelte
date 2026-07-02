@@ -25,7 +25,8 @@
     getCurrentLocation,
     location,
     setMetadataLocalStorage,
-    themeStore
+    themeStore,
+    location as locationStore
   } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
   import { onDestroy, onMount } from 'svelte'
@@ -58,7 +59,6 @@
   import ChangePassword from './ChangePassword.svelte'
   import ForceLogoutModal from './ForceLogoutModal.svelte'
   import { forceLogoutReason } from '../utils'
-  import { location as locationStore } from '@hcengineering/ui'
 
   $: subPath = $locationStore.path[2]
 

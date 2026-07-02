@@ -196,9 +196,13 @@ export function serveAccount (
       }
     }
     // Initial run 5 min after startup so we don't hammer cockroach right at boot.
-    setTimeout(() => { void runPrune() }, 5 * 60_000).unref()
+    setTimeout(() => {
+      void runPrune()
+    }, 5 * 60_000).unref()
     // Then once every 24h.
-    intervalHandle = setInterval(() => { void runPrune() }, dayMs)
+    intervalHandle = setInterval(() => {
+      void runPrune()
+    }, dayMs)
     intervalHandle.unref()
   }
 
@@ -559,7 +563,7 @@ export function serveAccount (
     // Emit the raw 3-byte EF BB BF sequence as a Buffer so tooling
     // (esbuild, eslint, terser) can't silently strip a literal U+FEFF
     // from string source. Followed by an RFC-4180 CRLF header row.
-    ctx.res.write(Buffer.from([0xEF, 0xBB, 0xBF]))
+    ctx.res.write(Buffer.from([0xef, 0xbb, 0xbf]))
     ctx.res.write('uuid,firstName,lastName,primaryEmail,status,workspaceCount,lastActivityAt,isAdmin\r\n')
     const pageSize = 500
     let offset = 0
@@ -569,11 +573,18 @@ export function serveAccount (
         pagination: { limit: pageSize, offset }
       })
       for (const a of accounts) {
-        ctx.res.write(csvLine([
-          a.uuid, a.firstName, a.lastName, a.primaryEmail ?? '', a.status,
-          String(a.workspaceCount), a.lastActivityAt != null ? new Date(a.lastActivityAt).toISOString() : '',
-          String(a.isAdmin)
-        ]))
+        ctx.res.write(
+          csvLine([
+            a.uuid,
+            a.firstName,
+            a.lastName,
+            a.primaryEmail ?? '',
+            a.status,
+            String(a.workspaceCount),
+            a.lastActivityAt != null ? new Date(a.lastActivityAt).toISOString() : '',
+            String(a.isAdmin)
+          ])
+        )
       }
       if (accounts.length < pageSize) break
       offset += pageSize

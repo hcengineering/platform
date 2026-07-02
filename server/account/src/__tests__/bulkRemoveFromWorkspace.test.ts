@@ -2,7 +2,9 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
+
+import { bulkRemoveFromWorkspace } from '../serviceOperations'
 
 const ADMIN_TOKEN = 'admin-token'
 const ADMIN_UUID = 'admin-uuid' as any
@@ -41,8 +43,6 @@ jest.mock('../operations', () => ({
   }
 }))
 
-import { bulkRemoveFromWorkspace } from '../serviceOperations'
-
 // Full mock-db: bulkRemoveFromWorkspace calls assertAdmin
 // (account.findOne for token-version check via verifyTokenVersion mock —
 // returning anything is fine since that path is mocked out), and the
@@ -66,10 +66,10 @@ beforeEach(() => {
 
 describe('bulkRemoveFromWorkspace selfFilter', () => {
   it('excludes the admin themselves from bulk-remove', async () => {
-    const res = await bulkRemoveFromWorkspace(
-      ctx, db(), null, ADMIN_TOKEN,
-      { accountUuids: [OTHER1, ADMIN_UUID, OTHER2], workspaceUuid: WS }
-    )
+    const res = await bulkRemoveFromWorkspace(ctx, db(), null, ADMIN_TOKEN, {
+      accountUuids: [OTHER1, ADMIN_UUID, OTHER2],
+      workspaceUuid: WS
+    })
     // Self should NOT be in removeCalls (filtered before op runs)
     const calledFor = removeCalls.map((c) => c.accountUuid)
     expect(calledFor).toEqual([OTHER1, OTHER2])
@@ -79,10 +79,10 @@ describe('bulkRemoveFromWorkspace selfFilter', () => {
   })
 
   it('does NOT filter when admin uuid is not in the bulk list', async () => {
-    const res = await bulkRemoveFromWorkspace(
-      ctx, db(), null, ADMIN_TOKEN,
-      { accountUuids: [OTHER1, OTHER2], workspaceUuid: WS }
-    )
+    const res = await bulkRemoveFromWorkspace(ctx, db(), null, ADMIN_TOKEN, {
+      accountUuids: [OTHER1, OTHER2],
+      workspaceUuid: WS
+    })
     expect(res.succeeded).toEqual([OTHER1, OTHER2])
     expect(res.failed).toEqual([])
   })

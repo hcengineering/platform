@@ -50,12 +50,7 @@
     // PopupInstance forwards the close-event payload to the showPopup
     // callback. `undefined` is the cancel sentinel; an object means
     // "user confirmed with this selection".
-    dispatch(
-      'close',
-      mode === 'add'
-        ? { workspaceUuid: selectedWs, role }
-        : { workspaceUuid: selectedWs }
-    )
+    dispatch('close', mode === 'add' ? { workspaceUuid: selectedWs, role } : { workspaceUuid: selectedWs })
   }
 
   function cancel (): void {
@@ -89,7 +84,9 @@
         <DropdownLabelsIntl
           items={roleItems}
           selected={role}
-          on:selected={(e) => setRole(e.detail)}
+          on:selected={(e) => {
+            setRole(e.detail)
+          }}
         />
       </label>
     {/if}

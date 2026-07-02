@@ -49,14 +49,10 @@ import type {
 
 import {
   auditAdminActionDenied,
-  disableAccount,
   disableAccountInternal,
-  enableAccount,
   enableAccountInternal,
-  removeWorkspaceMember,
   removeWorkspaceMemberInternal,
   sendPasswordResetEmail,
-  triggerPasswordReset,
   triggerPasswordResetInternal,
   wrapWithDeps
 } from './operations'
@@ -235,9 +231,7 @@ export async function getAccountDetails (
   const auditRaw = await db.adminAuditLog.findByTarget(params.accountUuid, 20)
   const adminUuids = Array.from(new Set(auditRaw.map((e) => e.adminAccount).filter((u): u is AccountUuid => u != null)))
   const adminPersons =
-    adminUuids.length > 0
-      ? await db.person.find({ uuid: { $in: adminUuids as unknown as PersonUuid[] } })
-      : []
+    adminUuids.length > 0 ? await db.person.find({ uuid: { $in: adminUuids as unknown as PersonUuid[] } }) : []
   const adminNameByUuid = new Map<string, { firstName: string, lastName: string }>(
     adminPersons.map((p) => [p.uuid as unknown as string, { firstName: p.firstName, lastName: p.lastName }])
   )
@@ -301,12 +295,14 @@ export async function listAuditAdmin (
       lastName: e.adminLastName
     },
     action: e.action,
-    targetAccount: e.targetAccount != null
-      ? { uuid: e.targetAccount, firstName: e.targetFirstName ?? '', lastName: e.targetLastName ?? '' }
-      : undefined,
-    targetWorkspace: e.workspaceUuid != null
-      ? { uuid: e.workspaceUuid, name: e.targetWsName ?? '', url: e.targetWsUrl ?? '' }
-      : undefined,
+    targetAccount:
+      e.targetAccount != null
+        ? { uuid: e.targetAccount, firstName: e.targetFirstName ?? '', lastName: e.targetLastName ?? '' }
+        : undefined,
+    targetWorkspace:
+      e.workspaceUuid != null
+        ? { uuid: e.workspaceUuid, name: e.targetWsName ?? '', url: e.targetWsUrl ?? '' }
+        : undefined,
     details: e.details,
     batchId: e.batchId ?? undefined
   }))
@@ -324,19 +320,25 @@ export async function addWorkspaceMember (
   params: AddWorkspaceMemberParams
 ): Promise<AccountDetailsResponse> {
   await assertAdmin(ctx, db, token)
-  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  const adminUuid = decodeTokenVerbose(ctx, token).account
 
   const account = await db.account.findOne({ uuid: params.accountUuid })
   if (account == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: params.accountUuid as string }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.AccountNotFound, { account: params.accountUuid as string })
+    )
   }
   if (account.disabledAt != null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Cannot add disabled account' }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Cannot add disabled account' })
+    )
   }
 
   const workspace = await getWorkspaceInfoWithStatusById(db, params.workspaceUuid)
   if (workspace == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: params.workspaceUuid as string }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: params.workspaceUuid as string })
+    )
   }
   if (!ACTIVE_WORKSPACE_MODES.has(workspace.status.mode)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Workspace not available' }))
@@ -373,10 +375,14 @@ export async function addWorkspaceMemberInternal (
 ): Promise<void> {
   const account = await db.account.findOne({ uuid: params.accountUuid })
   if (account == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: params.accountUuid as string }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.AccountNotFound, { account: params.accountUuid as string })
+    )
   }
   if (account.disabledAt != null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Cannot add disabled account' }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Cannot add disabled account' })
+    )
   }
 
   if (!ACTIVE_WORKSPACE_MODES.has(params.workspace.status.mode)) {
@@ -413,28 +419,39 @@ export async function getWorkspaceMembersAdmin (
 
   const workspace = await getWorkspaceInfoWithStatusById(db, params.workspaceUuid)
   if (workspace == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: params.workspaceUuid as string }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: params.workspaceUuid as string })
+    )
   }
 
   const members = await db.getWorkspaceMembers(params.workspaceUuid)
   const accountUuids = members.map((m: any) => m.person)
   const allAccounts = await db.account.find({})
-  const accountByUuid = new Map(allAccounts.filter((a: any) => accountUuids.includes(a.uuid)).map((a: any) => [a.uuid, a]))
+  const accountByUuid = new Map(
+    allAccounts.filter((a: any) => accountUuids.includes(a.uuid)).map((a: any) => [a.uuid, a])
+  )
   const allPersons = await db.person.find({})
   const personByUuid = new Map(allPersons.map((p: any) => [p.uuid, p]))
   const allSocials = await db.socialId.find({})
   const socialsByPerson = new Map<string, any[]>()
   for (const s of allSocials) {
     const k = s.personUuid as string
-    if (!socialsByPerson.has(k)) socialsByPerson.set(k, [])
-    socialsByPerson.get(k)!.push(s)
+    let personSocials = socialsByPerson.get(k)
+    if (personSocials === undefined) {
+      personSocials = []
+      socialsByPerson.set(k, personSocials)
+    }
+    personSocials.push(s)
   }
   const adminEmails = new Set(
-    (process.env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim()).filter(Boolean)
+    (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean)
   )
 
   const enriched = members.map((m: any) => {
-    const uuid = (m.person) as AccountUuid
+    const uuid = m.person as AccountUuid
     const acc = accountByUuid.get(uuid) ?? { disabledAt: null, lastActivityAt: null }
     const person = personByUuid.get(uuid)
     const primaryEmail = (socialsByPerson.get(uuid as string) ?? []).find((s) => s.type === 'email')?.value ?? null
@@ -472,7 +489,7 @@ export async function createAccountAdmin (
   params: CreateAccountParams
 ): Promise<CreateAccountResponse> {
   await assertAdmin(ctx, db, token)
-  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  const adminUuid = decodeTokenVerbose(ctx, token).account
 
   if (!EMAIL_RE.test(params.email)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Invalid email' }))
@@ -481,7 +498,9 @@ export async function createAccountAdmin (
 
   if (params.passwordMode === 'set') {
     if (params.password == null || params.password.length < 8) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Password must be at least 8 characters' }))
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Password must be at least 8 characters' })
+      )
     }
   }
 
@@ -493,7 +512,9 @@ export async function createAccountAdmin (
   let newUuid: AccountUuid
   try {
     const r = await signUpByEmail(
-      ctx, db, branding,
+      ctx,
+      db,
+      branding,
       normalizedEmail,
       params.passwordMode === 'set' ? (params.password ?? null) : null,
       params.firstName,
@@ -504,7 +525,9 @@ export async function createAccountAdmin (
     newUuid = r.account
   } catch (err: any) {
     if (err instanceof PlatformError && err.status.code === platform.status.AccountAlreadyExists) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Conflict, { msg: 'Account with this email already exists' }))
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.Conflict, { msg: 'Account with this email already exists' })
+      )
     }
     throw err
   }
@@ -559,7 +582,11 @@ const BULK_MAX = 200
 
 function assertBulkSize (uuids: AccountUuid[]): void {
   if (uuids.length > BULK_MAX) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: `Too many accounts in one batch (max ${BULK_MAX})` }))
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.BadRequest, {
+        msg: `Too many accounts in one batch (max ${BULK_MAX})`
+      })
+    )
   }
 }
 
@@ -578,7 +605,8 @@ async function bulkLoop (
       await op(uuid)
       result.succeeded.push(uuid)
     } catch (err: any) {
-      const msg = err instanceof PlatformError ? (err.status.params as any)?.msg ?? err.status.code : String(err?.message ?? err)
+      const msg =
+        err instanceof PlatformError ? (err.status.params?.msg ?? err.status.code) : String(err?.message ?? err)
       result.failed.push({ accountUuid: uuid, error: msg })
     }
   }
@@ -594,7 +622,7 @@ export async function bulkAddToWorkspace (
 ): Promise<BulkResult> {
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
-  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  const adminUuid = decodeTokenVerbose(ctx, token).account
   // Resolve workspace ONCE — not per-row.
   const workspace = await getWorkspaceInfoWithStatusById(db, params.workspaceUuid)
   if (workspace == null) {
@@ -604,7 +632,14 @@ export async function bulkAddToWorkspace (
   // admin UI can group "these N rows are from one operation" (Plan 1d Task 3).
   const batchId = randomUUID()
   return await bulkLoop(params.accountUuids, async (uuid) => {
-    await addWorkspaceMemberInternal(ctx, db, branding, adminUuid, { workspace, accountUuid: uuid, role: params.role }, batchId)
+    await addWorkspaceMemberInternal(
+      ctx,
+      db,
+      branding,
+      adminUuid,
+      { workspace, accountUuid: uuid, role: params.role },
+      batchId
+    )
   })
 }
 
@@ -617,12 +652,18 @@ export async function bulkRemoveFromWorkspace (
 ): Promise<BulkResult> {
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
-  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  const adminUuid = decodeTokenVerbose(ctx, token).account
   const batchId = randomUUID()
   return await bulkLoop(
     params.accountUuids,
     async (uuid) => {
-      await removeWorkspaceMemberInternal(ctx, db, adminUuid, { accountUuid: uuid, workspaceUuid: params.workspaceUuid }, batchId)
+      await removeWorkspaceMemberInternal(
+        ctx,
+        db,
+        adminUuid,
+        { accountUuid: uuid, workspaceUuid: params.workspaceUuid },
+        batchId
+      )
     },
     { adminUuid, reason: 'cannot bulk-remove self from workspace; use single-row remove with explicit confirmation' }
   )
@@ -638,7 +679,7 @@ export async function bulkSetDisabled (
 ): Promise<BulkResult> {
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
-  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  const adminUuid = decodeTokenVerbose(ctx, token).account
   const batchId = randomUUID()
 
   // V13 — bulkLoop's selfFilter catches self-targets BEFORE op() runs,
@@ -681,7 +722,7 @@ export async function bulkSendPasswordReset (
 ): Promise<BulkResult> {
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
-  const adminUuid = decodeTokenVerbose(ctx, token).account as AccountUuid
+  const adminUuid = decodeTokenVerbose(ctx, token).account
   const batchId = randomUUID()
   return await bulkLoop(params.accountUuids, async (uuid) => {
     await triggerPasswordResetInternal(ctx, db, branding, adminUuid, { accountUuid: uuid }, batchId)
@@ -690,12 +731,18 @@ export async function bulkSendPasswordReset (
 
 function actionForWorkspaceEvent (event: string): AdminAuditAction {
   switch (event) {
-    case 'archive': return 'archive_workspace'
-    case 'unarchive': return 'unarchive_workspace'
-    case 'migrate-to': return 'migrate_workspace'
-    case 'delete': return 'delete_workspace'
-    case 'reset-attempts': return 'reset_workspace_attempts'
-    default: return event as AdminAuditAction  // defensive fallthrough
+    case 'archive':
+      return 'archive_workspace'
+    case 'unarchive':
+      return 'unarchive_workspace'
+    case 'migrate-to':
+      return 'migrate_workspace'
+    case 'delete':
+      return 'delete_workspace'
+    case 'reset-attempts':
+      return 'reset_workspace_attempts'
+    default:
+      return event as AdminAuditAction // defensive fallthrough
   }
 }
 
@@ -719,7 +766,7 @@ export async function performWorkspaceOperation (
     }
   }
 
-  const adminUuid = callerAccount as AccountUuid
+  const adminUuid = callerAccount
 
   const workspaceUuids = Array.isArray(workspaceId) ? workspaceId : [workspaceId]
 
@@ -816,7 +863,11 @@ export async function performWorkspaceOperation (
         })
       } catch (auditErr) {
         // Audit failure must NOT roll back the workspace operation itself.
-        ctx.warn('performWorkspaceOperation: failed to write audit log entry', { auditErr, workspaceUuid: workspace.uuid, event })
+        ctx.warn('performWorkspaceOperation: failed to write audit log entry', {
+          auditErr,
+          workspaceUuid: workspace.uuid,
+          event
+        })
       }
       ops++
     }
@@ -1727,10 +1778,13 @@ export async function getAdminEmails (
   db: AccountDB,
   branding: Branding | null,
   token: string,
-  params: {}
+  params: Record<string, never>
 ): Promise<{ emails: string[] }> {
   await assertAdmin(ctx, db, token)
-  const emails = (process.env.ADMIN_EMAILS ?? '').split(',').map((e) => e.trim()).filter(Boolean)
+  const emails = (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean)
   return { emails }
 }
 
@@ -1779,7 +1833,9 @@ export type AccountServiceMethods =
 /**
  * @public
  */
-export function getServiceMethods (deps?: AccountMethodDeps): Partial<Record<AccountServiceMethods, AccountMethodHandler>> {
+export function getServiceMethods (
+  deps?: AccountMethodDeps
+): Partial<Record<AccountServiceMethods, AccountMethodHandler>> {
   return {
     getPendingWorkspace: wrap(getPendingWorkspace),
     updateWorkspaceInfo: wrap(updateWorkspaceInfo),

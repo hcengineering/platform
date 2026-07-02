@@ -2,7 +2,9 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
+
+import { enableAccount } from '../operations'
 
 const ADMIN_TOKEN = 'admin-token'
 const TARGET = '55555555-5555-5555-5555-555555555555' as any
@@ -16,8 +18,6 @@ jest.mock('@hcengineering/server-token', () => ({
 }))
 
 const ctx = { newChild: () => ctx, error: () => {} } as unknown as MeasureContext
-
-import { enableAccount } from '../operations'
 
 describe('enableAccount', () => {
   it('clears disabledAt and bumps tokenVersion atomically via $inc', async () => {

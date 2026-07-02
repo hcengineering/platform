@@ -2,8 +2,10 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
+
+import { triggerPasswordReset } from '../operations'
 
 const ADMIN_TOKEN = 'admin-token'
 const TARGET = 'target-uuid' as any
@@ -17,8 +19,6 @@ jest.mock('@hcengineering/server-token', () => ({
 }))
 
 const ctx = { newChild: () => ctx, info: () => {}, warn: () => {}, error: () => {} } as unknown as MeasureContext
-
-import { triggerPasswordReset } from '../operations'
 
 describe('triggerPasswordReset', () => {
   it('rejects when target has no email identity', async () => {

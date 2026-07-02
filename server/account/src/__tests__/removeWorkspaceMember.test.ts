@@ -2,8 +2,10 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 
-import { MeasureContext, AccountRole, WorkspaceMemberInfo } from '@hcengineering/core'
+import { type MeasureContext, AccountRole, type WorkspaceMemberInfo } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
+
+import { removeWorkspaceMember } from '../operations'
 
 const ADMIN_TOKEN = 'admin-token'
 const TARGET = 'target-uuid' as any
@@ -27,8 +29,6 @@ function mockDb (currentRole: AccountRole | null, members: WorkspaceMemberInfo[]
     adminAuditLog: { insert: async () => undefined }
   }
 }
-
-import { removeWorkspaceMember } from '../operations'
 
 describe('removeWorkspaceMember', () => {
   it('returns wasMember=true when target was in workspace', async () => {

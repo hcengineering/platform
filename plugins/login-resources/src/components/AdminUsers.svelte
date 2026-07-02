@@ -34,11 +34,7 @@
   import { confirmAction } from './admin-users/util'
   import { mergeColumnFilters } from './admin-shared/columnFilters'
   import { DEBOUNCE_MS } from './admin-shared/constants'
-  import type {
-    AccountListRow,
-    BulkResult,
-    ListAccountsAdminParams
-  } from '@hcengineering/account-client'
+  import type { AccountListRow, BulkResult, ListAccountsAdminParams } from '@hcengineering/account-client'
   import { AccountRole, type AccountUuid } from '@hcengineering/core'
 
   interface AdminFilter {
@@ -76,14 +72,16 @@
     try {
       const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
       return typeof payload.account === 'string' ? payload.account : undefined
-    } catch { return undefined }
+    } catch {
+      return undefined
+    }
   })()
 
   // Bulk-selection state. Kept as a Set<string> (account uuid).
   // Distinct from `selectedUuid` (drawer target) so the drawer can stay
   // open while selection changes, and so a row check does NOT pop the
   // drawer (the row checkbox cell stops click-propagation).
-  let selectedUuids: Set<string> = new Set()
+  let selectedUuids = new Set<string>()
 
   function clearSel (): void {
     selectedUuids = new Set()
@@ -134,9 +132,11 @@
   // it merges into the listAccountsAdmin params alongside orphan. Total
   // pill clears every filter (status + admin + orphan).
   function hasAnyFilter (): boolean {
-    return (filter.status ?? 'all') !== 'all' ||
+    return (
+      (filter.status ?? 'all') !== 'all' ||
       columnFilters?.isAdmin?.isAdmin === true ||
       columnFilters?.orphan?.orphan === true
+    )
   }
 
   function clearAllFilters (): void {
@@ -177,15 +177,9 @@
     // Mirror the refresh()-side mapping: server SQL only reads the *In
     // arrays, so the toolbar dropdowns must be translated before export.
     const statusIn: Array<'active' | 'disabled'> | undefined =
-      filter.status === 'active'
-        ? ['active']
-        : filter.status === 'disabled'
-          ? ['disabled']
-          : undefined
+      filter.status === 'active' ? ['active'] : filter.status === 'disabled' ? ['disabled'] : undefined
     const authMethodIn: Array<'email_only' | 'oidc' | 'mixed'> | undefined =
-      filter.authMethod != null && filter.authMethod !== 'all'
-        ? [filter.authMethod]
-        : undefined
+      filter.authMethod != null && filter.authMethod !== 'all' ? [filter.authMethod] : undefined
     const params: Record<string, any> = {
       search: filter.search,
       statusIn,
@@ -226,9 +220,10 @@
   $: orphanCount = accounts.filter((a) => a.status === 'active' && a.workspaceCount === 0).length
 
   $: activeFilterKeys = Object.keys(columnFilters).filter((k) => columnFilters[k] != null)
-  $: filterSummary = activeFilterKeys.length === 0
-    ? 'No filter set — operating on all accounts'
-    : `Filter: ${activeFilterKeys.join(', ')}`
+  $: filterSummary =
+    activeFilterKeys.length === 0
+      ? 'No filter set — operating on all accounts'
+      : `Filter: ${activeFilterKeys.join(', ')}`
 
   // dangerousScope = true when admin is acting on the entire universe.
   // Important caveat: `total` here is the BACKEND-FILTERED count, not the
@@ -239,8 +234,7 @@
   // selected count covers the filtered total. With no filter, total IS
   // the universe. With a filter, the typed-confirm is suppressed because
   // the admin has explicitly narrowed scope.
-  $: usersDangerousScope =
-    activeFilterKeys.length === 0 && selectedUuids.size === total && total > 0
+  $: usersDangerousScope = activeFilterKeys.length === 0 && selectedUuids.size === total && total > 0
 
   // Ordered uuid list passed to the drawer so the drawer's Prev/Next pager
   // knows the page's row order. Cast in a reactive (not inline in markup)
@@ -282,15 +276,9 @@
       // *In array variants). Map them here so the toolbar dropdowns
       // actually narrow the result set; drop the vestigial fields entirely.
       const statusIn: Array<'active' | 'disabled'> | undefined =
-        filter.status === 'active'
-          ? ['active']
-          : filter.status === 'disabled'
-            ? ['disabled']
-            : undefined
+        filter.status === 'active' ? ['active'] : filter.status === 'disabled' ? ['disabled'] : undefined
       const authMethodIn: Array<'email_only' | 'oidc' | 'mixed'> | undefined =
-        filter.authMethod != null && filter.authMethod !== 'all'
-          ? [filter.authMethod]
-          : undefined
+        filter.authMethod != null && filter.authMethod !== 'all' ? [filter.authMethod] : undefined
       const params: ListAccountsAdminParams = {
         search: filter.search,
         statusIn,
@@ -391,9 +379,7 @@
     const detail = r.failed.map((f) => `• ${f.accountUuid}: ${f.error}`).join('\n')
     showPopup(MessageBox, {
       label: getEmbeddedLabel('Bulk action — some failures'),
-      message: getEmbeddedLabel(
-        `${r.succeeded.length} succeeded, ${r.failed.length} failed:\n\n${detail}`
-      ),
+      message: getEmbeddedLabel(`${r.succeeded.length} succeeded, ${r.failed.length} failed:\n\n${detail}`),
       okLabel: getEmbeddedLabel('Dismiss'),
       canSubmit: false
     })
@@ -434,30 +420,22 @@
 
   function onBulkRemove (): void {
     if (selectedUuids.size === 0) return
-    showPopup(
-      BulkPickWorkspacePopup,
-      { mode: 'remove' },
-      'middle',
-      (picked: { workspaceUuid: string } | undefined) => {
-        if (picked == null) return
-        void (async () => {
-          try {
-            const r = await getAccountClient().bulkRemoveFromWorkspace(
-              selectedUuidsArray(),
-              picked.workspaceUuid as any
-            )
-            showBulkResult(r)
-            // Preserve the selection only when EVERY action failed — admin can retry
-            // without re-selecting. Otherwise clear so the bar doesn't stick around
-            // pointing at uuids that were just successfully acted on.
-            if (r.succeeded.length > 0) clearSel()
-            await refresh()
-          } catch (err: any) {
-            errorMessage = err?.message ?? 'Bulk remove failed'
-          }
-        })()
-      }
-    )
+    showPopup(BulkPickWorkspacePopup, { mode: 'remove' }, 'middle', (picked: { workspaceUuid: string } | undefined) => {
+      if (picked == null) return
+      void (async () => {
+        try {
+          const r = await getAccountClient().bulkRemoveFromWorkspace(selectedUuidsArray(), picked.workspaceUuid as any)
+          showBulkResult(r)
+          // Preserve the selection only when EVERY action failed — admin can retry
+          // without re-selecting. Otherwise clear so the bar doesn't stick around
+          // pointing at uuids that were just successfully acted on.
+          if (r.succeeded.length > 0) clearSel()
+          await refresh()
+        } catch (err: any) {
+          errorMessage = err?.message ?? 'Bulk remove failed'
+        }
+      })()
+    })
   }
 
   function onBulkDisable (): void {
@@ -610,7 +588,12 @@
                 tabindex="0"
                 title="Show all users (clear filters)"
                 on:click={clearAllFilters}
-                on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); clearAllFilters() } }}
+                on:keydown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    clearAllFilters()
+                  }
+                }}
               >
                 Total <strong>{total}</strong>
               </span>
@@ -620,9 +603,18 @@
                 class:is-filter-active={filter.status === 'active'}
                 role="button"
                 tabindex="0"
-                title={filter.status === 'active' ? 'Click to clear status filter' : 'Click to filter: only active accounts'}
-                on:click={() => toggleStatusFilter('active')}
-                on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleStatusFilter('active') } }}
+                title={filter.status === 'active'
+                  ? 'Click to clear status filter'
+                  : 'Click to filter: only active accounts'}
+                on:click={() => {
+                  toggleStatusFilter('active')
+                }}
+                on:keydown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    toggleStatusFilter('active')
+                  }
+                }}
               >
                 <span class="dot dot-active" /> Active <strong>{counts.active}</strong>
               </span>
@@ -632,9 +624,18 @@
                 class:is-filter-active={filter.status === 'disabled'}
                 role="button"
                 tabindex="0"
-                title={filter.status === 'disabled' ? 'Click to clear status filter' : 'Click to filter: only disabled accounts'}
-                on:click={() => toggleStatusFilter('disabled')}
-                on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleStatusFilter('disabled') } }}
+                title={filter.status === 'disabled'
+                  ? 'Click to clear status filter'
+                  : 'Click to filter: only disabled accounts'}
+                on:click={() => {
+                  toggleStatusFilter('disabled')
+                }}
+                on:keydown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    toggleStatusFilter('disabled')
+                  }
+                }}
               >
                 <span class="dot dot-disabled" /> Disabled <strong>{counts.disabled}</strong>
               </span>
@@ -644,9 +645,16 @@
                 class:is-filter-active={columnFilters?.isAdmin?.isAdmin === true}
                 role="button"
                 tabindex="0"
-                title={columnFilters?.isAdmin?.isAdmin === true ? 'Click to clear admin filter' : 'Click to filter: only admin accounts'}
+                title={columnFilters?.isAdmin?.isAdmin === true
+                  ? 'Click to clear admin filter'
+                  : 'Click to filter: only admin accounts'}
                 on:click={toggleAdminFilter}
-                on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAdminFilter() } }}
+                on:keydown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    toggleAdminFilter()
+                  }
+                }}
               >
                 Admins <strong>{counts.admins}</strong>
               </span>
@@ -661,7 +669,12 @@
                     ? 'Click to clear the orphan filter'
                     : 'Click to filter: active accounts with no workspaces'}
                   on:click={toggleOrphanFilter}
-                  on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleOrphanFilter() } }}
+                  on:keydown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      toggleOrphanFilter()
+                    }
+                  }}
                 >
                   {#if columnFilters?.orphan?.orphan === true}
                     <span class="filter-icon" aria-hidden="true">⏵</span>
@@ -677,7 +690,11 @@
 
           <div class="filters">
             <div class="filters-search">
-              <SearchInput bind:value={search} width={'100%'} placeholder={getEmbeddedLabel('Search by name or email…')} />
+              <SearchInput
+                bind:value={search}
+                width={'100%'}
+                placeholder={getEmbeddedLabel('Search by name or email…')}
+              />
             </div>
             <DropdownLabelsIntl
               items={authItems}
@@ -706,7 +723,12 @@
               }}
             />
             {#if isAdminUser()}
-              <Button label={getEmbeddedLabel('Export CSV')} kind={'regular'} size={'medium'} on:click={exportAccountsCsv} />
+              <Button
+                label={getEmbeddedLabel('Export CSV')}
+                kind={'regular'}
+                size={'medium'}
+                on:click={exportAccountsCsv}
+              />
             {/if}
           </div>
 
@@ -753,7 +775,7 @@
   <AdminUsersDrawer
     accountUuid={selectedUuid}
     visibleUuids={visibleAccountUuids}
-    currentAdminUuid={currentAdminUuid}
+    {currentAdminUuid}
     on:close={onDrawerClose}
     on:account-changed={onAccountChanged}
     on:navigate={onDrawerNavigate}
@@ -812,7 +834,7 @@
 
   .stat-pill-warning {
     color: #b45309;
-    background: rgba(245, 158, 11, 0.10);
+    background: rgba(245, 158, 11, 0.1);
     border-radius: 999px;
     padding: 0.1rem 0.6rem;
   }
@@ -827,7 +849,10 @@
     border: 1px solid transparent;
     border-radius: 999px;
     padding: 0.1rem 0.6rem;
-    transition: background 80ms ease, border-color 80ms ease, color 80ms ease;
+    transition:
+      background 80ms ease,
+      border-color 80ms ease,
+      color 80ms ease;
 
     &:hover {
       background: var(--theme-bg-accent-color, rgba(148, 163, 184, 0.18));

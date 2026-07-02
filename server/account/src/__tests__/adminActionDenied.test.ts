@@ -4,7 +4,7 @@
 // V13 — admin_action_denied audit (reduced scope: self_disable + last_admin)
 //
 
-import { MeasureContext, SocialIdType } from '@hcengineering/core'
+import { type MeasureContext, SocialIdType } from '@hcengineering/core'
 
 const ADMIN = 'admin-uuid'
 const ADMIN_EMAIL = 'admin@example.com'
@@ -37,19 +37,26 @@ const ctx = { newChild: () => ctx, info: () => {}, warn: () => {}, error: () => 
 // IMPORTANT: socialId needs BOTH find() (used by disableAccountInternal to
 // look up the target's email) AND findOne() (used by isLastAdmin to look
 // up each ADMIN_EMAILS entry).
-function mockDb (opts: {
-  adminEmails?: string[]
-  targetAccount?: any
-  targetEmail?: string
-  insertAudit?: jest.Mock
-}): { auditRows: any[], insertAudit: jest.Mock, db: any } {
+function mockDb (opts: { adminEmails?: string[], targetAccount?: any, targetEmail?: string, insertAudit?: jest.Mock }): {
+  auditRows: any[]
+  insertAudit: jest.Mock
+  db: any
+} {
   const auditRows: any[] = []
-  const insertAudit = opts.insertAudit ?? jest.fn(async (row: any) => { auditRows.push(row) })
+  const insertAudit =
+    opts.insertAudit ??
+    jest.fn(async (row: any) => {
+      auditRows.push(row)
+    })
   // Map of email value → socialId, used by findOne lookups during isLastAdmin
   const socialIdByValue: Record<string, any> = {
     [ADMIN_EMAIL]: { personUuid: ADMIN, type: SocialIdType.EMAIL, value: ADMIN_EMAIL },
     [OTHER_ADMIN_EMAIL]: { personUuid: OTHER_ADMIN, type: SocialIdType.EMAIL, value: OTHER_ADMIN_EMAIL },
-    [opts.targetEmail ?? TARGET_EMAIL]: { personUuid: opts.targetAccount?.uuid ?? TARGET, type: SocialIdType.EMAIL, value: opts.targetEmail ?? TARGET_EMAIL }
+    [opts.targetEmail ?? TARGET_EMAIL]: {
+      personUuid: opts.targetAccount?.uuid ?? TARGET,
+      type: SocialIdType.EMAIL,
+      value: opts.targetEmail ?? TARGET_EMAIL
+    }
   }
   return {
     auditRows,
@@ -72,7 +79,7 @@ function mockDb (opts: {
               ? ADMIN_EMAIL
               : personUuid === OTHER_ADMIN
                 ? OTHER_ADMIN_EMAIL
-                : opts.targetEmail ?? TARGET_EMAIL
+                : (opts.targetEmail ?? TARGET_EMAIL)
           return [{ personUuid, type: SocialIdType.EMAIL, value: email }]
         },
         // isLastAdmin uses findOne({type, value}) keyed on email
@@ -105,9 +112,9 @@ describe('V13 — admin_action_denied audit', () => {
   test('self-disable: writes admin_action_denied + throws cannot_self_disable', async () => {
     const { db, auditRows } = mockDb({})
     const { disableAccount } = await import('../operations')
-    await expect(
-      disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })
-    ).rejects.toThrow(/cannot_self_disable/)
+    await expect(disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })).rejects.toThrow(
+      /cannot_self_disable/
+    )
     const denied = auditRows.filter((r) => r.action === 'admin_action_denied')
     expect(denied).toHaveLength(1)
     expect(denied[0].details.reason).toBe('self_disable')
@@ -123,9 +130,9 @@ describe('V13 — admin_action_denied audit', () => {
       targetEmail: OTHER_ADMIN_EMAIL
     })
     const { disableAccount } = await import('../operations')
-    await expect(
-      disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: OTHER_ADMIN as any })
-    ).rejects.toThrow(/last_admin/)
+    await expect(disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: OTHER_ADMIN as any })).rejects.toThrow(
+      /last_admin/
+    )
     const denied = auditRows.filter((r) => r.action === 'admin_action_denied')
     expect(denied.some((r) => r.details.reason === 'last_admin')).toBe(true)
   })
@@ -133,12 +140,8 @@ describe('V13 — admin_action_denied audit', () => {
   test('rate-limit: two self-disable attempts within 1h → only one audit row', async () => {
     const { db, auditRows } = mockDb({})
     const { disableAccount } = await import('../operations')
-    await expect(
-      disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })
-    ).rejects.toThrow()
-    await expect(
-      disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })
-    ).rejects.toThrow()
+    await expect(disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })).rejects.toThrow()
+    await expect(disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })).rejects.toThrow()
     const denied = auditRows.filter((r) => r.action === 'admin_action_denied')
     expect(denied).toHaveLength(1)
   })
@@ -146,9 +149,7 @@ describe('V13 — admin_action_denied audit', () => {
   test('rate-limit key includes reason: self_disable then last_admin → two rows', async () => {
     const { db, auditRows } = mockDb({})
     const { disableAccount } = await import('../operations')
-    await expect(
-      disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })
-    ).rejects.toThrow()
+    await expect(disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })).rejects.toThrow()
     // Trigger last_admin against OTHER_ADMIN with single-admin env
     process.env.ADMIN_EMAILS = OTHER_ADMIN_EMAIL
     const { db: db2, auditRows: rows2 } = mockDb({
@@ -162,7 +163,7 @@ describe('V13 — admin_action_denied audit', () => {
       ...auditRows.filter((r) => r.action === 'admin_action_denied'),
       ...rows2.filter((r) => r.action === 'admin_action_denied')
     ]
-    const reasons = allRows.map((r) => r.details.reason).sort()
+    const reasons = allRows.map((r) => r.details.reason).sort((a: string, b: string) => a.localeCompare(b))
     expect(reasons).toEqual(['last_admin', 'self_disable'])
   })
 
@@ -171,9 +172,7 @@ describe('V13 — admin_action_denied audit', () => {
     const { disableAccount } = await import('../operations')
     const { bulkSetDisabled } = await import('../serviceOperations')
     // 1) Single self-disable → reason='self_disable', method='disableAccount'
-    await expect(
-      disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })
-    ).rejects.toThrow()
+    await expect(disableAccount(ctx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })).rejects.toThrow()
     // 2) Bulk including ADMIN. bulkLoop filters self BEFORE op() runs, so
     //    disableAccountInternal never gets called for ADMIN. The audit-write
     //    fires from the pre-bulkLoop instrumentation in bulkSetDisabled
@@ -186,16 +185,14 @@ describe('V13 — admin_action_denied audit', () => {
     // Both single and bulk self-disable attempts are now audited with
     // distinct method names.
     const denied = auditRows.filter((r) => r.action === 'admin_action_denied' && r.details.reason === 'self_disable')
-    const methods = denied.map((r) => r.details.method).sort()
+    const methods = denied.map((r) => r.details.method).sort((a: string, b: string) => a.localeCompare(b))
     expect(methods).toEqual(['bulkSetDisabled', 'disableAccount'])
   })
 
   test('pre-auth Forbidden (no admin claim): NO audit row', async () => {
     const { db, auditRows } = mockDb({})
     const { disableAccount } = await import('../operations')
-    await expect(
-      disableAccount(ctx, db, null, deps, NON_ADMIN_TOKEN, { accountUuid: TARGET })
-    ).rejects.toThrow()
+    await expect(disableAccount(ctx, db, null, deps, NON_ADMIN_TOKEN, { accountUuid: TARGET })).rejects.toThrow()
     const denied = auditRows.filter((r) => r.action === 'admin_action_denied')
     expect(denied).toHaveLength(0)
   })

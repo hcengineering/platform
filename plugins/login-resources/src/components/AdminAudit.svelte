@@ -78,8 +78,7 @@
       void reload(true)
       return
     }
-    const days = id === '1d' ? 1 : id === '2d' ? 2 : id === '3d' ? 3
-      : id === '1w' ? 7 : id === '2w' ? 14 : 30
+    const days = id === '1d' ? 1 : id === '2d' ? 2 : id === '3d' ? 3 : id === '1w' ? 7 : id === '2w' ? 14 : 30
     const now = new Date()
     const past = new Date(now.getTime() - days * 86_400_000)
     const fmt = (d: Date): string =>
@@ -111,7 +110,10 @@
   // passed to db.adminAuditLog.insert() across the account service.
   // Keep this list in sync with serviceOperations.ts/operations.ts —
   // grep -nE "action: '" server/account/src for the source of truth.
-  interface ActionOption { id: string, label: IntlString }
+  interface ActionOption {
+    id: string
+    label: IntlString
+  }
   const ACTION_OPTIONS: ActionOption[] = [
     { id: 'create_account', label: getEmbeddedLabel('create_account') },
     { id: 'disable', label: getEmbeddedLabel('disable') },
@@ -146,11 +148,14 @@
           // logged between 00:00 and "now" on 05/26. Anchor `to` to the end of
           // the local day so the picker behaves inclusively (the matching
           // server-side `to` is treated as a `<=` bound).
-          to: filterTo !== '' ? (() => {
-            const d = new Date(filterTo)
-            d.setHours(23, 59, 59, 999)
-            return d.getTime()
-          })() : undefined
+          to:
+            filterTo !== ''
+              ? (() => {
+                  const d = new Date(filterTo)
+                  d.setHours(23, 59, 59, 999)
+                  return d.getTime()
+                })()
+              : undefined
         },
         sort,
         pagination: resetCursor ? { limit: 50 } : { cursor: nextCursor ?? undefined, limit: 50 }
@@ -198,18 +203,19 @@
     void reload(true)
   }
 
-  $: hasFilter = filterAdminName.trim() !== '' || filterTargetName.trim() !== '' ||
-                 selectedActionIds.length > 0 ||
-                 filterFrom !== '' || filterTo !== ''
+  $: hasFilter =
+    filterAdminName.trim() !== '' ||
+    filterTargetName.trim() !== '' ||
+    selectedActionIds.length > 0 ||
+    filterFrom !== '' ||
+    filterTo !== ''
 
-  const PAGE_RENDER_CAP = 200  // hard ceiling on simultaneously-rendered rows
+  const PAGE_RENDER_CAP = 200 // hard ceiling on simultaneously-rendered rows
   // listAuditAdmin orders by the active sort (default ts_ms DESC,
   // verified in server/account/src/collections/postgres/postgres.ts).
   // entries[0] is the first row of the active sort — slice from the
   // head so the user sees the top of the result set, never the tail.
-  $: visibleEntries = entries.length > PAGE_RENDER_CAP
-    ? entries.slice(0, PAGE_RENDER_CAP)
-    : entries
+  $: visibleEntries = entries.length > PAGE_RENDER_CAP ? entries.slice(0, PAGE_RENDER_CAP) : entries
 
   // Plan 1d Task 3 — Walk visibleEntries once into groups keyed by batchId so
   // consecutive same-batchId rows render under one non-interactive header.
@@ -237,14 +243,14 @@
     return out
   })()
 
-  let expandedDetails: Set<string> = new Set()
+  let expandedDetails = new Set<string>()
   function toggleDetails (id: string): void {
     expandedDetails = new Set(expandedDetails)
     expandedDetails.has(id) ? expandedDetails.delete(id) : expandedDetails.add(id)
   }
   function summary (details: unknown): string {
     if (details == null || typeof details !== 'object') return ''
-    const keys = Object.keys(details as object)
+    const keys = Object.keys(details)
     return `${keys.length} key${keys.length === 1 ? '' : 's'}`
   }
 
@@ -293,7 +299,6 @@
     <div class="hulyComponent-content__column content">
       <Scroller padding="var(--spacing-3)" bottomPadding="var(--spacing-3)">
         <div class="hulyComponent-content">
-
           <!-- V30 — Filter bar. Three logical groups: who/what, date
                range, and the apply/reset controls. Each control is
                labelled so the admin can see what column it filters. -->
@@ -301,15 +306,27 @@
             <div class="audit-filter-group">
               <label class="audit-filter-field" data-filter-col="admin">
                 <span class="audit-filter-label">Admin (name or email)</span>
-                <input class="audit-filter-text audit-filter-admin" type="text" bind:value={filterAdminName}
-                       placeholder="e.g. Jane or jane@example.com"
-                       on:keydown={(ev) => { if (ev.key === 'Enter') void reload(true) }} />
+                <input
+                  class="audit-filter-text audit-filter-admin"
+                  type="text"
+                  bind:value={filterAdminName}
+                  placeholder="e.g. Jane or jane@example.com"
+                  on:keydown={(ev) => {
+                    if (ev.key === 'Enter') void reload(true)
+                  }}
+                />
               </label>
               <label class="audit-filter-field" data-filter-col="target">
                 <span class="audit-filter-label">Target (user or workspace)</span>
-                <input class="audit-filter-text audit-filter-target" type="text" bind:value={filterTargetName}
-                       placeholder="e.g. Acme or acme.huly"
-                       on:keydown={(ev) => { if (ev.key === 'Enter') void reload(true) }} />
+                <input
+                  class="audit-filter-text audit-filter-target"
+                  type="text"
+                  bind:value={filterTargetName}
+                  placeholder="e.g. Acme or acme.huly"
+                  on:keydown={(ev) => {
+                    if (ev.key === 'Enter') void reload(true)
+                  }}
+                />
               </label>
               <div class="audit-filter-field audit-filter-action-wrap" data-filter-col="action">
                 <span class="audit-filter-label">Actions</span>
@@ -319,9 +336,9 @@
                   multiselect
                   items={ACTION_OPTIONS}
                   selected={selectedActionIds}
-                  label={getEmbeddedLabel(selectedActionIds.length === 0
-                    ? 'All actions'
-                    : `${selectedActionIds.length} selected`)}
+                  label={getEmbeddedLabel(
+                    selectedActionIds.length === 0 ? 'All actions' : `${selectedActionIds.length} selected`
+                  )}
                   on:selected={onActionSelected}
                 />
               </div>
@@ -341,23 +358,35 @@
                       on:selected={onDatePresetSelected}
                     />
                   </div>
-                  <input class="audit-filter-date audit-filter-from" type="date"
-                         bind:value={filterFrom}
-                         disabled={dateRangePreset !== 'custom'}
-                         on:change={onDateInputChanged}
-                         aria-label="From date" />
+                  <input
+                    class="audit-filter-date audit-filter-from"
+                    type="date"
+                    bind:value={filterFrom}
+                    disabled={dateRangePreset !== 'custom'}
+                    on:change={onDateInputChanged}
+                    aria-label="From date"
+                  />
                   <span class="audit-filter-date-sep">→</span>
-                  <input class="audit-filter-date audit-filter-to" type="date"
-                         bind:value={filterTo}
-                         disabled={dateRangePreset !== 'custom'}
-                         on:change={onDateInputChanged}
-                         aria-label="To date" />
+                  <input
+                    class="audit-filter-date audit-filter-to"
+                    type="date"
+                    bind:value={filterTo}
+                    disabled={dateRangePreset !== 'custom'}
+                    on:change={onDateInputChanged}
+                    aria-label="To date"
+                  />
                 </div>
               </div>
             </div>
 
             <div class="audit-filter-actions">
-              <Button kind="primary" label={getEmbeddedLabel('Apply')} on:click={() => { void reload(true) }} />
+              <Button
+                kind="primary"
+                label={getEmbeddedLabel('Apply')}
+                on:click={() => {
+                  void reload(true)
+                }}
+              />
               {#if hasFilter || sort.field !== 'time' || sort.direction !== 'desc'}
                 <Button kind="ghost" label={getEmbeddedLabel('Reset')} on:click={clearFilters} />
               {/if}
@@ -366,8 +395,8 @@
 
           {#if entries.length > PAGE_RENDER_CAP}
             <div class="audit-cap-notice" role="status">
-              Showing the first {PAGE_RENDER_CAP} of {entries.length} loaded
-              entries (current sort). Apply a filter to narrow the result set.
+              Showing the first {PAGE_RENDER_CAP} of {entries.length} loaded entries (current sort). Apply a filter to narrow
+              the result set.
             </div>
           {/if}
 
@@ -376,52 +405,92 @@
               <tr>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'time'}>
                   <div class="th-row">
-                    <button type="button" class="sort-btn" on:click={() => setSort('time')}>
+                    <button
+                      type="button"
+                      class="sort-btn"
+                      on:click={() => {
+                        setSort('time')
+                      }}
+                    >
                       {#if sort.field === 'time'}<span class="sort-arrow">{arrowFor('time')}</span>{/if}Time
                     </button>
-                    <button class="filter-btn"
-                            class:active={filterFrom !== '' || filterTo !== ''}
-                            title="Filter by date range"
-                            on:click|stopPropagation={() => focusInput('time')}>
+                    <button
+                      class="filter-btn"
+                      class:active={filterFrom !== '' || filterTo !== ''}
+                      title="Filter by date range"
+                      on:click|stopPropagation={() => {
+                        focusInput('time')
+                      }}
+                    >
                       <Icon icon={IconFilter} size={'x-small'} />
                     </button>
                   </div>
                 </th>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'admin'}>
                   <div class="th-row">
-                    <button type="button" class="sort-btn" on:click={() => setSort('admin')}>
+                    <button
+                      type="button"
+                      class="sort-btn"
+                      on:click={() => {
+                        setSort('admin')
+                      }}
+                    >
                       {#if sort.field === 'admin'}<span class="sort-arrow">{arrowFor('admin')}</span>{/if}Admin
                     </button>
-                    <button class="filter-btn"
-                            class:active={filterAdminName.trim() !== ''}
-                            title="Filter by admin name or email"
-                            on:click|stopPropagation={() => focusInput('admin')}>
+                    <button
+                      class="filter-btn"
+                      class:active={filterAdminName.trim() !== ''}
+                      title="Filter by admin name or email"
+                      on:click|stopPropagation={() => {
+                        focusInput('admin')
+                      }}
+                    >
                       <Icon icon={IconFilter} size={'x-small'} />
                     </button>
                   </div>
                 </th>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'action'}>
                   <div class="th-row">
-                    <button type="button" class="sort-btn" on:click={() => setSort('action')}>
+                    <button
+                      type="button"
+                      class="sort-btn"
+                      on:click={() => {
+                        setSort('action')
+                      }}
+                    >
                       {#if sort.field === 'action'}<span class="sort-arrow">{arrowFor('action')}</span>{/if}Action
                     </button>
-                    <button class="filter-btn"
-                            class:active={selectedActionIds.length > 0}
-                            title="Filter by action"
-                            on:click|stopPropagation={() => focusInput('action')}>
+                    <button
+                      class="filter-btn"
+                      class:active={selectedActionIds.length > 0}
+                      title="Filter by action"
+                      on:click|stopPropagation={() => {
+                        focusInput('action')
+                      }}
+                    >
                       <Icon icon={IconFilter} size={'x-small'} />
                     </button>
                   </div>
                 </th>
                 <th scope="col" class="sortable" class:is-sorted={sort.field === 'target'}>
                   <div class="th-row">
-                    <button type="button" class="sort-btn" on:click={() => setSort('target')}>
+                    <button
+                      type="button"
+                      class="sort-btn"
+                      on:click={() => {
+                        setSort('target')
+                      }}
+                    >
                       {#if sort.field === 'target'}<span class="sort-arrow">{arrowFor('target')}</span>{/if}Target
                     </button>
-                    <button class="filter-btn"
-                            class:active={filterTargetName.trim() !== ''}
-                            title="Filter by target user or workspace"
-                            on:click|stopPropagation={() => focusInput('target')}>
+                    <button
+                      class="filter-btn"
+                      class:active={filterTargetName.trim() !== ''}
+                      title="Filter by target user or workspace"
+                      on:click|stopPropagation={() => {
+                        focusInput('target')
+                      }}
+                    >
                       <Icon icon={IconFilter} size={'x-small'} />
                     </button>
                   </div>
@@ -435,8 +504,8 @@
                   <tr class="audit-batch-header">
                     <td colspan="5">
                       <strong>Bulk action by {g.entries[0].admin.firstName} {g.entries[0].admin.lastName}</strong>
-                       — {g.entries.length} entries · <code>{g.entries[0].action}</code> ·
-                       <span title={tzTooltip(g.entries[0].tsMs)}>{new Date(g.entries[0].tsMs).toLocaleString()}</span>
+                      — {g.entries.length} entries · <code>{g.entries[0].action}</code> ·
+                      <span title={tzTooltip(g.entries[0].tsMs)}>{new Date(g.entries[0].tsMs).toLocaleString()}</span>
                     </td>
                   </tr>
                 {/if}
@@ -456,9 +525,19 @@
                       {#if e.details != null}
                         {#if expandedDetails.has(e.id)}
                           <pre class="audit-details-expanded">{JSON.stringify(e.details, null, 2)}</pre>
-                          <button class="audit-details-toggle" on:click={() => toggleDetails(e.id)}>Collapse</button>
+                          <button
+                            class="audit-details-toggle"
+                            on:click={() => {
+                              toggleDetails(e.id)
+                            }}>Collapse</button
+                          >
                         {:else}
-                          <button class="audit-details-toggle" on:click={() => toggleDetails(e.id)}>
+                          <button
+                            class="audit-details-toggle"
+                            on:click={() => {
+                              toggleDetails(e.id)
+                            }}
+                          >
                             {summary(e.details)} — expand
                           </button>
                         {/if}
@@ -468,18 +547,22 @@
                 {/each}
               {/each}
               {#if entries.length === 0 && !loading}
-                <tr><td colspan="5"><AuditEmptyState {hasFilter}
-                    on:clearFilter={clearFilters} /></td></tr>
+                <tr><td colspan="5"><AuditEmptyState {hasFilter} on:clearFilter={clearFilters} /></td></tr>
               {/if}
             </tbody>
           </table>
 
           {#if nextCursor != null}
             <div class="audit-pager">
-              <Button kind="regular" label={getEmbeddedLabel('Load more')} on:click={() => { void reload(false) }} />
+              <Button
+                kind="regular"
+                label={getEmbeddedLabel('Load more')}
+                on:click={() => {
+                  void reload(false)
+                }}
+              />
             </div>
           {/if}
-
         </div>
       </Scroller>
     </div>
@@ -590,7 +673,8 @@
     border-radius: var(--small-BorderRadius);
     overflow: hidden;
 
-    th, td {
+    th,
+    td {
       padding: 0.5rem 0.75rem;
       text-align: left;
       vertical-align: top;
@@ -686,7 +770,10 @@
     color: var(--theme-darker-color);
     border-radius: 0.25rem;
     opacity: 0.35;
-    transition: opacity 80ms ease, color 80ms ease, background 80ms ease;
+    transition:
+      opacity 80ms ease,
+      color 80ms ease,
+      background 80ms ease;
 
     &:hover {
       opacity: 1;
@@ -740,7 +827,10 @@
     font-size: 0.78rem;
     color: var(--theme-darker-color);
     cursor: pointer;
-    &:hover { color: var(--theme-content-color); border-color: var(--theme-content-color); }
+    &:hover {
+      color: var(--theme-content-color);
+      border-color: var(--theme-content-color);
+    }
   }
   .audit-details-expanded {
     margin: 0 0 0.25rem 0;

@@ -67,8 +67,7 @@ import type {
   CreateAccountParams,
   CreateAccountResponse,
   ListAuditAdminParams,
-  ListAuditAdminResponse,
-  AuditEntry
+  ListAuditAdminResponse
 } from './types'
 import { getClientTimezone, isNetworkError } from './utils'
 
@@ -1417,9 +1416,7 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async listAccountsAdmin (
-    params: ListAccountsAdminParams
-  ): Promise<{ total: number, accounts: AccountListRow[] }> {
+  async listAccountsAdmin (params: ListAccountsAdminParams): Promise<{ total: number, accounts: AccountListRow[] }> {
     const request = { method: 'listAccountsAdmin' as const, params }
     return await this.rpc(request)
   }
@@ -1499,10 +1496,7 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async bulkRemoveFromWorkspace (
-    accountUuids: AccountUuid[],
-    workspaceUuid: WorkspaceUuid
-  ): Promise<BulkResult> {
+  async bulkRemoveFromWorkspace (accountUuids: AccountUuid[], workspaceUuid: WorkspaceUuid): Promise<BulkResult> {
     const request = {
       method: 'bulkRemoveFromWorkspace' as const,
       params: { accountUuids, workspaceUuid }

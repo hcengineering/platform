@@ -7,7 +7,10 @@
 // The full real-Postgres variant lives in postgres-real.test.ts (skipped
 // by default; requires a live CockroachDB instance).
 
-import { AccountRole, WorkspaceMemberInfo, type MeasureContext } from '@hcengineering/core'
+import { AccountRole, type WorkspaceMemberInfo, type MeasureContext } from '@hcengineering/core'
+
+import { disableAccount, enableAccount, setWorkspaceMemberRole } from '../operations'
+import type { AdminAuditLogEntry } from '../types'
 
 const ADMIN_TOKEN = 'admin-token'
 const TARGET = '99999999-9999-4999-9999-999999999999' as any
@@ -22,9 +25,6 @@ jest.mock('@hcengineering/server-token', () => ({
 }))
 
 const ctx = { newChild: () => ctx, info: () => {}, warn: () => {}, error: () => {} } as unknown as MeasureContext
-
-import { disableAccount, enableAccount, setWorkspaceMemberRole } from '../operations'
-import type { AdminAuditLogEntry } from '../types'
 
 function makeDb (initialRole: AccountRole = AccountRole.User): any {
   const audit: Array<Omit<AdminAuditLogEntry, 'id' | 'tsMs'>> = []
@@ -42,7 +42,7 @@ function makeDb (initialRole: AccountRole = AccountRole.User): any {
     state,
     audit,
     account: {
-      findOne: async (): Promise<any> => state.role == null ? null : { ...state },
+      findOne: async (): Promise<any> => (state.role == null ? null : { ...state }),
       update: async (q: any, ops: any) => {
         const { $inc, ...rest } = ops
         Object.assign(state, rest)

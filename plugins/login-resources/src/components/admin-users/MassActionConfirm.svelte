@@ -13,18 +13,18 @@
   import { Button, EditBox } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
-  export let title: string                       // e.g. "Mass Archive 13"
-  export let affectedCount: number               // e.g. 13
-  export let filterSummary: string               // e.g. "No filter set" or "Filter: mode, region"
-  export let typedConfirmPhrase: string          // e.g. "ARCHIVE ALL"
-  export let actionLabel: string                 // e.g. "Archive"
+  export let title: string // e.g. "Mass Archive 13"
+  export let affectedCount: number // e.g. 13
+  export let filterSummary: string // e.g. "No filter set" or "Filter: mode, region"
+  export let typedConfirmPhrase: string // e.g. "ARCHIVE ALL"
+  export let actionLabel: string // e.g. "Archive"
   export let dangerous: boolean = true
   // Caller decides whether this invocation is a footgun (e.g. no filter
   // active + every row selected). Keeps the policy in the page that
   // knows what "universe" means, instead of forcing this component to
   // know about filters/pagination.
   export let dangerousScope: boolean = false
-  export let helperText: string = ''             // Optional one-liner below the count
+  export let helperText: string = '' // Optional one-liner below the count
 
   const dispatch = createEventDispatcher<{ close: boolean }>()
 
@@ -48,8 +48,8 @@
 
   {#if requiresTypedConfirm}
     <div class="banner danger" role="alert">
-      <strong>{filterSummary}</strong> — this will {actionLabel.toLowerCase()} ALL {affectedCount} item(s) in the
-      system. Type <code>{typedConfirmPhrase}</code> to confirm.
+      <strong>{filterSummary}</strong> — this will {actionLabel.toLowerCase()} ALL {affectedCount} item(s) in the system.
+      Type <code>{typedConfirmPhrase}</code> to confirm.
     </div>
     <EditBox bind:value={typedValue} placeholder={getEmbeddedLabel(typedConfirmPhrase)} kind={'editbox'} />
     {#if helperText !== ''}
@@ -106,7 +106,7 @@
 
   .banner.danger {
     padding: 0.75rem 0.85rem;
-    background: rgba(239, 68, 68, 0.10);
+    background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.35);
     border-radius: 0.35rem;
     color: var(--theme-state-negative-color, #b91c1c);

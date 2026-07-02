@@ -2,7 +2,9 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 
-import { MeasureContext } from '@hcengineering/core'
+import { type MeasureContext } from '@hcengineering/core'
+
+import { performWorkspaceOperation } from '../serviceOperations'
 
 const ADMIN_TOKEN = 'admin-token'
 
@@ -20,8 +22,6 @@ jest.mock('../utils', () => ({
 
 const ctx = { newChild: () => ctx, info: () => {}, warn: () => {}, error: () => {} } as unknown as MeasureContext
 
-import { performWorkspaceOperation } from '../serviceOperations'
-
 it('performWorkspaceOperation writes an audit entry per workspace operated on', async () => {
   const inserts: any[] = []
   const db = {
@@ -36,7 +36,11 @@ it('performWorkspaceOperation writes an audit entry per workspace operated on', 
       find: async () => [{ workspaceUuid: 'ws1', mode: 'active', processingAttempts: 0 }],
       update: async () => undefined
     },
-    adminAuditLog: { insert: async (entry: any) => { inserts.push(entry) } }
+    adminAuditLog: {
+      insert: async (entry: any) => {
+        inserts.push(entry)
+      }
+    }
   } as any
 
   await performWorkspaceOperation(ctx, db, null, ADMIN_TOKEN, {
@@ -74,7 +78,11 @@ it('performWorkspaceOperation maps event names to audit action types', async () 
         find: async () => [{ workspaceUuid: 'wsX', mode, processingAttempts: 0 }],
         update: async () => undefined
       },
-      adminAuditLog: { insert: async (entry: any) => { inserts.push(entry) } }
+      adminAuditLog: {
+        insert: async (entry: any) => {
+          inserts.push(entry)
+        }
+      }
     } as any
 
     await performWorkspaceOperation(ctx, db, null, ADMIN_TOKEN, {

@@ -213,7 +213,7 @@ export async function verifyTokenVersion (ctx: MeasureContext, db: AccountDB, to
   if (accountUuid === readOnlyGuestAccountUuid) return
   if (!UUID_REGEX.test(accountUuid)) return
   const tokenVersionClaim = parseInt(extra?.token_version ?? '0', 10)
-  const account = await db.account.findOne({ uuid: accountUuid as AccountUuid })
+  const account = await db.account.findOne({ uuid: accountUuid })
   // Account row may be missing for service-issued tokens (e.g. NIL_UUID for 2FA-pending).
   // Only enforce when a row exists.
   if (account == null) return

@@ -1,8 +1,16 @@
-import { MeasureContext, AccountRole } from '@hcengineering/core'
+import { type MeasureContext, AccountRole } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
 
+import {
+  bulkAddToWorkspace,
+  bulkRemoveFromWorkspace,
+  bulkSetDisabled,
+  bulkSendPasswordReset
+} from '../serviceOperations'
+
 jest.mock('@hcengineering/server-token', () => ({
-  decodeTokenVerbose: (_c: any, t: string) => t === 'admin' ? { account: 'admin-uuid', extra: { admin: 'true' } } : { account: 'u', extra: {} },
+  decodeTokenVerbose: (_c: any, t: string) =>
+    t === 'admin' ? { account: 'admin-uuid', extra: { admin: 'true' } } : { account: 'u', extra: {} },
   TokenError: class extends Error {}
 }))
 jest.mock('../utils', () => ({
@@ -11,13 +19,6 @@ jest.mock('../utils', () => ({
 }))
 
 const ctx = { newChild: () => ctx, info: () => {}, warn: () => {}, error: () => {} } as unknown as MeasureContext
-
-import {
-  bulkAddToWorkspace,
-  bulkRemoveFromWorkspace,
-  bulkSetDisabled,
-  bulkSendPasswordReset
-} from '../serviceOperations'
 
 function db (): any {
   // NOTE: single `workspace` key with both findOne + find. Two `workspace:`
@@ -53,25 +54,46 @@ describe('bulkActions', () => {
   it('all endpoints reject non-admin', async () => {
     // bulkSetDisabled has a different signature (takes deps), test separately.
     for (const fn of [bulkAddToWorkspace, bulkRemoveFromWorkspace, bulkSendPasswordReset]) {
-      await expect((fn as any)(ctx, db(), null, 'u', { accountUuids: [], workspaceUuid: 'ws' as any, role: AccountRole.User } as any)).rejects.toThrow(PlatformError)
+      await expect(
+        (fn as any)(ctx, db(), null, 'u', {
+          accountUuids: [],
+          workspaceUuid: 'ws' as any,
+          role: AccountRole.User
+        } as any)
+      ).rejects.toThrow(PlatformError)
     }
     // bulkSetDisabled with deps
-    await expect(bulkSetDisabled(ctx, db(), null, {}, 'u', { accountUuids: [], disabled: false } as any)).rejects.toThrow(PlatformError)
+    await expect(
+      bulkSetDisabled(ctx, db(), null, {}, 'u', { accountUuids: [], disabled: false } as any)
+    ).rejects.toThrow(PlatformError)
   })
 
   it('400 on input > 200', async () => {
     const big = new Array(201).fill('a').map((_, i) => `acc-${i}`) as any
-    await expect(bulkAddToWorkspace(ctx, db(), null, 'admin', { accountUuids: big, workspaceUuid: 'ws' as any, role: AccountRole.User })).rejects.toThrow(/200/)
+    await expect(
+      bulkAddToWorkspace(ctx, db(), null, 'admin', {
+        accountUuids: big,
+        workspaceUuid: 'ws' as any,
+        role: AccountRole.User
+      })
+    ).rejects.toThrow(/200/)
   })
 
   it('bulkSetDisabled skips admin self', async () => {
-    const r = await bulkSetDisabled(ctx, db(), null, {}, 'admin', { accountUuids: ['admin-uuid', 'other'] as any, disabled: true })
+    const r = await bulkSetDisabled(ctx, db(), null, {}, 'admin', {
+      accountUuids: ['admin-uuid', 'other'] as any,
+      disabled: true
+    })
     expect(r.failed).toEqual([{ accountUuid: 'admin-uuid', error: 'cannot disable self' }])
     expect(r.succeeded).toEqual(['other'])
   })
 
   it('bulkAddToWorkspace returns succeeded for happy path', async () => {
-    const r = await bulkAddToWorkspace(ctx, db(), null, 'admin', { accountUuids: ['a1', 'a2'] as any, workspaceUuid: 'ws' as any, role: AccountRole.User })
+    const r = await bulkAddToWorkspace(ctx, db(), null, 'admin', {
+      accountUuids: ['a1', 'a2'] as any,
+      workspaceUuid: 'ws' as any,
+      role: AccountRole.User
+    })
     expect(r.succeeded.sort()).toEqual(['a1', 'a2'])
     expect(r.failed).toEqual([])
   })

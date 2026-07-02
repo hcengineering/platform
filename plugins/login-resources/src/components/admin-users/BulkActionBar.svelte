@@ -9,12 +9,12 @@
   export let count: number = 0
 
   const dispatch = createEventDispatcher<{
-    'deselect-all': void
-    add: void
-    remove: void
-    disable: void
-    enable: void
-    reset: void
+    'deselect-all': null
+    add: null
+    remove: null
+    disable: null
+    enable: null
+    reset: null
   }>()
 </script>
 

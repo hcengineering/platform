@@ -26,7 +26,9 @@
   let pw1Visible = false
   let pw2Visible = false
 
-  void (async () => { workspaces = await client.listWorkspaces() })()
+  void (async () => {
+    workspaces = await client.listWorkspaces()
+  })()
 
   const roleItems: DropdownIntlItem[] = [
     { id: AccountRole.Owner as any, label: getEmbeddedLabel('Owner') },
@@ -48,7 +50,10 @@
 
   async function confirm (): Promise<void> {
     const v = validate()
-    if (v != null) { error = v; return }
+    if (v != null) {
+      error = v
+      return
+    }
     busy = true
     error = null
     try {
@@ -84,33 +89,48 @@
       <label><input type="radio" bind:group={passwordMode} value="invite" /> Send invite email</label>
       <label><input type="radio" bind:group={passwordMode} value="set" /> Set password now</label>
       {#if passwordMode === 'set'}
-        <label>Password
+        <label
+          >Password
           <div class="pw-input-row">
             {#if pw1Visible}
-              <input type="text" autocomplete="new-password"
-                     aria-describedby="pw1-help" bind:value={password} />
+              <input type="text" autocomplete="new-password" aria-describedby="pw1-help" bind:value={password} />
             {:else}
-              <input type="password" autocomplete="new-password"
-                     aria-describedby="pw1-help" bind:value={password} />
+              <input type="password" autocomplete="new-password" aria-describedby="pw1-help" bind:value={password} />
             {/if}
-            <button type="button" class="pw-toggle" on:click={() => { pw1Visible = !pw1Visible }}
-                    aria-label={pw1Visible ? 'Hide password' : 'Show password'}>
+            <button
+              type="button"
+              class="pw-toggle"
+              on:click={() => {
+                pw1Visible = !pw1Visible
+              }}
+              aria-label={pw1Visible ? 'Hide password' : 'Show password'}
+            >
               {pw1Visible ? '◯' : '●'}
             </button>
           </div>
           <span class="pw-help" id="pw1-help">Min 8 chars</span>
         </label>
-        <label>Confirm
+        <label
+          >Confirm
           <div class="pw-input-row">
             {#if pw2Visible}
-              <input type="text" autocomplete="new-password"
-                     aria-describedby="pw2-help" bind:value={passwordConfirm} />
+              <input type="text" autocomplete="new-password" aria-describedby="pw2-help" bind:value={passwordConfirm} />
             {:else}
-              <input type="password" autocomplete="new-password"
-                     aria-describedby="pw2-help" bind:value={passwordConfirm} />
+              <input
+                type="password"
+                autocomplete="new-password"
+                aria-describedby="pw2-help"
+                bind:value={passwordConfirm}
+              />
             {/if}
-            <button type="button" class="pw-toggle" on:click={() => { pw2Visible = !pw2Visible }}
-                    aria-label={pw2Visible ? 'Hide password' : 'Show password'}>
+            <button
+              type="button"
+              class="pw-toggle"
+              on:click={() => {
+                pw2Visible = !pw2Visible
+              }}
+              aria-label={pw2Visible ? 'Hide password' : 'Show password'}
+            >
               {pw2Visible ? '◯' : '●'}
             </button>
           </div>
@@ -127,7 +147,13 @@
         {/each}
       </select>
       {#if selectedWs != null}
-        <DropdownLabelsIntl items={roleItems} selected={role} on:selected={(e) => { role = e.detail }} />
+        <DropdownLabelsIntl
+          items={roleItems}
+          selected={role}
+          on:selected={(e) => {
+            role = e.detail
+          }}
+        />
       {/if}
     </fieldset>
   </div>
@@ -139,13 +165,47 @@
 </div>
 
 <style lang="scss">
-  .popup { padding: 1rem; min-width: 28rem; max-width: 36rem; background: var(--theme-popup-color); border: 1px solid var(--theme-divider-color); border-radius: 0.5rem; display: flex; flex-direction: column; gap: 0.6rem; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem 1rem; }
-  .full { grid-column: 1 / -1; }
-  fieldset { border: 1px solid var(--theme-divider-color); border-radius: 0.25rem; padding: 0.6rem; display: flex; flex-direction: column; gap: 0.35rem; }
-  legend { padding: 0 0.3rem; font-size: 0.8rem; color: var(--theme-darker-color); }
-  .error { color: var(--theme-error-color, #ef4444); font-size: 0.85rem; }
-  .actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+  .popup {
+    padding: 1rem;
+    min-width: 28rem;
+    max-width: 36rem;
+    background: var(--theme-popup-color);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem 1rem;
+  }
+  .full {
+    grid-column: 1 / -1;
+  }
+  fieldset {
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.25rem;
+    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  legend {
+    padding: 0 0.3rem;
+    font-size: 0.8rem;
+    color: var(--theme-darker-color);
+  }
+  .error {
+    color: var(--theme-error-color, #ef4444);
+    font-size: 0.85rem;
+  }
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
   .pw-input-row {
     display: flex;
     align-items: stretch;

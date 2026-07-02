@@ -3,14 +3,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import {
-    Button,
-    DropdownLabelsIntl,
-    Loading,
-    Scroller,
-    showPopup,
-    type DropdownIntlItem
-  } from '@hcengineering/ui'
+  import { Button, DropdownLabelsIntl, Loading, Scroller, showPopup, type DropdownIntlItem } from '@hcengineering/ui'
   import { MessageBox } from '@hcengineering/presentation'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { AccountRole } from '@hcengineering/core'
@@ -139,9 +132,10 @@
   let auditEntries: AuditEntry[] = []
   let auditLoading = false
   let actionFilter = ''
-  $: visibleAuditEntries = actionFilter.trim() === ''
-    ? auditEntries
-    : auditEntries.filter((e) => e.action.toLowerCase().includes(actionFilter.trim().toLowerCase()))
+  $: visibleAuditEntries =
+    actionFilter.trim() === ''
+      ? auditEntries
+      : auditEntries.filter((e) => e.action.toLowerCase().includes(actionFilter.trim().toLowerCase()))
 
   // Plan 1d Task 3 — Group consecutive same-batchId entries under a
   // non-interactive header. Same logic as AdminAudit.svelte.
@@ -193,80 +187,96 @@
   </div>
 
   <div class="drawer-tabs">
-    <button class:active={!auditTab} on:click={() => { auditTab = false }}>Details</button>
-    <button class:active={auditTab} on:click={() => { auditTab = true }}>Audit ({auditEntries.length})</button>
+    <button
+      class:active={!auditTab}
+      on:click={() => {
+        auditTab = false
+      }}>Details</button
+    >
+    <button
+      class:active={auditTab}
+      on:click={() => {
+        auditTab = true
+      }}>Audit ({auditEntries.length})</button
+    >
   </div>
 
   <Scroller>
     {#if !auditTab}
-    {#if loading}
-      <Loading />
-    {:else if err}
-      <div class="error">{err}</div>
-    {:else if data}
-      <div class="section">
-        <div class="section-h">Members ({data.members.length})</div>
-        {#each data.members as m (m.accountUuid)}
-          <div class="row">
-            <div class="name">
-              {m.firstName} {m.lastName}
-              {#if m.isAdmin}<span class="badge">Admin</span>{/if}
-              {#if m.status === 'disabled'}<span class="badge red">Disabled</span>{/if}
+      {#if loading}
+        <Loading />
+      {:else if err}
+        <div class="error">{err}</div>
+      {:else if data}
+        <div class="section">
+          <div class="section-h">Members ({data.members.length})</div>
+          {#each data.members as m (m.accountUuid)}
+            <div class="row">
+              <div class="name">
+                {m.firstName}
+                {m.lastName}
+                {#if m.isAdmin}<span class="badge">Admin</span>{/if}
+                {#if m.status === 'disabled'}<span class="badge red">Disabled</span>{/if}
+              </div>
+              <div class="email muted">{m.primaryEmail ?? '—'}</div>
+              <div class="role">
+                <DropdownLabelsIntl
+                  items={roleItems}
+                  selected={m.role}
+                  on:selected={(e) => onChangeRole(m.accountUuid, e.detail)}
+                />
+              </div>
+              <!-- pass a human-readable label so the confirmation can name the member -->
+              <button
+                class="rm"
+                on:click={() => {
+                  onRemove(m.accountUuid, `${m.firstName} ${m.lastName}`.trim() || m.primaryEmail || m.accountUuid)
+                }}
+              >
+                ✕
+              </button>
             </div>
-            <div class="email muted">{m.primaryEmail ?? '—'}</div>
-            <div class="role">
-              <DropdownLabelsIntl
-                items={roleItems}
-                selected={m.role}
-                on:selected={(e) => onChangeRole(m.accountUuid, e.detail)}
-              />
-            </div>
-            <!-- pass a human-readable label so the confirmation can name the member -->
-            <button
-              class="rm"
-              on:click={() =>
-                onRemove(
-                  m.accountUuid,
-                  `${m.firstName} ${m.lastName}`.trim() || m.primaryEmail || m.accountUuid
-                )}
-            >
-              ✕
-            </button>
+          {/each}
+          <div class="add-row">
+            <Button label={getEmbeddedLabel('Add member')} on:click={openAddMember} />
           </div>
-        {/each}
-        <div class="add-row">
-          <Button label={getEmbeddedLabel('Add member')} on:click={openAddMember} />
         </div>
-      </div>
-    {/if}
+      {/if}
     {/if}<!-- end !auditTab -->
 
     {#if auditTab}
       <div class="audit-tab">
         <div class="drawer-audit-filter">
-          <input type="text" bind:value={actionFilter}
-                 placeholder="Filter by action (disable, archive_workspace, …)"
-                 aria-label="Filter audit by action" />
+          <input
+            type="text"
+            bind:value={actionFilter}
+            placeholder="Filter by action (disable, archive_workspace, …)"
+            aria-label="Filter audit by action"
+          />
         </div>
         {#if auditLoading}
           <p>Loading…</p>
         {:else if visibleAuditEntries.length === 0}
           <AuditEmptyState
             hasFilter={actionFilter.trim() !== ''}
-            on:clearFilter={() => { actionFilter = '' }} />
+            on:clearFilter={() => {
+              actionFilter = ''
+            }}
+          />
         {:else}
           <ul class="audit-list">
             {#each visibleAuditGroups as g (g.batchId ?? g.entries[0].id)}
               {#if g.entries.length > 1}
                 <li class="audit-batch-header">
                   <strong>Bulk action by {g.entries[0].admin.firstName} {g.entries[0].admin.lastName}</strong>
-                   — {g.entries.length} entries · <code>{g.entries[0].action}</code> ·
-                   {new Date(g.entries[0].tsMs).toLocaleString()}
+                  — {g.entries.length} entries · <code>{g.entries[0].action}</code> ·
+                  {new Date(g.entries[0].tsMs).toLocaleString()}
                 </li>
               {/if}
               {#each g.entries as e (e.id)}
                 <li>
-                  <strong>{new Date(e.tsMs).toLocaleString()}</strong> — {e.admin.firstName} {e.admin.lastName} → <code>{e.action}</code>
+                  <strong>{new Date(e.tsMs).toLocaleString()}</strong> — {e.admin.firstName}
+                  {e.admin.lastName} → <code>{e.action}</code>
                   {#if e.details != null}<pre>{JSON.stringify(e.details, null, 2)}</pre>{/if}
                 </li>
               {/each}

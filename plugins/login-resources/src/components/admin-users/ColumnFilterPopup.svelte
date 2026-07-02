@@ -14,11 +14,11 @@
   // local working copy seeded from the currently-applied filter (if any)
   let textValue: string =
     column === 'name' ? (current?.nameContains ?? '') : column === 'email' ? (current?.emailContains ?? '') : ''
-  let statusSel = {
+  const statusSel = {
     active: Array.isArray(current?.statusIn) ? current.statusIn.includes('active') : false,
     disabled: Array.isArray(current?.statusIn) ? current.statusIn.includes('disabled') : false
   }
-  let authSel: Record<'email_only' | 'oidc' | 'mixed' | 'none', boolean> = {
+  const authSel: Record<'email_only' | 'oidc' | 'mixed' | 'none', boolean> = {
     email_only: false,
     oidc: false,
     mixed: false,
@@ -110,16 +110,32 @@
     <label><CheckBox bind:checked={authSel.mixed} /> Mixed</label>
     <label><CheckBox bind:checked={authSel.none} /> None</label>
   {:else if column === 'workspace_count'}
-    <div>min: <input type="number" min="0" value={wsMin ?? ''}
-                     on:input={(e) => { wsMin = e.currentTarget.value === '' ? null : Math.max(0, Number(e.currentTarget.value)) }} /></div>
-    <div>max: <input type="number" min="0" value={wsMax ?? ''}
-                     on:input={(e) => { wsMax = e.currentTarget.value === '' ? null : Math.max(0, Number(e.currentTarget.value)) }} /></div>
+    <div>
+      min: <input
+        type="number"
+        min="0"
+        value={wsMin ?? ''}
+        on:input={(e) => {
+          wsMin = e.currentTarget.value === '' ? null : Math.max(0, Number(e.currentTarget.value))
+        }}
+      />
+    </div>
+    <div>
+      max: <input
+        type="number"
+        min="0"
+        value={wsMax ?? ''}
+        on:input={(e) => {
+          wsMax = e.currentTarget.value === '' ? null : Math.max(0, Number(e.currentTarget.value))
+        }}
+      />
+    </div>
   {:else if column === 'last_activity'}
     <label><input type="radio" bind:group={activityKind} value="range" /> Range</label>
     <label><input type="radio" bind:group={activityKind} value="never" /> Never active</label>
     {#if activityKind === 'range'}
       <div>from: <input type="date" bind:value={activityFrom} /></div>
-      <div>to:   <input type="date" bind:value={activityTo} /></div>
+      <div>to: <input type="date" bind:value={activityTo} /></div>
     {/if}
   {/if}
   <div class="actions">

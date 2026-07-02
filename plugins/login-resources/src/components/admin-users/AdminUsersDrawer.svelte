@@ -40,8 +40,8 @@
   $: isSelf = currentAdminUuid !== undefined && currentAdminUuid === accountUuid
 
   const dispatch = createEventDispatcher<{
-    close: void
-    'account-changed': void
+    close: null
+    'account-changed': null
     navigate: { uuid: string }
   }>()
 
@@ -167,27 +167,22 @@
   }
 
   function onRemoveFromWorkspace (workspaceUuid: string, workspaceName: string): void {
-    confirmAction(
-      'Remove from workspace',
-      `Remove this user from "${workspaceName}"?`,
-      true,
-      async () => {
-        busy = true
-        try {
-          await getAccountClient().removeWorkspaceMember(accountUuid, workspaceUuid as any)
-          await load()
-          dispatch('account-changed')
-        } catch (err: any) {
-          if (err?.status?.code === 'last_owner_in_workspace') {
-            notify('Cannot remove last Owner', 'There must be at least one Owner per workspace.', true)
-          } else {
-            notify('Failed to remove member', err?.message ?? String(err), true)
-          }
-        } finally {
-          busy = false
+    confirmAction('Remove from workspace', `Remove this user from "${workspaceName}"?`, true, async () => {
+      busy = true
+      try {
+        await getAccountClient().removeWorkspaceMember(accountUuid, workspaceUuid as any)
+        await load()
+        dispatch('account-changed')
+      } catch (err: any) {
+        if (err?.status?.code === 'last_owner_in_workspace') {
+          notify('Cannot remove last Owner', 'There must be at least one Owner per workspace.', true)
+        } else {
+          notify('Failed to remove member', err?.message ?? String(err), true)
         }
+      } finally {
+        busy = false
       }
-    )
+    })
   }
 
   function openAddToWorkspace (): void {
@@ -209,7 +204,7 @@
   function onTriggerPasswordReset (): void {
     confirmAction(
       'Send password-reset email',
-      'A password-reset email will be sent to the user\'s primary email address. Continue?',
+      "A password-reset email will be sent to the user's primary email address. Continue?",
       false,
       async () => {
         busy = true
@@ -288,12 +283,9 @@
 
   function tryClose (): void {
     if (busy) {
-      confirmAction(
-        'Close while busy?',
-        'An operation is still in progress. Close anyway?',
-        false,
-        async () => { dispatch('close') }
-      )
+      confirmAction('Close while busy?', 'An operation is still in progress. Close anyway?', false, async () => {
+        dispatch('close')
+      })
       return
     }
     dispatch('close')
@@ -312,9 +304,10 @@
   let auditEntries: AuditEntry[] = []
   let auditLoading = false
   let actionFilter = ''
-  $: visibleAuditEntries = actionFilter.trim() === ''
-    ? auditEntries
-    : auditEntries.filter((e) => e.action.toLowerCase().includes(actionFilter.trim().toLowerCase()))
+  $: visibleAuditEntries =
+    actionFilter.trim() === ''
+      ? auditEntries
+      : auditEntries.filter((e) => e.action.toLowerCase().includes(actionFilter.trim().toLowerCase()))
 
   // Plan 1d Task 3 — Group consecutive same-batchId entries under a
   // non-interactive header. Same logic as AdminAudit.svelte.
@@ -353,7 +346,6 @@
   $: if (auditTab && accountUuid != null) {
     void loadAudit()
   }
-
 </script>
 
 <aside class="drawer hulyComponent" role="dialog" aria-modal="true" bind:this={drawerEl}>
@@ -363,21 +355,9 @@
     </div>
     {#if pagerTotal > 1 && pagerIndex >= 0}
       <div class="drawer-pager">
-        <ButtonIcon
-          icon={IconChevronLeft}
-          kind={'tertiary'}
-          size={'small'}
-          disabled={!hasPrev}
-          on:click={goPrev}
-        />
+        <ButtonIcon icon={IconChevronLeft} kind={'tertiary'} size={'small'} disabled={!hasPrev} on:click={goPrev} />
         <span class="pager-pos">{pagerIndex + 1} / {pagerTotal}</span>
-        <ButtonIcon
-          icon={IconChevronRight}
-          kind={'tertiary'}
-          size={'small'}
-          disabled={!hasNext}
-          on:click={goNext}
-        />
+        <ButtonIcon icon={IconChevronRight} kind={'tertiary'} size={'small'} disabled={!hasNext} on:click={goNext} />
       </div>
     {/if}
     <!-- Plain <button> instead of ButtonIcon so we can attach an
@@ -390,208 +370,226 @@
   </div>
 
   <div class="drawer-tabs">
-    <button class:active={!auditTab} on:click={() => { auditTab = false }}>Details</button>
-    <button class:active={auditTab} on:click={() => { auditTab = true }}>Audit ({auditEntries.length})</button>
+    <button
+      class:active={!auditTab}
+      on:click={() => {
+        auditTab = false
+      }}>Details</button
+    >
+    <button
+      class:active={auditTab}
+      on:click={() => {
+        auditTab = true
+      }}>Audit ({auditEntries.length})</button
+    >
   </div>
 
   <Scroller>
     <div class="drawer-body">
       {#if !auditTab}
-      {#if loading}
-        <div class="state">Loading…</div>
-      {:else if errorMessage != null}
-        <div class="state error">{errorMessage}</div>
-      {:else if details != null}
-        <div class="profile">
-          <div class="avatar">{initials(details.firstName, details.lastName)}</div>
-          <div class="profile-info">
-            <h3>{details.firstName} {details.lastName}</h3>
-            <span class="status status-{details.status}">
-              <span class="status-dot" />
-              {details.status}
-            </span>
+        {#if loading}
+          <div class="state">Loading…</div>
+        {:else if errorMessage != null}
+          <div class="state error">{errorMessage}</div>
+        {:else if details != null}
+          <div class="profile">
+            <div class="avatar">{initials(details.firstName, details.lastName)}</div>
+            <div class="profile-info">
+              <h3>{details.firstName} {details.lastName}</h3>
+              <span class="status status-{details.status}">
+                <span class="status-dot" />
+                {details.status}
+              </span>
+            </div>
+            <div class="copy-actions">
+              <ButtonIcon
+                icon={IconCopy}
+                kind={'tertiary'}
+                size={'small'}
+                on:click={onCopyUuid}
+                showTooltip={{ label: getEmbeddedLabel('Copy UUID') }}
+              />
+              <ButtonIcon
+                icon={IconCopy}
+                kind={'tertiary'}
+                size={'small'}
+                on:click={onCopyEmail}
+                showTooltip={{ label: getEmbeddedLabel('Copy email') }}
+              />
+            </div>
           </div>
-          <div class="copy-actions">
-            <ButtonIcon
-              icon={IconCopy}
-              kind={'tertiary'}
-              size={'small'}
-              on:click={onCopyUuid}
-              showTooltip={{ label: getEmbeddedLabel('Copy UUID') }}
-            />
-            <ButtonIcon
-              icon={IconCopy}
-              kind={'tertiary'}
-              size={'small'}
-              on:click={onCopyEmail}
-              showTooltip={{ label: getEmbeddedLabel('Copy email') }}
-            />
-          </div>
-        </div>
 
-        <section>
-          <div class="section-title">Identities</div>
-          {#if details.socialIds.length === 0}
-            <p class="muted">No identities linked.</p>
-          {:else}
-            <ul class="identity-list">
-              {#each details.socialIds as sid}
-                <li class="flex-row-center p-2">
-                  <span class="badge type">{sid.type}</span>
-                  <!-- Email values stay full; long hash IDs (HULY uuid, OIDC sub
+          <section>
+            <div class="section-title">Identities</div>
+            {#if details.socialIds.length === 0}
+              <p class="muted">No identities linked.</p>
+            {:else}
+              <ul class="identity-list">
+                {#each details.socialIds as sid}
+                  <li class="flex-row-center p-2">
+                    <span class="badge type">{sid.type}</span>
+                    <!-- Email values stay full; long hash IDs (HULY uuid, OIDC sub
                        hash) are truncated middle so the row keeps one line. The
                        full value is on the title attribute for click-and-hold
                        inspection. -->
-                  <span class="value" title={sid.value}>
-                    {#if sid.type === 'email'}
-                      {sid.value}
-                    {:else}
-                      {truncateMiddle(sid.value, 10, 6)}
+                    <span class="value" title={sid.value}>
+                      {#if sid.type === 'email'}
+                        {sid.value}
+                      {:else}
+                        {truncateMiddle(sid.value, 10, 6)}
+                      {/if}
+                    </span>
+                    {#if sid.verified}
+                      <span class="badge verified">verified</span>
                     {/if}
-                  </span>
-                  {#if sid.verified}
-                    <span class="badge verified">verified</span>
-                  {/if}
-                </li>
-              {/each}
-            </ul>
-          {/if}
-        </section>
-
-        <section>
-          <div class="section-title">
-            Workspaces <span class="count">({details.workspaceMemberships.length})</span>
-          </div>
-          {#if details.workspaceMemberships.length === 0}
-            <p class="muted">Not a member of any workspace.</p>
-          {:else}
-            <ul class="ws-list">
-              {#each details.workspaceMemberships as m}
-                <li class="flex-row-center p-2">
-                  <div class="ws-name-block">
-                    <strong>{m.workspaceName}</strong>
-                    <span class="ws-url">{m.workspaceUrl}</span>
-                  </div>
-                  <a
-                    class="ws-link"
-                    href={buildWorkspaceLink(m.workspaceUrl)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Open workspace in new tab"
-                  >
-                    Open ↗
-                  </a>
-                  <DropdownLabelsIntl
-                    items={roleItems}
-                    selected={m.role}
-                    kind={'regular'}
-                    size={'small'}
-                    disabled={busy}
-                    on:selected={(e) => onChangeRole(m.workspaceUuid, parseRole(e.detail))}
-                  />
-                  <ButtonIcon
-                    icon={IconDelete}
-                    kind={'tertiary'}
-                    size={'small'}
-                    disabled={busy}
-                    on:click={() => onRemoveFromWorkspace(m.workspaceUuid, m.workspaceName)}
-                  />
-                </li>
-              {/each}
-            </ul>
-          {/if}
-          <div class="add-row">
-            <Button
-              kind={'regular'}
-              size={'small'}
-              icon={IconAdd}
-              label={getEmbeddedLabel('Add to workspace')}
-              disabled={busy}
-              on:click={openAddToWorkspace}
-            />
-          </div>
-        </section>
-
-        <section>
-          <div class="section-title">Activity</div>
-          <div class="info-grid">
-            <span class="label">Last activity</span>
-            <span class="value-plain">
-              {details.lastActivityAt != null ? new Date(details.lastActivityAt).toLocaleString() : 'Never'}
-            </span>
-            {#if details.disabledAt != null}
-              <span class="label">Disabled at</span>
-              <span class="value-plain">{new Date(details.disabledAt).toLocaleString()}</span>
+                  </li>
+                {/each}
+              </ul>
             {/if}
-          </div>
-        </section>
+          </section>
 
-        <section>
-          <div class="section-title">Actions</div>
-          <div class="actions-stack">
-            <!-- Password reset is the daily-routine action; full-width primary. -->
-            <Button
-              kind={'primary'}
-              size={'medium'}
-              label={getEmbeddedLabel('Send password-reset email')}
-              disabled={busy}
-              on:click={onTriggerPasswordReset}
-            />
-            <!-- Disable / re-enable are rarer + destructive; compact secondary row. -->
-            <div class="actions-secondary">
-              {#if details.status === 'active'}
-                <!-- Disable: greyed out on the admin's own row (server-side
-                     `cannot_self_disable` still catches forged calls). Wording
-                     flips so the reason is visible without a hover tooltip. -->
-                <Button
-                  kind={'dangerous'}
-                  size={'small'}
-                  label={getEmbeddedLabel(isSelf ? 'Cannot disable yourself' : 'Disable account')}
-                  disabled={busy || isSelf}
-                  on:click={onDisable}
-                />
-              {:else}
-                <Button
-                  kind={'regular'}
-                  size={'small'}
-                  label={getEmbeddedLabel('Re-enable account')}
-                  disabled={busy}
-                  on:click={onEnable}
-                />
+          <section>
+            <div class="section-title">
+              Workspaces <span class="count">({details.workspaceMemberships.length})</span>
+            </div>
+            {#if details.workspaceMemberships.length === 0}
+              <p class="muted">Not a member of any workspace.</p>
+            {:else}
+              <ul class="ws-list">
+                {#each details.workspaceMemberships as m}
+                  <li class="flex-row-center p-2">
+                    <div class="ws-name-block">
+                      <strong>{m.workspaceName}</strong>
+                      <span class="ws-url">{m.workspaceUrl}</span>
+                    </div>
+                    <a
+                      class="ws-link"
+                      href={buildWorkspaceLink(m.workspaceUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open workspace in new tab"
+                    >
+                      Open ↗
+                    </a>
+                    <DropdownLabelsIntl
+                      items={roleItems}
+                      selected={m.role}
+                      kind={'regular'}
+                      size={'small'}
+                      disabled={busy}
+                      on:selected={(e) => onChangeRole(m.workspaceUuid, parseRole(e.detail))}
+                    />
+                    <ButtonIcon
+                      icon={IconDelete}
+                      kind={'tertiary'}
+                      size={'small'}
+                      disabled={busy}
+                      on:click={() => {
+                        onRemoveFromWorkspace(m.workspaceUuid, m.workspaceName)
+                      }}
+                    />
+                  </li>
+                {/each}
+              </ul>
+            {/if}
+            <div class="add-row">
+              <Button
+                kind={'regular'}
+                size={'small'}
+                icon={IconAdd}
+                label={getEmbeddedLabel('Add to workspace')}
+                disabled={busy}
+                on:click={openAddToWorkspace}
+              />
+            </div>
+          </section>
+
+          <section>
+            <div class="section-title">Activity</div>
+            <div class="info-grid">
+              <span class="label">Last activity</span>
+              <span class="value-plain">
+                {details.lastActivityAt != null ? new Date(details.lastActivityAt).toLocaleString() : 'Never'}
+              </span>
+              {#if details.disabledAt != null}
+                <span class="label">Disabled at</span>
+                <span class="value-plain">{new Date(details.disabledAt).toLocaleString()}</span>
               {/if}
             </div>
+          </section>
 
-          </div>
-        </section>
-      {/if}
+          <section>
+            <div class="section-title">Actions</div>
+            <div class="actions-stack">
+              <!-- Password reset is the daily-routine action; full-width primary. -->
+              <Button
+                kind={'primary'}
+                size={'medium'}
+                label={getEmbeddedLabel('Send password-reset email')}
+                disabled={busy}
+                on:click={onTriggerPasswordReset}
+              />
+              <!-- Disable / re-enable are rarer + destructive; compact secondary row. -->
+              <div class="actions-secondary">
+                {#if details.status === 'active'}
+                  <!-- Disable: greyed out on the admin's own row (server-side
+                     `cannot_self_disable` still catches forged calls). Wording
+                     flips so the reason is visible without a hover tooltip. -->
+                  <Button
+                    kind={'dangerous'}
+                    size={'small'}
+                    label={getEmbeddedLabel(isSelf ? 'Cannot disable yourself' : 'Disable account')}
+                    disabled={busy || isSelf}
+                    on:click={onDisable}
+                  />
+                {:else}
+                  <Button
+                    kind={'regular'}
+                    size={'small'}
+                    label={getEmbeddedLabel('Re-enable account')}
+                    disabled={busy}
+                    on:click={onEnable}
+                  />
+                {/if}
+              </div>
+            </div>
+          </section>
+        {/if}
       {/if}<!-- end !auditTab -->
 
       {#if auditTab}
         <div class="audit-tab">
           <div class="drawer-audit-filter">
-            <input type="text" bind:value={actionFilter}
-                   placeholder="Filter by action (disable, archive_workspace, …)"
-                   aria-label="Filter audit by action" />
+            <input
+              type="text"
+              bind:value={actionFilter}
+              placeholder="Filter by action (disable, archive_workspace, …)"
+              aria-label="Filter audit by action"
+            />
           </div>
           {#if auditLoading}
             <p>Loading…</p>
           {:else if visibleAuditEntries.length === 0}
             <AuditEmptyState
               hasFilter={actionFilter.trim() !== ''}
-              on:clearFilter={() => { actionFilter = '' }} />
+              on:clearFilter={() => {
+                actionFilter = ''
+              }}
+            />
           {:else}
             <ul class="audit-list">
               {#each visibleAuditGroups as g (g.batchId ?? g.entries[0].id)}
                 {#if g.entries.length > 1}
                   <li class="audit-batch-header">
                     <strong>Bulk action by {g.entries[0].admin.firstName} {g.entries[0].admin.lastName}</strong>
-                     — {g.entries.length} entries · <code>{g.entries[0].action}</code> ·
-                     {new Date(g.entries[0].tsMs).toLocaleString()}
+                    — {g.entries.length} entries · <code>{g.entries[0].action}</code> ·
+                    {new Date(g.entries[0].tsMs).toLocaleString()}
                   </li>
                 {/if}
                 {#each g.entries as e (e.id)}
                   <li>
-                    <strong>{new Date(e.tsMs).toLocaleString()}</strong> — {e.admin.firstName} {e.admin.lastName} → <code>{e.action}</code>
+                    <strong>{new Date(e.tsMs).toLocaleString()}</strong> — {e.admin.firstName}
+                    {e.admin.lastName} → <code>{e.action}</code>
                     {#if e.details != null}<pre>{JSON.stringify(e.details, null, 2)}</pre>{/if}
                   </li>
                 {/each}
@@ -938,13 +936,17 @@
   .status-active {
     background: var(--theme-state-positive-background-color, rgba(16, 185, 129, 0.12));
     color: var(--theme-state-positive-color, #047857);
-    .status-dot { background: var(--theme-state-positive-color, #10b981); }
+    .status-dot {
+      background: var(--theme-state-positive-color, #10b981);
+    }
   }
 
   .status-disabled {
     background: var(--theme-state-negative-background-color, rgba(239, 68, 68, 0.1));
     color: var(--theme-state-negative-color, #b91c1c);
-    .status-dot { background: var(--theme-state-negative-color, #ef4444); }
+    .status-dot {
+      background: var(--theme-state-negative-color, #ef4444);
+    }
   }
 
   .actions-stack {

@@ -6,22 +6,14 @@
   import { Button, CheckBox, EditBox } from '@hcengineering/ui'
   import { getEmbeddedLabel } from '@hcengineering/platform'
 
-  export let column:
-    | 'name'
-    | 'region'
-    | 'mode'
-    | 'last_visit'
-    | 'attempts'
-    | 'backup_size'
-    | 'backup_age'
+  export let column: 'name' | 'region' | 'mode' | 'last_visit' | 'attempts' | 'backup_size' | 'backup_age'
   export let current: any = undefined
   export let regions: Array<{ id: string, label: string }> = []
 
   const dispatch = createEventDispatcher()
 
   // Per-column working state.
-  let textValue: string =
-    column === 'name' ? (current?.nameContains ?? '') : ''
+  let textValue: string = column === 'name' ? (current?.nameContains ?? '') : ''
   let numA: number | null = current?.min ?? null
   let numB: number | null = current?.max ?? null
   // Multi-select sets:
@@ -40,7 +32,8 @@
 
   function toggleSet (s: Set<string>, key: string): Set<string> {
     const n = new Set(s)
-    if (n.has(key)) n.delete(key); else n.add(key)
+    if (n.has(key)) n.delete(key)
+    else n.add(key)
     return n
   }
 
@@ -88,7 +81,9 @@
         <label class="opt">
           <CheckBox
             checked={selRegions.has(r.id)}
-            on:value={() => { selRegions = toggleSet(selRegions, r.id) }}
+            on:value={() => {
+              selRegions = toggleSet(selRegions, r.id)
+            }}
           />
           <span>{r.label}</span>
         </label>
@@ -100,7 +95,9 @@
         <label class="opt">
           <CheckBox
             checked={selModes.has(m.id)}
-            on:value={() => { selModes = toggleSet(selModes, m.id) }}
+            on:value={() => {
+              selModes = toggleSet(selModes, m.id)
+            }}
           />
           <span>{m.label}</span>
         </label>

@@ -1,5 +1,7 @@
-import { MeasureContext, AccountRole } from '@hcengineering/core'
+import { type MeasureContext, AccountRole } from '@hcengineering/core'
 import { PlatformError } from '@hcengineering/platform'
+
+import { addWorkspaceMember } from '../serviceOperations'
 
 const ADMIN = 'admin-token'
 const USER = 'user-token'
@@ -45,42 +47,66 @@ function mockDb (o: MockOpts): any {
   }
 }
 
-import { addWorkspaceMember } from '../serviceOperations'
-
 describe('addWorkspaceMember', () => {
   it('rejects non-admin caller', async () => {
     await expect(
-      addWorkspaceMember(ctx, mockDb({}), null, USER, { accountUuid: TARGET, workspaceUuid: WS, role: AccountRole.User })
+      addWorkspaceMember(ctx, mockDb({}), null, USER, {
+        accountUuid: TARGET,
+        workspaceUuid: WS,
+        role: AccountRole.User
+      })
     ).rejects.toThrow(PlatformError)
   })
 
   it('404 when account is missing', async () => {
     await expect(
-      addWorkspaceMember(ctx, mockDb({ account: null }), null, ADMIN, { accountUuid: TARGET, workspaceUuid: WS, role: AccountRole.User })
+      addWorkspaceMember(ctx, mockDb({ account: null }), null, ADMIN, {
+        accountUuid: TARGET,
+        workspaceUuid: WS,
+        role: AccountRole.User
+      })
     ).rejects.toThrow(/AccountNotFound|account.*not found/i)
   })
 
   it('400 when account is disabled', async () => {
     await expect(
-      addWorkspaceMember(ctx, mockDb({ account: { disabledAt: 12345 } }), null, ADMIN, { accountUuid: TARGET, workspaceUuid: WS, role: AccountRole.User })
+      addWorkspaceMember(ctx, mockDb({ account: { disabledAt: 12345 } }), null, ADMIN, {
+        accountUuid: TARGET,
+        workspaceUuid: WS,
+        role: AccountRole.User
+      })
     ).rejects.toThrow(/disabled/i)
   })
 
   it('404 when workspace is missing', async () => {
     await expect(
-      addWorkspaceMember(ctx, mockDb({ account: { disabledAt: null }, workspace: null }), null, ADMIN, { accountUuid: TARGET, workspaceUuid: WS, role: AccountRole.User })
+      addWorkspaceMember(ctx, mockDb({ account: { disabledAt: null }, workspace: null }), null, ADMIN, {
+        accountUuid: TARGET,
+        workspaceUuid: WS,
+        role: AccountRole.User
+      })
     ).rejects.toThrow(/WorkspaceNotFound|workspace.*not found/i)
   })
 
   it('400 when workspace mode is archived', async () => {
     await expect(
-      addWorkspaceMember(ctx, mockDb({ account: { disabledAt: null }, workspace: { mode: 'archived' } }), null, ADMIN, { accountUuid: TARGET, workspaceUuid: WS, role: AccountRole.User })
+      addWorkspaceMember(ctx, mockDb({ account: { disabledAt: null }, workspace: { mode: 'archived' } }), null, ADMIN, {
+        accountUuid: TARGET,
+        workspaceUuid: WS,
+        role: AccountRole.User
+      })
     ).rejects.toThrow(/Workspace not available|not.*available/i)
   })
 
   it('409 when account is already a member', async () => {
     await expect(
-      addWorkspaceMember(ctx, mockDb({ account: { disabledAt: null }, workspace: { mode: 'active' }, currentRole: AccountRole.User }), null, ADMIN, { accountUuid: TARGET, workspaceUuid: WS, role: AccountRole.User })
+      addWorkspaceMember(
+        ctx,
+        mockDb({ account: { disabledAt: null }, workspace: { mode: 'active' }, currentRole: AccountRole.User }),
+        null,
+        ADMIN,
+        { accountUuid: TARGET, workspaceUuid: WS, role: AccountRole.User }
+      )
     ).rejects.toThrow(/Already a member|already/i)
   })
 

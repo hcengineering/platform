@@ -3,7 +3,7 @@
 //
 // Shared utilities for the admin-users / admin-workspaces components.
 //
-import { AccountRole } from '@hcengineering/core'
+import { type AccountRole } from '@hcengineering/core'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import { MessageBox } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
@@ -23,12 +23,7 @@ export function parseRole (v: unknown): AccountRole {
  * and per-row drawer actions (AdminUsersDrawer). Dangerous flag
  * styles the confirm button red.
  */
-export function confirmAction (
-  title: string,
-  message: string,
-  dangerous: boolean,
-  action: () => Promise<void>
-): void {
+export function confirmAction (title: string, message: string, dangerous: boolean, action: () => Promise<void>): void {
   showPopup(MessageBox, {
     label: getEmbeddedLabel(title),
     message: getEmbeddedLabel(message),

@@ -8,15 +8,14 @@
 
   export let hasFilter: boolean
 
-  const dispatch = createEventDispatcher<{ clearFilter: void }>()
+  const dispatch = createEventDispatcher<{ clearFilter: null }>()
 </script>
 
 <div class="audit-empty-state">
   <div class="icon" aria-hidden="true">📭</div>
   {#if hasFilter}
     <p class="title">No audit entries match the current filter</p>
-    <Button kind="regular" label={getEmbeddedLabel('Clear filter')}
-            on:click={() => dispatch('clearFilter')} />
+    <Button kind="regular" label={getEmbeddedLabel('Clear filter')} on:click={() => dispatch('clearFilter')} />
   {:else}
     <p class="title">No audit entries yet</p>
     <p class="hint">Admin actions are recorded automatically as they happen.</p>
@@ -32,7 +31,17 @@
     padding: 3rem 1rem;
     color: var(--theme-darker-color);
   }
-  .icon { font-size: 2rem; opacity: 0.7; }
-  .title { margin: 0; font-weight: 500; }
-  .hint { margin: 0; font-size: 0.85rem; opacity: 0.8; }
+  .icon {
+    font-size: 2rem;
+    opacity: 0.7;
+  }
+  .title {
+    margin: 0;
+    font-weight: 500;
+  }
+  .hint {
+    margin: 0;
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
 </style>

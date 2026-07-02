@@ -51,7 +51,9 @@
 {#if isAdminUser()}
   {#if $deviceInfo.navigator.visible}
     <div
-      class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal' ? 'portrait' : 'landscape'} border-left"
+      class="antiPanel-navigator {$deviceInfo.navigator.direction === 'horizontal'
+        ? 'portrait'
+        : 'landscape'} border-left"
       class:fly={$deviceInfo.navigator.float}
     >
       <div class="antiPanel-wrap__content hulyNavPanel-container">
@@ -90,7 +92,12 @@
           <NavItem icon={IconArrowLeft} label={login.string.BackToWorkbench} on:click={backToWorkbench} />
         </div>
       </div>
-      <Separator name={'admin-shell'} float={$deviceInfo.navigator.float ? 'navigator' : true} index={0} color={'transparent'} />
+      <Separator
+        name={'admin-shell'}
+        float={$deviceInfo.navigator.float ? 'navigator' : true}
+        index={0}
+        color={'transparent'}
+      />
     </div>
     <Separator
       name={'admin-shell'}
@@ -114,5 +121,4 @@
     border-top: 1px solid var(--theme-navpanel-divider);
     padding: 0.25rem 0;
   }
-
 </style>

@@ -47,9 +47,7 @@
 
   function onDelete (name: string): void {
     if (!window.confirm(`Delete preset "${name}"?`)) return
-    const next = { ...presets }
-    delete next[name]
-    presets = next
+    presets = Object.fromEntries(Object.entries(presets).filter(([key]) => key !== name))
     save()
   }
 
@@ -71,9 +69,17 @@
 
   function onSelected (e: CustomEvent<string | number>): void {
     const v = String(e.detail)
-    if (v === '__save') { onSaveCurrent(); return }
-    if (v.startsWith('apply::')) { onApply(v.slice(7)); return }
-    if (v.startsWith('del::')) { onDelete(v.slice(5)) }
+    if (v === '__save') {
+      onSaveCurrent()
+      return
+    }
+    if (v.startsWith('apply::')) {
+      onApply(v.slice(7))
+      return
+    }
+    if (v.startsWith('del::')) {
+      onDelete(v.slice(5))
+    }
   }
 </script>
 

@@ -66,6 +66,8 @@ import { LoginEvents } from './analytics'
 import { type Pages } from './index'
 import login from './plugin'
 
+import { writable, type Writable } from 'svelte/store'
+
 /**
  * Constructs an account client.
  * @param token - The token to use for authentication. If not provided, the token from the metadata will be used. If null, no token will be used.
@@ -1145,8 +1147,6 @@ export function getAccountDisplayName (loginInfo: LoginInfo | null | undefined):
 
   return loginInfo.account
 }
-
-import { writable, type Writable } from 'svelte/store'
 
 /**
  * Cross-component force-logout signal. Set by client-resources via the
