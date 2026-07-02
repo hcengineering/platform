@@ -1,0 +1,21 @@
+{
+  "string": {
+    "Cancel": "Anuluj",
+    "Templates": "Szablony tekstu",
+    "TemplatesHeader": "SZABLONY TEKSTU",
+    "CreateTemplate": "STWORZ SZABLON",
+    "SaveTemplate": "Zapisz szablon",
+    "EditTemplate": "Edytuj szablon",
+    "ViewTemplate": "Wyświetl szablon",
+    "Suggested": "PROPONOWANE",
+    "SearchTemplate": "wyszukaj szablon",
+    "TemplatePlaceholder": "Nowy szablon",
+    "Title": "Tytuł",
+    "Message": "Treść",
+    "Field": "Pole",
+    "TemplateCategory": "Grupa szablonów",
+    "CreateTemplateCategory": "Stwórz grupę",
+    "Copy": "Kopiuj",
+    "Template": "Szablon"
+  }
+}

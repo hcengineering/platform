@@ -26,7 +26,7 @@
     getCurrentLocation,
     getPlatformColorDef,
     IconDelete,
-    IconSettings,
+    IconInfo,
     Label,
     ModernEditbox,
     navigate,
@@ -162,6 +162,9 @@
 
   let versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
   $: versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
+  $: hasSubtypes = h
+    .getDescendants(masterTag._id)
+    .some((it) => it !== masterTag._id && !h.isMixin(it) && h.getClass(it).extends === masterTag._id)
 </script>
 
 <div class="hulyComponent-content__column-group">
@@ -224,6 +227,20 @@
         on:change={(e) => attributeUpdated('singleColumn', e.detail)}
       />
     </div>
+    {#if hasSubtypes}
+      <div class="mx-2 pt-2 flex-between items-center">
+        <div class="flex items-center gap-1 caption">
+          <Label label={card.string.BaseType} />
+          <ButtonIcon
+            icon={IconInfo}
+            size="extra-small"
+            kind="tertiary"
+            tooltip={{ label: card.string.BaseTypeDescription }}
+          />
+        </div>
+        <Toggle on={masterTag.baseType} on:change={(e) => attributeUpdated('baseType', e.detail)} />
+      </div>
+    {/if}
     <div class="mx-2 flex-between items-center">
       <Label label={card.string.Duplicate} />
       <div class="flex items-center gap-1">

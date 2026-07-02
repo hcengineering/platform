@@ -220,7 +220,7 @@ export async function backup (
       // We need to perform compaction
       ctx.warn('Compacting backup')
       await compactBackup(ctx, storage, true, {
-        blobLimit: options.blobDownloadLimit,
+        blobLimit: options.blobDownloadLimit * 1024 * 1024,
         skipContentTypes: options.skipBlobContentTypes,
         msg: { workspaceId, url: wsIds.url }
       })
@@ -269,12 +269,12 @@ export async function backup (
                 it !== DOMAIN_MODEL_TX &&
                 it !== DOMAIN_TX &&
                 it !== DOMAIN_BLOB &&
-                it !== ('fulltext-blob' as Domain) &&
-                !options.skipDomains.includes(it) &&
-                (options.include === undefined || options.include.has(it))
+                it !== ('fulltext-blob' as Domain)
             ),
           ...accountDomains
-        ]
+        ].filter(
+          (it) => !options.skipDomains.includes(it) && (options.include === undefined || options.include.has(it))
+        )
 
     ctx.info('domains for dump', { domains: domains.length, workspace: workspaceId, url: wsIds.url })
 
@@ -1030,7 +1030,16 @@ export async function backup (
       // 1. We need to include global records based on persons/socialIdentities info which are missing in digest
       // 2. We need to check updates for all records present in digest
       const batchSize = 1000
-      const toLoad = new Set([...digest.keys(), ...affectedObjects]) as Set<PersonUuid>
+      const toLoad = new Set(
+        [...digest.keys(), ...affectedObjects].filter((it) => {
+          try {
+            BigInt(it)
+            return true
+          } catch (err: any) {
+            return false
+          }
+        })
+      ) as Set<PersonUuid>
       if (toLoad.size === 0) {
         ctx.info('No records updates')
         return

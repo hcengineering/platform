@@ -17,7 +17,7 @@ import { Model, UX, type Builder } from '@hcengineering/model'
 import core, { TDoc } from '@hcengineering/model-core'
 import { type IntlString } from '@hcengineering/platform'
 import setting from '@hcengineering/setting'
-import billing, { type Tier } from '@hcengineering/billing'
+import billing, { TIER_LIMITS_GB, type Tier } from '@hcengineering/billing'
 import { AccountRole, DOMAIN_MODEL } from '@hcengineering/core'
 import presentation from '@hcengineering/model-presentation'
 import workbench from '@hcengineering/workbench'
@@ -58,8 +58,8 @@ export function createModel (builder: Builder): void {
     {
       label: billing.string.Common,
       description: billing.string.CommonDescription,
-      storageLimitGB: 10,
-      trafficLimitGB: 10,
+      storageLimitGB: TIER_LIMITS_GB.common.storageGB,
+      trafficLimitGB: TIER_LIMITS_GB.common.trafficGB,
       priceMonthly: 0,
       index: 0
     },
@@ -72,8 +72,8 @@ export function createModel (builder: Builder): void {
     {
       label: billing.string.Rare,
       description: billing.string.RareDescription,
-      storageLimitGB: 100,
-      trafficLimitGB: 100,
+      storageLimitGB: TIER_LIMITS_GB.rare.storageGB,
+      trafficLimitGB: TIER_LIMITS_GB.rare.trafficGB,
       priceMonthly: 19.99,
       index: 1,
       color: 'Sky'
@@ -87,8 +87,8 @@ export function createModel (builder: Builder): void {
     {
       label: billing.string.Epic,
       description: billing.string.EpicDescription,
-      storageLimitGB: 1000,
-      trafficLimitGB: 500,
+      storageLimitGB: TIER_LIMITS_GB.epic.storageGB,
+      trafficLimitGB: TIER_LIMITS_GB.epic.trafficGB,
       priceMonthly: 99.99,
       index: 2,
       color: 'Orchid'
@@ -102,8 +102,8 @@ export function createModel (builder: Builder): void {
     {
       label: billing.string.Legendary,
       description: billing.string.LegendaryDescription,
-      storageLimitGB: 10000,
-      trafficLimitGB: 2000,
+      storageLimitGB: TIER_LIMITS_GB.legendary.storageGB,
+      trafficLimitGB: TIER_LIMITS_GB.legendary.trafficGB,
       priceMonthly: 399.99,
       index: 3,
       color: 'Orange'

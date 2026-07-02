@@ -1,0 +1,33 @@
+{
+  "string": {
+    "Cancel": "Anuluj",
+    "Pause": "Pauza",
+    "Stop": "Zatrzymaj",
+    "Resume": "Wznów",
+    "Record": "Nagraj",
+    "Done": "Gotowe",
+    "CancelRecording": "Anuluj nagrywanie",
+    "CancelRecordingConfirm": "Czy na pewno chcesz anulować nagrywanie?",
+    "RestartRecording": "Uruchom ponownie nagrywanie",
+    "RestartRecordingConfirm": "Czy na pewno chcesz uruchomić ponownie nagrywanie?",
+    "ScreenRecordingName": "Nagrywanie ekranu {date}",
+    "CameraRecordingName": "Nagrywanie kamery {date}",
+    "ClickToSkip": "Kliknij, aby pominąć",
+    "RecordVideo": "Nagraj wideo",
+    "ShareWithAudio": "Udostępnij z dźwiękiem",
+    "ShareScreen": "Udostępnij ekran",
+    "StopSharing": "Zatrzymaj udostępnianie",
+    "SelectVideoToRecord": "Włącz kamerę wideo lub udostępnij ekran do nagrania",
+    "CameraSize": "Rozmiar kamery",
+    "CameraPos": "Pozycja kamery",
+    "Small": "Mały",
+    "Medium": "Średni",
+    "Large": "Duży",
+    "TopLeft": "Górny lewy",
+    "TopRight": "Górny prawy",
+    "BottomLeft": "Dolny lewy",
+    "BottomRight": "Dolny prawy",
+    "Resolution": "Rozdzielczość",
+    "Original": "Oryginalny"
+  }
+}

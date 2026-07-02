@@ -64,7 +64,7 @@ import { createQuery, getClient, MessageBox } from '@hcengineering/presentation'
 import request, { type Request, RequestStatus } from '@hcengineering/request'
 import { isEmptyMarkup } from '@hcengineering/text'
 import { type Location, getUserTimezone, showPopup } from '@hcengineering/ui'
-import { type KeyFilter } from '@hcengineering/view'
+import { type KeyFilter, type ReferenceVersion } from '@hcengineering/view'
 
 import { makeRank } from '@hcengineering/rank'
 import { getProjectDocumentLink } from './navigation'
@@ -840,6 +840,29 @@ export async function getDocumentMetaTitle (
   const hint = await translate(documentsResources.string.LatestVersionHint, {})
 
   return object.title + ` (${hint})`
+}
+
+export async function documentMetaReferenceVersionsProvider (
+  client: Client,
+  ref: Ref<DocumentMeta>
+): Promise<ReferenceVersion[]> {
+  const versions = await client.findAll(
+    documents.class.ControlledDocument,
+    { attachedTo: ref },
+    {
+      sort: {
+        major: SortingOrder.Descending,
+        minor: SortingOrder.Descending
+      }
+    }
+  )
+
+  return versions.map((doc) => ({
+    id: doc._id,
+    objectclass: doc._class,
+    label: `${doc.title} (${getDocumentVersionString(doc)})`,
+    fixed: true
+  }))
 }
 
 export async function controlledDocumentReferenceObjectProvider (

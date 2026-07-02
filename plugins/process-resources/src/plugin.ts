@@ -200,6 +200,7 @@ export default mergeIds(processId, process, {
     WaitUntil: '' as IntlString,
     WhenCardMatches: '' as IntlString,
     WhenFieldChanges: '' as IntlString,
+    WhenRequiredFieldsFilled: '' as IntlString,
     OnEvent: '' as IntlString,
     Result: '' as IntlString,
     RequestResult: '' as IntlString,
@@ -266,6 +267,8 @@ export default mergeIds(processId, process, {
     LockField: '' as IntlString,
     UnlockField: '' as IntlString,
     Export: '' as IntlString,
+    ExportWithSlots: '' as IntlString,
+    ExportWithoutSlots: '' as IntlString,
     Import: '' as IntlString,
     TextFromIdentifier: '' as IntlString,
     TextFromNumber: '' as IntlString,
@@ -283,7 +286,10 @@ export default mergeIds(processId, process, {
     DateDifference: '' as IntlString,
     TextFromSelect: '' as IntlString,
     SelectFromText: '' as IntlString,
-    AskSubclass: '' as IntlString
+    AskSubclass: '' as IntlString,
+    AskRequired: '' as IntlString,
+    RequiredSlots: '' as IntlString,
+    Bindings: '' as IntlString
   },
   permission: {
     RunProcess: '' as Ref<Permission>,

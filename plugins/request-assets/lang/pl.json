@@ -1,0 +1,25 @@
+{
+  "string": {
+    "Requests": "Wnioski",
+    "Request": "Wniosek",
+    "Approve": "Zatwierdź",
+    "Approved": "Zatwierdzony",
+    "CreatedRequest": "Utworzono wniosek ",
+    "For": "Dla",
+    "Change": "Zmień",
+    "Add": "Dodaj",
+    "Remove": "Usuń",
+    "Status": "Status",
+    "Requested": "Złożony",
+    "Completed": "Zrealizowany",
+    "Reject": "Odrzuć",
+    "Rejected": "Odrzucony",
+    "Comment": "Skomentuj",
+    "PleaseTypeMessage": "Wprowadź komentarz by kontynuować...",
+    "NoRequests": "Brak wniosków",
+    "Cancel": "Anuluj",
+    "Cancelled": "Anulowany",
+    "NewRequest": "Nowy wniosek",
+    "CancelRequest": "Anuluj wniosek"
+  }
+}

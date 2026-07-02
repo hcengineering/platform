@@ -22,6 +22,7 @@ export interface ReferenceNodeProps {
   id: Ref<Doc>
   objectclass: Ref<Class<Doc>>
   label: string
+  fixed?: boolean
 }
 
 export interface ReferenceOptions {
@@ -42,7 +43,19 @@ export const ReferenceNode = Node.create<ReferenceOptions>({
     return {
       id: getDataAttribute('id'),
       objectclass: getDataAttribute('objectclass'),
-      label: getDataAttribute('label')
+      label: getDataAttribute('label'),
+      fixed: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-fixed') === 'true',
+        renderHTML: (attributes) => {
+          if (attributes.fixed !== true) {
+            return {}
+          }
+          return {
+            'data-fixed': 'true'
+          }
+        }
+      }
     }
   },
 
@@ -91,6 +104,7 @@ function getAttrs (el: HTMLSpanElement): Attrs | false {
   const id = el.dataset.id?.trim()
   const label = el.dataset.label?.trim()
   const objectclass = el.dataset.objectclass?.trim()
+  const fixed = el.getAttribute('data-fixed') === 'true'
 
   if (id == null || label == null || objectclass == null) {
     return false
@@ -99,6 +113,7 @@ function getAttrs (el: HTMLSpanElement): Attrs | false {
   return {
     id,
     label,
-    objectclass
+    objectclass,
+    fixed: fixed || null
   }
 }

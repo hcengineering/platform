@@ -102,6 +102,7 @@
     "CreateCard": "Créer une carte",
     "WhenCardMatches": "Lorsque la carte correspond",
     "WhenFieldChanges": "Lorsque le champ change",
+    "WhenRequiredFieldsFilled": "Lorsque les champs requis sont remplis",
     "ArraySizeEquals": "Taille égale à",
     "ArraySizeGt": "Taille supérieure à",
     "ArraySizeGte": "Taille supérieure ou égale à",
@@ -177,7 +178,12 @@
     "TextFromSelect": "Texte depuis sélection",
     "SelectFromText": "Sélection depuis texte",
     "AskSubclass": "Demander la sous-classe",
-    "TextFromIdentifier": "Texte depuis identifiant"
+    "TextFromIdentifier": "Texte depuis identifiant",
+    "ExportWithSlots": "Exporter avec slots",
+    "ExportWithoutSlots": "Exporter sans slots",
+    "RequiredSlots": "Slots requis",
+    "Bindings": "Bindings",
+    "AskRequired": "Demander les champs requis"
   },
   "error": {
     "MethodNotFound": "Méthode introuvable : {methodId}",

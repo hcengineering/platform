@@ -118,6 +118,7 @@
     "UserProfile": "Uživatelský profil",
     "DeactivatedAccount": "Deaktivovaný účet",
     "LocalTime": "místní čas",
+    "Timezone": "Časové pásmo",
     "Everyone": "Všichni",
     "Here": "Zde",
     "EveryoneDescription": "Upozornit všechny v tomto {title}",

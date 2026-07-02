@@ -118,6 +118,7 @@
         "UserProfile": "사용자 프로필",
         "DeactivatedAccount": "비활성화된 계정",
         "LocalTime": "현지 시간",
+        "Timezone": "시간대",
         "Everyone": "모두",
         "Here": "여기",
         "EveryoneDescription": "이 {title}의 모든 멤버에게 알림",

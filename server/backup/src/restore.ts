@@ -15,7 +15,10 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
+import { type Person as GlobalPerson, type SocialId, type AccountDB, Account } from '@hcengineering/account'
 import core, {
+  AccountRole,
+  AccountUuid,
   Doc,
   Domain,
   DOMAIN_BLOB,
@@ -37,7 +40,7 @@ import { extract } from 'tar-stream'
 import { createGunzip, gunzipSync } from 'zlib'
 import { BackupStorage } from './storage'
 import type { BackupInfo } from './types'
-import { doTrimHash, isAccountDomain, loadDigest, migradeBlobData } from './utils'
+import { chunkArray, doTrimHash, isAccountDomain, loadDigest, migradeBlobData, toAccountDomain } from './utils'
 export * from './storage'
 
 const dataUploadSize = 2 * 1024 * 1024
@@ -55,6 +58,7 @@ export async function restore (
   pipeline: Pipeline,
   wsIds: WorkspaceIds,
   storage: BackupStorage,
+  accountDb: AccountDB | undefined,
   opt: {
     date: number
     merge?: boolean
@@ -488,7 +492,88 @@ export async function restore (
   }
 
   async function processAccountDomain (c: Domain): Promise<void> {
-    // TODO
+    if (accountDb === undefined) {
+      ctx.info('skipping account domain restore, no accountDb provided', { domain: c })
+      return
+    }
+
+    const isPersonDomain = c === toAccountDomain('person')
+    const changeset = await loadDigest(ctx, storage, snapshots, c, opt.date)
+
+    if (changeset.size === 0) {
+      ctx.info('no account domain data to restore', { domain: c })
+      return
+    }
+
+    ctx.info('restoring account domain', { domain: c, total: changeset.size, workspace: workspaceId })
+
+    const processed = new Set<string>()
+    const collectedObjects: any[] = []
+
+    // Collect all objects from backup snapshots
+    for (const s of rsnapshots) {
+      const d = s.domains[c]
+      if (d === undefined) continue
+
+      for (const sf of d.storage ?? []) {
+        const readStream = await storage.load(sf)
+        const ex = extract()
+
+        const endPromise = new Promise<void>((resolve, reject) => {
+          ex.on('entry', (headers, stream, next) => {
+            const name = headers.name ?? ''
+            if (name.endsWith('.json')) {
+              const objKey = name.substring(0, name.length - 5)
+              if (changeset.has(objKey) && !processed.has(objKey)) {
+                const chunks: Buffer[] = []
+                stream.on('data', (chunk) => {
+                  chunks.push(chunk)
+                })
+                stream.on('end', () => {
+                  try {
+                    const obj = JSON.parse(Buffer.concat(chunks as any).toString())
+                    processed.add(objKey)
+                    collectedObjects.push(obj)
+                  } catch (err) {
+                    ctx.warn('failed to parse account object', { name, err })
+                  }
+                  next()
+                })
+              } else {
+                next()
+              }
+            } else {
+              next()
+            }
+            stream.resume()
+          })
+
+          ex.on('finish', () => {
+            resolve()
+          })
+
+          const unzip = createGunzip({ level: defaultLevel })
+          readStream.on('end', () => {
+            readStream.destroy()
+          })
+          readStream.pipe(unzip).on('error', (err) => {
+            readStream.destroy()
+            reject(err)
+          })
+          unzip.pipe(ex)
+        })
+
+        await endPromise
+      }
+    }
+
+    ctx.info('collected account objects', { domain: c, count: collectedObjects.length, workspace: workspaceId })
+
+    if (isPersonDomain) {
+      await restorePersons(ctx, accountDb, collectedObjects as GlobalPerson[], wsIds)
+    } else {
+      await restoreSocialIds(ctx, accountDb, collectedObjects as SocialId[])
+    }
   }
 
   const limiter = new RateLimiter(opt.parallel ?? 1)
@@ -537,4 +622,89 @@ export async function restore (
     return false
   }
   return true
+}
+
+const accountBatchSize = 500
+
+async function restorePersons (
+  ctx: MeasureContext,
+  accountDb: AccountDB,
+  persons: GlobalPerson[],
+  wsIds: WorkspaceIds
+): Promise<void> {
+  const chunks = chunkArray(persons, accountBatchSize)
+  for (const chunk of chunks) {
+    const uuids = chunk.map((p) => p.uuid)
+
+    // Find existing persons
+    const existingPersons = await accountDb.person.find({ uuid: { $in: uuids } })
+    const existingPersonUuids = new Set(existingPersons.map((p) => p.uuid))
+
+    // Insert missing persons
+    const personsToInsert = chunk
+      .filter((p) => !existingPersonUuids.has(p.uuid))
+      .map((it) => {
+        const { '%hash%': _, ...data } = it as any
+        return data
+      })
+    if (personsToInsert.length > 0) {
+      await accountDb.person.insertMany(personsToInsert)
+      ctx.info('inserted persons', { count: personsToInsert.length })
+    }
+
+    // Find existing accounts
+    const accountUuids = uuids as AccountUuid[]
+    const existingAccounts = await accountDb.account.find({ uuid: { $in: accountUuids } })
+    const existingAccountUuids = new Set(existingAccounts.map((a) => a.uuid))
+
+    // Insert missing accounts (without password)
+    const accountsToInsert: Account[] = chunk
+      .filter((p) => !existingAccountUuids.has(p.uuid as AccountUuid))
+      .map((p) => ({ uuid: p.uuid as AccountUuid }))
+    if (accountsToInsert.length > 0) {
+      await accountDb.account.insertMany(accountsToInsert)
+      ctx.info('inserted accounts', { count: accountsToInsert.length })
+    }
+
+    // Assign workspace to all accounts
+    const workspaceRoles = new Map<AccountUuid, AccountRole>()
+    for (const uuid of accountUuids) {
+      const role = await accountDb.getWorkspaceRole(uuid, wsIds.uuid)
+      if (role !== null) {
+        workspaceRoles.set(uuid, role)
+      }
+    }
+
+    const toAssign: [AccountUuid, typeof wsIds.uuid, AccountRole][] = accountUuids
+      .filter((uuid) => !workspaceRoles.has(uuid))
+      .map((uuid) => [uuid, wsIds.uuid, AccountRole.User])
+
+    if (toAssign.length > 0) {
+      await accountDb.batchAssignWorkspace(toAssign)
+      ctx.info('assigned workspace to accounts', { count: toAssign.length, workspace: wsIds.uuid })
+    }
+  }
+}
+
+async function restoreSocialIds (ctx: MeasureContext, accountDb: AccountDB, socialIds: SocialId[]): Promise<void> {
+  const chunks = chunkArray(socialIds, accountBatchSize)
+  for (const chunk of chunks) {
+    const ids = chunk.map((s) => s.key)
+
+    // Find existing socialIds
+    const existingSocialIds = await accountDb.socialId.find({ key: { $in: ids } })
+    const existingIds = new Set(existingSocialIds.map((s) => s.key))
+
+    // Insert missing socialIds
+    const socialIdsToInsert: SocialId[] = chunk
+      .filter((s) => !existingIds.has(s.key))
+      .map((it) => {
+        const { '%hash%': _1, key: _2, ...data } = it as any
+        return data
+      })
+    if (socialIdsToInsert.length > 0) {
+      await accountDb.socialId.insertMany(socialIdsToInsert)
+      ctx.info('inserted socialIds', { count: socialIdsToInsert.length })
+    }
+  }
 }

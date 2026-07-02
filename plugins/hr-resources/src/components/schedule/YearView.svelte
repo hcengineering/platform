@@ -38,7 +38,7 @@
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
 
-  export let holidays: Map<Ref<Department>, Date[]>
+  export let holidaysMap: Map<Ref<Department>, Date[]>
   export let staffDepartmentMap: Map<Ref<Staff>, Department[]>
 
   function getTooltip (requests: Request[]): LabelAndProps | undefined {
@@ -117,7 +117,7 @@
                       startDate,
                       endDate,
                       types,
-                      getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays)
+                      getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidaysMap)
                     )}
                   </div>
                 </td>
@@ -139,7 +139,7 @@
                   startDate,
                   endDate,
                   types,
-                  [...holidays.values()].flat()
+                  [...holidaysMap.values()].flat()
                 )}
               </div>
             </td>

@@ -82,10 +82,11 @@
     "CannotConnectToCollaborationService": "Не удалось подключиться к сервису совместной работы",
     "SourceURL": "Исходный URL",
     "SelectedDocuments": "Выбранные документы ({count, plural, =1 {1 элемент} other {# элементов}})",
-    "Highlight": "Highlight",
-    "Subscript": "Subscript",
-    "Superscript": "Superscript",
-    "Mathematics": "Mathematics",
-    "MathematicsBlock": "Mathematics block"
+    "Highlight": "Выделение",
+    "Subscript": "Нижний индекс",
+    "Superscript": "Верхний индекс",
+    "Mathematics": "Формула",
+    "MathematicsBlock": "Блок формул",
+    "LatestVersion": "Последняя"
   }
 }

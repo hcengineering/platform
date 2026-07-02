@@ -70,6 +70,11 @@ export function createModel (builder: Builder): void {
     serverCheckFunc: serverProcess.func.FieldChangedCheck
   })
 
+  builder.mixin(process.trigger.WhenRequiredFieldsFilled, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
+    preventRollback: true,
+    serverCheckFunc: serverProcess.func.RequiredFieldsFilledCheck
+  })
+
   builder.mixin(process.trigger.OnApproveRequestApproved, process.class.Trigger, serverProcess.mixin.TriggerImpl, {
     preventRollback: true,
     serverCheckFunc: serverProcess.func.ApproveRequestApproved
@@ -414,6 +419,17 @@ export function createModel (builder: Builder): void {
     },
     isAsync: true
   })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverProcess.trigger.OnExecutionDone,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: process.class.Execution,
+      'operations.status': ExecutionStatus.Done
+    },
+    isAsync: true
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverProcess.trigger.OnExecutionCreate,
     txMatch: {
