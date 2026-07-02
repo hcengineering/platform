@@ -48,10 +48,7 @@ describe('extractReferences grantsAccess', () => {
 
   test('any-wins: false then undefined => not false (undefined grants)', () => {
     const refs = extractReferences(
-      doc(
-        refNode('p1', 'Alice', 'contact:class:Person', 'false'),
-        refNode('p1', 'Alice', 'contact:class:Person')
-      )
+      doc(refNode('p1', 'Alice', 'contact:class:Person', 'false'), refNode('p1', 'Alice', 'contact:class:Person'))
     )
     expect(refs[0].grantsAccess).not.toBe('false')
   })
@@ -68,10 +65,7 @@ describe('extractReferences grantsAccess', () => {
 
   test('different persons kept separate', () => {
     const refs = extractReferences(
-      doc(
-        refNode('p1', 'Alice', 'contact:class:Person', 'true'),
-        refNode('p2', 'Bob', 'contact:class:Person', 'false')
-      )
+      doc(refNode('p1', 'Alice', 'contact:class:Person', 'true'), refNode('p2', 'Bob', 'contact:class:Person', 'false'))
     )
     expect(refs).toHaveLength(2)
     expect(refs.find((r) => r.objectId === 'p1')?.grantsAccess).toBe('true')

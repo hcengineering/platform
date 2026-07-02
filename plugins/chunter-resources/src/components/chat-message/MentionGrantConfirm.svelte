@@ -20,7 +20,7 @@
   // Default: grant everyone (preserves pre-V3 behaviour). A plain array with
   // per-row `granted` so `bind:checked` stays reactive (mutating a Map would
   // not re-render the CheckBox in Svelte 4).
-  let rows = grantees.map((g) => ({ id: g.id, name: g.name, granted: true }))
+  const rows = grantees.map((g) => ({ id: g.id, name: g.name, granted: true }))
 
   function onCancel (): void {
     dispatch('close', undefined) // undefined => caller treats as cancel
@@ -50,11 +50,7 @@
     </div>
   {/each}
   <div class="flex-row-reverse mt-4">
-    <Button
-      label={getEmbeddedLabel('Send with selected grants')}
-      kind="primary"
-      on:click={onSend}
-    />
+    <Button label={getEmbeddedLabel('Send with selected grants')} kind="primary" on:click={onSend} />
     <div class="mr-2">
       <Button label={getEmbeddedLabel('Cancel')} on:click={onCancel} />
     </div>

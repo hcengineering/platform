@@ -318,9 +318,7 @@ export async function canCommentOnIssue (issue?: Issue | WithLookup<Issue>): Pro
   const account = getCurrentAccount()
   if (account.role === AccountRole.ReadOnlyGuest) return false
 
-  const isGuest =
-    account.role === AccountRole.Guest ||
-    account.role === AccountRole.DocGuest
+  const isGuest = account.role === AccountRole.Guest || account.role === AccountRole.DocGuest
   if (!isGuest) return true
 
   const isCreator =
@@ -341,7 +339,6 @@ export async function canCommentOnIssue (issue?: Issue | WithLookup<Issue>): Pro
  * Tag for removal in a follow-up sweep across tracker-resources.
  */
 export const canEditIssue = canEditIssueFields
-
 
 export function getTimeReportDate (type: TimeReportDayType): number {
   const date = new Date(Date.now())

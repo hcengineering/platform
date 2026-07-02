@@ -1,5 +1,11 @@
-import { type MeasureContext, type Tx, type TxCreateDoc } from '@hcengineering/core'
+import { type Tx, type TxCreateDoc } from '@hcengineering/core'
 import { jsonToMarkup, MarkupNodeType } from '@hcengineering/text-core'
+
+// Imported AFTER the mocks (jest.mock above is hoisted by ts-jest, so even
+// these top-level ESM imports see the mocked module). Avoid `require()` so
+// the file passes `tsc --noEmit` (the package's tsconfig only ships @types/jest).
+import { ChunterTrigger } from '../index'
+import coreDefault from '@hcengineering/core'
 
 // ------------------------------------------------------------------
 // jest.mock for @hcengineering/core
@@ -14,7 +20,7 @@ jest.mock('@hcengineering/core', () => {
   // Load the real module but access only the specific properties we need.
   // DO NOT spread with {...actual}: that triggers all lazy getters eagerly,
   // hitting the circular-dep crash in import_component2.
-  const actual = jest.requireActual('@hcengineering/core') as any
+  const actual = jest.requireActual('@hcengineering/core')
 
   // Build a proxy that delegates unknown property reads to the actual module.
   // This avoids the eager spread while still giving server-core etc. access
@@ -37,12 +43,6 @@ jest.mock('@hcengineering/server-contact', () => ({
   getAccountBySocialId: jest.fn(async () => 'author-acc'),
   getPerson: jest.fn(async () => undefined)
 }))
-
-// Imported AFTER the mocks (jest.mock above is hoisted by ts-jest, so even
-// these top-level ESM imports see the mocked module). Avoid `require()` so
-// the file passes `tsc --noEmit` (the package's tsconfig only ships @types/jest).
-import { ChunterTrigger } from '../index'
-import coreDefault from '@hcengineering/core'
 
 function makeMarkup (...refs: Array<{ id: string, grantsAccess?: 'true' | 'false' }>): string {
   return jsonToMarkup({
@@ -120,7 +120,7 @@ function makeControl (): any {
       return [TARGET]
     }),
     ctx: {
-      with: async (_name: string, _params: any, fn: any) => await fn({}),
+      with: async (_name: string, _params: any, fn: any) => fn({}),
       contextData: {}
     }
   }
@@ -165,7 +165,6 @@ function collaboratorGrants (res: Tx[]): string[] {
 
 describe('ChunterTrigger mention grants — grantsAccess filter', () => {
   test("a reference with grantsAccess='false' yields no Collaborator tx for that person", async () => {
-    const ctx = {} as unknown as MeasureContext
     const control = makeControl()
     const tx = makeCreateTx(makeMarkup({ id: 'p1' }, { id: 'p2', grantsAccess: 'false' }))
 

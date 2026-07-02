@@ -181,14 +181,9 @@
     const grantees = newGrantees.map((p) => ({ id: p._id, name: p.name ?? String(p.personUuid) }))
 
     return await new Promise<Map<string, boolean> | null>((resolve) => {
-      showPopup(
-        MentionGrantConfirm,
-        { grantees, targetName, spaceName },
-        undefined,
-        (res?: Map<string, boolean>) => {
-          resolve(res instanceof Map ? res : null)
-        }
-      )
+      showPopup(MentionGrantConfirm, { grantees, targetName, spaceName }, undefined, (res?: Map<string, boolean>) => {
+        resolve(res instanceof Map ? res : null)
+      })
     })
   }
 

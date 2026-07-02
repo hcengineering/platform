@@ -13,16 +13,7 @@
 // limitations under the License.
 //
 
-import core, {
-  AttachedDoc,
-  Class,
-  ClassCollaborators,
-  Doc,
-  DocumentQuery,
-  Hierarchy,
-  ModelDb,
-  Ref
-} from '.'
+import core, { AttachedDoc, Class, ClassCollaborators, Doc, DocumentQuery, Hierarchy, ModelDb, Ref } from '.'
 
 export function getClassCollaborators<T extends Doc> (
   model: ModelDb,
@@ -73,9 +64,10 @@ export async function resolveMentionGrantTarget (
 ): Promise<Doc | null> {
   let cur: Doc | undefined = start
   for (let i = 0; i < 8 && cur != null; i++) {
-    const cc = (await findAll(core.class.ClassCollaborators, {
+    const ccQuery: DocumentQuery<ClassCollaborators<Doc>> = {
       attachedTo: cur._class
-    } as DocumentQuery<ClassCollaborators<Doc>>))[0]
+    }
+    const cc = (await findAll(core.class.ClassCollaborators, ccQuery))[0]
     if (cc?.provideSecurity === true && cc.mentionsGrantAccess === true) {
       return cur
     }
@@ -83,9 +75,10 @@ export async function resolveMentionGrantTarget (
     if (attached.attachedTo == null || attached.attachedToClass == null) {
       return null
     }
-    const parent = (await findAll(attached.attachedToClass, {
+    const parentQuery: DocumentQuery<Doc> = {
       _id: attached.attachedTo
-    } as DocumentQuery<Doc>))[0]
+    }
+    const parent = (await findAll(attached.attachedToClass, parentQuery))[0]
     cur = parent
   }
   return null

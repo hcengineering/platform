@@ -221,9 +221,7 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   // The grant-target branch writes Collaborator on the resolved doc and
   // dedups against THAT doc's collaborator list (not against targetDoc's,
   // which is the wrong basis when targetDoc is a child like ThreadMessage).
-  const grantTarget = await resolveMentionGrantTarget(targetDoc, (cls, q) =>
-    control.findAll(control.ctx, cls, q)
-  )
+  const grantTarget = await resolveMentionGrantTarget(targetDoc, (cls, q) => control.findAll(control.ctx, cls, q))
   const targetClassCollab = (
     await control.findAll(control.ctx, core.class.ClassCollaborators, { attachedTo: targetDoc._class })
   )[0]
@@ -438,9 +436,7 @@ export async function ChunterTrigger (txes: TxCUD<Doc>[], control: TriggerContro
       tx._class === core.class.TxUpdateDoc &&
       control.hierarchy.isDerived(tx.objectClass, chunter.class.ChatMessage)
     ) {
-      res.push(
-        ...(await control.ctx.with('OnChatMessageUpdated', {}, (ctx) => OnChatMessageUpdated(ctx, tx, control)))
-      )
+      res.push(...(await control.ctx.with('OnChatMessageUpdated', {}, (ctx) => OnChatMessageUpdated(ctx, tx, control))))
     }
   }
   return res

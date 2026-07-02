@@ -193,17 +193,13 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
       account.role === AccountRole.ReadOnlyGuest
     if (!isGuest) return false
 
-    const classCollab = getClassCollaborators(
-      this.context.modelDb,
-      this.context.hierarchy,
-      cudTx.objectClass
-    )
+    const classCollab = getClassCollaborators(this.context.modelDb, this.context.hierarchy, cudTx.objectClass)
     if (classCollab?.provideSecurity !== true) return false
     if (classCollab.mentionsGrantAccess !== true) return false
 
     const space = (await this.findAll<Space>(ctx, core.class.Space, { _id: cudTx.objectSpace }))[0]
     if (space === undefined) return false
-    if (space.members?.includes(account.uuid) === true) return false
+    if (space.members?.includes(account.uuid)) return false
 
     return true
   }

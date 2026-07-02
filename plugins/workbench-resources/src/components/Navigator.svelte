@@ -49,18 +49,21 @@
 
   const adminUser = isAdminUser()
 
-  $: activeClasses = (model
-    ? Array.from(new Set(getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c)))).filter(
+  $: activeClasses = (
+    model
+      ? Array.from(new Set(getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c)))).filter(
         (it) => !hierarchy.isMixin(it)
       )
-    : []) as Ref<Class<Space>>[]
+      : []
+  ) as Ref<Class<Space>>[]
 
-  $: spaces = adminUser || collabSpaces.length === 0
-    ? memberSpaces
-    : (() => {
-        const seen = new Set(memberSpaces.map((s) => s._id))
-        return [...memberSpaces, ...collabSpaces.filter((s) => !seen.has(s._id))]
-      })()
+  $: spaces =
+    adminUser || collabSpaces.length === 0
+      ? memberSpaces
+      : (() => {
+          const seen = new Set(memberSpaces.map((s) => s._id))
+          return [...memberSpaces, ...collabSpaces.filter((s) => !seen.has(s._id))]
+        })()
 
   $: if (model && activeClasses.length > 0) {
     const classes = activeClasses

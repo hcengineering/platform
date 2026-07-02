@@ -637,9 +637,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     // when they are not members of the owning Space. Filtering by space here would strip those docs
     // before the adapter ever sees the query.
     const collabSec =
-      domain !== DOMAIN_MODEL
-        ? getClassCollaborators(this.context.modelDb, this.context.hierarchy, _class)
-        : undefined
+      domain !== DOMAIN_MODEL ? getClassCollaborators(this.context.modelDb, this.context.hierarchy, _class) : undefined
     const collabReadBypass =
       (collabSec?.provideSecurity === true || collabSec?.provideAttachedSecurity === true) &&
       [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)
@@ -653,8 +651,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     // space-collab OR-branch surface Spaces that host docs the caller is a
     // Collaborator on. Required so the project/space nav tree can list projects
     // where the user is collab-only (no member status).
-    const spaceCollabBypass =
-      isSpace && [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)
+    const spaceCollabBypass = isSpace && [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)
 
     if (
       !isSystem(account, ctx) &&
