@@ -3,7 +3,15 @@
   import { Asset, IntlString, translateCB } from '@hcengineering/platform'
   import { ComponentExtensions } from '@hcengineering/presentation'
   import { Issue, TrackerEvents } from '@hcengineering/tracker'
-  import { Button, IconAdd, IModeSelector, ModeSelector, SearchInputAdvanced, showPopup, themeStore } from '@hcengineering/ui'
+  import {
+    Button,
+    IconAdd,
+    IModeSelector,
+    ModeSelector,
+    SearchInputAdvanced,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
   import {
     FilterBar,
@@ -78,7 +86,7 @@
   // PREVIOUS view's search text — Empty-State + match-highlight could
   // then react to a stale query that the user never typed in this view.
   $: rawSearchTextStore.set(searchRaw)
-  onDestroy(() => rawSearchTextStore.set(''))
+  onDestroy(() => { rawSearchTextStore.set('') })
 
   let searchQuery: DocumentQuery<Issue> = { ...query }
   function updateSearchQuery (eff: string): void {
@@ -168,14 +176,14 @@
       <SearchInputAdvanced
         value={searchRaw}
         on:change={onSearchChange}
-        scope={(viewOptions?.searchScope ?? 'all')}
+        scope={viewOptions?.searchScope ?? 'all'}
         collapsed
       />
     {:else}
       <SearchInputAdvanced
         value={searchRaw}
         on:change={onSearchChange}
-        scope={(viewOptions?.searchScope ?? 'all')}
+        scope={viewOptions?.searchScope ?? 'all'}
         collapsed
       />
       <FilterButton _class={tracker.class.Issue} {space} />
@@ -268,10 +276,7 @@
   {/if}
 </div>
 {#if showEmptyState}
-  <SearchEmptyState
-    searchText={$rawSearchTextStore}
-    activeFilters={$filterStore.map((f) => f.key.key)}
-  />
+  <SearchEmptyState searchText={$rawSearchTextStore} activeFilters={$filterStore.map((f) => f.key.key)} />
 {/if}
 
 <style lang="scss">

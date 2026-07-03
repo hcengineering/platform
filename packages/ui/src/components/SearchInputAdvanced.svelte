@@ -93,18 +93,15 @@
     input?.focus()
   }
 
-  onDestroy(() => clearTimeout(timer))
+  onDestroy(() => {
+    clearTimeout(timer)
+  })
   onMount(() => {
     if (autoFocus && input != null) input.focus()
   })
 </script>
 
-<label
-  class="searchInput-wrapper"
-  class:collapsed
-  class:filled={_search !== ''}
-  style:width
->
+<label class="searchInput-wrapper" class:collapsed class:filled={_search !== ''} style:width>
   <div class="searchInput-icon"><IconSearch size={'small'} /></div>
   <input
     bind:this={input}
@@ -128,13 +125,7 @@
   />
   <!-- Clear-button parallel to SearchInput.svelte:87. The :not(:placeholder-shown)
        CSS selector below toggles visibility based on the input value. -->
-  <button
-    type="button"
-    class="searchInput-button"
-    aria-label="Clear search"
-    tabindex="-1"
-    on:click={clearSearch}
-  >
+  <button type="button" class="searchInput-button" aria-label="Clear search" tabindex="-1" on:click={clearSearch}>
     <div><IconClose size={'small'} /></div>
   </button>
 </label>

@@ -145,10 +145,7 @@ type Token =
   | { kind: 'field-clause', field: string, value: ClauseValue }
   | { kind: 'bare', raw: string }
 
-type ClauseValue =
-  | { kind: 'paren', inner: string }
-  | { kind: 'quoted', inner: string }
-  | { kind: 'bare', raw: string }
+type ClauseValue = { kind: 'paren', inner: string } | { kind: 'quoted', inner: string } | { kind: 'bare', raw: string }
 
 const BOOL_OPS = new Set(['AND', 'OR', 'NOT'])
 
@@ -261,6 +258,12 @@ function tokenize (input: string): Token[] {
   return tokens
 }
 
+/** Exhaustiveness guard: unreachable at runtime for a well-typed discriminated
+ *  union; also satisfies the non-type-aware no-fallthrough lint on the caller. */
+function assertUnreachable (x: never): never {
+  throw new Error(`unexpected clause value kind: ${JSON.stringify(x)}`)
+}
+
 /** Render a single token into its ES-safe wire form. */
 function renderToken (tok: Token): string {
   switch (tok.kind) {
@@ -298,6 +301,7 @@ function renderToken (tok: Token): string {
           }
           return `${field}:(${escapeForQueryString(value.raw)})`
       }
+      return assertUnreachable(value)
     }
 
     case 'bare': {

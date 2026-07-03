@@ -26,7 +26,13 @@
   $: woTitle = title === undefined && label === undefined
 </script>
 
-<label use:tp={tooltip} class="switcher-element__wrapper" class:disabled data-view={tooltip?.label} data-id={`tab-${id}`}>
+<label
+  use:tp={tooltip}
+  class="switcher-element__wrapper"
+  class:disabled
+  data-view={tooltip?.label}
+  data-id={`tab-${id}`}
+>
   <input type="radio" class="switcher" {name} {checked} {disabled} on:change />
   <div class="switcher-element {kind}" class:woTitle>
     {#if icon}<div class="icon"><Icon {icon} size={'small'} fill={color} /></div>{/if}

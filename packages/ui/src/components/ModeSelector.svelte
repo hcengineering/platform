@@ -29,7 +29,7 @@
     items={modeList}
     selected={props.mode}
     disabled={props.disabled ?? false}
-    tooltip={(props.disabled === true && props.disabledReason !== undefined)
+    tooltip={props.disabled === true && props.disabledReason !== undefined
       ? { label: props.disabledReason, direction: 'bottom' }
       : undefined}
     {kind}

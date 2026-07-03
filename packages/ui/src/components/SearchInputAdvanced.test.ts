@@ -9,8 +9,7 @@ describe('encodeSearch', () => {
     expect(encodeSearch('loader bar', 'title')).toBe('searchTitle:(loader bar)')
   })
   it('wraps bare terms in OR-clause when scope=title-description', () => {
-    expect(encodeSearch('loader', 'title-description'))
-      .toBe('(searchTitle:(loader) OR description.plain:(loader))')
+    expect(encodeSearch('loader', 'title-description')).toBe('(searchTitle:(loader) OR description.plain:(loader))')
   })
 
   // ─── Prefix aliasing: user-shorthand → ES field name ────────────────────
@@ -25,8 +24,7 @@ describe('encodeSearch', () => {
     expect(encodeSearch('comments:foo', 'all')).toBe('comments.message:foo')
   })
   it('preserves prefix-targeted terms when multiple are typed', () => {
-    expect(encodeSearch('title:loader id:HULY-', 'all'))
-      .toBe('searchTitle:loader identifier:HULY-')
+    expect(encodeSearch('title:loader id:HULY-', 'all')).toBe('searchTitle:loader identifier:HULY-')
   })
 
   // ─── Edge cases ─────────────────────────────────────────────────────────
@@ -46,18 +44,15 @@ describe('encodeSearch', () => {
     // when wrapping into a query_string field clause (scope=title) so the
     // adapter cannot accidentally re-parse it as a nested field selector.
     expect(encodeSearch('POC: design review', 'all')).toBe('POC: design review')
-    expect(encodeSearch('POC: design review', 'title'))
-      .toBe('searchTitle:(POC\\: design review)')
+    expect(encodeSearch('POC: design review', 'title')).toBe('searchTitle:(POC\\: design review)')
   })
   it('treats time-of-day "12:30" as bare text and escapes the colon when scoped', () => {
     expect(encodeSearch('meeting 12:30', 'all')).toBe('meeting 12:30')
     expect(encodeSearch('meeting 12:30', 'title')).toBe('searchTitle:(meeting 12\\:30)')
   })
   it('escapes Lucene operators inside scope-wrapped bare terms', () => {
-    expect(encodeSearch('C++ developer', 'title'))
-      .toBe('searchTitle:(C\\+\\+ developer)')
-    expect(encodeSearch('foo (bar) [baz]', 'title'))
-      .toBe('searchTitle:(foo \\(bar\\) \\[baz\\])')
+    expect(encodeSearch('C++ developer', 'title')).toBe('searchTitle:(C\\+\\+ developer)')
+    expect(encodeSearch('foo (bar) [baz]', 'title')).toBe('searchTitle:(foo \\(bar\\) \\[baz\\])')
   })
 
   // ─── Prefix-value escaping ───────────────────────────────────────────────
@@ -91,8 +86,7 @@ describe('encodeSearch', () => {
   it('preserves boolean operators between prefix clauses', () => {
     // Power-user syntax: AND/OR between prefix-targeted clauses must
     // pass through, only the values get wrapped when needed.
-    expect(encodeSearch('title:C++ OR id:HULY-1', 'all'))
-      .toBe('searchTitle:(C\\+\\+) OR identifier:HULY-1')
+    expect(encodeSearch('title:C++ OR id:HULY-1', 'all')).toBe('searchTitle:(C\\+\\+) OR identifier:HULY-1')
   })
 
   // ─── Colon-in-value handling ─────────────────────────────────────────────
@@ -101,63 +95,49 @@ describe('encodeSearch', () => {
   // re-parse the inner colon as another field-targeted clause and the
   // entire query crashes. The encoder now wraps+escapes such values.
   it('wraps + escapes colons inside prefix values', () => {
-    expect(encodeSearch('title:POC:123', 'all'))
-      .toBe('searchTitle:(POC\\:123)')
-    expect(encodeSearch('title:12:30', 'all'))
-      .toBe('searchTitle:(12\\:30)')
-    expect(encodeSearch('comments:bug:fix', 'all'))
-      .toBe('comments.message:(bug\\:fix)')
+    expect(encodeSearch('title:POC:123', 'all')).toBe('searchTitle:(POC\\:123)')
+    expect(encodeSearch('title:12:30', 'all')).toBe('searchTitle:(12\\:30)')
+    expect(encodeSearch('comments:bug:fix', 'all')).toBe('comments.message:(bug\\:fix)')
   })
   it('handles colon-in-value alongside other reserved chars', () => {
-    expect(encodeSearch('title:POC:C++', 'all'))
-      .toBe('searchTitle:(POC\\:C\\+\\+)')
+    expect(encodeSearch('title:POC:C++', 'all')).toBe('searchTitle:(POC\\:C\\+\\+)')
   })
   it('escapes orphan colons in bare tokens that follow a prefix clause', () => {
     // 'title:meeting 12:30' — the 12:30 has no known-field anchor, but
     // ES query_string still sees a colon there and tries to parse '12'
     // as a field. Second pass escapes orphan colons so they read as
     // literal text.
-    expect(encodeSearch('title:meeting 12:30', 'all'))
-      .toBe('searchTitle:meeting 12\\:30')
+    expect(encodeSearch('title:meeting 12:30', 'all')).toBe('searchTitle:meeting 12\\:30')
   })
 
   // ─── Orphan tokens with reserved chars ───────────────────────────────────
   // Once any prefix appears, the adapter routes via ES query_string so
   // EVERY bare token must be parser-safe — not just colon-bearing ones.
   it('escapes orphan + signs in tokens that follow a prefix clause', () => {
-    expect(encodeSearch('title:meeting C++', 'all'))
-      .toBe('searchTitle:meeting C\\+\\+')
+    expect(encodeSearch('title:meeting C++', 'all')).toBe('searchTitle:meeting C\\+\\+')
   })
   it('escapes orphan slashes in tokens that follow a prefix clause', () => {
-    expect(encodeSearch('title:meeting foo/bar', 'all'))
-      .toBe('searchTitle:meeting foo\\/bar')
+    expect(encodeSearch('title:meeting foo/bar', 'all')).toBe('searchTitle:meeting foo\\/bar')
   })
   it('escapes orphan parens / brackets / braces in trailing tokens', () => {
-    expect(encodeSearch('title:meeting foo)', 'all'))
-      .toBe('searchTitle:meeting foo\\)')
-    expect(encodeSearch('title:bug list[0]', 'all'))
-      .toBe('searchTitle:bug list\\[0\\]')
+    expect(encodeSearch('title:meeting foo)', 'all')).toBe('searchTitle:meeting foo\\)')
+    expect(encodeSearch('title:bug list[0]', 'all')).toBe('searchTitle:bug list\\[0\\]')
   })
   it('preserves boolean operators AND/OR/NOT verbatim between orphan tokens', () => {
-    expect(encodeSearch('title:meeting AND foo OR bar', 'all'))
-      .toBe('searchTitle:meeting AND foo OR bar')
+    expect(encodeSearch('title:meeting AND foo OR bar', 'all')).toBe('searchTitle:meeting AND foo OR bar')
   })
   it('passes through quoted phrases as orphan tokens', () => {
-    expect(encodeSearch('title:meeting "release notes"', 'all'))
-      .toBe('searchTitle:meeting "release notes"')
+    expect(encodeSearch('title:meeting "release notes"', 'all')).toBe('searchTitle:meeting "release notes"')
   })
   it('preserves wildcards * and ? in orphan tokens', () => {
     // Wildcards are legitimate ES query_string syntax for prefix /
     // single-char match. Leave them un-escaped so the user can type
     // them on purpose.
-    expect(encodeSearch('title:meeting foo*', 'all'))
-      .toBe('searchTitle:meeting foo*')
-    expect(encodeSearch('title:meeting b?r', 'all'))
-      .toBe('searchTitle:meeting b?r')
+    expect(encodeSearch('title:meeting foo*', 'all')).toBe('searchTitle:meeting foo*')
+    expect(encodeSearch('title:meeting b?r', 'all')).toBe('searchTitle:meeting b?r')
   })
   it('preserves hyphens mid-token in orphan tokens (ES tolerant)', () => {
-    expect(encodeSearch('title:meeting bug-fix', 'all'))
-      .toBe('searchTitle:meeting bug-fix')
+    expect(encodeSearch('title:meeting bug-fix', 'all')).toBe('searchTitle:meeting bug-fix')
   })
 
   // ─── Attached parens in prefix values ────────────────────────────────────
@@ -168,22 +148,18 @@ describe('encodeSearch', () => {
   // pattern extends to whitespace, so attached parens get captured as
   // part of the value and wrapped+escaped properly.
   it('wraps + escapes prefix values with attached parens', () => {
-    expect(encodeSearch('title:foo(bar)', 'all'))
-      .toBe('searchTitle:(foo\\(bar\\))')
-    expect(encodeSearch('title:foo)', 'all'))
-      .toBe('searchTitle:(foo\\))')
+    expect(encodeSearch('title:foo(bar)', 'all')).toBe('searchTitle:(foo\\(bar\\))')
+    expect(encodeSearch('title:foo)', 'all')).toBe('searchTitle:(foo\\))')
   })
   it('wraps + escapes prefix values with attached brackets', () => {
-    expect(encodeSearch('title:list[0]', 'all'))
-      .toBe('searchTitle:(list\\[0\\])')
+    expect(encodeSearch('title:list[0]', 'all')).toBe('searchTitle:(list\\[0\\])')
   })
   it('keeps user-wrapped parens distinct from attached parens', () => {
     // `title:(scope)` — explicit paren-wrap, value is `scope` (no
     // reserved chars after stripping the wrap) — passes through bare.
     expect(encodeSearch('title:(scope)', 'all')).toBe('searchTitle:(scope)')
     // `title:foo(bar)` — bare value with attached parens, wrap+escape.
-    expect(encodeSearch('title:foo(bar)', 'all'))
-      .toBe('searchTitle:(foo\\(bar\\))')
+    expect(encodeSearch('title:foo(bar)', 'all')).toBe('searchTitle:(foo\\(bar\\))')
   })
 
   // ─── Leading-hyphen escape (Lucene NOT-operator) ─────────────────────────
@@ -192,21 +168,16 @@ describe('encodeSearch', () => {
   // with leading '-' need to be wrap+escaped; orphan tokens with leading
   // '-' need at minimum the minus escaped so they stay literal.
   it('wraps + escapes prefix values starting with a hyphen', () => {
-    expect(encodeSearch('title:-foo', 'all'))
-      .toBe('searchTitle:(\\-foo)')
-    expect(encodeSearch('id:-WORK-1', 'all'))
-      .toBe('identifier:(\\-WORK\\-1)')
+    expect(encodeSearch('title:-foo', 'all')).toBe('searchTitle:(\\-foo)')
+    expect(encodeSearch('id:-WORK-1', 'all')).toBe('identifier:(\\-WORK\\-1)')
   })
   it('escapes a leading hyphen in orphan bare tokens after a prefix clause', () => {
-    expect(encodeSearch('title:meeting -cancelled', 'all'))
-      .toBe('searchTitle:meeting \\-cancelled')
+    expect(encodeSearch('title:meeting -cancelled', 'all')).toBe('searchTitle:meeting \\-cancelled')
   })
   it('preserves mid-token hyphens in field values and orphan tokens', () => {
     // Regression: identifier-style values keep their internal hyphens.
-    expect(encodeSearch('id:HULY-51', 'all'))
-      .toBe('identifier:HULY-51')
+    expect(encodeSearch('id:HULY-51', 'all')).toBe('identifier:HULY-51')
     // Regression: orphan token with mid-hyphen passes through untouched.
-    expect(encodeSearch('title:meeting bug-fix', 'all'))
-      .toBe('searchTitle:meeting bug-fix')
+    expect(encodeSearch('title:meeting bug-fix', 'all')).toBe('searchTitle:meeting bug-fix')
   })
 })
