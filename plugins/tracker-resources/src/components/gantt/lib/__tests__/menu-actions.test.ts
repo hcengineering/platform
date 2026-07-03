@@ -5,6 +5,10 @@
 
 import type { Issue } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
+import * as ui from '@hcengineering/ui'
+import * as presentation from '@hcengineering/presentation'
+
+import { ganttExtraActions, openSetStartDate } from '../menu-actions'
 
 // Side-effect-heavy dependencies are stubbed before importing menu-actions
 // so the test runs in the node jest env (no svelte loader, no DOM).
@@ -59,8 +63,6 @@ jest.mock(
   }),
   { virtual: true }
 )
-
-import { ganttExtraActions, openSetStartDate } from '../menu-actions'
 
 function makeIssue (overrides: Partial<Issue> = {}): Issue {
   return {
@@ -120,7 +122,7 @@ describe('ganttExtraActions — shape', () => {
 
 describe('ganttExtraActions — issue threading', () => {
   it('forwards the issue argument into the Hierarchy submenu props', () => {
-    const i = makeIssue({ identifier: 'PROJ-99', title: 'Omega' } as Partial<Issue>)
+    const i = makeIssue({ identifier: 'PROJ-99', title: 'Omega' })
     const [, b] = ganttExtraActions(i, undefined)
     expect((b as any).props.issue).toBe(i)
   })
@@ -135,10 +137,9 @@ describe('ganttExtraActions — issue threading', () => {
 
 describe('openSetStartDate — popup wiring', () => {
   it('invokes showPopup with DatePopup and the issue start-date pre-filled', () => {
-    const ui = require('@hcengineering/ui')
     ;(ui.showPopup as jest.Mock).mockClear()
     const start = Date.UTC(2026, 4, 7)
-    openSetStartDate(makeIssue({ startDate: start } as Partial<Issue>), undefined)
+    openSetStartDate(makeIssue({ startDate: start }), undefined)
     expect(ui.showPopup).toHaveBeenCalledTimes(1)
     const [comp, props] = (ui.showPopup as jest.Mock).mock.calls[0]
     expect(comp).toBe('DatePopup')
@@ -149,7 +150,6 @@ describe('openSetStartDate — popup wiring', () => {
   })
 
   it('passes currentDate=null when the issue has no start-date yet', () => {
-    const ui = require('@hcengineering/ui')
     ;(ui.showPopup as jest.Mock).mockClear()
     openSetStartDate(makeIssue(), undefined)
     const [, props] = (ui.showPopup as jest.Mock).mock.calls[0]
@@ -159,28 +159,24 @@ describe('openSetStartDate — popup wiring', () => {
 
 describe('openSetStartDate — callback semantics', () => {
   it('does nothing when the popup is dismissed (result === undefined)', async () => {
-    const presentation = require('@hcengineering/presentation')
-    const ui = require('@hcengineering/ui')
     const updateDoc = jest.fn(async () => 'ok')
     ;(presentation.getClient as jest.Mock).mockReturnValueOnce({ updateDoc })
     ;(ui.showPopup as jest.Mock).mockClear()
     openSetStartDate(makeIssue(), undefined)
-    const [, , , cb] = (ui.showPopup as jest.Mock).mock.calls[0]
-    cb(undefined)
+    const [, , , onPick] = (ui.showPopup as jest.Mock).mock.calls[0]
+    onPick(undefined)
     expect(updateDoc).not.toHaveBeenCalled()
   })
 
   it('writes startDate=null when the user clears the date', async () => {
-    const presentation = require('@hcengineering/presentation')
-    const ui = require('@hcengineering/ui')
     const updateDoc = jest.fn(async () => 'ok')
     ;(presentation.getClient as jest.Mock).mockReturnValueOnce({ updateDoc })
     ;(ui.showPopup as jest.Mock).mockClear()
-    const iss = makeIssue({ startDate: Date.UTC(2026, 4, 7), dueDate: Date.UTC(2026, 4, 9) } as Partial<Issue>)
+    const iss = makeIssue({ startDate: Date.UTC(2026, 4, 7), dueDate: Date.UTC(2026, 4, 9) })
     openSetStartDate(iss, undefined)
-    const [, , , cb] = (ui.showPopup as jest.Mock).mock.calls[0]
-    cb({ value: null })
-    await new Promise((r) => setImmediate(r))
+    const [, , , onPick] = (ui.showPopup as jest.Mock).mock.calls[0]
+    onPick({ value: null })
+    await new Promise((resolve) => setImmediate(resolve))
     expect(updateDoc).toHaveBeenCalledTimes(1)
     const patch = (updateDoc as jest.Mock).mock.calls[0][3]
     expect(patch.startDate).toBeNull()
@@ -189,16 +185,14 @@ describe('openSetStartDate — callback semantics', () => {
   })
 
   it('auto-fills dueDate = startDate + 1 day when both dates were null', async () => {
-    const presentation = require('@hcengineering/presentation')
-    const ui = require('@hcengineering/ui')
     const updateDoc = jest.fn(async () => 'ok')
     ;(presentation.getClient as jest.Mock).mockReturnValueOnce({ updateDoc })
     ;(ui.showPopup as jest.Mock).mockClear()
     openSetStartDate(makeIssue(), undefined)
-    const [, , , cb] = (ui.showPopup as jest.Mock).mock.calls[0]
+    const [, , , onPick] = (ui.showPopup as jest.Mock).mock.calls[0]
     const pick = new Date(Date.UTC(2026, 4, 7))
-    cb({ value: pick })
-    await new Promise((r) => setImmediate(r))
+    onPick({ value: pick })
+    await new Promise((resolve) => setImmediate(resolve))
     expect(updateDoc).toHaveBeenCalledTimes(1)
     const patch = (updateDoc as jest.Mock).mock.calls[0][3]
     expect(patch.startDate).toBe(Date.UTC(2026, 4, 7))
@@ -206,15 +200,13 @@ describe('openSetStartDate — callback semantics', () => {
   })
 
   it('does NOT auto-fill when the issue already has a dueDate', async () => {
-    const presentation = require('@hcengineering/presentation')
-    const ui = require('@hcengineering/ui')
     const updateDoc = jest.fn(async () => 'ok')
     ;(presentation.getClient as jest.Mock).mockReturnValueOnce({ updateDoc })
     ;(ui.showPopup as jest.Mock).mockClear()
-    openSetStartDate(makeIssue({ dueDate: Date.UTC(2026, 4, 12) } as Partial<Issue>), undefined)
-    const [, , , cb] = (ui.showPopup as jest.Mock).mock.calls[0]
-    cb({ value: new Date(Date.UTC(2026, 4, 7)) })
-    await new Promise((r) => setImmediate(r))
+    openSetStartDate(makeIssue({ dueDate: Date.UTC(2026, 4, 12) }), undefined)
+    const [, , , onPick] = (ui.showPopup as jest.Mock).mock.calls[0]
+    onPick({ value: new Date(Date.UTC(2026, 4, 7)) })
+    await new Promise((resolve) => setImmediate(resolve))
     const patch = (updateDoc as jest.Mock).mock.calls[0][3]
     expect(patch.startDate).toBe(Date.UTC(2026, 4, 7))
     expect(patch.dueDate).toBeUndefined()

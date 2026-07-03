@@ -110,7 +110,10 @@ describe('getDiagramSvgPaths', () => {
   it('FS arrow starts at the predecessor finish edge and ends at successor start edge', () => {
     const fs = getDiagramSvgPaths('FS')
     const [pred, succ] = fs.rects
-    const coords = fs.arrow.points.trim().split(/\s+/).map((p) => p.split(',').map(Number))
+    const coords = fs.arrow.points
+      .trim()
+      .split(/\s+/)
+      .map((p) => p.split(',').map(Number))
     const first = coords[0]
     const last = coords[coords.length - 1]
     // Start ≈ right edge of predecessor (x ≈ pred.x + pred.w)
@@ -122,7 +125,10 @@ describe('getDiagramSvgPaths', () => {
   it('SS arrow ends at the successor start (left) edge', () => {
     const ss = getDiagramSvgPaths('SS')
     const [pred, succ] = ss.rects
-    const coords = ss.arrow.points.trim().split(/\s+/).map((p) => p.split(',').map(Number))
+    const coords = ss.arrow.points
+      .trim()
+      .split(/\s+/)
+      .map((p) => p.split(',').map(Number))
     const first = coords[0]
     const last = coords[coords.length - 1]
     // Both start (first) and end (last) align with left edges of predecessor / successor
@@ -133,7 +139,10 @@ describe('getDiagramSvgPaths', () => {
   it('FF arrow ends at the successor finish (right) edge', () => {
     const ff = getDiagramSvgPaths('FF')
     const [pred, succ] = ff.rects
-    const coords = ff.arrow.points.trim().split(/\s+/).map((p) => p.split(',').map(Number))
+    const coords = ff.arrow.points
+      .trim()
+      .split(/\s+/)
+      .map((p) => p.split(',').map(Number))
     const first = coords[0]
     const last = coords[coords.length - 1]
     // Start aligns with right edge of predecessor, end with right edge of successor
@@ -144,7 +153,10 @@ describe('getDiagramSvgPaths', () => {
   it('SF arrow starts at predecessor start (left) and ends at successor finish (right)', () => {
     const sf = getDiagramSvgPaths('SF')
     const [pred, succ] = sf.rects
-    const coords = sf.arrow.points.trim().split(/\s+/).map((p) => p.split(',').map(Number))
+    const coords = sf.arrow.points
+      .trim()
+      .split(/\s+/)
+      .map((p) => p.split(',').map(Number))
     const first = coords[0]
     const last = coords[coords.length - 1]
     expect(Math.abs(first[0] - pred.x)).toBeLessThanOrEqual(2)
@@ -154,12 +166,8 @@ describe('getDiagramSvgPaths', () => {
   it('FS and FF have distinct arrow endpoints (left of S vs right of S)', () => {
     const fs = getDiagramSvgPaths('FS')
     const ff = getDiagramSvgPaths('FF')
-    const fsLastX = Number(
-      fs.arrow.points.trim().split(/\s+/).slice(-1)[0].split(',')[0]
-    )
-    const ffLastX = Number(
-      ff.arrow.points.trim().split(/\s+/).slice(-1)[0].split(',')[0]
-    )
+    const fsLastX = Number(fs.arrow.points.trim().split(/\s+/).slice(-1)[0].split(',')[0])
+    const ffLastX = Number(ff.arrow.points.trim().split(/\s+/).slice(-1)[0].split(',')[0])
     expect(fsLastX).not.toBe(ffLastX)
   })
 })

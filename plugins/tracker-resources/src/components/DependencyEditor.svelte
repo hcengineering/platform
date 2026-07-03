@@ -12,12 +12,7 @@
   import tracker from '../plugin'
   import { kindCode, kindFromCode } from './gantt/lib/predecessor-format'
   import MiniDependencyDiagram from './dependency/MiniDependencyDiagram.svelte'
-  import {
-    DIAGRAM_KINDS,
-    diagramGridIndex,
-    clampLagSlider,
-    type DiagramKindCode
-  } from './dependency/diagram-helpers'
+  import { DIAGRAM_KINDS, diagramGridIndex, clampLagSlider, type DiagramKindCode } from './dependency/diagram-helpers'
 
   /**
    * Popup for editing a single IssueRelation. Opened from
@@ -188,19 +183,14 @@
             kind={code}
             selected={code === kindCodeValue}
             disabled={!canEdit}
-            on:pick={(e) => pickKind(e.detail)}
+            on:pick={(e) => { pickKind(e.detail) }}
           />
         {/each}
       </div>
     {:else}
       <div class="compact-view">
         <MiniDependencyDiagram kind={kindCodeValue} selected compact disabled />
-        <button
-          type="button"
-          class="change-link"
-          disabled={!canEdit}
-          on:click={changeKind}
-        >
+        <button type="button" class="change-link" disabled={!canEdit} on:click={changeKind}>
           <Label label={tracker.string.DependencyChangeKind} />
         </button>
       </div>
@@ -224,12 +214,7 @@
         on:input={onSliderInput}
       />
       <div class="lag-spinner">
-        <NumberInput
-          bind:value={lagValue}
-          minValue={-30}
-          maxValue={90}
-          disabled={!canEdit}
-        />
+        <NumberInput bind:value={lagValue} minValue={-30} maxValue={90} disabled={!canEdit} />
       </div>
       <span class="lag-unit">d</span>
     </div>

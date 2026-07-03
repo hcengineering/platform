@@ -51,8 +51,7 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
-import notification from '@hcengineering/model-notification'
-import { TCommonInboxNotification } from '@hcengineering/model-notification'
+import notification, { TCommonInboxNotification } from '@hcengineering/model-notification'
 import task, { TTask, TProject as TTaskProject } from '@hcengineering/model-task'
 import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import tags, { type TagElement } from '@hcengineering/tags'
@@ -502,9 +501,7 @@ export class TIssueTypeData extends TIssue {}
  * @public
  */
 @Model(tracker.class.DependencyShiftedNotification, notification.class.CommonInboxNotification)
-export class TDependencyShiftedNotification
-  extends TCommonInboxNotification
-  implements DependencyShiftedNotification {
+export class TDependencyShiftedNotification extends TCommonInboxNotification implements DependencyShiftedNotification {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
     triggerIssueId!: Ref<Issue>
 

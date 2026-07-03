@@ -140,7 +140,8 @@
          everywhere, hiding the milestone text. Map the milestone fields
          onto the matching columns so the label + dates stay visible. -->
     {#if column === 'title'}
-      <span class="cell-content cell-title cell-milestone-title" title={row.milestone.label}>{row.milestone.label}</span>
+      <span class="cell-content cell-title cell-milestone-title" title={row.milestone.label}>{row.milestone.label}</span
+      >
     {:else if column === 'startDate'}
       <span class="cell-content cell-date">{formatDateShort(row.milestone.startDate)}</span>
     {:else if column === 'dueDate'}

@@ -8,12 +8,20 @@ import { createTreeExpandStore } from '../tree-expand-store'
 function makeStorage (): Storage {
   const map = new Map<string, string>()
   return {
-    get length (): number { return map.size },
-    clear: () => { map.clear() },
+    get length (): number {
+      return map.size
+    },
+    clear: () => {
+      map.clear()
+    },
     getItem: (k: string) => map.get(k) ?? null,
     key: (i: number) => Array.from(map.keys())[i] ?? null,
-    removeItem: (k: string) => { map.delete(k) },
-    setItem: (k: string, v: string) => { map.set(k, v) }
+    removeItem: (k: string) => {
+      map.delete(k)
+    },
+    setItem: (k: string, v: string) => {
+      map.set(k, v)
+    }
   }
 }
 
@@ -86,7 +94,9 @@ describe('createTreeExpandStore', () => {
   it('subscribe fires with current snapshot then on each change', () => {
     const s = createTreeExpandStore('proj-A', makeStorage())
     const sizes: number[] = []
-    s.subscribe(set => { sizes.push(set.size) })
+    s.subscribe((set) => {
+      sizes.push(set.size)
+    })
     s.toggle('issue:1')
     s.toggle('issue:2')
     s.expandAll()
@@ -96,7 +106,9 @@ describe('createTreeExpandStore', () => {
   it('unsubscribe stops notifications', () => {
     const s = createTreeExpandStore('proj-A', makeStorage())
     const sizes: number[] = []
-    const unsub = s.subscribe(set => { sizes.push(set.size) })
+    const unsub = s.subscribe((set) => {
+      sizes.push(set.size)
+    })
     unsub()
     s.toggle('issue:1')
     expect(sizes).toEqual([0])

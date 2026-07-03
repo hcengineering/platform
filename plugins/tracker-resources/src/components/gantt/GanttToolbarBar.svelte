@@ -25,7 +25,7 @@
   becomes the RIGHTMOST visible element of the section.
 -->
 <script lang="ts">
-  import { DropdownLabelsIntl, EditBox, Icon, tooltip } from '@hcengineering/ui'
+  import { DropdownLabelsIntl, EditBox, Icon, tooltip, IconMoreV, Label } from '@hcengineering/ui'
   import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
   import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
   import NavPrev from '@hcengineering/ui/src/components/icons/NavPrev.svelte'
@@ -33,9 +33,7 @@
   import Calendar from '@hcengineering/ui/src/components/icons/Calendar.svelte'
   import IconUndo from '@hcengineering/ui/src/components/icons/Undo.svelte'
   import IconRedo from '@hcengineering/ui/src/components/icons/Redo.svelte'
-  import { IconMoreV } from '@hcengineering/ui'
-  import { Label } from '@hcengineering/ui'
-  import tracker from '../../plugin'
+      import tracker from '../../plugin'
   import { GROUP_BY_KEYS } from './lib/group-by'
   import { ganttToolbarSnapshot } from './ganttToolbarStore'
 
@@ -68,11 +66,7 @@
     <div class="gantt-tb-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupOverridesHierarchy }}>
       <Label label={tracker.string.GanttGroupBy} />
       <!-- svelte-ignore a11y-no-onchange -->
-      <select
-        class="gantt-tb-groupby-select"
-        value={snap.ganttGroupBy}
-        on:change={snap.onGroupBySelectChange}
-      >
+      <select class="gantt-tb-groupby-select" value={snap.ganttGroupBy} on:change={snap.onGroupBySelectChange}>
         {#each GROUP_BY_KEYS as key (key)}
           <option value={key}>
             {#if key === 'none'}<Label label={tracker.string.GanttGroupByNone} />
@@ -144,7 +138,7 @@
         minValue={MIN_VISIBLE_DAYS}
         maxValue={MAX_VISIBLE_DAYS}
         kind={'editbox'}
-        on:value={(e) => snap.setVisibleDaysInput(Number(e.detail))}
+        on:value={(e) => { snap.setVisibleDaysInput(Number(e.detail)) }}
         on:blur={snap.applyVisibleDaysInput}
         on:keydown={snap.onVisibleDaysKeyDown}
       />
@@ -223,9 +217,13 @@
       <button
         type="button"
         class="gantt-tb-icon-btn"
-        use:tooltip={{ label: snap.mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar }}
+        use:tooltip={{
+          label: snap.mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar
+        }}
         on:click={snap.toggleMobileDrawer}
-        aria-label={snap.ariaLabels[snap.mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar] ?? ''}
+        aria-label={snap.ariaLabels[
+          snap.mobileDrawerOpen ? tracker.string.GanttMobileCloseSidebar : tracker.string.GanttMobileOpenSidebar
+        ] ?? ''}
         aria-expanded={snap.mobileDrawerOpen}
       >
         <span class="gantt-tb-text-glyph" aria-hidden="true">≡</span>

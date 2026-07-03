@@ -3159,13 +3159,17 @@
   $: ganttToolbarSnapshot.set({
     layoutMode,
     mobileDrawerOpen,
-    toggleMobileDrawer: () => { mobileDrawerOpen = !mobileDrawerOpen },
+    toggleMobileDrawer: () => {
+      mobileDrawerOpen = !mobileDrawerOpen
+    },
     datePickerValue,
-    setDatePickerValue: (v) => { datePickerValue = v },
+    setDatePickerValue: (v) => {
+      datePickerValue = v
+    },
     jumpToStart,
-    pageScrollPrev: () => pageScroll(-1),
+    pageScrollPrev: () => { pageScroll(-1) },
     jumpToToday,
-    pageScrollNext: () => pageScroll(1),
+    pageScrollNext: () => { pageScroll(1) },
     jumpToEnd,
     jumpToDate,
     zoomDropdownItems,
@@ -3173,15 +3177,21 @@
     onZoomDropdownSelected,
     visibleDays,
     visibleDaysInput,
-    setVisibleDaysInput: (n) => { visibleDaysInput = n },
+    setVisibleDaysInput: (n) => {
+      visibleDaysInput = n
+    },
     applyVisibleDaysInput,
     onVisibleDaysKeyDown,
     canUndo: $canUndo,
     canRedo: $canRedo,
     nextUndoDescription: $nextUndoDescription,
     nextRedoDescription: $nextRedoDescription,
-    handleUndo: () => { void handleUndo() },
-    handleRedo: () => { void handleRedo() },
+    handleUndo: () => {
+      void handleUndo()
+    },
+    handleRedo: () => {
+      void handleRedo()
+    },
     ganttGroupBy,
     onGroupBySelectChange,
     savedViewModified,
@@ -3191,7 +3201,7 @@
     openMoreActionsMenu,
     ariaLabels
   })
-  onDestroy(() => ganttToolbarSnapshot.set(null))
+  onDestroy(() => { ganttToolbarSnapshot.set(null) })
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-click-events-have-key-events a11y-no-static-element-interactions -->
@@ -3204,7 +3214,6 @@
   {#if loading}
     <Loading />
   {:else}
-
     <!-- Plane-style two-axis scrolling: gantt-scroller handles vertical only,
          while a separate sticky-bottom proxy bar handles horizontal so the
          user always sees the time-scale scrollbar at the bottom of the

@@ -43,10 +43,7 @@
     />
   </div>
   <div class="depshift__subline">
-    <Label
-      label={tracker.string.DependencyShiftedMessage}
-      params={{ count: value.shiftedIssues.length }}
-    />
+    <Label label={tracker.string.DependencyShiftedMessage} params={{ count: value.shiftedIssues.length }} />
   </div>
   <ul class="depshift__list">
     {#each value.shiftedIssues as entry (entry.issueId)}
@@ -55,7 +52,11 @@
         <span class="depshift__identifier">{entry.identifier}</span>
         <span class="depshift__title">{entry.title}</span>
         {#if days !== 0}
-          <span class="depshift__delta" class:depshift__delta--positive={days > 0} class:depshift__delta--negative={days < 0}>
+          <span
+            class="depshift__delta"
+            class:depshift__delta--positive={days > 0}
+            class:depshift__delta--negative={days < 0}
+          >
             {deltaLabel(days)}
           </span>
         {:else}

@@ -105,7 +105,11 @@ describe('groupShiftsByRecipient', () => {
 
   it('produces one bundle with N entries when N issues share a single recipient', () => {
     const entries: ShiftedIssuePayload[] = [A, B, C].map((i) =>
-      buildPayloadFromPrimary({ issue: i, newStart: i.startDate! + 86400000, newDue: i.dueDate! + 86400000 })
+      buildPayloadFromPrimary({
+        issue: i,
+        newStart: (i.startDate as number) + 86400000,
+        newDue: (i.dueDate as number) + 86400000
+      })
     )
     const collab = new Map<Ref<Issue>, AccountUuid[]>([
       [A._id, [userB]],
@@ -121,9 +125,7 @@ describe('groupShiftsByRecipient', () => {
     const entries: ShiftedIssuePayload[] = [
       buildPayloadFromPrimary({ issue: A, newStart: Date.UTC(2026, 4, 3), newDue: Date.UTC(2026, 4, 7) })
     ]
-    const collab = new Map<Ref<Issue>, AccountUuid[]>([
-      [A._id, [trigger, userB]]
-    ])
+    const collab = new Map<Ref<Issue>, AccountUuid[]>([[A._id, [trigger, userB]]])
     const bundles = groupShiftsByRecipient(trigger, entries, collab)
     expect(bundles.has(trigger)).toBe(false)
     expect(bundles.size).toBe(1)
@@ -166,25 +168,23 @@ describe('buildRecipientBundles — end-to-end', () => {
   const userB = 'user-b' as AccountUuid
 
   it('merges primary + shift entries in one pass and groups by recipient', () => {
-    const primaries: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 3), newDue: Date.UTC(2026, 4, 7) }
-    ]
+    const primaries: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 3), newDue: Date.UTC(2026, 4, 7) }]
     const shifts: CascadeShift[] = [
       {
         issue: B,
-        oldStart: B.startDate!,
-        oldDue: B.dueDate!,
-        newStart: B.startDate! + 2 * 86400000,
-        newDue: B.dueDate! + 2 * 86400000,
+        oldStart: B.startDate as number,
+        oldDue: B.dueDate as number,
+        newStart: (B.startDate as number) + 2 * 86400000,
+        newDue: (B.dueDate as number) + 2 * 86400000,
         reason: 'push-successor',
         triggeredBy: A._id
       },
       {
         issue: C,
-        oldStart: C.startDate!,
-        oldDue: C.dueDate!,
-        newStart: C.startDate! + 86400000,
-        newDue: C.dueDate! + 86400000,
+        oldStart: C.startDate as number,
+        oldDue: C.dueDate as number,
+        newStart: (C.startDate as number) + 86400000,
+        newDue: (C.dueDate as number) + 86400000,
         reason: 'push-successor',
         triggeredBy: B._id
       }
@@ -196,16 +196,14 @@ describe('buildRecipientBundles — end-to-end', () => {
     ])
     const bundles = buildRecipientBundles(userA, primaries, shifts, collab)
     expect(bundles.size).toBe(1)
-    const bundle = bundles.get(userB)!
+    const bundle = bundles.get(userB) ?? []
     expect(bundle.length).toBe(2)
     expect(bundle.map((b) => b.identifier).sort()).toEqual(['PROJ-2', 'PROJ-3'])
     expect(bundle[0].deltaMs).toBeGreaterThan(0)
   })
 
   it('produces zero bundles when only the trigger user has stake in any shift', () => {
-    const primaries: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 3), newDue: Date.UTC(2026, 4, 7) }
-    ]
+    const primaries: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 3), newDue: Date.UTC(2026, 4, 7) }]
     const collab = new Map<Ref<Issue>, AccountUuid[]>([[A._id, [userA]]])
     const bundles = buildRecipientBundles(userA, primaries, [], collab)
     expect(bundles.size).toBe(0)

@@ -6,10 +6,7 @@
   import type { Issue } from '@hcengineering/tracker'
   import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
-  import {
-    formatPredecessorEntry,
-    type PredecessorEntry
-  } from '../gantt/lib/predecessor-list-format'
+  import { formatPredecessorEntry, type PredecessorEntry } from '../gantt/lib/predecessor-list-format'
   import { kindCode } from '../gantt/lib/predecessor-format'
 
   /**

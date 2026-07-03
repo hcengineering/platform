@@ -10,10 +10,7 @@
   import { DocNavLink } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import { kindCode, signedLag } from '../gantt/lib/predecessor-format'
-  import {
-    sortPredecessorsByIdentifier,
-    splitFirstAndRest
-  } from '../gantt/lib/predecessor-list-format'
+  import { sortPredecessorsByIdentifier, splitFirstAndRest } from '../gantt/lib/predecessor-list-format'
   import PredecessorsTooltip from './PredecessorsTooltip.svelte'
 
   /**
@@ -42,13 +39,9 @@
   const relQuery = createQuery()
 
   $: if (value !== undefined) {
-    relQuery.query(
-      tracker.class.IssueRelation,
-      { target: value._id },
-      (res) => {
-        relations = res
-      }
-    )
+    relQuery.query(tracker.class.IssueRelation, { target: value._id }, (res) => {
+      relations = res
+    })
   } else {
     relations = []
   }
@@ -61,15 +54,11 @@
     if (sourceIds.length === 0) {
       sources = new Map()
     } else {
-      sourceQuery.query(
-        tracker.class.Issue,
-        { _id: { $in: sourceIds } },
-        (res) => {
-          const next = new Map<Ref<Issue>, Issue>()
-          for (const issue of res) next.set(issue._id, issue)
-          sources = next
-        }
-      )
+      sourceQuery.query(tracker.class.Issue, { _id: { $in: sourceIds } }, (res) => {
+        const next = new Map<Ref<Issue>, Issue>()
+        for (const issue of res) next.set(issue._id, issue)
+        sources = next
+      })
     }
   }
 
@@ -84,14 +73,15 @@
   // Pre-cast in <script> so the template stays free of inline TS casts
   // (svelte's template parser does not accept `as unknown as Issue` in
   // attribute expressions — same constraint as IssueRelationPresenter).
-  $: firstView = split.first === null
-    ? null
-    : {
-        object: split.first.source as unknown as Issue,
-        identifier: (split.first.source as unknown as { identifier: string }).identifier,
-        kindLabel: kindCode(split.first.rel.kind),
-        lagSuffix: lagSuffix(split.first.rel.lag)
-      }
+  $: firstView =
+    split.first === null
+      ? null
+      : {
+          object: split.first.source as unknown as Issue,
+          identifier: (split.first.source as unknown as { identifier: string }).identifier,
+          kindLabel: kindCode(split.first.rel.kind),
+          lagSuffix: lagSuffix(split.first.rel.lag)
+        }
 </script>
 
 {#if firstView !== null}
@@ -101,10 +91,7 @@
     </DocNavLink>
     <span class="kind-lag">&nbsp;{firstView.kindLabel}{firstView.lagSuffix}</span>
     {#if split.extraCount > 0}
-      <span
-        class="more-badge"
-        use:tooltip={{ component: PredecessorsTooltip, props: { predecessors: entries } }}
-      >
+      <span class="more-badge" use:tooltip={{ component: PredecessorsTooltip, props: { predecessors: entries } }}>
         +{split.extraCount} more
       </span>
     {/if}

@@ -8,10 +8,7 @@
   import { themeStore } from '@hcengineering/ui'
   import type { IntlString } from '@hcengineering/platform'
   import tracker from '../../plugin'
-  import {
-    type DiagramKindCode,
-    getDiagramSvgPaths
-  } from './diagram-helpers'
+  import { type DiagramKindCode, getDiagramSvgPaths } from './diagram-helpers'
 
   /**
    * One of the four mini SVG diagrams used by the Visual DependencyEditor
@@ -88,22 +85,9 @@
       </marker>
     </defs>
     {#each paths.rects as r, i}
-      <rect
-        x={r.x}
-        y={r.y}
-        width={r.w}
-        height={r.h}
-        rx="2"
-        ry="2"
-        class={i === 0 ? 'rect-pred' : 'rect-succ'}
-      />
+      <rect x={r.x} y={r.y} width={r.w} height={r.h} rx="2" ry="2" class={i === 0 ? 'rect-pred' : 'rect-succ'} />
     {/each}
-    <polyline
-      points={paths.arrow.points}
-      class="arrow-line"
-      marker-end={`url(#mdd-arrow-${kind})`}
-      fill="none"
-    />
+    <polyline points={paths.arrow.points} class="arrow-line" marker-end={`url(#mdd-arrow-${kind})`} fill="none" />
   </svg>
   <span class="code-label">{kind}</span>
   {#if shortText !== ''}
@@ -127,7 +111,9 @@
     background: var(--theme-button-default);
     color: var(--theme-content-color);
     cursor: pointer;
-    transition: border-color 0.12s ease, background 0.12s ease;
+    transition:
+      border-color 0.12s ease,
+      background 0.12s ease;
 
     &:hover:not([disabled]) {
       border-color: var(--theme-button-pressed-border, var(--theme-link-color));

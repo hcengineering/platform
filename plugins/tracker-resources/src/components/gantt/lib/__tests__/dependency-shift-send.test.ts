@@ -69,10 +69,7 @@ function makeClientStub (overrides?: Partial<Pick<ClientStub, 'findAllResults' |
   return { client, calls, findAllResults, findOneResult }
 }
 
-function args (
-  primaries: PrimaryEdit[] = [],
-  shifts: CascadeShift[] = []
-): DependencyShiftSendArgs {
+function args (primaries: PrimaryEdit[] = [], shifts: CascadeShift[] = []): DependencyShiftSendArgs {
   return {
     triggerIssue: TRIGGER_ISSUE,
     triggerUser: TRIGGER_USER,
@@ -103,7 +100,20 @@ describe('sendDependencyShiftedNotifications — early returns', () => {
     })
     const created = await sendDependencyShiftedNotifications(
       stub.client,
-      args([], [{ issue: SHIFT_ISSUE, oldStart: 0, oldDue: 1, newStart: 2, newDue: 3, reason: 'push-successor', triggeredBy: TRIGGER_ISSUE._id }])
+      args(
+        [],
+        [
+          {
+            issue: SHIFT_ISSUE,
+            oldStart: 0,
+            oldDue: 1,
+            newStart: 2,
+            newDue: 3,
+            reason: 'push-successor',
+            triggeredBy: TRIGGER_ISSUE._id
+          }
+        ]
+      )
     )
     expect(created).toBe(0)
     // createDoc must not have been called for a notification.
@@ -122,7 +132,20 @@ describe('sendDependencyShiftedNotifications — error handling', () => {
     const errors: unknown[] = []
     const created = await sendDependencyShiftedNotifications(
       client,
-      args([], [{ issue: SHIFT_ISSUE, oldStart: 0, oldDue: 1, newStart: 2, newDue: 3, reason: 'push-successor', triggeredBy: TRIGGER_ISSUE._id }]),
+      args(
+        [],
+        [
+          {
+            issue: SHIFT_ISSUE,
+            oldStart: 0,
+            oldDue: 1,
+            newStart: 2,
+            newDue: 3,
+            reason: 'push-successor',
+            triggeredBy: TRIGGER_ISSUE._id
+          }
+        ]
+      ),
       (e) => errors.push(e)
     )
     expect(created).toBe(0)
@@ -138,7 +161,20 @@ describe('sendDependencyShiftedNotifications — error handling', () => {
     await expect(
       sendDependencyShiftedNotifications(
         client,
-        args([], [{ issue: SHIFT_ISSUE, oldStart: 0, oldDue: 1, newStart: 2, newDue: 3, reason: 'push-successor', triggeredBy: TRIGGER_ISSUE._id }])
+        args(
+          [],
+          [
+            {
+              issue: SHIFT_ISSUE,
+              oldStart: 0,
+              oldDue: 1,
+              newStart: 2,
+              newDue: 3,
+              reason: 'push-successor',
+              triggeredBy: TRIGGER_ISSUE._id
+            }
+          ]
+        )
       )
     ).resolves.toBe(0)
   })
@@ -163,7 +199,20 @@ describe('sendDependencyShiftedNotifications — recipient resolution', () => {
     })
     const created = await sendDependencyShiftedNotifications(
       stub.client,
-      args([], [{ issue: SHIFT_ISSUE, oldStart: 0, oldDue: 1, newStart: 2, newDue: 3, reason: 'push-successor', triggeredBy: TRIGGER_ISSUE._id }])
+      args(
+        [],
+        [
+          {
+            issue: SHIFT_ISSUE,
+            oldStart: 0,
+            oldDue: 1,
+            newStart: 2,
+            newDue: 3,
+            reason: 'push-successor',
+            triggeredBy: TRIGGER_ISSUE._id
+          }
+        ]
+      )
     )
     expect(created).toBe(0)
   })
