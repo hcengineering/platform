@@ -98,7 +98,6 @@ function mkRel (from: string, to: string): IssueRelation {
 describe('connectedIssueIds', () => {
   const A = 'A' as Ref<Issue>
   const B = 'B' as Ref<Issue>
-  const C = 'C' as Ref<Issue>
   const D = 'D' as Ref<Issue>
 
   it('returns empty set when nothing is hovered', () => {

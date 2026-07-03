@@ -186,7 +186,9 @@
             title={row.milestone.label}
             role="link"
             tabindex="0"
-            on:click={() => row.milestone !== null && openMilestone(row.milestone._id)}
+            on:click={() => {
+              if (row.milestone !== null) openMilestone(row.milestone._id)
+            }}
           >
             {row.milestone.label}
           </span>

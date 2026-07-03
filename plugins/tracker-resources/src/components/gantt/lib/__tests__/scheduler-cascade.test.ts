@@ -6,7 +6,7 @@
 import { detectCycle, addScheduleDays, simulateCascade } from '../scheduler'
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
-import type { PrimaryEdit, CascadeShift, SimulateResult } from '../types'
+import type { PrimaryEdit } from '../types'
 
 function issue (id: string, start?: number, due?: number): Issue {
   return {
@@ -317,10 +317,10 @@ describe('simulateCascade — chain propagation', () => {
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
     const byId = new Map(res.shifts.map((s) => [s.issue._id, s]))
-    expect(byId.get('B' as Ref<Issue>)!.newStart).toBe(Date.UTC(2026, 4, 9))
-    expect(byId.get('B' as Ref<Issue>)!.newDue).toBe(Date.UTC(2026, 4, 13))
-    expect(byId.get('C' as Ref<Issue>)!.newStart).toBe(Date.UTC(2026, 4, 14))
-    expect(byId.get('C' as Ref<Issue>)!.newDue).toBe(Date.UTC(2026, 4, 18))
+    expect(byId.get('B' as Ref<Issue>)?.newStart).toBe(Date.UTC(2026, 4, 9))
+    expect(byId.get('B' as Ref<Issue>)?.newDue).toBe(Date.UTC(2026, 4, 13))
+    expect(byId.get('C' as Ref<Issue>)?.newStart).toBe(Date.UTC(2026, 4, 14))
+    expect(byId.get('C' as Ref<Issue>)?.newDue).toBe(Date.UTC(2026, 4, 18))
   })
 
   it('iteration cap fires defensively when maxIterations is tiny', () => {
@@ -365,12 +365,12 @@ describe('simulateCascade — permission denied', () => {
 describe('simulateCascade — full-space scope', () => {
   it('Test 16: hidden issue X in space still produces a shift when reached via relations', () => {
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
-    const B_visible = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
-    const X_hidden = issue('X', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 12))
+    const bVisible = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const xHidden = issue('X', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 12))
     const relations = [rel('A', 'B', 'finish-to-start'), rel('A', 'X', 'finish-to-start')]
     const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
     // Caller is responsible for passing all space issues, including X.
-    const res = simulateCascade(primary, [A, B_visible, X_hidden], relations, () => true)
+    const res = simulateCascade(primary, [A, bVisible, xHidden], relations, () => true)
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
     expect(res.shifts.map((s) => s.issue._id).sort()).toEqual(['B', 'X'])

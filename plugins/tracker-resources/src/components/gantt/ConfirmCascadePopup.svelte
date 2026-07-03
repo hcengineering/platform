@@ -163,7 +163,9 @@
     } else {
       cancelWrapperEl?.querySelector('button')?.focus()
     }
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+    }
   })
 </script>
 

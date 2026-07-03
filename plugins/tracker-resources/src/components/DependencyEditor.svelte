@@ -22,7 +22,7 @@
   export let relation: IssueRelation
   export let canEdit: boolean
 
-  const dispatch = createEventDispatcher<{ close: void }>()
+  const dispatch = createEventDispatcher<{ close: undefined }>()
   const client = getClient()
 
   let kindCodeValue: 'FS' | 'SS' | 'FF' | 'SF' = kindCode(relation.kind)

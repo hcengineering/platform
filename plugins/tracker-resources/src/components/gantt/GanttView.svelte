@@ -151,7 +151,7 @@
   $: showCriticalPath = ((viewOptions as Record<string, unknown>)?.ganttCriticalPath ?? false) === true
   $: showSlackColumn = ((viewOptions as Record<string, unknown>)?.ganttSlackColumn ?? false) === true
   // 200 ms debounced recompute on issues / relations / toggle change.
-  $: void scheduleCpRecompute(issues, relations, showCriticalPath)
+  $: scheduleCpRecompute(issues, relations, showCriticalPath)
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
@@ -864,7 +864,7 @@
           const otherRef = String(r.attachedTo) === String(pe.issue._id) ? r.target : r.attachedTo
           if (primarySet.has(String(otherRef))) continue
           const otherIssue = allByRef.get(otherRef as Ref<Issue>)
-          if (otherIssue === undefined || otherIssue.startDate == null || otherIssue.dueDate == null) continue
+          if (otherIssue?.startDate == null || otherIssue?.dueDate == null) continue
           if (!relationSatisfied(r, pe, otherIssue)) violations++
         }
       }
@@ -934,7 +934,9 @@
               GanttConfirmCommitPopup,
               { issue: pe.issue, kind: legacyConfirmKind, newStart: pe.newStart, newDue: pe.newDue },
               'top',
-              (r: boolean | undefined) => resolve(r === true)
+              (r: boolean | undefined) => {
+                resolve(r === true)
+              }
             )
           })
           if (!ok) {
@@ -1161,20 +1163,28 @@
     }
   }
 
+  // Stable void-returning wrapper so attach/detach share one reference (a
+  // per-call arrow would leak the listener) while satisfying the void-listener
+  // signature — the pointer-up commit is intentionally fire-and-forget with
+  // its own internal error handling.
+  const onWindowPointerUp = (e: PointerEvent | MouseEvent): void => {
+    void handleCanvasPointerUp(e)
+  }
+
   function attachWindowDragListeners (): void {
     window.addEventListener('pointermove', handleCanvasPointerMove)
-    window.addEventListener('pointerup', handleCanvasPointerUp)
-    window.addEventListener('pointercancel', handleCanvasPointerUp)
+    window.addEventListener('pointerup', onWindowPointerUp)
+    window.addEventListener('pointercancel', onWindowPointerUp)
     window.addEventListener('mousemove', handleCanvasPointerMove)
-    window.addEventListener('mouseup', handleCanvasPointerUp)
+    window.addEventListener('mouseup', onWindowPointerUp)
   }
 
   function detachWindowDragListeners (): void {
     window.removeEventListener('pointermove', handleCanvasPointerMove)
-    window.removeEventListener('pointerup', handleCanvasPointerUp)
-    window.removeEventListener('pointercancel', handleCanvasPointerUp)
+    window.removeEventListener('pointerup', onWindowPointerUp)
+    window.removeEventListener('pointercancel', onWindowPointerUp)
     window.removeEventListener('mousemove', handleCanvasPointerMove)
-    window.removeEventListener('mouseup', handleCanvasPointerUp)
+    window.removeEventListener('mouseup', onWindowPointerUp)
   }
 
   // Attach/detach window-level pointer listeners only while a drag is active.
@@ -1604,7 +1614,9 @@
   onMount(() => {
     syncViewport()
     if (typeof ResizeObserver !== 'undefined') {
-      resizeObs = new ResizeObserver(() => syncViewport())
+      resizeObs = new ResizeObserver(() => {
+        syncViewport()
+      })
       if (scrollerEl != null) resizeObs.observe(scrollerEl)
       if (hScrollEl != null) resizeObs.observe(hScrollEl)
     }

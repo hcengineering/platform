@@ -13,7 +13,7 @@
    * Gantt currently honours so power users don't have to discover them
    * by accident. Esc dismisses.
    */
-  const dispatch = createEventDispatcher<{ close: void }>()
+  const dispatch = createEventDispatcher<{ close: undefined }>()
 
   function onKey (e: KeyboardEvent): void {
     if (e.key === 'Escape' || e.key === '?') {
@@ -23,7 +23,9 @@
   }
   onMount(() => {
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+    }
   })
 
   interface Row { key: string, label: string }

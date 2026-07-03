@@ -47,7 +47,8 @@
 
 <g class="gantt-dep-layer">
   {#each relations as rel (rel?._id)}
-    {#if rel !== undefined && rel.kind !== undefined}
+    {#if rel !== undefined}
+      {#if rel.kind !== undefined}
       {@const src = barRects.get(String(rel.attachedTo)) ?? null}
       {@const dst = barRects.get(String(rel.target)) ?? null}
       <GanttDependencyArrow
@@ -60,6 +61,7 @@
         on:openEditor
         on:hoverEdge
       />
+      {/if}
     {/if}
   {/each}
 

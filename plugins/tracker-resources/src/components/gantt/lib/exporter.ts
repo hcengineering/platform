@@ -42,8 +42,10 @@ function serializeSvgWithInlineStyles (svg: SVGSVGElement): string {
   const clone = svg.cloneNode(true) as SVGSVGElement
   inlineStyles(svg, clone)
   // Ensure the namespace is present — required for `<img src="data:..."` rasterization.
-  if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-  if (!clone.getAttribute('xmlns:xlink')) clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+  if ((clone.getAttribute('xmlns') ?? '') === '') clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+  if ((clone.getAttribute('xmlns:xlink') ?? '') === '') {
+    clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+  }
   // Set explicit width/height so the rasteriser knows the dimensions.
   const bbox = svg.getBoundingClientRect()
   clone.setAttribute('width', String(bbox.width))

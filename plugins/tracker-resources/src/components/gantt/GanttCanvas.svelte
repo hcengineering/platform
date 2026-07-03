@@ -265,7 +265,9 @@
           <g
             class="bar-wrap"
             data-issue-id={String(row.issue._id)}
-            on:dblclick|stopPropagation={() => row.issue !== null && openIssue(row.issue)}
+            on:dblclick|stopPropagation={() => {
+              if (row.issue !== null) openIssue(row.issue)
+            }}
           >
             <GanttBar
               issue={row.issue}
@@ -323,7 +325,8 @@
   -->
   <g class="connector-overlay" transform="translate(0, {milestoneStripHeight})">
     {#each visibleRows as row (rowKey(row))}
-      {#if row.kind === 'issue' && row.issue !== null && row.issue.startDate != null && row.issue.dueDate != null && isEditable(row.issue._id)}
+      {#if row.kind === 'issue' && row.issue !== null}
+        {#if row.issue.startDate != null && row.issue.dueDate != null && isEditable(row.issue._id)}
         {@const rowIssueId = String(row.issue._id)}
         {@const dragKind = dragState.kind}
         {@const dragSourceId = dragKind === 'connector-drawing' || dragKind === 'connector-target-hover'
@@ -379,6 +382,7 @@
             opacity={isCurrentTarget ? 1 : 0.55}
             pointer-events="none"
           />
+        {/if}
         {/if}
       {/if}
     {/each}

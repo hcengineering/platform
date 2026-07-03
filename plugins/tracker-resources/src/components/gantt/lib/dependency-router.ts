@@ -108,7 +108,8 @@ export function arrowheadPoints (p1: Point, p2: Point): [Point, Point, Point] {
   const c2 = { x: p2.x - offset, y: p2.y }
   const tx = p2.x - c2.x
   const ty = p2.y - c2.y
-  const len = Math.sqrt(tx * tx + ty * ty) || 1
+  const rawLen = Math.sqrt(tx * tx + ty * ty)
+  const len = rawLen > 0 ? rawLen : 1
   const ux = tx / len
   const uy = ty / len
   const baseX = p2.x - 8 * ux
