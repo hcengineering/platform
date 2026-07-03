@@ -183,7 +183,9 @@
             kind={code}
             selected={code === kindCodeValue}
             disabled={!canEdit}
-            on:pick={(e) => { pickKind(e.detail) }}
+            on:pick={(e) => {
+              pickKind(e.detail)
+            }}
           />
         {/each}
       </div>

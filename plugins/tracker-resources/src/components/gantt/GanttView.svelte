@@ -3167,9 +3167,13 @@
       datePickerValue = v
     },
     jumpToStart,
-    pageScrollPrev: () => { pageScroll(-1) },
+    pageScrollPrev: () => {
+      pageScroll(-1)
+    },
     jumpToToday,
-    pageScrollNext: () => { pageScroll(1) },
+    pageScrollNext: () => {
+      pageScroll(1)
+    },
     jumpToEnd,
     jumpToDate,
     zoomDropdownItems,
@@ -3201,7 +3205,9 @@
     openMoreActionsMenu,
     ariaLabels
   })
-  onDestroy(() => { ganttToolbarSnapshot.set(null) })
+  onDestroy(() => {
+    ganttToolbarSnapshot.set(null)
+  })
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-click-events-have-key-events a11y-no-static-element-interactions -->
