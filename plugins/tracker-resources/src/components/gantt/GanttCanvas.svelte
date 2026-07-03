@@ -117,24 +117,28 @@
         />
         {#if row.kind === 'milestone' && row.milestone !== null}
           {@const range = summaryFor(row)}
-          {#if range !== null && range.startDate !== null && range.dueDate !== null}
-            <GanttBar
-              issue={{
-                title: row.milestone.label,
-                startDate: range.startDate,
-                dueDate: range.dueDate
-              }}
-              row={{ y: row.y, height: row.height }}
-              {timeScale}
-              isSummary
-              summaryRange={range}
-            />
+          {#if range !== null}
+            {#if range.startDate !== null && range.dueDate !== null}
+              <GanttBar
+                issue={{
+                  title: row.milestone.label,
+                  startDate: range.startDate,
+                  dueDate: range.dueDate
+                }}
+                row={{ y: row.y, height: row.height }}
+                {timeScale}
+                isSummary
+                summaryRange={range}
+              />
+            {/if}
           {/if}
         {:else if row.issue !== null}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <g
             class="bar-wrap"
-            on:dblclick|stopPropagation={() => row.issue !== null && openIssue(row.issue)}
+            on:dblclick|stopPropagation={() => {
+              if (row.issue !== null) openIssue(row.issue)
+            }}
           >
             <GanttBar
               issue={row.issue}

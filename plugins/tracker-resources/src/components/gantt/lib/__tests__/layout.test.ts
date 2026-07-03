@@ -59,8 +59,8 @@ describe('buildLayout (no grouping)', () => {
     const a = fakeIssue('a', undefined, true)
     const child = fakeIssue('a.1', 'a')
     const rows = buildLayout([a, child], [], 'none', ROW_H)
-    const parentRow = rows.find(r => r.issue?._id === 'a')!
-    expect(parentRow.isSummary).toBe(true)
+    const parentRow = rows.find(r => r.issue?._id === 'a')
+    expect(parentRow?.isSummary).toBe(true)
     expect(rows.find(r => r.issue?._id === 'a.1')?.isSummary).toBe(false)
   })
 

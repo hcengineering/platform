@@ -126,7 +126,9 @@
             title={row.issue.title}
             role="link"
             tabindex="0"
-            on:click={() => row.issue !== null && openIssue(row.issue)}
+            on:click={() => {
+              if (row.issue !== null) openIssue(row.issue)
+            }}
             on:keydown={(e) => { if (e.key === 'Enter' && row.issue !== null) openIssue(row.issue) }}
           >
             {row.issue.title}
