@@ -43,16 +43,8 @@
     />
   </div>
   <div class="footer">
-    <Button
-      kind={'regular'}
-      label={view.string.Cancel}
-      on:click={() => dispatch('close', false)}
-    />
-    <Button
-      kind={'primary'}
-      label={tracker.string.GanttConfirmApply}
-      on:click={() => dispatch('close', true)}
-    />
+    <Button kind={'regular'} label={view.string.Cancel} on:click={() => dispatch('close', false)} />
+    <Button kind={'primary'} label={tracker.string.GanttConfirmApply} on:click={() => dispatch('close', true)} />
   </div>
 </div>
 

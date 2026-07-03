@@ -80,11 +80,7 @@ function reduceFromIdle (state: DragState & { kind: 'idle' }, event: DragEvent):
   return state
 }
 
-function reduceFromHover (
-  state: DragState & { kind: 'hover-bar' },
-  event: DragEvent,
-  timeScale: TimeScale
-): DragState {
+function reduceFromHover (state: DragState & { kind: 'hover-bar' }, event: DragEvent, timeScale: TimeScale): DragState {
   if (event.type === 'mouseleave-bar') {
     return { kind: 'idle' }
   }

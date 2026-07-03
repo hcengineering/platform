@@ -95,7 +95,9 @@ export function ganttExtraActions (issue: Issue, anchor: PopupAlignment | undefi
       label: tracker.string.Hierarchy,
       icon: tracker.icon.Parent,
       group: 'associate',
-      action: async () => { /* submenu — handled by component */ },
+      action: async () => {
+        /* submenu — handled by component */
+      },
       component: GanttHierarchySubmenu,
       props: { issue }
     }

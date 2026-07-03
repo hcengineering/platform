@@ -11,8 +11,8 @@ export type ZoomLevel = 'day' | 'week' | 'month' | 'quarter'
 
 /** A single tick on the time-axis header (vertical gridline + label). */
 export interface Tick {
-  date: number             // UTC ms
-  label: string            // pre-formatted, locale-aware (primary row)
+  date: number // UTC ms
+  label: string // pre-formatted, locale-aware (primary row)
   level: 'major' | 'minor' // major ticks render thicker + with text label
   /**
    * Optional supra-label rendered on a second header row above `label` when
@@ -73,49 +73,49 @@ export type DragState =
   | { kind: 'idle' }
   | { kind: 'hover-bar', issueId: Ref<Issue>, edge: 'left' | 'right' | 'body' | 'none' }
   | {
-      kind: 'dragging-body'
-      issue: Issue
-      originStart: number
-      originDue: number
-      cursorStartX: number
-      previewStart: number
-      previewDue: number
-    }
+    kind: 'dragging-body'
+    issue: Issue
+    originStart: number
+    originDue: number
+    cursorStartX: number
+    previewStart: number
+    previewDue: number
+  }
   | {
-      kind: 'resizing-left'
-      issue: Issue
-      originStart: number
-      originDue: number
-      cursorStartX: number
-      previewStart: number
-    }
+    kind: 'resizing-left'
+    issue: Issue
+    originStart: number
+    originDue: number
+    cursorStartX: number
+    previewStart: number
+  }
   | {
-      kind: 'resizing-right'
-      issue: Issue
-      originStart: number
-      originDue: number
-      cursorStartX: number
-      previewDue: number
-    }
+    kind: 'resizing-right'
+    issue: Issue
+    originStart: number
+    originDue: number
+    cursorStartX: number
+    previewDue: number
+  }
   | {
-      kind: 'dragging-unscheduled'
-      issue: Issue
-      /** Anchor date the drag was started from (defaults to today at UTC midnight). */
-      originStart: number
-      /** originStart + 1 day; used for ghost-outline / commit symmetry with dragging-body. */
-      originDue: number
-      cursorStartX: number
-      previewStart: number
-      previewDue: number
-      /**
+    kind: 'dragging-unscheduled'
+    issue: Issue
+    /** Anchor date the drag was started from (defaults to today at UTC midnight). */
+    originStart: number
+    /** originStart + 1 day; used for ghost-outline / commit symmetry with dragging-body. */
+    originDue: number
+    cursorStartX: number
+    previewStart: number
+    previewDue: number
+    /**
        * True once the cursor has been over the canvas during the drag and a real
        * canvas-X has been observed. Guards against the click-without-drag case
        * where mouseup fires before the user has moved over the canvas — committing
        * such a "drag" would schedule the issue to today silently. `commitDrag`
        * treats `dragging-unscheduled && !hasCanvasTarget` as a no-op.
        */
-      hasCanvasTarget: boolean
-    }
+    hasCanvasTarget: boolean
+  }
 
 /**
  * Input events fed into the drag-controller reducer.

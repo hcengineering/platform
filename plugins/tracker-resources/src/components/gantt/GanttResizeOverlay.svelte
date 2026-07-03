@@ -110,21 +110,35 @@
 
 {#if pd !== null && gx !== null}
   <g transform="translate({gx}, 0)" class="date-pill" pointer-events="none">
-    <rect x={-44} y={2} width={88} height={18} rx={9} ry={9}
-      fill="var(--theme-state-info-color, #6366f1)" />
+    <rect x={-44} y={2} width={88} height={18} rx={9} ry={9} fill="var(--theme-state-info-color, #6366f1)" />
     <text x={0} y={15} text-anchor="middle" fill="white" class="date-pill-text">{fmt(pd)}</text>
   </g>
 {/if}
 
 {#if tip !== null && gx !== null}
   <g transform="translate({gx}, {canvasHeight - 30})" class="duration-tip" pointer-events="none">
-    <rect x={-72} y={0} width={144} height={22} rx={4} ry={4}
-      fill="var(--theme-bg-color)" stroke="var(--theme-divider-color)" />
+    <rect
+      x={-72}
+      y={0}
+      width={144}
+      height={22}
+      rx={4}
+      ry={4}
+      fill="var(--theme-bg-color)"
+      stroke="var(--theme-divider-color)"
+    />
     <text x={0} y={15} text-anchor="middle" fill="var(--theme-content-color)" class="duration-tip-text">{tip}</text>
   </g>
 {/if}
 
 <style lang="scss">
-  .date-pill-text { font-size: 11px; font-weight: 600; user-select: none; }
-  .duration-tip-text { font-size: 11px; user-select: none; }
+  .date-pill-text {
+    font-size: 11px;
+    font-weight: 600;
+    user-select: none;
+  }
+  .duration-tip-text {
+    font-size: 11px;
+    user-select: none;
+  }
 </style>

@@ -46,11 +46,7 @@
       group: 'associate',
       action: async () => {
         dispatch('close')
-        showPopup(
-          CreateIssue,
-          { space: issue.space, parentIssue: issue, shouldSaveDraft: true },
-          'top'
-        )
+        showPopup(CreateIssue, { space: issue.space, parentIssue: issue, shouldSaveDraft: true }, 'top')
       }
     },
     {

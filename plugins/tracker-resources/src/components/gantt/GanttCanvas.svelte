@@ -36,7 +36,7 @@
 
   // PR 3 edit-mode props. Defaulted so GanttCanvas remains usable from
   // contexts that don't wire the drag state (e.g. embedded preview).
-  export let editableIssueIds: Set<string> = new Set()
+  export let editableIssueIds = new Set<string>()
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
   export let focusedIssueId: string | null = null
   export let selectedIssueId: string | null = null

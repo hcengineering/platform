@@ -95,8 +95,8 @@
     }
   }
 
-  $: effectiveStart = isSummary ? summaryRange?.startDate ?? issue.startDate : issue.startDate
-  $: effectiveDue = isSummary ? summaryRange?.dueDate ?? issue.dueDate : issue.dueDate
+  $: effectiveStart = isSummary ? (summaryRange?.startDate ?? issue.startDate) : issue.startDate
+  $: effectiveDue = isSummary ? (summaryRange?.dueDate ?? issue.dueDate) : issue.dueDate
 
   // PR 3 edit-mode: while THIS bar is the active drag target, swap the bar
   // geometry over to the reducer's preview values so the bar visually tracks
@@ -104,9 +104,7 @@
   // their stored geometry.
   $: dragState = $activeDrag
   $: isThisBarActive =
-    issueRef !== undefined &&
-    'issue' in dragState &&
-    (dragState as { issue?: Issue }).issue?._id === issueRef
+    issueRef !== undefined && 'issue' in dragState && (dragState as { issue?: Issue }).issue?._id === issueRef
   $: previewStart = (() => {
     if (!isThisBarActive) return effectiveStart
     if (dragState.kind === 'dragging-body' || dragState.kind === 'dragging-unscheduled') return dragState.previewStart
@@ -123,8 +121,8 @@
   })()
 
   $: visible = previewStart !== null && previewDue !== null
-  $: rawStart = (previewStart ?? 0) as number
-  $: rawDue = (previewDue ?? 0) as number
+  $: rawStart = previewStart ?? 0
+  $: rawDue = previewDue ?? 0
   // Normalise reversed ranges (start > due): render the bar across [min, max]
   // rather than collapsing to a 2px sliver at the start. Tooltip mirrors the
   // visual order so the user sees the same range that's drawn.
@@ -145,8 +143,12 @@
   // can use them as plain strings (svg `aria-label` accepts only strings).
   let ariaResizeStart = 'Resize start date'
   let ariaResizeEnd = 'Resize due date'
-  $: void translate(tracker.string.GanttAriaResizeStart, {}, $themeStore.language).then((s) => { ariaResizeStart = s })
-  $: void translate(tracker.string.GanttAriaResizeEnd, {}, $themeStore.language).then((s) => { ariaResizeEnd = s })
+  $: void translate(tracker.string.GanttAriaResizeStart, {}, $themeStore.language).then((s) => {
+    ariaResizeStart = s
+  })
+  $: void translate(tracker.string.GanttAriaResizeEnd, {}, $themeStore.language).then((s) => {
+    ariaResizeEnd = s
+  })
   // Heuristic: ~7.5px per character at 13px font — leave breathing room.
   const CHAR_PX = 7.5
   $: maxChars = Math.floor((w - 12) / CHAR_PX)
@@ -180,7 +182,7 @@
       -->
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect
-        x={x}
+        {x}
         y={barY}
         width={w}
         height={barH}
@@ -198,7 +200,7 @@
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <rect
           class="resize-handle resize-left"
-          x={x}
+          {x}
           y={barY}
           width={6}
           height={barH}
@@ -279,7 +281,7 @@
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect
         class="resize-handle resize-left"
-        x={x}
+        {x}
         y={barY}
         width={6}
         height={barH}
@@ -349,7 +351,7 @@
   .bar.focused {
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 2px;
-    stroke-dasharray: 2,2;
+    stroke-dasharray: 2, 2;
   }
   /*
    * Click-to-select state: solid blue outline so the user can clearly see

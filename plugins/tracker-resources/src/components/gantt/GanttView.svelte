@@ -5,7 +5,17 @@
   import { type Class, type Doc, type DocumentQuery, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { type Issue, type Milestone } from '@hcengineering/tracker'
-  import { Loading, Icon, Label, showPanel, showPopup, tooltip, addNotification, NotificationSeverity } from '@hcengineering/ui'
+  import {
+    Loading,
+    addNotification,
+    NotificationSeverity,
+    Icon,
+    Label,
+    showPanel,
+    showPopup,
+    tooltip,
+    getEventPositionElement
+  } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
   import { type Viewlet, type ViewOptions } from '@hcengineering/view'
   import { onDestroy, onMount } from 'svelte'
@@ -23,7 +33,6 @@
   import { type DragState, type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
-  import { getEventPositionElement } from '@hcengineering/ui'
   import { ganttExtraActions } from './lib/menu-actions'
   import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
   import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
@@ -75,7 +84,7 @@
   // editableIssueIds gates the resize handles + the Set-start-date menu entry
   // per issue based on canEditIssue() (utils.ts:280).
   const activeDrag = writable<DragState>({ kind: 'idle' })
-  let editableIssueIds: Set<string> = new Set()
+  let editableIssueIds = new Set<string>()
 
   /**
    * Click-to-select gate (user feedback 2026-05-11): a bar must be clicked
@@ -147,14 +156,10 @@
     }
     editableIssueIds = next
   })()
-  $: milestoneQuery.query(
-    tracker.class.Milestone,
-    milestoneDocQuery,
-    (res: Milestone[]) => {
-      milestones = res
-      loadingMilestones = false
-    }
-  )
+  $: milestoneQuery.query(tracker.class.Milestone, milestoneDocQuery, (res: Milestone[]) => {
+    milestones = res
+    loadingMilestones = false
+  })
 
   $: dateRange = computeDateRange(issues, milestones, zoom)
 
@@ -312,22 +317,30 @@
   // PR 3 edit-mode: bar mousedown → reducer; window mousemove/mouseup; commit.
   // -------------------------------------------------------------------------
 
-  function handleBarMouseDown (e: CustomEvent<{ issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }>): void {
+  function handleBarMouseDown (
+    e: CustomEvent<{ issue: Issue, edge: 'left' | 'right' | 'body', cursorX: number }>
+  ): void {
     const id = String(e.detail.issue._id)
     // Click-to-select gate: if this bar isn't already selected, the first
     // mousedown just selects it (no drag starts). User has to mousedown a
-    // second time on the now-selected bar to actually drag/resize. 
+    // second time on the now-selected bar to actually drag/resize.
     // safe and matches Plane's UX (user feedback 2026-05-11).
     if (selectedIssueId !== id) {
       selectedIssueId = id
       return
     }
-    activeDrag.update((s) => reduce(s, {
-      type: 'mousedown-bar',
-      issue: e.detail.issue,
-      edge: e.detail.edge,
-      cursorX: e.detail.cursorX
-    }, timeScale))
+    activeDrag.update((s) =>
+      reduce(
+        s,
+        {
+          type: 'mousedown-bar',
+          issue: e.detail.issue,
+          edge: e.detail.edge,
+          cursorX: e.detail.cursorX
+        },
+        timeScale
+      )
+    )
   }
 
   /**
@@ -419,9 +432,11 @@
    */
   async function askConfirm (state: DragState): Promise<boolean> {
     if (state.kind === 'idle' || state.kind === 'hover-bar') return false
-    const newStart = (state.kind === 'resizing-right' ? state.originStart : (state as { previewStart: number }).previewStart)
-    const newDue = (state.kind === 'resizing-left' ? state.originDue : (state as { previewDue: number }).previewDue)
-    const kind: 'move' | 'resize' = state.kind === 'resizing-left' || state.kind === 'resizing-right' ? 'resize' : 'move'
+    const newStart =
+      state.kind === 'resizing-right' ? state.originStart : (state as { previewStart: number }).previewStart
+    const newDue = state.kind === 'resizing-left' ? state.originDue : (state as { previewDue: number }).previewDue
+    const kind: 'move' | 'resize' =
+      state.kind === 'resizing-left' || state.kind === 'resizing-right' ? 'resize' : 'move'
     return await new Promise<boolean>((resolve) => {
       showPopup(
         GanttConfirmCommitPopup,
@@ -534,11 +549,17 @@
   }
 
   function handleRowDragStart (e: CustomEvent<{ issue: Issue, cursorX: number }>): void {
-    activeDrag.update((s) => reduce(s, {
-      type: 'mousedown-unscheduled',
-      issue: e.detail.issue,
-      cursorX: e.detail.cursorX
-    }, timeScale))
+    activeDrag.update((s) =>
+      reduce(
+        s,
+        {
+          type: 'mousedown-unscheduled',
+          issue: e.detail.issue,
+          cursorX: e.detail.cursorX
+        },
+        timeScale
+      )
+    )
   }
 
   function handleRowContextMenu (e: CustomEvent<{ issue: { _id: string, _class: string }, event: MouseEvent }>): void {
@@ -568,7 +589,7 @@
   async function shiftFocused (days: number): Promise<void> {
     if (focusedIssueId === null) return
     const i = scheduledIssues.find((it) => String(it._id) === focusedIssueId)
-    if (i === undefined || i.startDate == null || i.dueDate == null) return
+    if (i?.startDate == null || i.dueDate == null) return
     if (!editableIssueIds.has(focusedIssueId)) return
     const client = getClient()
     const ops = client.apply('gantt-keyshift')
@@ -750,7 +771,13 @@
     // Sidebar-cell + drag-grip + resize-handle excluded so the sidebar's
     // unscheduled-drag-grip doesn't compete with canvas pan for the same
     // pointerdown. review note (2026-05-11).
-    if (target.closest('.bar-wrap, .sidebar-cell, .drag-grip, .resize-handle, button, a, .toggle-btn, .jump-btn, .resize-cell')) return
+    if (
+      target.closest(
+        '.bar-wrap, .sidebar-cell, .drag-grip, .resize-handle, button, a, .toggle-btn, .jump-btn, .resize-cell'
+      )
+    ) {
+      return
+    }
     panning = true
     panStartX = e.clientX
     panStartY = e.clientY
@@ -1114,7 +1141,10 @@
             </div>
           {/if}
           {#if issue.startDate !== null && issue.dueDate !== null}
-            {@const days = Math.round((Math.max(issue.dueDate, issue.startDate) - Math.min(issue.dueDate, issue.startDate)) / 86_400_000) + 1}
+            {@const days =
+              Math.round(
+                (Math.max(issue.dueDate, issue.startDate) - Math.min(issue.dueDate, issue.startDate)) / 86_400_000
+              ) + 1}
             <div class="tt-line"><Label label={tracker.string.GanttDurationTooltip} params={{ days }} /></div>
           {/if}
         {/if}

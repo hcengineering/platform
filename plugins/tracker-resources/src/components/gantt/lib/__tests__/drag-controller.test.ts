@@ -48,11 +48,7 @@ describe('drag-controller — idle transitions', () => {
 describe('drag-controller — body drag', () => {
   it('mousedown-bar on edge=body transitions hover → dragging-body', () => {
     const hover: DragState = { kind: 'hover-bar', issueId: issue._id, edge: 'body' }
-    const next = reduce(
-      hover,
-      { type: 'mousedown-bar', issue, edge: 'body', cursorX: 200 },
-      ts
-    )
+    const next = reduce(hover, { type: 'mousedown-bar', issue, edge: 'body', cursorX: 200 }, ts)
     expect(next.kind).toBe('dragging-body')
     if (next.kind !== 'dragging-body') return
     expect(next.issue._id).toBe(issue._id)
@@ -112,11 +108,7 @@ describe('drag-controller — body drag', () => {
 describe('drag-controller — resize-left', () => {
   it('mousedown-bar on edge=left transitions hover → resizing-left', () => {
     const hover: DragState = { kind: 'hover-bar', issueId: issue._id, edge: 'left' }
-    const next = reduce(
-      hover,
-      { type: 'mousedown-bar', issue, edge: 'left', cursorX: 50 },
-      ts
-    )
+    const next = reduce(hover, { type: 'mousedown-bar', issue, edge: 'left', cursorX: 50 }, ts)
     expect(next.kind).toBe('resizing-left')
     if (next.kind !== 'resizing-left') return
     expect(next.previewStart).toBe(issue.startDate)
@@ -157,11 +149,7 @@ describe('drag-controller — resize-left', () => {
 describe('drag-controller — resize-right', () => {
   it('mousedown-bar on edge=right transitions hover → resizing-right', () => {
     const hover: DragState = { kind: 'hover-bar', issueId: issue._id, edge: 'right' }
-    const next = reduce(
-      hover,
-      { type: 'mousedown-bar', issue, edge: 'right', cursorX: 250 },
-      ts
-    )
+    const next = reduce(hover, { type: 'mousedown-bar', issue, edge: 'right', cursorX: 250 }, ts)
     expect(next.kind).toBe('resizing-right')
     if (next.kind !== 'resizing-right') return
     expect(next.previewDue).toBe(issue.dueDate)
@@ -207,11 +195,7 @@ describe('drag-controller — unscheduled drag', () => {
   } as unknown as Issue
 
   it('mousedown-unscheduled from idle transitions to dragging-unscheduled with origin fields', () => {
-    const next = reduce(
-      { kind: 'idle' },
-      { type: 'mousedown-unscheduled', issue: undated, cursorX: 100 },
-      ts
-    )
+    const next = reduce({ kind: 'idle' }, { type: 'mousedown-unscheduled', issue: undated, cursorX: 100 }, ts)
     expect(next.kind).toBe('dragging-unscheduled')
     if (next.kind !== 'dragging-unscheduled') return
     expect(next.previewStart).toBeGreaterThan(0)
@@ -264,11 +248,7 @@ describe('drag-controller — unscheduled drag', () => {
 
 describe('drag-controller — direct idle → drag (Playwright + edge-case)', () => {
   it('mousedown-bar from idle transitions directly to dragging-body', () => {
-    const next = reduce(
-      { kind: 'idle' },
-      { type: 'mousedown-bar', issue, edge: 'body', cursorX: 200 },
-      ts
-    )
+    const next = reduce({ kind: 'idle' }, { type: 'mousedown-bar', issue, edge: 'body', cursorX: 200 }, ts)
     expect(next.kind).toBe('dragging-body')
     if (next.kind !== 'dragging-body') return
     expect(next.previewStart).toBe(issue.startDate)
@@ -277,11 +257,7 @@ describe('drag-controller — direct idle → drag (Playwright + edge-case)', ()
   })
 
   it('mousedown-bar (edge=left) from idle goes directly to resizing-left', () => {
-    const next = reduce(
-      { kind: 'idle' },
-      { type: 'mousedown-bar', issue, edge: 'left', cursorX: 50 },
-      ts
-    )
+    const next = reduce({ kind: 'idle' }, { type: 'mousedown-bar', issue, edge: 'left', cursorX: 50 }, ts)
     expect(next.kind).toBe('resizing-left')
   })
 })

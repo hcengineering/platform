@@ -14,7 +14,16 @@
 -->
 <script lang="ts">
   import { Issue, trackerId } from '@hcengineering/tracker'
-  import { Button, IconAdd, IconScaleFull, Label, closeTooltip, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    IconAdd,
+    IconScaleFull,
+    Label,
+    closeTooltip,
+    getCurrentResolvedLocation,
+    navigate,
+    showPopup
+  } from '@hcengineering/ui'
   import { createFilter, restrictionStore, setFilters } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import LinkSubIssueActionPopup from '../../LinkSubIssueActionPopup.svelte'

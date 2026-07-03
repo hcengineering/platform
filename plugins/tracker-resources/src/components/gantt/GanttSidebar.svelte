@@ -57,9 +57,7 @@
     })
   }
 
-  function jumpDirection (
-    obj: { startDate: number | null, dueDate: number | null }
-  ): 'left' | 'right' | null {
+  function jumpDirection (obj: { startDate: number | null, dueDate: number | null }): 'left' | 'right' | null {
     if (timeScale === undefined) return null
     if (viewportRight <= viewportLeft) return null
     if (obj.startDate == null && obj.dueDate == null) return null
@@ -104,12 +102,17 @@
       class:summary={row.isSummary}
       class:milestone={row.kind === 'milestone'}
       class:hovered={hoveredRowId === row.id}
-      class:drag-dimmed={anyDragActive && row.issue !== null && activeIssueIdStr !== null && String(row.issue._id) !== activeIssueIdStr}
+      class:drag-dimmed={anyDragActive &&
+        row.issue !== null &&
+        activeIssueIdStr !== null &&
+        String(row.issue._id) !== activeIssueIdStr}
       style="height: {row.height}px; padding-left: {8 + indent}px;"
       on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
       on:mouseleave={() => dispatch('hoverRow', { id: null })}
-      on:contextmenu={(e) => onRowContextMenu(e, row)}
+      on:contextmenu={(e) => {
+        onRowContextMenu(e, row)
+      }}
     >
       <span class="col-toggle">
         {#if row.collapsible}
@@ -141,8 +144,8 @@
           <span
             class="drag-grip"
             use:tooltip={{ label: tracker.string.GanttDragToSchedule }}
-            on:mousedown|stopPropagation={row.issue !== null ? onDragGripDown(row.issue) : undefined}
-          >⋮⋮</span>
+            on:mousedown|stopPropagation={row.issue !== null ? onDragGripDown(row.issue) : undefined}>⋮⋮</span
+          >
         {/if}
         {#if showStatus}
           <span class="cell-status"><StatusBadge issue={row.issue} /></span>
@@ -321,7 +324,9 @@
   :global(.sidebar-rows.has-hover) .sidebar-row:not(.hovered) {
     opacity: 0.55;
   }
-  .sidebar-row.drag-dimmed { opacity: 0.55; }
+  .sidebar-row.drag-dimmed {
+    opacity: 0.55;
+  }
   .drag-grip {
     cursor: grab;
     color: var(--theme-darker-color);
@@ -329,7 +334,9 @@
     padding: 0 4px;
     font-size: 14px;
   }
-  .drag-grip:active { cursor: grabbing; }
+  .drag-grip:active {
+    cursor: grabbing;
+  }
   .sidebar-row.milestone.hovered {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
   }
