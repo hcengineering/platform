@@ -60,11 +60,7 @@ describe('computeBulkDeltaBounds', () => {
     // → minDeltaMs = -4 days.
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 10), Date.UTC(2026, 4, 14))
-    const r = computeBulkDeltaBounds(
-      new Set([B._id]),
-      [A, B],
-      [rel('A', 'B', 'finish-to-start', 0)]
-    )
+    const r = computeBulkDeltaBounds(new Set([B._id]), [A, B], [rel('A', 'B', 'finish-to-start', 0)])
     expect(r.minDeltaMs).toBe(-4 * DAY_MS)
     expect(r.maxDeltaMs).toBe(Infinity)
   })
@@ -76,11 +72,7 @@ describe('computeBulkDeltaBounds', () => {
     const B = issue('B', Date.UTC(2026, 4, 10), Date.UTC(2026, 4, 14))
     const C = issue('C', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const D = issue('D', Date.UTC(2026, 4, 7), Date.UTC(2026, 4, 12))
-    const r = computeBulkDeltaBounds(
-      new Set([B._id, D._id]),
-      [A, B, C, D],
-      [rel('A', 'B'), rel('C', 'D')]
-    )
+    const r = computeBulkDeltaBounds(new Set([B._id, D._id]), [A, B, C, D], [rel('A', 'B'), rel('C', 'D')])
     expect(r.minDeltaMs).toBe(-1 * DAY_MS)
     expect(r.maxDeltaMs).toBe(Infinity)
   })
@@ -90,11 +82,7 @@ describe('computeBulkDeltaBounds', () => {
     // hard stop because A is being dragged in lockstep.
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 10), Date.UTC(2026, 4, 14))
-    const r = computeBulkDeltaBounds(
-      new Set([A._id, B._id]),
-      [A, B],
-      [rel('A', 'B')]
-    )
+    const r = computeBulkDeltaBounds(new Set([A._id, B._id]), [A, B], [rel('A', 'B')])
     // A has no predecessor; B's only predecessor (A) is a member → unbounded.
     expect(r.minDeltaMs).toBe(-Infinity)
     expect(r.maxDeltaMs).toBe(Infinity)
@@ -113,11 +101,7 @@ describe('computeBulkDeltaBounds', () => {
     // B can move left by 5 days. → minDelta = -5 days.
     const A = issue('A', Date.UTC(2026, 4, 5), Date.UTC(2026, 4, 8))
     const B = issue('B', Date.UTC(2026, 4, 10), Date.UTC(2026, 4, 14))
-    const r = computeBulkDeltaBounds(
-      new Set([B._id]),
-      [A, B],
-      [rel('A', 'B', 'start-to-start', 0)]
-    )
+    const r = computeBulkDeltaBounds(new Set([B._id]), [A, B], [rel('A', 'B', 'start-to-start', 0)])
     expect(r.minDeltaMs).toBe(-5 * DAY_MS)
     expect(r.maxDeltaMs).toBe(Infinity)
   })
@@ -127,11 +111,7 @@ describe('computeBulkDeltaBounds', () => {
     // B can move left by 9 days. → minDelta = -9 days.
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 10), Date.UTC(2026, 4, 14))
-    const r = computeBulkDeltaBounds(
-      new Set([B._id]),
-      [A, B],
-      [rel('A', 'B', 'finish-to-finish', 0)]
-    )
+    const r = computeBulkDeltaBounds(new Set([B._id]), [A, B], [rel('A', 'B', 'finish-to-finish', 0)])
     expect(r.minDeltaMs).toBe(-9 * DAY_MS)
     expect(r.maxDeltaMs).toBe(Infinity)
   })
@@ -143,11 +123,7 @@ describe('computeBulkDeltaBounds', () => {
     // popup will surface the cycle error on commit.
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 10), Date.UTC(2026, 4, 14))
-    const r = computeBulkDeltaBounds(
-      new Set([B._id]),
-      [A, B],
-      [rel('A', 'B'), rel('B', 'A')]
-    )
+    const r = computeBulkDeltaBounds(new Set([B._id]), [A, B], [rel('A', 'B'), rel('B', 'A')])
     expect(r.minDeltaMs).toBe(-Infinity)
     expect(r.maxDeltaMs).toBe(Infinity)
   })

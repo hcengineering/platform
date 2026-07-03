@@ -18,8 +18,10 @@ describe('gantt-view-options', () => {
     })
 
     it('reads zoomLevel and panAnchorDate', () => {
-      expect(extractGanttSavedView({ ganttZoomLevel: 'month', ganttPanAnchorDate: '2026-07-01' }))
-        .toEqual({ zoomLevel: 'month', panAnchorDate: '2026-07-01' })
+      expect(extractGanttSavedView({ ganttZoomLevel: 'month', ganttPanAnchorDate: '2026-07-01' })).toEqual({
+        zoomLevel: 'month',
+        panAnchorDate: '2026-07-01'
+      })
     })
 
     it('ignores unknown zoomLevel and falls back to week', () => {
@@ -27,8 +29,9 @@ describe('gantt-view-options', () => {
     })
 
     it('ignores malformed panAnchorDate', () => {
-      expect(extractGanttSavedView({ ganttZoomLevel: 'day', ganttPanAnchorDate: 'not-a-date' }))
-        .toEqual({ zoomLevel: 'day' })
+      expect(extractGanttSavedView({ ganttZoomLevel: 'day', ganttPanAnchorDate: 'not-a-date' })).toEqual({
+        zoomLevel: 'day'
+      })
     })
 
     it('ignores non-string zoomLevel', () => {

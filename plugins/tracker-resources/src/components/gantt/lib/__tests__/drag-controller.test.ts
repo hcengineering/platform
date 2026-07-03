@@ -497,8 +497,16 @@ describe('drag-controller — bulk co-drag', () => {
         cursorX: 200,
         coDrag: {
           members: [
-            { issueId: issue._id as Ref<Issue>, originStart: issue.startDate as number, originEnd: issue.dueDate as number },
-            { issueId: issueB._id as Ref<Issue>, originStart: issueB.startDate as number, originEnd: issueB.dueDate as number }
+            {
+              issueId: issue._id,
+              originStart: issue.startDate as number,
+              originEnd: issue.dueDate as number
+            },
+            {
+              issueId: issueB._id,
+              originStart: issueB.startDate as number,
+              originEnd: issueB.dueDate as number
+            }
           ],
           minDeltaMs: -2 * 86_400_000,
           maxDeltaMs: Infinity
@@ -527,8 +535,16 @@ describe('drag-controller — bulk co-drag', () => {
       coDrag: {
         anchorDeltaMs: 0,
         members: [
-          { issueId: issue._id as Ref<Issue>, originStart: issue.startDate as number, originEnd: issue.dueDate as number },
-          { issueId: issueB._id as Ref<Issue>, originStart: issueB.startDate as number, originEnd: issueB.dueDate as number }
+          {
+            issueId: issue._id,
+            originStart: issue.startDate as number,
+            originEnd: issue.dueDate as number
+          },
+          {
+            issueId: issueB._id,
+            originStart: issueB.startDate as number,
+            originEnd: issueB.dueDate as number
+          }
         ],
         minDeltaMs: -2 * 86_400_000,
         maxDeltaMs: Infinity
@@ -554,7 +570,11 @@ describe('drag-controller — bulk co-drag', () => {
       coDrag: {
         anchorDeltaMs: 0,
         members: [
-          { issueId: issue._id as Ref<Issue>, originStart: issue.startDate as number, originEnd: issue.dueDate as number }
+          {
+            issueId: issue._id,
+            originStart: issue.startDate as number,
+            originEnd: issue.dueDate as number
+          }
         ],
         minDeltaMs: -5 * 86_400_000,
         maxDeltaMs: Infinity

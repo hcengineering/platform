@@ -31,10 +31,7 @@ function fv (over: Partial<FilteredView>): FilteredView {
 
 describe('filterGanttFilteredViews', () => {
   it('keeps only viewletId === gantt', () => {
-    const all = [
-      fv({ _id: 'a' as any, viewletId: GANTT }),
-      fv({ _id: 'b' as any, viewletId: LIST })
-    ]
+    const all = [fv({ _id: 'a' as any, viewletId: GANTT }), fv({ _id: 'b' as any, viewletId: LIST })]
     const { mine, shared } = filterGanttFilteredViews(all, GANTT, ME)
     expect(mine.map((v: FilteredView) => v._id)).toEqual(['a'])
     expect(shared).toEqual([])

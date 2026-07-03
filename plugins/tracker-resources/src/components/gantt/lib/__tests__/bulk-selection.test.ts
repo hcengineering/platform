@@ -5,13 +5,7 @@
 
 import type { Issue } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
-import {
-  toggleSelection,
-  selectSingle,
-  selectRange,
-  clearSelection,
-  selectAll
-} from '../bulk-selection'
+import { toggleSelection, selectSingle, selectRange, clearSelection, selectAll } from '../bulk-selection'
 
 const A = 'A' as Ref<Issue>
 const B = 'B' as Ref<Issue>

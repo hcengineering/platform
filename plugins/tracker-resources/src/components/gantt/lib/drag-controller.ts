@@ -170,10 +170,7 @@ function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeSc
     // is computed against the clamped delta so the entire group lands on
     // identical UTC-midnight boundaries.
     if (state.coDrag !== undefined) {
-      const clampedDeltaMs = Math.max(
-        state.coDrag.minDeltaMs,
-        Math.min(state.coDrag.maxDeltaMs, rawDeltaMs)
-      )
+      const clampedDeltaMs = Math.max(state.coDrag.minDeltaMs, Math.min(state.coDrag.maxDeltaMs, rawDeltaMs))
       const previewStart = snapToUtcMidnight(state.originStart + clampedDeltaMs)
       const previewEnd = snapToUtcMidnight(state.originEnd + clampedDeltaMs)
       // anchorDeltaMs tracks the snapped delta from the leading bar so that

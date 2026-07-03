@@ -52,7 +52,7 @@
     const ops = client.apply(undefined, 'gantt-dependency-edit')
     await ops.update(relation, after)
     const result = await ops.commit()
-    if (result.result !== false && undoManager !== undefined) {
+    if (result.result && undoManager !== undefined) {
       undoManager.push({
         kind: 'relation-edit',
         relationId: relation._id,
@@ -74,7 +74,7 @@
     const ops = client.apply(undefined, 'gantt-dependency-delete')
     await ops.remove(relation)
     const result = await ops.commit()
-    if (result.result !== false && undoManager !== undefined) {
+    if (result.result && undoManager !== undefined) {
       undoManager.push({
         kind: 'relation-delete',
         relation: snapshot,

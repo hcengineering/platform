@@ -19,7 +19,13 @@ function makeIssue (id: string, startDate: number | null, dueDate: number | null
   } as unknown as Issue
 }
 
-function makeRelation (id: string, from: string, to: string, kind: IssueRelation['kind'] = 'finish-to-start', lag = 0): IssueRelation {
+function makeRelation (
+  id: string,
+  from: string,
+  to: string,
+  kind: IssueRelation['kind'] = 'finish-to-start',
+  lag = 0
+): IssueRelation {
   return {
     _id: id as Ref<IssueRelation>,
     _class: 'tracker:class:IssueRelation' as IssueRelation['_class'],
@@ -33,7 +39,13 @@ function makeRelation (id: string, from: string, to: string, kind: IssueRelation
   } as unknown as IssueRelation
 }
 
-function dateChange (id: string, beforeStart: number, beforeDue: number, afterStart: number, afterDue: number): UndoEntry {
+function dateChange (
+  id: string,
+  beforeStart: number,
+  beforeDue: number,
+  afterStart: number,
+  afterDue: number
+): UndoEntry {
   return {
     kind: 'date-change',
     issueId: id as Ref<Issue>,
@@ -46,7 +58,15 @@ function dateChange (id: string, beforeStart: number, beforeDue: number, afterSt
 
 interface MockOps {
   updates: Array<{ doc: { _id: string }, update: Record<string, unknown> }>
-  added: Array<{ _class: string, space: string, attachedTo: string, attachedToClass: string, collection: string, attributes: Record<string, unknown>, id?: string }>
+  added: Array<{
+    _class: string
+    space: string
+    attachedTo: string
+    attachedToClass: string
+    collection: string
+    attributes: Record<string, unknown>
+    id?: string
+  }>
   removed: Array<{ _class: string, space: string, id: string }>
   removeDocCount: number
 }
@@ -87,12 +107,12 @@ function makeClient (initial: { issues?: Issue[], relations?: IssueRelation[] } 
           pending.push(() => {
             const cur = issues.get(String(doc._id))
             if (cur !== undefined) {
-              issues.set(String(doc._id), { ...cur, ...update } as Issue)
+              issues.set(String(doc._id), { ...cur, ...update } as unknown as Issue)
               return
             }
             const rel = relations.get(String(doc._id))
             if (rel !== undefined) {
-              relations.set(String(doc._id), { ...rel, ...update } as IssueRelation)
+              relations.set(String(doc._id), { ...rel, ...update } as unknown as IssueRelation)
             }
           })
           return undefined
@@ -284,8 +304,18 @@ describe('UndoManager — date-change apply', () => {
     mgr.push({
       kind: 'date-batch',
       changes: [
-        { issueId: 'a' as Ref<Issue>, issueSpace: space, before: { startDate: 50, dueDate: 150 }, after: { startDate: 100, dueDate: 200 } },
-        { issueId: 'b' as Ref<Issue>, issueSpace: space, before: { startDate: 250, dueDate: 350 }, after: { startDate: 300, dueDate: 400 } }
+        {
+          issueId: 'a' as Ref<Issue>,
+          issueSpace: space,
+          before: { startDate: 50, dueDate: 150 },
+          after: { startDate: 100, dueDate: 200 }
+        },
+        {
+          issueId: 'b' as Ref<Issue>,
+          issueSpace: space,
+          before: { startDate: 250, dueDate: 350 },
+          after: { startDate: 300, dueDate: 400 }
+        }
       ],
       description: 'Cascade: 2 issues shifted'
     })
@@ -304,8 +334,18 @@ describe('UndoManager — date-change apply', () => {
     mgr.push({
       kind: 'date-batch',
       changes: [
-        { issueId: 'a' as Ref<Issue>, issueSpace: space, before: { startDate: 50, dueDate: 150 }, after: { startDate: 100, dueDate: 200 } },
-        { issueId: 'b' as Ref<Issue>, issueSpace: space, before: { startDate: 250, dueDate: 350 }, after: { startDate: 300, dueDate: 400 } }
+        {
+          issueId: 'a' as Ref<Issue>,
+          issueSpace: space,
+          before: { startDate: 50, dueDate: 150 },
+          after: { startDate: 100, dueDate: 200 }
+        },
+        {
+          issueId: 'b' as Ref<Issue>,
+          issueSpace: space,
+          before: { startDate: 250, dueDate: 350 },
+          after: { startDate: 300, dueDate: 400 }
+        }
       ],
       description: 'Cascade: 2 issues shifted'
     })
@@ -383,8 +423,18 @@ describe('UndoManager — conflict detection', () => {
     mgr.push({
       kind: 'date-batch',
       changes: [
-        { issueId: 'a' as Ref<Issue>, issueSpace: space, before: { startDate: 50, dueDate: 150 }, after: { startDate: 100, dueDate: 200 } },
-        { issueId: 'b' as Ref<Issue>, issueSpace: space, before: { startDate: 250, dueDate: 350 }, after: { startDate: 300, dueDate: 400 } }
+        {
+          issueId: 'a' as Ref<Issue>,
+          issueSpace: space,
+          before: { startDate: 50, dueDate: 150 },
+          after: { startDate: 100, dueDate: 200 }
+        },
+        {
+          issueId: 'b' as Ref<Issue>,
+          issueSpace: space,
+          before: { startDate: 250, dueDate: 350 },
+          after: { startDate: 300, dueDate: 400 }
+        }
       ],
       description: 'Cascade'
     })
@@ -409,12 +459,12 @@ describe('UndoManager — conflict detection', () => {
     // Actually we push then mutate the issue externally before redo so the redo conflicts.
     // Better: manually populate the redo stack via undo first.
     // Push a second snapshot so undo→redo path is testable
-    client.state.issues.set('a', { ...issue, startDate: 100, dueDate: 200 } as Issue)
+    client.state.issues.set('a', { ...issue, startDate: 100, dueDate: 200 } as unknown as Issue)
     // Now mgr state: undoStack=[entry], current=after → undo succeeds and pushes to redo
     const u = await mgr.undo()
     expect(u.kind).toBe('success')
     // Now externally mutate the issue so redo conflicts (current ≠ before)
-    client.state.issues.set('a', { ...issue, startDate: 7777, dueDate: 8888 } as Issue)
+    client.state.issues.set('a', { ...issue, startDate: 7777, dueDate: 8888 } as unknown as Issue)
     const r = await mgr.redo()
     expect(r.kind).toBe('conflicted')
   })
