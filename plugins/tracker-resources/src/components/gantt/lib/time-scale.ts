@@ -61,7 +61,7 @@ export function createTimeScale (zoom: ZoomLevel, origin: number): TimeScale {
       case 'week': {
         const d = new Date(cursor)
         const dow = d.getUTCDay() // 0=Sun
-        const offsetToMonday = ((1 - dow) + 7) % 7
+        const offsetToMonday = (1 - dow + 7) % 7
         cursor += offsetToMonday * DAY_MS
         while (cursor <= to) {
           const c = new Date(cursor)
@@ -88,7 +88,10 @@ export function createTimeScale (zoom: ZoomLevel, origin: number): TimeScale {
             level: c.getUTCMonth() === 0 ? 'major' : 'minor'
           })
           m += 1
-          if (m > 11) { m = 0; y += 1 }
+          if (m > 11) {
+            m = 0
+            y += 1
+          }
           cursor = Date.UTC(y, m, 1)
         }
         break
@@ -107,7 +110,10 @@ export function createTimeScale (zoom: ZoomLevel, origin: number): TimeScale {
             level: qNum === 1 ? 'major' : 'minor'
           })
           q += 1
-          if (q > 3) { q = 0; y += 1 }
+          if (q > 3) {
+            q = 0
+            y += 1
+          }
           cursor = Date.UTC(y, q * 3, 1)
         }
         break

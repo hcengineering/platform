@@ -45,7 +45,7 @@ export function buildLayout (
   const collapsedIds = opts.collapsedIds ?? new Set<string>()
 
   // 1) Build issue parent/child map, dropping orphan parent refs.
-  const visibleIssueIds = new Set<string>(issues.map(i => i._id as unknown as string))
+  const visibleIssueIds = new Set<string>(issues.map((i) => i._id as unknown as string))
   const issueChildrenOf = new Map<string, Issue[]>()
   const issueRoots: Issue[] = []
   for (const i of issues) {
@@ -150,5 +150,5 @@ export function filterVisibleRows (
 ): LayoutRow[] {
   const min = viewportTop - overscan
   const max = viewportTop + viewportHeight + overscan
-  return rows.filter(r => r.y + r.height >= min && r.y <= max)
+  return rows.filter((r) => r.y + r.height >= min && r.y <= max)
 }

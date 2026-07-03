@@ -65,7 +65,7 @@ describe('createTimeScale', () => {
     for (const t of ticks) {
       expect(new Date(t.date).getUTCDay()).toBe(1)
     }
-    expect(ticks.every(t => Number.isInteger(t.date))).toBe(true)
+    expect(ticks.every((t) => Number.isInteger(t.date))).toBe(true)
   })
 
   it('all tick dates are UTC midnights', () => {

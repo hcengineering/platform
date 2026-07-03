@@ -252,7 +252,12 @@ export function ganttViewOptions (): ViewOptionsModel {
 export function ganttConfig (): BuildModelKey[] {
   // Minimal config — Gantt drives its own column layout.
   return [
-    { key: '', presenter: tracker.component.PriorityEditor, label: tracker.string.Priority, props: { kind: 'list', size: 'small' } },
+    {
+      key: '',
+      presenter: tracker.component.PriorityEditor,
+      label: tracker.string.Priority,
+      props: { kind: 'list', size: 'small' }
+    },
     { key: '', presenter: tracker.component.IssuePresenter, label: tracker.string.Issue }
   ]
 }

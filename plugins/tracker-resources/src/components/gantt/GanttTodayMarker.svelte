@@ -9,7 +9,7 @@
   // Viewport accepted for API compatibility but no longer used for clipping
   // (the SVG itself spans the whole canvas so the browser handles overflow).
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export let viewport: { left: number; right: number } = { left: 0, right: 0 }
+  export let viewport: { left: number, right: number } = { left: 0, right: 0 }
   $: void viewport
 
   $: today = Date.now()
@@ -29,10 +29,8 @@
 />
 <!-- Date-pill label at the top of the today line -->
 <g transform="translate({x},0)" class="today-label">
-  <rect x={-22} y={2} width={44} height={16} rx={8} ry={8}
-    fill="var(--theme-state-warning-color, #dc2626)" />
-  <text x={0} y={13} text-anchor="middle"
-    fill="white" class="today-label-text">{dateLabel}</text>
+  <rect x={-22} y={2} width={44} height={16} rx={8} ry={8} fill="var(--theme-state-warning-color, #dc2626)" />
+  <text x={0} y={13} text-anchor="middle" fill="white" class="today-label-text">{dateLabel}</text>
 </g>
 
 <style lang="scss">

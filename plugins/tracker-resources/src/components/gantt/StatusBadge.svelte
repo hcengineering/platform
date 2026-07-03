@@ -31,11 +31,7 @@
   }
 </script>
 
-<span
-  class="status-dot"
-  style="background-color: {color};"
-  title={statusName}
-/>
+<span class="status-dot" style="background-color: {color};" title={statusName} />
 
 <style lang="scss">
   .status-dot {

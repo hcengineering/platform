@@ -23,7 +23,7 @@
   export let summaryRanges: Map<string, SummaryRange>
   export let scrollTop: number = 0
   export let viewportHeight: number = 600
-  export let viewport: { left: number; right: number }
+  export let viewport: { left: number, right: number }
   export let totalWidth: number
   export let milestoneStripHeight: number = 0
   export let hoveredRowId: string | null = null
@@ -39,10 +39,7 @@
   $: visibleRows = filterVisibleRows(rows, scrollTop, viewportHeight)
   $: rowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
   $: totalHeight = rowsHeight + milestoneStripHeight
-  $: ticks = timeScale.ticks([
-    timeScale.fromX(Math.max(0, viewport.left - 100)),
-    timeScale.fromX(viewport.right + 100)
-  ])
+  $: ticks = timeScale.ticks([timeScale.fromX(Math.max(0, viewport.left - 100)), timeScale.fromX(viewport.right + 100)])
 
   function rowKey (row: LayoutRow): string {
     return row.id
@@ -108,13 +105,7 @@
         on:mouseleave={() => dispatch('hoverRow', { id: null })}
       >
         <!-- transparent hit-area covering the row width to capture hover -->
-        <rect
-          x={0}
-          y={row.y}
-          width={totalWidth}
-          height={row.height}
-          fill="transparent"
-        />
+        <rect x={0} y={row.y} width={totalWidth} height={row.height} fill="transparent" />
         {#if row.kind === 'milestone' && row.milestone !== null}
           {@const range = summaryFor(row)}
           {#if range !== null}
@@ -160,15 +151,8 @@
   <g class="milestones">
     {#each milestones as ms (ms._id)}
       {@const x = timeScale.toX(ms.targetDate)}
-      <line
-        x1={x} x2={x} y1={0} y2={14}
-        stroke="var(--theme-state-info-color, #6366f1)"
-        stroke-width={1.5}
-      />
-      <polygon
-        points="{x - 5},2 {x + 5},2 {x},10"
-        fill="var(--theme-state-info-color, #6366f1)"
-      >
+      <line x1={x} x2={x} y1={0} y2={14} stroke="var(--theme-state-info-color, #6366f1)" stroke-width={1.5} />
+      <polygon points="{x - 5},2 {x + 5},2 {x},10" fill="var(--theme-state-info-color, #6366f1)">
         <title>{ms.label}</title>
       </polygon>
     {/each}

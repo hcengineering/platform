@@ -32,9 +32,7 @@
     dispatch('openIssue', { issue: { _id: issue._id as string, _class: issue._class as string } })
   }
 
-  function jumpDirection (
-    obj: { startDate: number | null, dueDate: number | null }
-  ): 'left' | 'right' | null {
+  function jumpDirection (obj: { startDate: number | null, dueDate: number | null }): 'left' | 'right' | null {
     if (timeScale === undefined) return null
     if (viewportRight <= viewportLeft) return null
     if (obj.startDate == null && obj.dueDate == null) return null
@@ -47,9 +45,7 @@
     return null
   }
 
-  function rowJumpTarget (
-    row: LayoutRow
-  ): { startDate: number | null, dueDate: number | null } | null {
+  function rowJumpTarget (row: LayoutRow): { startDate: number | null, dueDate: number | null } | null {
     if (row.kind === 'issue' && row.issue !== null) {
       return { startDate: row.issue.startDate, dueDate: row.issue.dueDate }
     }
@@ -129,7 +125,9 @@
             on:click={() => {
               if (row.issue !== null) openIssue(row.issue)
             }}
-            on:keydown={(e) => { if (e.key === 'Enter' && row.issue !== null) openIssue(row.issue) }}
+            on:keydown={(e) => {
+              if (e.key === 'Enter' && row.issue !== null) openIssue(row.issue)
+            }}
           >
             {row.issue.title}
           </span>
@@ -148,7 +146,9 @@
           <button
             type="button"
             class="jump-btn"
-            use:tooltip={{ label: dir === 'left' ? tracker.string.GanttScrollLeftToBar : tracker.string.GanttScrollRightToBar }}
+            use:tooltip={{
+              label: dir === 'left' ? tracker.string.GanttScrollLeftToBar : tracker.string.GanttScrollRightToBar
+            }}
             on:click={() => dispatch('jump', { x: jumpX })}
           >
             {dir === 'left' ? '←' : '→'}
@@ -163,7 +163,9 @@
     role="button"
     tabindex="0"
     on:click={() => dispatch('addIssue')}
-    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue') }}
+    on:keydown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue')
+    }}
   >
     <span class="plus-glyph">+</span>
     <span class="add-issue-label"><Label label={tracker.string.AddIssue} /></span>
@@ -221,8 +223,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .cell-title.clickable { cursor: pointer; }
-  .cell-title.clickable:hover { text-decoration: underline; }
+  .cell-title.clickable {
+    cursor: pointer;
+  }
+  .cell-title.clickable:hover {
+    text-decoration: underline;
+  }
   .cell-jump {
     flex: 0 0 28px;
     display: flex;
@@ -243,7 +249,9 @@
     align-items: center;
     justify-content: center;
   }
-  .toggle-btn:hover { color: var(--theme-content-color); }
+  .toggle-btn:hover {
+    color: var(--theme-content-color);
+  }
   .jump-btn {
     width: 22px;
     height: 22px;
@@ -259,15 +267,19 @@
     align-items: center;
     justify-content: center;
   }
-  .jump-btn:hover { filter: brightness(1.1); }
-  .sidebar-row.summary { font-weight: 600; }
+  .jump-btn:hover {
+    filter: brightness(1.1);
+  }
+  .sidebar-row.summary {
+    font-weight: 600;
+  }
   .sidebar-row.milestone {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 6%, transparent);
   }
   .sidebar-row.hovered {
     background: var(--theme-button-hovered);
   }
-  /* When ANY row is hovered, dim non-hovered rows for a 
+  /* When ANY row is hovered, dim non-hovered rows for a
      spotlight effect — implemented by the parent setting a data attr. */
   :global(.sidebar-rows.has-hover) .sidebar-row:not(.hovered) {
     opacity: 0.55;
