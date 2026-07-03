@@ -39,6 +39,6 @@ export function isConfirming (): boolean {
 }
 
 /** Test-only — reset flag between specs so a leaked-true doesn't bleed. */
-export function __resetConfirmGate (): void {
+export function resetConfirmGate (): void {
   confirming = false
 }

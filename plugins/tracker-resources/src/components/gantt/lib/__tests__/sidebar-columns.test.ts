@@ -108,9 +108,7 @@ describe('sidebar-columns: computeTotalWidth', () => {
 
   it('falls back to DEFAULT_WIDTHS when a column has no override', () => {
     const cols: SidebarColumnKey[] = ['identifier', 'title']
-    expect(computeTotalWidth(cols, {})).toBe(
-      DEFAULT_WIDTHS.identifier + DEFAULT_WIDTHS.title
-    )
+    expect(computeTotalWidth(cols, {})).toBe(DEFAULT_WIDTHS.identifier + DEFAULT_WIDTHS.title)
   })
 
   it('matches DEFAULT_COLUMNS sum when widths is empty', () => {

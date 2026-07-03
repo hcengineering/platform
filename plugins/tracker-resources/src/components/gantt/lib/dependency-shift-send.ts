@@ -67,16 +67,13 @@ export interface DependencyShiftSendArgs {
  * created, no one ever opened them) fall back to their `assignee` field —
  * matching the server-side `getDocCollaborators` behaviour.
  */
-async function collectCollaborators (
-  client: TxOperations,
-  issues: Issue[]
-): Promise<Map<Ref<Issue>, AccountUuid[]>> {
+async function collectCollaborators (client: TxOperations, issues: Issue[]): Promise<Map<Ref<Issue>, AccountUuid[]>> {
   const map = new Map<Ref<Issue>, AccountUuid[]>()
   if (issues.length === 0) return map
 
   const issueIds = Array.from(new Set(issues.map((i) => i._id)))
   const collabs = await client.findAll(core.class.Collaborator, {
-    attachedTo: { $in: issueIds as Ref<Doc>[] }
+    attachedTo: { $in: issueIds as Array<Ref<Doc>> }
   })
   for (const c of collabs) {
     const target = c.attachedTo as Ref<Issue>
@@ -158,10 +155,7 @@ export async function sendDependencyShiftedNotifications (
   onError?: (err: unknown) => void
 ): Promise<number> {
   try {
-    const allIssues: Issue[] = [
-      ...args.primaries.map((p) => p.issue),
-      ...args.shifts.map((s) => s.issue)
-    ]
+    const allIssues: Issue[] = [...args.primaries.map((p) => p.issue), ...args.shifts.map((s) => s.issue)]
     if (allIssues.length === 0) return 0
 
     const collaborators = await collectCollaborators(client, allIssues)
@@ -228,30 +222,26 @@ async function createOneBundle (
     )
   }
 
-  await client.createDoc(
-    tracker.class.DependencyShiftedNotification,
-    space as unknown as Ref<Space>,
-    {
-      user: recipient,
-      isViewed: false,
-      docNotifyContext: contextId,
-      objectId: args.triggerIssue._id,
-      objectClass: tracker.class.Issue,
-      archived: false,
-      // CommonInboxNotification routing
-      header: tracker.string.DependencyShiftedHeader,
-      message: tracker.string.DependencyShiftedMessage,
-      intlParams: {
-        count: shiftedIssues.length,
-        trigger: args.triggerIssue.identifier
-      },
-      // DependencyShiftedNotification payload
-      triggerIssueId: args.triggerIssue._id,
-      triggerIssueIdentifier: args.triggerIssue.identifier,
-      triggerIssueTitle: args.triggerIssue.title,
-      triggerUserId: args.triggerUser,
-      shiftedIssues,
-      cascadeToken: args.cascadeToken
-    }
-  )
+  await client.createDoc(tracker.class.DependencyShiftedNotification, space as unknown as Ref<Space>, {
+    user: recipient,
+    isViewed: false,
+    docNotifyContext: contextId,
+    objectId: args.triggerIssue._id,
+    objectClass: tracker.class.Issue,
+    archived: false,
+    // CommonInboxNotification routing
+    header: tracker.string.DependencyShiftedHeader,
+    message: tracker.string.DependencyShiftedMessage,
+    intlParams: {
+      count: shiftedIssues.length,
+      trigger: args.triggerIssue.identifier
+    },
+    // DependencyShiftedNotification payload
+    triggerIssueId: args.triggerIssue._id,
+    triggerIssueIdentifier: args.triggerIssue.identifier,
+    triggerIssueTitle: args.triggerIssue.title,
+    triggerUserId: args.triggerUser,
+    shiftedIssues,
+    cascadeToken: args.cascadeToken
+  })
 }

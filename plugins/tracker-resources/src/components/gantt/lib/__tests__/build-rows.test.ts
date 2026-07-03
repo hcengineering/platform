@@ -4,12 +4,7 @@
 //
 
 import type { Issue } from '@hcengineering/tracker'
-import {
-  GROUP_HEADER_HEIGHT,
-  buildGroupedRows,
-  groupRowsToLayoutRows,
-  type GanttGroupRow
-} from '../build-rows'
+import { GROUP_HEADER_HEIGHT, buildGroupedRows, groupRowsToLayoutRows, type GanttGroupRow } from '../build-rows'
 
 const ROW_HEIGHT = 32
 
@@ -47,7 +42,7 @@ describe('buildGroupedRows — none (no grouping)', () => {
     })
     expect(rows).toHaveLength(3)
     expect(rows.every((r): r is Extract<GanttGroupRow, { kind: 'issue' }> => r.kind === 'issue')).toBe(true)
-    expect(rows.map(r => r.y)).toEqual([0, ROW_HEIGHT, 2 * ROW_HEIGHT])
+    expect(rows.map((r) => r.y)).toEqual([0, ROW_HEIGHT, 2 * ROW_HEIGHT])
     expect((rows[0] as any).depth).toBe(0)
   })
 
@@ -123,7 +118,7 @@ describe('buildGroupedRows — group by priority sorts numerically', () => {
       rowHeight: ROW_HEIGHT,
       collapsedGroups: new Set()
     })
-    const headerKeys = rows.filter(r => r.kind === 'group-header').map(r => (r as any).groupKey)
+    const headerKeys = rows.filter((r) => r.kind === 'group-header').map((r) => (r as any).groupKey)
     expect(headerKeys).toEqual(['1', '2', '3'])
   })
 })
@@ -139,16 +134,13 @@ describe('buildGroupedRows — group by assignee sentinel sorts last', () => {
       rowHeight: ROW_HEIGHT,
       collapsedGroups: new Set()
     })
-    const headerKeys = rows.filter(r => r.kind === 'group-header').map(r => (r as any).groupKey)
+    const headerKeys = rows.filter((r) => r.kind === 'group-header').map((r) => (r as any).groupKey)
     expect(headerKeys).toEqual(['p-1', 'p-2', '__unassigned__'])
   })
 })
 
 describe('groupRowsToLayoutRows adapter', () => {
-  const issues = [
-    makeIssue('a', { status: 's-1' as any }),
-    makeIssue('b', { status: 's-1' as any })
-  ]
+  const issues = [makeIssue('a', { status: 's-1' as any }), makeIssue('b', { status: 's-1' as any })]
   const grouped = buildGroupedRows(issues, 'status', { rowHeight: ROW_HEIGHT, collapsedGroups: new Set() })
 
   it('maps group-header rows to LayoutRow with group metadata', () => {
@@ -190,7 +182,7 @@ describe('buildGroupedRows — sort hook within a group', () => {
       collapsedGroups: new Set(),
       withinGroupCompare: (a, b) => a.title.localeCompare(b.title)
     })
-    const issueRows = rows.filter(r => r.kind === 'issue')
+    const issueRows = rows.filter((r) => r.kind === 'issue')
     expect((issueRows[0] as any).issue._id).toBe('a')
     expect((issueRows[1] as any).issue._id).toBe('z')
   })
@@ -198,10 +190,7 @@ describe('buildGroupedRows — sort hook within a group', () => {
 
 describe('buildGroupedRows — nameLookup display labels (v121 fix)', () => {
   it('renders the resolved display name in group-header rows', () => {
-    const issues = [
-      makeIssue('i1', { component: 'comp-1' as any }),
-      makeIssue('i2', { component: 'comp-2' as any })
-    ]
+    const issues = [makeIssue('i1', { component: 'comp-1' as any }), makeIssue('i2', { component: 'comp-2' as any })]
     const lookup = new Map<string, string>([
       ['comp-1', 'Backend'],
       ['comp-2', 'Frontend']
@@ -211,8 +200,8 @@ describe('buildGroupedRows — nameLookup display labels (v121 fix)', () => {
       collapsedGroups: new Set(),
       nameLookup: lookup
     })
-    const headers = rows.filter(r => r.kind === 'group-header')
-    const labels = headers.map(h => (h as any).label).sort()
+    const headers = rows.filter((r) => r.kind === 'group-header')
+    const labels = headers.map((h) => (h as any).label).sort((a, b) => String(a).localeCompare(String(b)))
     expect(labels).toEqual(['Backend', 'Frontend'])
   })
 
@@ -223,15 +212,12 @@ describe('buildGroupedRows — nameLookup display labels (v121 fix)', () => {
       collapsedGroups: new Set(),
       nameLookup: new Map()
     })
-    const header = rows.find(r => r.kind === 'group-header')
+    const header = rows.find((r) => r.kind === 'group-header')
     expect((header as any).label).toBe('comp-1')
   })
 
   it('resolves priority numeric keys to translated names', () => {
-    const issues = [
-      makeIssue('i1', { priority: 1 as any }),
-      makeIssue('i2', { priority: 4 as any })
-    ]
+    const issues = [makeIssue('i1', { priority: 1 as any }), makeIssue('i2', { priority: 4 as any })]
     const lookup = new Map<string, string>([
       ['1', 'Urgent'],
       ['4', 'Low']
@@ -241,7 +227,7 @@ describe('buildGroupedRows — nameLookup display labels (v121 fix)', () => {
       collapsedGroups: new Set(),
       nameLookup: lookup
     })
-    const labels = rows.filter(r => r.kind === 'group-header').map(h => (h as any).label)
+    const labels = rows.filter((r) => r.kind === 'group-header').map((h) => (h as any).label)
     expect(labels).toEqual(['Urgent', 'Low'])
   })
 })

@@ -280,7 +280,7 @@ export function simulateCascade (
       } else if (r.kind === 'finish-to-finish') {
         requiredAnchor = ffAnchor(curDates.due, lag, cfg)
         targetAnchorIsStart = false
-      } else /* start-to-finish */ {
+      } /* start-to-finish */ else {
         requiredAnchor = sfAnchor(curDates.start, lag, cfg)
         targetAnchorIsStart = false
       }
@@ -349,7 +349,7 @@ export function simulateCascade (
       } else if (r.kind === 'finish-to-finish') {
         requiredAnchor = ffReverseAnchor(curDates.due, lag, cfg)
         predAnchorIsDue = true
-      } else /* start-to-finish */ {
+      } /* start-to-finish */ else {
         requiredAnchor = sfReverseAnchor(curDates.due, lag, cfg)
         predAnchorIsDue = false
       }

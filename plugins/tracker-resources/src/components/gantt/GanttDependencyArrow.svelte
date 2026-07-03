@@ -89,19 +89,23 @@
   $: pillWidth = Math.max(28, pillText.length * 6 + 8)
   // Off-viewport indicator endpoints — small triangle at the clipped edge.
   // Only rendered when the corresponding endpoint is actually clipped.
-  $: sourceIndicator = (yBounds !== undefined && (visibility.kind === 'target-only' || visibility.kind === 'both-off'))
-    ? p1
-    : null
-  $: targetIndicator = (yBounds !== undefined && (visibility.kind === 'source-only' || visibility.kind === 'both-off'))
-    ? p2
-    : null
+  $: sourceIndicator =
+    yBounds !== undefined && (visibility.kind === 'target-only' || visibility.kind === 'both-off') ? p1 : null
+  $: targetIndicator =
+    yBounds !== undefined && (visibility.kind === 'source-only' || visibility.kind === 'both-off') ? p2 : null
   // Which y-edge each indicator points to (▲ for top, ▼ for bottom).
-  $: sourceIndicatorEdge = (visibility.kind === 'target-only')
-    ? visibility.sourceEdge
-    : (visibility.kind === 'both-off' ? visibility.sourceEdge : null)
-  $: targetIndicatorEdge = (visibility.kind === 'source-only')
-    ? visibility.targetEdge
-    : (visibility.kind === 'both-off' ? visibility.targetEdge : null)
+  $: sourceIndicatorEdge =
+    visibility.kind === 'target-only'
+      ? visibility.sourceEdge
+      : visibility.kind === 'both-off'
+        ? visibility.sourceEdge
+        : null
+  $: targetIndicatorEdge =
+    visibility.kind === 'source-only'
+      ? visibility.targetEdge
+      : visibility.kind === 'both-off'
+        ? visibility.targetEdge
+        : null
 
   function onSourceIndicator (evt: MouseEvent): void {
     if (evt.button !== 0) return
@@ -123,9 +127,10 @@
   let targetTitle: string = ''
   $: void (async () => {
     if (sourceIndicatorEdge !== null) {
-      const key = sourceIndicatorEdge === 'top'
-        ? tracker.string.GanttArrowIndicatorSourceAbove
-        : tracker.string.GanttArrowIndicatorSourceBelow
+      const key =
+        sourceIndicatorEdge === 'top'
+          ? tracker.string.GanttArrowIndicatorSourceAbove
+          : tracker.string.GanttArrowIndicatorSourceBelow
       sourceTitle = await translate(key, {}, $themeStore.language)
     } else {
       sourceTitle = ''
@@ -133,9 +138,10 @@
   })()
   $: void (async () => {
     if (targetIndicatorEdge !== null) {
-      const key = targetIndicatorEdge === 'top'
-        ? tracker.string.GanttArrowIndicatorTargetAbove
-        : tracker.string.GanttArrowIndicatorTargetBelow
+      const key =
+        targetIndicatorEdge === 'top'
+          ? tracker.string.GanttArrowIndicatorTargetAbove
+          : tracker.string.GanttArrowIndicatorTargetBelow
       targetTitle = await translate(key, {}, $themeStore.language)
     } else {
       targetTitle = ''
@@ -180,13 +186,16 @@
       <!-- Lag pill at the curve midpoint. Same click handler as the curve.
            Suppressed when either endpoint is clipped — pill at viewport
            edge is visually noisy and ambiguous. -->
-      <g
-        class="lag-pill"
-        transform={`translate(${mid.x - pillWidth / 2}, ${mid.y - 8})`}
-        on:click={onOpen}
-      >
-        <rect width={pillWidth} height={16} rx={8} ry={8}
-          fill="var(--theme-bg-color)" stroke="var(--theme-state-regular-color)" stroke-width={1} />
+      <g class="lag-pill" transform={`translate(${mid.x - pillWidth / 2}, ${mid.y - 8})`} on:click={onOpen}>
+        <rect
+          width={pillWidth}
+          height={16}
+          rx={8}
+          ry={8}
+          fill="var(--theme-bg-color)"
+          stroke="var(--theme-state-regular-color)"
+          stroke-width={1}
+        />
         <text x={pillWidth / 2} y={11} text-anchor="middle" class="lag-pill-text">{pillText}</text>
       </g>
     {/if}
@@ -235,8 +244,12 @@
   :global(svg.gantt-canvas .gantt-dep-arrow .lag-pill) {
     cursor: pointer;
   }
-  :global(svg.gantt-canvas .gantt-dep-arrow:hover .curve) { stroke: var(--theme-content-color); }
-  :global(svg.gantt-canvas .gantt-dep-arrow:hover .arrowhead) { fill: var(--theme-content-color); }
+  :global(svg.gantt-canvas .gantt-dep-arrow:hover .curve) {
+    stroke: var(--theme-content-color);
+  }
+  :global(svg.gantt-canvas .gantt-dep-arrow:hover .arrowhead) {
+    fill: var(--theme-content-color);
+  }
   :global(svg.gantt-canvas .lag-pill-text) {
     font-size: 10px;
     font-weight: 600;

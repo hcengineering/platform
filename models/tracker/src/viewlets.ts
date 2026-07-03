@@ -303,14 +303,14 @@ export function ganttViewOptions (): ViewOptionsModel {
         actionTarget: 'display',
         label: tracker.string.GanttBarLabelLeft,
         values: [
-          { id: 'none',       label: tracker.string.BarLabelNone },
-          { id: 'title',      label: tracker.string.BarLabelTitle },
+          { id: 'none', label: tracker.string.BarLabelNone },
+          { id: 'title', label: tracker.string.BarLabelTitle },
           { id: 'identifier', label: tracker.string.BarLabelIdentifier },
-          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
-          { id: 'priority',   label: tracker.string.BarLabelPriority },
-          { id: 'status',     label: tracker.string.BarLabelStatus },
+          { id: 'assignee', label: tracker.string.BarLabelAssignee },
+          { id: 'priority', label: tracker.string.BarLabelPriority },
+          { id: 'status', label: tracker.string.BarLabelStatus },
           { id: 'estimation', label: tracker.string.BarLabelEstimation },
-          { id: 'progress',   label: tracker.string.BarLabelProgress }
+          { id: 'progress', label: tracker.string.BarLabelProgress }
         ]
       },
       {
@@ -322,14 +322,14 @@ export function ganttViewOptions (): ViewOptionsModel {
         actionTarget: 'display',
         label: tracker.string.GanttBarLabelInside,
         values: [
-          { id: 'none',       label: tracker.string.BarLabelNone },
-          { id: 'title',      label: tracker.string.BarLabelTitle },
+          { id: 'none', label: tracker.string.BarLabelNone },
+          { id: 'title', label: tracker.string.BarLabelTitle },
           { id: 'identifier', label: tracker.string.BarLabelIdentifier },
-          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
-          { id: 'priority',   label: tracker.string.BarLabelPriority },
-          { id: 'status',     label: tracker.string.BarLabelStatus },
+          { id: 'assignee', label: tracker.string.BarLabelAssignee },
+          { id: 'priority', label: tracker.string.BarLabelPriority },
+          { id: 'status', label: tracker.string.BarLabelStatus },
           { id: 'estimation', label: tracker.string.BarLabelEstimation },
-          { id: 'progress',   label: tracker.string.BarLabelProgress }
+          { id: 'progress', label: tracker.string.BarLabelProgress }
         ]
       },
       {
@@ -341,14 +341,14 @@ export function ganttViewOptions (): ViewOptionsModel {
         actionTarget: 'display',
         label: tracker.string.GanttBarLabelRight,
         values: [
-          { id: 'none',       label: tracker.string.BarLabelNone },
-          { id: 'title',      label: tracker.string.BarLabelTitle },
+          { id: 'none', label: tracker.string.BarLabelNone },
+          { id: 'title', label: tracker.string.BarLabelTitle },
           { id: 'identifier', label: tracker.string.BarLabelIdentifier },
-          { id: 'assignee',   label: tracker.string.BarLabelAssignee },
-          { id: 'priority',   label: tracker.string.BarLabelPriority },
-          { id: 'status',     label: tracker.string.BarLabelStatus },
+          { id: 'assignee', label: tracker.string.BarLabelAssignee },
+          { id: 'priority', label: tracker.string.BarLabelPriority },
+          { id: 'status', label: tracker.string.BarLabelStatus },
           { id: 'estimation', label: tracker.string.BarLabelEstimation },
-          { id: 'progress',   label: tracker.string.BarLabelProgress }
+          { id: 'progress', label: tracker.string.BarLabelProgress }
         ]
       },
       {

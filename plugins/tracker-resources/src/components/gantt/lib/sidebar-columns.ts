@@ -59,12 +59,7 @@ export const ALL_COLUMN_KEYS: readonly SidebarColumnKey[] = [
  * pre-Phase-3a sidebar exactly, so existing users see no surface change
  * on first upgrade.
  */
-export const DEFAULT_COLUMNS: readonly SidebarColumnKey[] = [
-  'identifier',
-  'title',
-  'predecessors',
-  'slack'
-]
+export const DEFAULT_COLUMNS: readonly SidebarColumnKey[] = ['identifier', 'title', 'predecessors', 'slack']
 
 /** Per-column default pixel width. Tweak in tandem with `.cell-{key}` CSS. */
 export const DEFAULT_WIDTHS: Record<SidebarColumnKey, number> = {
@@ -133,16 +128,12 @@ export function clampWidth (px: number): number {
  * coerced to {@link DEFAULT_WIDTHS} for that column — matches the
  * defensive parsing contract in {@link parseColumns}.
  */
-export function computeTotalWidth (
-  cols: readonly SidebarColumnKey[],
-  widths: Record<string, number>
-): number {
+export function computeTotalWidth (cols: readonly SidebarColumnKey[], widths: Record<string, number>): number {
   let sum = 0
   for (const c of cols) {
     const override = widths[c]
-    const usable = typeof override === 'number' && Number.isFinite(override) && override > 0
-      ? override
-      : DEFAULT_WIDTHS[c]
+    const usable =
+      typeof override === 'number' && Number.isFinite(override) && override > 0 ? override : DEFAULT_WIDTHS[c]
     sum += usable
   }
   return sum

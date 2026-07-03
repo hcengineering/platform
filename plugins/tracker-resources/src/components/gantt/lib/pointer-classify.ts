@@ -24,11 +24,7 @@ export type PointerKind = PointerEvent['pointerType'] | 'mouse' | 'touch' | 'pen
 export type PointerAction = 'tap' | 'drag' | 'resize' | 'connector'
 export type PointerDecision = 'allow' | 'long-press' | 'block'
 
-export function classifyPointer (
-  mode: LayoutMode,
-  pointerType: PointerKind,
-  action: PointerAction
-): PointerDecision {
+export function classifyPointer (mode: LayoutMode, pointerType: PointerKind, action: PointerAction): PointerDecision {
   if (mode === 'phone') {
     // Phone is strictly read-only regardless of input device. Only `tap`
     // (open Quick-Info / activate Sidebar drawer) is allowed.

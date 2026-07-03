@@ -37,10 +37,7 @@ const GRID_COL: Record<DiagramKindCode, 0 | 1> = { FS: 0, SS: 1, FF: 0, SF: 1 }
  * neighbouring kind for the given direction or `null` if the move would
  * leave the grid (i.e. arrow-up on FS).
  */
-export function diagramGridIndex (
-  from: DiagramKindCode,
-  dir: 'up' | 'down' | 'left' | 'right'
-): DiagramKindCode | null {
+export function diagramGridIndex (from: DiagramKindCode, dir: 'up' | 'down' | 'left' | 'right'): DiagramKindCode | null {
   let row: number = GRID_ROW[from]
   let col: number = GRID_COL[from]
   if (dir === 'up') row -= 1
@@ -60,11 +57,7 @@ export function diagramGridIndex (
  * still supports the full storage range -30..+90 — that wider clamp is
  * applied separately on save in DependencyEditor.svelte.
  */
-export function clampLagSlider (
-  n: number,
-  sliderMin: number = -14,
-  sliderMax: number = 14
-): number {
+export function clampLagSlider (n: number, sliderMin: number = -14, sliderMax: number = 14): number {
   if (Number.isNaN(n)) return 0
   const r = Math.round(n)
   if (r < sliderMin) return sliderMin
@@ -156,6 +149,8 @@ export function getDiagramSvgPaths (kind: DiagramKindCode): DiagramSvgPaths {
   const endY = succ.y + succ.h / 2
   return {
     rects: [pred, succ],
-    arrow: { points: `${startX},${startY} ${startX - 4},${startY} ${startX - 4},${aboveY} ${endX + 4},${aboveY} ${endX + 4},${endY} ${endX},${endY}` }
+    arrow: {
+      points: `${startX},${startY} ${startX - 4},${startY} ${startX - 4},${aboveY} ${endX + 4},${aboveY} ${endX + 4},${endY} ${endX},${endY}`
+    }
   }
 }

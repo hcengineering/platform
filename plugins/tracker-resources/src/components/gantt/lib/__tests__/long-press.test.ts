@@ -3,13 +3,7 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import {
-  initial,
-  reduceLongPress,
-  LONG_PRESS_MS,
-  MOVE_THRESHOLD_PX,
-  type LongPressState
-} from '../long-press'
+import { initial, reduceLongPress, LONG_PRESS_MS, MOVE_THRESHOLD_PX, type LongPressState } from '../long-press'
 
 describe('long-press — initial state', () => {
   it('starts idle', () => {

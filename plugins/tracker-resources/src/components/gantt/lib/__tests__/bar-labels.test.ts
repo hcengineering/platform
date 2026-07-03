@@ -77,14 +77,10 @@ describe('resolveBarLabel', () => {
   })
 
   it('returns progress as percent when reportedTime > 0 and estimation > 0', () => {
-    expect(
-      resolveBarLabel(makeIssue({ estimation: 10, reportedTime: 3 }), 'progress')
-    ).toBe('30%')
+    expect(resolveBarLabel(makeIssue({ estimation: 10, reportedTime: 3 }), 'progress')).toBe('30%')
   })
 
   it('returns empty string for progress when estimation = 0', () => {
-    expect(
-      resolveBarLabel(makeIssue({ estimation: 0, reportedTime: 5 }), 'progress')
-    ).toBe('')
+    expect(resolveBarLabel(makeIssue({ estimation: 0, reportedTime: 5 }), 'progress')).toBe('')
   })
 })

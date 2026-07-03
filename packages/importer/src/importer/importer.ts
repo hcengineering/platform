@@ -543,7 +543,7 @@ export class WorkspaceImporter {
     const allIssues = collectAllIssues(project.docs)
     for (const issue of allIssues) {
       if (issue.predecessors === undefined || issue.predecessors.length === 0) continue
-      const targetId = issueIdByTitle.get(issue.title) ?? (issue.id as Ref<Issue> | undefined)
+      const targetId = issueIdByTitle.get(issue.title) ?? issue.id
       if (targetId === undefined) {
         this.logger.error(`Cannot resolve target for predecessors of "${issue.title}"`)
         continue

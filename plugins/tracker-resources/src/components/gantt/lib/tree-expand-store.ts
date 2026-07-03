@@ -97,13 +97,21 @@ export function createTreeExpandStore (projectId: string, storage: Storage): Tre
       else next.add(id)
       commit(next)
     },
-    setAll: (collapsed) => { commit(new Set(collapsed)) },
-    expandAll: () => { commit(new Set()) },
-    collapseAll: (ids) => { commit(new Set(ids)) },
+    setAll: (collapsed) => {
+      commit(new Set(collapsed))
+    },
+    expandAll: () => {
+      commit(new Set())
+    },
+    collapseAll: (ids) => {
+      commit(new Set(ids))
+    },
     subscribe: (cb) => {
       listeners.add(cb)
       cb(current)
-      return () => { listeners.delete(cb) }
+      return () => {
+        listeners.delete(cb)
+      }
     }
   }
 }

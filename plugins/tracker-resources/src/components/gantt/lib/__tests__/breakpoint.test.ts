@@ -3,14 +3,7 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import {
-  detectLayoutMode,
-  isPhone,
-  isTablet,
-  isDesktop,
-  PHONE_MAX_WIDTH,
-  TABLET_MAX_WIDTH
-} from '../breakpoint'
+import { detectLayoutMode, isPhone, isTablet, isDesktop, PHONE_MAX_WIDTH, TABLET_MAX_WIDTH } from '../breakpoint'
 
 describe('breakpoint — detectLayoutMode', () => {
   it('classifies very small widths as phone', () => {

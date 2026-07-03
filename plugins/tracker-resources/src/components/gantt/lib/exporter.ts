@@ -79,7 +79,7 @@ function expandForCapture (root: HTMLElement): StyleSnapshot {
   mutate(root, 'height', 'auto')
 
   // Internal vertical scroller must show all rows.
-  const scroller = root.querySelector('.gantt-scroller') as HTMLElement | null
+  const scroller = root.querySelector('.gantt-scroller')
   if (scroller !== null) {
     mutate(scroller, 'overflow', 'visible')
     mutate(scroller, 'max-height', 'none')
@@ -88,7 +88,7 @@ function expandForCapture (root: HTMLElement): StyleSnapshot {
 
   // Horizontal proxy: reset the translateX so the chart is captured
   // from x=0 instead of from the user's current scroll position.
-  const hscrollInner = root.querySelector('.hscroll-inner') as HTMLElement | null
+  const hscrollInner = root.querySelector('.hscroll-inner')
   if (hscrollInner !== null) {
     mutate(hscrollInner, 'transform', 'translateX(0)')
   }
@@ -172,7 +172,9 @@ export function downloadBlob (blob: Blob, filename: string): void {
   a.click()
   document.body.removeChild(a)
   // Revoke after the click event has time to fire.
-  setTimeout(() => { URL.revokeObjectURL(url) }, 1000)
+  setTimeout(() => {
+    URL.revokeObjectURL(url)
+  }, 1000)
 }
 
 /** Convenience: render `el` to PNG and trigger a browser download. */
@@ -198,8 +200,12 @@ async function svgToPngBlob (svg: string, scale = 2): Promise<Blob> {
   try {
     const img = new Image()
     await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve()
-      img.onerror = () => reject(new Error('Could not render Gantt export SVG'))
+      img.onload = () => {
+        resolve()
+      }
+      img.onerror = () => {
+        reject(new Error('Could not render Gantt export SVG'))
+      }
       img.src = url
     })
     const canvas = document.createElement('canvas')
@@ -216,28 +222,26 @@ async function svgToPngBlob (svg: string, scale = 2): Promise<Blob> {
   }
 }
 
-function blobToDataUrl (blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
+async function blobToDataUrl (blob: Blob): Promise<string> {
+  return await new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result))
-    reader.onerror = () => reject(reader.error ?? new Error('Could not read export image'))
+    reader.onload = () => {
+      resolve(String(reader.result))
+    }
+    reader.onerror = () => {
+      reject(reader.error ?? new Error('Could not read export image'))
+    }
     reader.readAsDataURL(blob)
   })
 }
 
-export async function exportGanttDataToPng (
-  input: GanttExportInput,
-  filename: string = 'gantt-export'
-): Promise<void> {
+export async function exportGanttDataToPng (input: GanttExportInput, filename: string = 'gantt-export'): Promise<void> {
   const svg = buildGanttExportSvg(input)
   const blob = await svgToPngBlob(svg, 2)
   downloadBlob(blob, filename.endsWith('.png') ? filename : filename + '.png')
 }
 
-export async function exportGanttDataToPdf (
-  input: GanttExportInput,
-  filename: string = 'gantt-export'
-): Promise<void> {
+export async function exportGanttDataToPdf (input: GanttExportInput, filename: string = 'gantt-export'): Promise<void> {
   const svg = buildGanttExportSvg(input)
   const { width, height } = svgSize(svg)
   const png = await svgToPngBlob(svg, 2)
@@ -319,8 +323,10 @@ export async function exportElementToPdf (
 function serializeSvgWithInlineStyles (svg: SVGSVGElement): string {
   const clone = svg.cloneNode(true) as SVGSVGElement
   inlineStyles(svg, clone)
-  if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-  if (!clone.getAttribute('xmlns:xlink')) clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+  if ((clone.getAttribute('xmlns') ?? '') === '') clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+  if ((clone.getAttribute('xmlns:xlink') ?? '') === '') {
+    clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+  }
   const bbox = svg.getBoundingClientRect()
   clone.setAttribute('width', String(bbox.width))
   clone.setAttribute('height', String(bbox.height))
@@ -333,9 +339,17 @@ function inlineStyles (source: Element, clone: Element): void {
   for (let i = 0; i < srcStyle.length; i++) {
     const name = srcStyle.item(i)
     const value = srcStyle.getPropertyValue(name)
-    if (name.startsWith('font-') || name === 'fill' || name === 'stroke' || name === 'stroke-width' ||
-        name === 'stroke-dasharray' || name === 'stroke-opacity' || name === 'fill-opacity' ||
-        name === 'opacity' || name === 'color') {
+    if (
+      name.startsWith('font-') ||
+      name === 'fill' ||
+      name === 'stroke' ||
+      name === 'stroke-width' ||
+      name === 'stroke-dasharray' ||
+      name === 'stroke-opacity' ||
+      name === 'fill-opacity' ||
+      name === 'opacity' ||
+      name === 'color'
+    ) {
       cssText.push(`${name}:${value}`)
     }
   }

@@ -87,7 +87,6 @@
          (the Tier-stack toolbar). No duplicate buttons here. -->
   </svelte:fragment>
 
-
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
   </svelte:fragment>

@@ -161,7 +161,7 @@
       if (!editable || dragTarget === undefined) return
       if (evt.button !== 0) return
       const action: 'drag' | 'resize' = edge === 'body' ? 'drag' : 'resize'
-      const decision = classifyPointer(layoutMode, evt.pointerType as PointerKind, action)
+      const decision = classifyPointer(layoutMode, evt.pointerType, action)
       if (decision === 'block') return
       const modifiers = { metaKey: evt.metaKey, ctrlKey: evt.ctrlKey, shiftKey: evt.shiftKey }
       if (decision === 'allow') {
@@ -338,27 +338,33 @@
   // Manual-pin glyph takes 14 px of leading room; subtract that from the
   // label budget so the title doesn't overlap the glyph.
   $: maxChars = Math.floor((w - 12 - (manualPinVisible ? 14 : 0)) / CHAR_PX)
-  $: barLabel = maxChars >= 4
-    ? (issue.title.length > maxChars ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…' : issue.title)
-    : ''
+  $: barLabel =
+    maxChars >= 4
+      ? issue.title.length > maxChars
+        ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…'
+        : issue.title
+      : ''
   // For Issues we pass the full doc; for synthetic milestone/summary rows
   // GanttBar gets a bare {title, startDate, dueDate} via the `issue` prop,
   // so we have to skip label resolution and fall back to title-only.
   $: hasFullIssue = dragTarget !== undefined && dragTarget.kind === 'issue'
-  $: leftLabel = hasFullIssue ? resolveBarLabel((dragTarget as any)!.doc as Issue, barLabelLeft) : ''
-  $: insideLabelRaw = hasFullIssue ? resolveBarLabel((dragTarget as any)!.doc as Issue, barLabelInside) : ''
+  $: leftLabel = hasFullIssue ? resolveBarLabel((dragTarget as any).doc as Issue, barLabelLeft) : ''
+  $: insideLabelRaw = hasFullIssue ? resolveBarLabel((dragTarget as any).doc as Issue, barLabelInside) : ''
   $: insideLabel = (() => {
     if (insideLabelRaw === '') return ''
     if (maxChars < 4) return ''
     if (insideLabelRaw.length > maxChars) return insideLabelRaw.slice(0, Math.max(1, maxChars - 1)) + '…'
     return insideLabelRaw
   })()
-  $: rightLabel = hasFullIssue ? resolveBarLabel((dragTarget as any)!.doc as Issue, barLabelRight) : ''
+  $: rightLabel = hasFullIssue ? resolveBarLabel((dragTarget as any).doc as Issue, barLabelRight) : ''
   // Summary (milestone/parent) bars keep the old title-truncation behaviour
   // since we don't have a full Issue doc to resolve labels from.
-  $: summaryLabel = maxChars >= 4
-    ? (issue.title.length > maxChars ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…' : issue.title)
-    : ''
+  $: summaryLabel =
+    maxChars >= 4
+      ? issue.title.length > maxChars
+        ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…'
+        : issue.title
+      : ''
 </script>
 
 {#if visible}
@@ -429,12 +435,9 @@
       pointer-events="none"
     />
     {#if summaryLabel !== ''}
-      <text
-        x={x + 10}
-        y={barY + barH / 2 - 4}
-        class="bar-label summary-label"
-        fill="var(--theme-content-color)"
-      >{summaryLabel}</text>
+      <text x={x + 10} y={barY + barH / 2 - 4} class="bar-label summary-label" fill="var(--theme-content-color)"
+        >{summaryLabel}</text
+      >
     {/if}
     <title>{tooltipText}</title>
   {:else}
@@ -460,8 +463,8 @@
       rx={3}
       ry={3}
       fill={barColors.fill}
-      stroke={(isCritical || isViolated) ? 'var(--theme-state-negative-color)' : barColors.border}
-      stroke-width={(isCritical || isViolated) ? 2 : 1}
+      stroke={isCritical || isViolated ? 'var(--theme-state-negative-color)' : barColors.border}
+      stroke-width={isCritical || isViolated ? 2 : 1}
       stroke-dasharray={isViolated ? '4 2' : 'none'}
       class="bar"
       class:editable
@@ -550,20 +553,8 @@
            in the bar with 4 px of leading padding. pointer-events: none so
            drag/click stays routed to the underlying bar rect. -->
       <g class="manual-pin" pointer-events="none">
-        <circle
-          cx={x + 9}
-          cy={barY + barH / 2}
-          r={4}
-          fill={barColors.text}
-          stroke={barColors.fill}
-          stroke-width={1}
-        />
-        <circle
-          cx={x + 9}
-          cy={barY + barH / 2}
-          r={1.6}
-          fill={barColors.fill}
-        />
+        <circle cx={x + 9} cy={barY + barH / 2} r={4} fill={barColors.text} stroke={barColors.fill} stroke-width={1} />
+        <circle cx={x + 9} cy={barY + barH / 2} r={1.6} fill={barColors.fill} />
         <path
           d="M {x + 5} {barY + barH / 2} L {x + 1.5} {barY + barH / 2 - 0.5} L {x + 1.5} {barY + barH / 2 + 0.5} Z"
           fill={barColors.text}
@@ -576,8 +567,8 @@
         y={barY + barH / 2 + 4}
         class="bar-label-inside"
         fill={barColors.text}
-        pointer-events="none"
-      >{insideLabel}</text>
+        pointer-events="none">{insideLabel}</text
+      >
     {/if}
     {#if rightLabel !== ''}
       <text
@@ -587,8 +578,8 @@
         text-anchor="start"
         dominant-baseline="middle"
         fill="var(--theme-content-trans-color)"
-        pointer-events="none"
-      >{rightLabel}</text>
+        pointer-events="none">{rightLabel}</text
+      >
     {/if}
     <title>{tooltipText}</title>
   {/if}

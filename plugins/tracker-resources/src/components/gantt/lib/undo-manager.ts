@@ -322,7 +322,9 @@ export class UndoManager {
         break
       }
       case 'relation-edit': {
-        const rel = (await this.client.findOne(getRelationClass(), { _id: entry.relationId })) as IssueRelation | undefined
+        const rel = (await this.client.findOne(getRelationClass(), { _id: entry.relationId })) as
+          | IssueRelation
+          | undefined
         if (rel === undefined) throw new Error('Undo: relation not found')
         await ops.update(rel, { ...entry.before })
         affected.push(String(entry.relationId))
@@ -393,7 +395,9 @@ export class UndoManager {
         break
       }
       case 'relation-edit': {
-        const rel = (await this.client.findOne(getRelationClass(), { _id: entry.relationId })) as IssueRelation | undefined
+        const rel = (await this.client.findOne(getRelationClass(), { _id: entry.relationId })) as
+          | IssueRelation
+          | undefined
         if (rel === undefined) throw new Error('Redo: relation not found')
         await ops.update(rel, { ...entry.after })
         affected.push(String(entry.relationId))
@@ -441,7 +445,9 @@ export class UndoManager {
       case 'relation-create': {
         // mode='undo' (we want to remove it): the relation must still exist.
         // mode='redo' (we want to re-create it): it must currently be absent.
-        const existing = (await this.client.findOne(getRelationClass(), { _id: entry.relation._id })) as IssueRelation | undefined
+        const existing = (await this.client.findOne(getRelationClass(), { _id: entry.relation._id })) as
+          | IssueRelation
+          | undefined
         if (mode === 'undo') return existing === undefined
         return existing !== undefined
       }
@@ -449,10 +455,14 @@ export class UndoManager {
         // mode='undo' (re-create): must be absent, and re-creating must not
         // form a cycle in the current graph.
         // mode='redo' (delete again): must still be present.
-        const existing = (await this.client.findOne(getRelationClass(), { _id: entry.relation._id })) as IssueRelation | undefined
+        const existing = (await this.client.findOne(getRelationClass(), { _id: entry.relation._id })) as
+          | IssueRelation
+          | undefined
         if (mode === 'undo') {
           if (existing !== undefined) return true
-          const allRels = (await this.client.findAll(getRelationClass(), { space: entry.relation.space })) as IssueRelation[]
+          const allRels = (await this.client.findAll(getRelationClass(), {
+            space: entry.relation.space
+          })) as IssueRelation[]
           if (wouldCreateCycle(entry.relation.attachedTo, entry.relation.target, allRels)) return true
           return false
         }
@@ -460,7 +470,9 @@ export class UndoManager {
       }
       case 'relation-edit': {
         const expected = mode === 'undo' ? entry.after : entry.before
-        const rel = (await this.client.findOne(getRelationClass(), { _id: entry.relationId })) as IssueRelation | undefined
+        const rel = (await this.client.findOne(getRelationClass(), { _id: entry.relationId })) as
+          | IssueRelation
+          | undefined
         if (rel === undefined) return true
         return rel.kind !== expected.kind || rel.lag !== expected.lag
       }
@@ -476,12 +488,10 @@ export class UndoManager {
 
 // ---- Helpers ---------------------------------------------------------------
 
-function sameDatePair (
-  issue: Issue,
-  expected: { startDate: Timestamp | null, dueDate: Timestamp | null }
-): boolean {
-  return (issue.startDate ?? null) === (expected.startDate ?? null) &&
-    (issue.dueDate ?? null) === (expected.dueDate ?? null)
+function sameDatePair (issue: Issue, expected: { startDate: Timestamp | null, dueDate: Timestamp | null }): boolean {
+  return (
+    (issue.startDate ?? null) === (expected.startDate ?? null) && (issue.dueDate ?? null) === (expected.dueDate ?? null)
+  )
 }
 
 /**
@@ -496,4 +506,3 @@ function getIssueClass (): string {
 function getRelationClass (): string {
   return 'tracker:class:IssueRelation'
 }
-

@@ -51,12 +51,7 @@ describe('nonWorkingDaysInRange', () => {
   })
 
   it('respects the maxDays cap', () => {
-    const res = nonWorkingDaysInRange(
-      Date.UTC(2026, 0, 1),
-      Date.UTC(2030, 0, 1),
-      cfgMonFri,
-      10
-    )
+    const res = nonWorkingDaysInRange(Date.UTC(2026, 0, 1), Date.UTC(2030, 0, 1), cfgMonFri, 10)
     expect(res.length).toBeLessThanOrEqual(10)
   })
 

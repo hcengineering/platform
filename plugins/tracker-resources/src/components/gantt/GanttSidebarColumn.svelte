@@ -30,8 +30,8 @@
   export let width: number
   export let relations: IssueRelation[] = []
   export let issueNumberOf: (ref: Ref<Issue>) => string = () => ''
-  export let slack: Map<Ref<Issue>, number> = new Map()
-  export let criticalSet: Set<Ref<Issue>> = new Set()
+  export let slack = new Map<Ref<Issue>, number>()
+  export let criticalSet = new Set<Ref<Issue>>()
   export let showCriticalPath: boolean = false
 
   const DAY_MS = 86_400_000
@@ -49,11 +49,16 @@
 
   function priorityLabel (p: IssuePriority): string {
     switch (p) {
-      case IssuePriority.Urgent: return 'Urgent'
-      case IssuePriority.High: return 'High'
-      case IssuePriority.Medium: return 'Medium'
-      case IssuePriority.Low: return 'Low'
-      default: return '—'
+      case IssuePriority.Urgent:
+        return 'Urgent'
+      case IssuePriority.High:
+        return 'High'
+      case IssuePriority.Medium:
+        return 'Medium'
+      case IssuePriority.Low:
+        return 'Low'
+      default:
+        return '—'
     }
   }
 
@@ -85,14 +90,18 @@
         role="link"
         tabindex="0"
         on:click={onTitleClick}
-        on:keydown={(e) => { if (e.key === 'Enter') onTitleClick() }}
+        on:keydown={(e) => {
+          if (e.key === 'Enter') onTitleClick()
+        }}
       >
         {issue.title}
       </span>
     {:else if column === 'status'}
       <span class="cell-content cell-status"><StatusBadge {issue} /></span>
     {:else if column === 'priority'}
-      <span class="cell-content cell-priority" title={priorityLabel(issue.priority)}>{priorityLabel(issue.priority)}</span>
+      <span class="cell-content cell-priority" title={priorityLabel(issue.priority)}
+        >{priorityLabel(issue.priority)}</span
+      >
     {:else if column === 'assignee'}
       <span class="cell-content cell-assignee dim">
         {issue.assignee !== null ? '·' : '—'}
@@ -159,9 +168,14 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .cell-title.clickable { cursor: pointer; }
-  .cell-title.clickable:hover { text-decoration: underline; }
-  .cell-numeric, .cell-date {
+  .cell-title.clickable {
+    cursor: pointer;
+  }
+  .cell-title.clickable:hover {
+    text-decoration: underline;
+  }
+  .cell-numeric,
+  .cell-date {
     text-align: right;
     font-variant-numeric: tabular-nums;
     font-size: 12px;

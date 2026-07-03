@@ -17,11 +17,7 @@
   import GanttSidebarHeaderCell from './GanttSidebarHeaderCell.svelte'
   import GanttSidebarColumn from './GanttSidebarColumn.svelte'
   import { activeDragTargetId } from './lib/drag-state'
-  import {
-    DEFAULT_COLUMNS,
-    DEFAULT_WIDTHS,
-    type SidebarColumnKey
-  } from './lib/sidebar-columns'
+  import { DEFAULT_COLUMNS, DEFAULT_WIDTHS, type SidebarColumnKey } from './lib/sidebar-columns'
   import type { GanttSortState, SortDirection } from './lib/sidebar-sort'
   import { computeYViewport, sliceVisibleRows } from './lib/y-viewport'
 
@@ -38,8 +34,8 @@
   export let relations: IssueRelation[] = []
   export let showPredecessors: boolean = false
   // PR5: slack column (numeric days) + CP badge
-  export let slack: Map<Ref<Issue>, number> = new Map()
-  export let criticalSet: Set<Ref<Issue>> = new Set()
+  export let slack = new Map<Ref<Issue>, number>()
+  export let criticalSet = new Set<Ref<Issue>>()
   export let showCriticalPath: boolean = false
   export let showSlackColumn: boolean = false
   // Phase 3a — extended grid mode. When true, render a sortable header row
@@ -72,8 +68,15 @@
 
   /** Set of columns that have a meaningful comparator — others are non-sortable. */
   const SORTABLE_COLUMNS: ReadonlySet<SidebarColumnKey> = new Set<SidebarColumnKey>([
-    'title', 'identifier', 'estimation', 'priority', 'modifiedOn', 'createdOn',
-    'startDate', 'dueDate', 'deadline'
+    'title',
+    'identifier',
+    'estimation',
+    'priority',
+    'modifiedOn',
+    'createdOn',
+    'startDate',
+    'dueDate',
+    'deadline'
   ])
 
   const COLUMN_LABELS: Record<SidebarColumnKey, IntlString> = {
@@ -132,24 +135,29 @@
     ? rows.map((r, i) => ({ row: r, vy: i * rowHeight }))
     : rows.map((r) => ({ row: r, vy: r.y }))
   // Total scrollable height — rowCount × rowHeight, matching the canvas.
-  $: totalRowsHeight = rows.length * (rowHeight > 0 ? rowHeight : 0) || (rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0)
+  $: totalRowsHeight =
+    rows.length * (rowHeight > 0 ? rowHeight : 0) ||
+    (rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0)
   $: yViewport = virtualizationOn
     ? computeYViewport({
-        rowCount: rows.length,
-        rowHeight,
-        scrollTop,
-        viewportHeight,
-        overscan
-      })
+      rowCount: rows.length,
+      rowHeight,
+      scrollTop,
+      viewportHeight,
+      overscan
+    })
     : null
   // Slice on the re-stamped vy (so post-sort order matters) and project the
   // result back to `{ row, vy }` pairs the template iterates over.
-  $: visibleIndexed = (virtualizationOn && yViewport !== null)
-    ? indexedRows.filter((p) => {
-        return p.vy + (p.row.height ?? rowHeight) > scrollTop - overscan * rowHeight &&
-          p.vy < scrollTop + viewportHeight + overscan * rowHeight
+  $: visibleIndexed =
+    virtualizationOn && yViewport !== null
+      ? indexedRows.filter((p) => {
+        return (
+          p.vy + (p.row.height ?? rowHeight) > scrollTop - overscan * rowHeight &&
+            p.vy < scrollTop + viewportHeight + overscan * rowHeight
+        )
       })
-    : indexedRows
+      : indexedRows
   // When virtualizing, render the slice anchored to its re-stamped vy; the
   // wrapper carries an explicit height so the scroller's scrollHeight
   // matches the unvirtualized layout. The add-issue-row sits BELOW the
@@ -217,9 +225,7 @@
     })
   }
 
-  function jumpDirection (
-    obj: { startDate: number | null, dueDate: number | null }
-  ): 'left' | 'right' | null {
+  function jumpDirection (obj: { startDate: number | null, dueDate: number | null }): 'left' | 'right' | null {
     if (timeScale === undefined) return null
     if (viewportRight <= viewportLeft) return null
     if (obj.startDate == null && obj.dueDate == null) return null
@@ -232,9 +238,7 @@
     return null
   }
 
-  function rowJumpTarget (
-    row: LayoutRow
-  ): { startDate: number | null, dueDate: number | null } | null {
+  function rowJumpTarget (row: LayoutRow): { startDate: number | null, dueDate: number | null } | null {
     if (row.kind === 'issue' && row.issue !== null) {
       return { startDate: row.issue.startDate, dueDate: row.issue.dueDate }
     }
@@ -331,36 +335,38 @@
             <span class="gantt-group-count">{row.groupCount ?? 0}</span>
           </div>
         {:else}
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="sidebar-grid-row"
-          class:summary={row.isSummary}
-          class:milestone={row.kind === 'milestone'}
-          class:hovered={hoveredRowId === row.id}
-          class:tree-breadcrumb={row.isBreadcrumb === true}
-          role="row"
-          style={virtualizationOn
-            ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px;`
-            : `height: ${row.height}px;`}
-          on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
-          on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
-          on:mouseleave={() => dispatch('hoverRow', { id: null })}
-          on:contextmenu={(e) => onRowContextMenu(e, row)}
-        >
-          {#each columns as col (col)}
-            <GanttSidebarColumn
-              column={col}
-              {row}
-              width={widths[col] ?? DEFAULT_WIDTHS[col]}
-              {relations}
-              {issueNumberOf}
-              {slack}
-              {criticalSet}
-              {showCriticalPath}
-              on:openIssue={(e) => dispatch('openIssue', e.detail)}
-            />
-          {/each}
-        </div>
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div
+            class="sidebar-grid-row"
+            class:summary={row.isSummary}
+            class:milestone={row.kind === 'milestone'}
+            class:hovered={hoveredRowId === row.id}
+            class:tree-breadcrumb={row.isBreadcrumb === true}
+            role="row"
+            style={virtualizationOn
+              ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px;`
+              : `height: ${row.height}px;`}
+            on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+            on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+            on:mouseleave={() => dispatch('hoverRow', { id: null })}
+            on:contextmenu={(e) => {
+              onRowContextMenu(e, row)
+            }}
+          >
+            {#each columns as col (col)}
+              <GanttSidebarColumn
+                column={col}
+                {row}
+                width={widths[col] ?? DEFAULT_WIDTHS[col]}
+                {relations}
+                {issueNumberOf}
+                {slack}
+                {criticalSet}
+                {showCriticalPath}
+                on:openIssue={(e) => dispatch('openIssue', e.detail)}
+              />
+            {/each}
+          </div>
         {/if}
       {/each}
       <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
@@ -368,11 +374,11 @@
         class="add-issue-row"
         role="button"
         tabindex="0"
-        style={virtualizationOn
-          ? `position: absolute; top: ${spacerHeight}px; left: 0; right: 0;`
-          : ''}
+        style={virtualizationOn ? `position: absolute; top: ${spacerHeight}px; left: 0; right: 0;` : ''}
         on:click={() => dispatch('addIssue')}
-        on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue') }}
+        on:keydown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue')
+        }}
       >
         <span class="plus-glyph">+</span>
         <span class="add-issue-label"><Label label={tracker.string.AddIssue} /></span>
@@ -380,187 +386,200 @@
     </div>
   </div>
 {:else}
-<div
-  class="sidebar-rows"
-  class:has-hover={hoveredRowId !== null}
-  class:virtualized={virtualizationOn}
-  style={virtualizationOn ? `width: ${width}px; height: ${spacerHeight}px;` : `width: ${width}px;`}
->
-  {#each visibleIndexed as p (p.row.id)}
-    {@const row = p.row}
-    {#if row.kind === 'group-header'}
-      <!-- Phase 3b — swimlane header in the sidebar. Click the chevron to
+  <div
+    class="sidebar-rows"
+    class:has-hover={hoveredRowId !== null}
+    class:virtualized={virtualizationOn}
+    style={virtualizationOn ? `width: ${width}px; height: ${spacerHeight}px;` : `width: ${width}px;`}
+  >
+    {#each visibleIndexed as p (p.row.id)}
+      {@const row = p.row}
+      {#if row.kind === 'group-header'}
+        <!-- Phase 3b — swimlane header in the sidebar. Click the chevron to
            collapse/expand the lane. Label + count occupy the full width of
            the legacy sidebar; the canvas-side tint band is rendered by
            GanttCanvas, this row only carries the textual affordance. -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="sidebar-row gantt-group-header"
-        class:collapsed={row.collapsed}
-        style={virtualizationOn
-          ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px;`
-          : `height: ${row.height}px;`}
-      >
-        <span class="col-toggle">
-          <button
-            type="button"
-            class="toggle-btn"
-            use:tooltip={{ label: row.collapsed ? tracker.string.GanttExpand : tracker.string.GanttCollapse }}
-            on:click={() => dispatch('toggle', { id: row.id })}
-          >
-            <Icon icon={row.collapsed ? IconChevronRight : IconChevronDown} size="small" />
-          </button>
-        </span>
-        <span class="gantt-group-label" title={row.groupLabel ?? ''}>{row.groupLabel ?? ''}</span>
-        <span class="gantt-group-count">{row.groupCount ?? 0}</span>
-      </div>
-    {:else}
-    {@const indent = row.depth * 20}
-    {@const tgt = rowJumpTarget(row)}
-    {@const dir = tgt !== null ? jumpDirection(tgt) : null}
-    {@const jumpX = rowJumpX(row)}
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class="sidebar-row"
-      class:summary={row.isSummary}
-      class:milestone={row.kind === 'milestone'}
-      class:hovered={hoveredRowId === row.id}
-      class:drag-dimmed={anyDragActive && row.issue !== null && activeIssueIdStr !== null && String(row.issue._id) !== activeIssueIdStr}
-      class:tree-breadcrumb={row.isBreadcrumb === true}
-      class:tree-indented={row.depth > 0}
-      style={virtualizationOn
-        ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px; padding-left: ${8 + indent}px;`
-        : `height: ${row.height}px; padding-left: ${8 + indent}px;`}
-      on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
-      on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
-      on:mouseleave={() => dispatch('hoverRow', { id: null })}
-      on:contextmenu={(e) => onRowContextMenu(e, row)}
-    >
-      <span class="col-toggle">
-        {#if row.collapsible}
-          <button
-            type="button"
-            class="toggle-btn"
-            use:tooltip={{ label: row.collapsed ? tracker.string.GanttExpand : tracker.string.GanttCollapse }}
-            on:click={() => dispatch('toggle', { id: row.id })}
-          >
-            <Icon icon={row.collapsed ? IconChevronRight : IconChevronDown} size="small" />
-          </button>
-        {/if}
-      </span>
-      {#if row.kind === 'milestone' && row.milestone !== null}
-        {#if showStatus}<span class="cell-status ms-icon" title="Milestone">◆</span>{/if}
-        {#if showIssueCode}
-          <span class="cell-id">
-            <span class="ms-tag">MS</span>
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          class="sidebar-row gantt-group-header"
+          class:collapsed={row.collapsed}
+          style={virtualizationOn
+            ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px;`
+            : `height: ${row.height}px;`}
+        >
+          <span class="col-toggle">
+            <button
+              type="button"
+              class="toggle-btn"
+              use:tooltip={{ label: row.collapsed ? tracker.string.GanttExpand : tracker.string.GanttCollapse }}
+              on:click={() => dispatch('toggle', { id: row.id })}
+            >
+              <Icon icon={row.collapsed ? IconChevronRight : IconChevronDown} size="small" />
+            </button>
           </span>
-        {/if}
-        {#if showTitle}
-          <!-- PR3.2: single-click opens EditMilestone, matching the issue
+          <span class="gantt-group-label" title={row.groupLabel ?? ''}>{row.groupLabel ?? ''}</span>
+          <span class="gantt-group-count">{row.groupCount ?? 0}</span>
+        </div>
+      {:else}
+        {@const indent = row.depth * 20}
+        {@const tgt = rowJumpTarget(row)}
+        {@const dir = tgt !== null ? jumpDirection(tgt) : null}
+        {@const jumpX = rowJumpX(row)}
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div
+          class="sidebar-row"
+          class:summary={row.isSummary}
+          class:milestone={row.kind === 'milestone'}
+          class:hovered={hoveredRowId === row.id}
+          class:drag-dimmed={anyDragActive &&
+            row.issue !== null &&
+            activeIssueIdStr !== null &&
+            String(row.issue._id) !== activeIssueIdStr}
+          class:tree-breadcrumb={row.isBreadcrumb === true}
+          class:tree-indented={row.depth > 0}
+          style={virtualizationOn
+            ? `position: absolute; top: ${p.vy}px; left: 0; right: 0; height: ${row.height}px; padding-left: ${8 + indent}px;`
+            : `height: ${row.height}px; padding-left: ${8 + indent}px;`}
+          on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+          on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+          on:mouseleave={() => dispatch('hoverRow', { id: null })}
+          on:contextmenu={(e) => {
+            onRowContextMenu(e, row)
+          }}
+        >
+          <span class="col-toggle">
+            {#if row.collapsible}
+              <button
+                type="button"
+                class="toggle-btn"
+                use:tooltip={{ label: row.collapsed ? tracker.string.GanttExpand : tracker.string.GanttCollapse }}
+                on:click={() => dispatch('toggle', { id: row.id })}
+              >
+                <Icon icon={row.collapsed ? IconChevronRight : IconChevronDown} size="small" />
+              </button>
+            {/if}
+          </span>
+          {#if row.kind === 'milestone' && row.milestone !== null}
+            {#if showStatus}<span class="cell-status ms-icon" title="Milestone">◆</span>{/if}
+            {#if showIssueCode}
+              <span class="cell-id">
+                <span class="ms-tag">MS</span>
+              </span>
+            {/if}
+            {#if showTitle}
+              <!-- PR3.2: single-click opens EditMilestone, matching the issue
                row affordance. role/tabindex mirror the issue-title link. -->
-          <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-          <span
-            class="cell-title clickable"
-            title={row.milestone.label}
-            role="link"
-            tabindex="0"
-            on:click={() => row.milestone !== null && openMilestone(row.milestone._id)}
-          >
-            {row.milestone.label}
-          </span>
-        {/if}
-      {:else if row.issue !== null}
-        {#if row.issue.startDate === null && row.issue.dueDate === null}
-          <!-- svelte-ignore a11y-no-static-element-interactions a11y-no-noninteractive-element-interactions -->
-          <span
-            class="drag-grip"
-            use:tooltip={{ label: tracker.string.GanttDragToSchedule }}
-            on:mousedown|stopPropagation={row.issue !== null ? onDragGripDown(row.issue) : undefined}
-          >⋮⋮</span>
-        {/if}
-        {#if showStatus}
-          <span class="cell-status"><StatusBadge issue={row.issue} /></span>
-        {/if}
-        {#if showIssueCode}
-          <span class="cell-id">
-            <IssuePresenter value={row.issue} disabled={false} />
-          </span>
-        {/if}
-        {#if showTitle}
-          <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-          <span
-            class="cell-title clickable"
-            title={row.issue.title}
-            role="link"
-            tabindex="0"
-            on:click={() => row.issue !== null && openIssue(row.issue)}
-            on:keydown={(e) => { if (e.key === 'Enter' && row.issue !== null) openIssue(row.issue) }}
-          >
-            <!--  — Tree-View — wrap the label in an inner span
+              <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+              <span
+                class="cell-title clickable"
+                title={row.milestone.label}
+                role="link"
+                tabindex="0"
+                on:click={() => {
+                  if (row.milestone !== null) openMilestone(row.milestone._id)
+                }}
+              >
+                {row.milestone.label}
+              </span>
+            {/if}
+          {:else if row.issue !== null}
+            {#if row.issue.startDate === null && row.issue.dueDate === null}
+              <!-- svelte-ignore a11y-no-static-element-interactions a11y-no-noninteractive-element-interactions -->
+              <span
+                class="drag-grip"
+                use:tooltip={{ label: tracker.string.GanttDragToSchedule }}
+                on:mousedown|stopPropagation={row.issue !== null ? onDragGripDown(row.issue) : undefined}>⋮⋮</span
+              >
+            {/if}
+            {#if showStatus}
+              <span class="cell-status"><StatusBadge issue={row.issue} /></span>
+            {/if}
+            {#if showIssueCode}
+              <span class="cell-id">
+                <IssuePresenter value={row.issue} disabled={false} />
+              </span>
+            {/if}
+            {#if showTitle}
+              <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+              <span
+                class="cell-title clickable"
+                title={row.issue.title}
+                role="link"
+                tabindex="0"
+                on:click={() => {
+                  if (row.issue !== null) openIssue(row.issue)
+                }}
+                on:keydown={(e) => {
+                  if (e.key === 'Enter' && row.issue !== null) openIssue(row.issue)
+                }}
+              >
+                <!--  — Tree-View — wrap the label in an inner span
                  carrying the breadcrumb tooltip. Putting `use:tooltip` on the
                  outer link breaks Svelte's TS inference for the sibling event
                  handlers. -->
-            <span class="cell-title-label" use:tooltip={breadcrumbTooltip(row)}>{row.issue.title}</span>
-          </span>
-        {/if}
-        {#if showPredecessors && row.issue !== null}
-          {@const text = formatPredecessors(row.issue, relations, issueNumberOf)}
-          <span class="cell-predecessors" title={text || ''}>
-            {#if text === ''}
-              <Label label={tracker.string.NoPredecessors} />
-            {:else}
-              {text}
+                <span class="cell-title-label" use:tooltip={breadcrumbTooltip(row)}>{row.issue.title}</span>
+              </span>
+            {/if}
+            {#if showPredecessors && row.issue !== null}
+              {@const text = formatPredecessors(row.issue, relations, issueNumberOf)}
+              <span class="cell-predecessors" title={text || ''}>
+                {#if text === ''}
+                  <Label label={tracker.string.NoPredecessors} />
+                {:else}
+                  {text}
+                {/if}
+              </span>
+            {/if}
+            {#if showCriticalPath && showSlackColumn && row.issue !== null}
+              <span class="cell-slack">
+                {#if isCriticalRow(String(row.issue._id))}
+                  <span class="cp-badge"><Label label={tracker.string.CriticalPathBadge} /></span>
+                {:else}
+                  {slackDaysFor(String(row.issue._id))}d
+                {/if}
+              </span>
+            {/if}
+          {:else}
+            {#if showStatus}<span class="cell-status" />{/if}
+            {#if showIssueCode}
+              <span class="cell-id" />
+            {/if}
+            {#if showTitle}
+              <span class="cell-title" />
+            {/if}
+          {/if}
+          <span class="cell-jump">
+            {#if dir !== null && jumpX !== null}
+              <button
+                type="button"
+                class="jump-btn"
+                use:tooltip={{
+                  label: dir === 'left' ? tracker.string.GanttScrollLeftToBar : tracker.string.GanttScrollRightToBar
+                }}
+                on:click={() => dispatch('jump', { x: jumpX })}
+              >
+                {dir === 'left' ? '←' : '→'}
+              </button>
             {/if}
           </span>
-        {/if}
-        {#if showCriticalPath && showSlackColumn && row.issue !== null}
-          <span class="cell-slack">
-            {#if isCriticalRow(String(row.issue._id))}
-              <span class="cp-badge"><Label label={tracker.string.CriticalPathBadge} /></span>
-            {:else}
-              {slackDaysFor(String(row.issue._id))}d
-            {/if}
-          </span>
-        {/if}
-      {:else}
-        {#if showStatus}<span class="cell-status" />{/if}
-        {#if showIssueCode}
-          <span class="cell-id" />
-        {/if}
-        {#if showTitle}
-          <span class="cell-title" />
-        {/if}
+        </div>
       {/if}
-      <span class="cell-jump">
-        {#if dir !== null && jumpX !== null}
-          <button
-            type="button"
-            class="jump-btn"
-            use:tooltip={{ label: dir === 'left' ? tracker.string.GanttScrollLeftToBar : tracker.string.GanttScrollRightToBar }}
-            on:click={() => dispatch('jump', { x: jumpX })}
-          >
-            {dir === 'left' ? '←' : '→'}
-          </button>
-        {/if}
-      </span>
+    {/each}
+    <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
+    <div
+      class="add-issue-row"
+      role="button"
+      tabindex="0"
+      style={virtualizationOn ? `position: absolute; top: ${spacerHeight}px; left: 0; right: 0;` : ''}
+      on:click={() => dispatch('addIssue')}
+      on:keydown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue')
+      }}
+    >
+      <span class="plus-glyph">+</span>
+      <span class="add-issue-label"><Label label={tracker.string.AddIssue} /></span>
     </div>
-    {/if}
-  {/each}
-  <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-static-element-interactions -->
-  <div
-    class="add-issue-row"
-    role="button"
-    tabindex="0"
-    style={virtualizationOn
-      ? `position: absolute; top: ${spacerHeight}px; left: 0; right: 0;`
-      : ''}
-    on:click={() => dispatch('addIssue')}
-    on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') dispatch('addIssue') }}
-  >
-    <span class="plus-glyph">+</span>
-    <span class="add-issue-label"><Label label={tracker.string.AddIssue} /></span>
   </div>
-</div>
 {/if}
 
 <style lang="scss">
@@ -598,7 +617,9 @@
     box-sizing: border-box;
     background: var(--theme-comp-header-color);
   }
-  .sidebar-grid-row.summary { font-weight: 600; }
+  .sidebar-grid-row.summary {
+    font-weight: 600;
+  }
   .sidebar-grid-row.milestone {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 6%, transparent);
   }
@@ -663,8 +684,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .cell-title.clickable { cursor: pointer; }
-  .cell-title.clickable:hover { text-decoration: underline; }
+  .cell-title.clickable {
+    cursor: pointer;
+  }
+  .cell-title.clickable:hover {
+    text-decoration: underline;
+  }
   /*  — inner label span (carries breadcrumb tooltip) inherits
      ellipsis from the parent cell-title via display:inline-block + overflow. */
   .cell-title-label {
@@ -694,7 +719,9 @@
     align-items: center;
     justify-content: center;
   }
-  .toggle-btn:hover { color: var(--theme-content-color); }
+  .toggle-btn:hover {
+    color: var(--theme-content-color);
+  }
   .jump-btn {
     width: 22px;
     height: 22px;
@@ -710,20 +737,26 @@
     align-items: center;
     justify-content: center;
   }
-  .jump-btn:hover { filter: brightness(1.1); }
-  .sidebar-row.summary { font-weight: 600; }
+  .jump-btn:hover {
+    filter: brightness(1.1);
+  }
+  .sidebar-row.summary {
+    font-weight: 600;
+  }
   .sidebar-row.milestone {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 6%, transparent);
   }
   .sidebar-row.hovered {
     background: var(--theme-button-hovered);
   }
-  /* When ANY row is hovered, dim non-hovered rows for a 
+  /* When ANY row is hovered, dim non-hovered rows for a
      spotlight effect — implemented by the parent setting a data attr. */
   :global(.sidebar-rows.has-hover) .sidebar-row:not(.hovered) {
     opacity: 0.55;
   }
-  .sidebar-row.drag-dimmed { opacity: 0.55; }
+  .sidebar-row.drag-dimmed {
+    opacity: 0.55;
+  }
   /*  — Tree-View — breadcrumb (parent of matching child)
      is dimmed + italic so the user can read it as filter-context, not as
      a regular result. */
@@ -758,7 +791,9 @@
     padding: 0 4px;
     font-size: 14px;
   }
-  .drag-grip:active { cursor: grabbing; }
+  .drag-grip:active {
+    cursor: grabbing;
+  }
   .sidebar-row.milestone.hovered {
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 14%, transparent);
   }

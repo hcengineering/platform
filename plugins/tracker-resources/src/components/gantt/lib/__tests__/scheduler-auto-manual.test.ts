@@ -56,9 +56,7 @@ describe('simulateCascade — auto/manual scheduling-mode filter', () => {
   it('cascades through an Auto successor (regression sanity)', () => {
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10), 'auto')
-    const primary: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }
-    ]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
     const res = simulateCascade(primary, [A, B], [rel('A', 'B')], () => true)
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
@@ -69,9 +67,7 @@ describe('simulateCascade — auto/manual scheduling-mode filter', () => {
   it('does NOT cascade through a Manual successor — drops it from shifts', () => {
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10), 'manual')
-    const primary: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }
-    ]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
     const res = simulateCascade(primary, [A, B], [rel('A', 'B')], () => true)
     // FS would normally require B to shift; with Manual B is filtered → no-cascade.
     expect(res.kind).toBe('no-cascade')
@@ -83,15 +79,8 @@ describe('simulateCascade — auto/manual scheduling-mode filter', () => {
     const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10), 'auto')
     const C = issue('C', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10), 'manual')
     const D = issue('D', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
-    const primary: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }
-    ]
-    const res = simulateCascade(
-      primary,
-      [A, B, C, D],
-      [rel('A', 'B'), rel('A', 'C'), rel('A', 'D')],
-      () => true
-    )
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
+    const res = simulateCascade(primary, [A, B, C, D], [rel('A', 'B'), rel('A', 'C'), rel('A', 'D')], () => true)
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
     const shifted = res.shifts.map((s) => String(s.issue._id)).sort()
@@ -103,9 +92,7 @@ describe('simulateCascade — auto/manual scheduling-mode filter', () => {
     // Successor B (Auto) cascades as usual.
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5), 'manual')
     const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
-    const primary: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }
-    ]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
     const res = simulateCascade(primary, [A, B], [rel('A', 'B')], () => true)
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
@@ -121,18 +108,9 @@ describe('simulateCascade — auto/manual scheduling-mode filter', () => {
     // Child must still cascade; Parent must not.
     const P = issue('P', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const Parent = issue('Parent', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10), 'manual')
-    const Child = issue('Child', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10), 'auto', [
-      { parentId: 'Parent' }
-    ])
-    const primary: PrimaryEdit[] = [
-      { issue: P, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }
-    ]
-    const res = simulateCascade(
-      primary,
-      [P, Parent, Child],
-      [rel('P', 'Parent'), rel('P', 'Child')],
-      () => true
-    )
+    const Child = issue('Child', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10), 'auto', [{ parentId: 'Parent' }])
+    const primary: PrimaryEdit[] = [{ issue: P, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
+    const res = simulateCascade(primary, [P, Parent, Child], [rel('P', 'Parent'), rel('P', 'Child')], () => true)
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
     // Only Child shifts; Parent (Manual) is filtered out.
@@ -156,9 +134,7 @@ describe('simulateCascade — auto/manual scheduling-mode filter', () => {
     // Identical to the regression test above but explicitly without the field.
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10)) // no mode
-    const primary: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }
-    ]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
     const res = simulateCascade(primary, [A, B], [rel('A', 'B')], () => true)
     expect(res.kind).toBe('cascade')
   })

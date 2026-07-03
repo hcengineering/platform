@@ -38,12 +38,10 @@ export function resolveBarLabel (issue: Issue, slot: BarLabelSlot): string {
     case 'identifier':
       return issue.identifier ?? ''
     case 'assignee':
-      return issue.assignee !== null && issue.assignee !== undefined
-        ? String(issue.assignee)
-        : ''
+      return issue.assignee !== null && issue.assignee !== undefined ? String(issue.assignee) : ''
     case 'priority':
       return String(issue.priority ?? 0)
-    case 'status':
+    case 'status': {
       // Take the last segment of the colon-separated ref id.
       // e.g. 'tracker:status:Backlog' → 'Backlog'.
       // For Ref<IssueStatus> with no colon, returns the raw string.
@@ -51,13 +49,15 @@ export function resolveBarLabel (issue: Issue, slot: BarLabelSlot): string {
       const s = String(issue.status)
       const idx = s.lastIndexOf(':')
       return idx >= 0 ? s.slice(idx + 1) : s
+    }
     case 'estimation':
       if (issue.estimation === undefined || issue.estimation === 0) return ''
       return `${issue.estimation}h`
-    case 'progress':
+    case 'progress': {
       if (issue.estimation === undefined || issue.estimation === 0) return ''
       const pct = Math.round(((issue.reportedTime ?? 0) / issue.estimation) * 100)
       return `${pct}%`
+    }
     default:
       return ''
   }

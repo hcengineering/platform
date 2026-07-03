@@ -43,10 +43,7 @@ export const MAX_VISIBLE_DAYS = 999
  *   that preset (the user wheeled exactly back onto a preset).
  * - Else return `'custom'`.
  */
-export function dropdownSelectionForPxPerDay (
-  userPxPerDay: number | null,
-  zoom: ZoomLevel
-): DropdownSelection {
+export function dropdownSelectionForPxPerDay (userPxPerDay: number | null, zoom: ZoomLevel): DropdownSelection {
   if (userPxPerDay === null) return zoom
   if (!Number.isFinite(userPxPerDay) || userPxPerDay <= 0) return 'custom'
   const levels: ZoomLevel[] = ['day', 'week', 'month', 'quarter']

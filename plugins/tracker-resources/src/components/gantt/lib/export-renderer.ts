@@ -69,11 +69,15 @@ function renderIssueList (rows: LayoutRow[]): string {
     out.push(`<line x1="0" y1="${y + row.height}" x2="${SIDEBAR_WIDTH}" y2="${y + row.height}" stroke="#e2e8f0"/>`)
     if (row.kind === 'group-header') {
       out.push(`<rect x="0" y="${y}" width="${SIDEBAR_WIDTH}" height="${row.height}" fill="#e2e8f0"/>`)
-      out.push(`<text x="${LEFT_PAD}" y="${y + 20}" font-size="12" font-weight="700" fill="#334155">${esc(row.groupLabel ?? row.id)} ${row.groupCount ?? ''}</text>`)
+      out.push(
+        `<text x="${LEFT_PAD}" y="${y + 20}" font-size="12" font-weight="700" fill="#334155">${esc(row.groupLabel ?? row.id)} ${row.groupCount ?? ''}</text>`
+      )
       continue
     }
     if (row.kind === 'milestone' && row.milestone !== null) {
-      out.push(`<text x="${LEFT_PAD + row.depth * 18}" y="${y + 23}" font-size="12" fill="#475569">◆ ${esc(row.milestone.label)}</text>`)
+      out.push(
+        `<text x="${LEFT_PAD + row.depth * 18}" y="${y + 23}" font-size="12" fill="#475569">◆ ${esc(row.milestone.label)}</text>`
+      )
       continue
     }
     if (row.issue !== null) {
@@ -84,20 +88,26 @@ function renderIssueList (rows: LayoutRow[]): string {
       out.push(`<text x="${x}" y="${y + 30}" font-size="11" fill="#334155">${esc(title)}</text>`)
     }
   }
-  out.push(`<line x1="${SIDEBAR_WIDTH}" y1="0" x2="${SIDEBAR_WIDTH}" y2="${HEADER_HEIGHT + rowBottom(rows)}" stroke="#cbd5e1"/>`)
+  out.push(
+    `<line x1="${SIDEBAR_WIDTH}" y1="0" x2="${SIDEBAR_WIDTH}" y2="${HEADER_HEIGHT + rowBottom(rows)}" stroke="#cbd5e1"/>`
+  )
   return out.join('')
 }
 
 function renderHeader (input: GanttExportInput, chartWidth: number): string {
   const out: string[] = []
-  out.push(`<rect class="chart-bg" x="${SIDEBAR_WIDTH}" y="0" width="${chartWidth}" height="${HEADER_HEIGHT}" fill="#ffffff"/>`)
+  out.push(
+    `<rect class="chart-bg" x="${SIDEBAR_WIDTH}" y="0" width="${chartWidth}" height="${HEADER_HEIGHT}" fill="#ffffff"/>`
+  )
   for (const tick of input.timeScale.ticks(input.range)) {
     const x = SIDEBAR_WIDTH + input.timeScale.toX(tick.date)
     if (x < SIDEBAR_WIDTH - 1 || x > SIDEBAR_WIDTH + chartWidth + 1) continue
     const stroke = tick.level === 'major' ? '#cbd5e1' : '#e2e8f0'
     out.push(`<line x1="${x}" y1="0" x2="${x}" y2="${HEADER_HEIGHT + rowBottom(input.rows)}" stroke="${stroke}"/>`)
     if (tick.secondaryLabel != null) {
-      out.push(`<text x="${x + 4}" y="18" font-size="11" font-weight="700" fill="#334155">${esc(tick.secondaryLabel)}</text>`)
+      out.push(
+        `<text x="${x + 4}" y="18" font-size="11" font-weight="700" fill="#334155">${esc(tick.secondaryLabel)}</text>`
+      )
     }
     out.push(`<text x="${x + 4}" y="42" font-size="10" fill="#475569">${esc(tick.label)}</text>`)
   }
@@ -114,7 +124,9 @@ function renderRowsAndBars (input: GanttExportInput): { svg: string, rects: Map<
     const y = HEADER_HEIGHT + row.y
     const fill = row.kind === 'group-header' ? '#f1f5f9' : row.y % 72 === 0 ? '#ffffff' : '#fbfdff'
     out.push(`<rect x="${SIDEBAR_WIDTH}" y="${y}" width="${input.chartWidth}" height="${row.height}" fill="${fill}"/>`)
-    out.push(`<line x1="${SIDEBAR_WIDTH}" y1="${y + row.height}" x2="${SIDEBAR_WIDTH + input.chartWidth}" y2="${y + row.height}" stroke="#e2e8f0"/>`)
+    out.push(
+      `<line x1="${SIDEBAR_WIDTH}" y1="${y + row.height}" x2="${SIDEBAR_WIDTH + input.chartWidth}" y2="${y + row.height}" stroke="#e2e8f0"/>`
+    )
     const range = barRange(row, input.summaryRanges)
     if (range === null) continue
     const x = SIDEBAR_WIDTH + input.timeScale.toX(range.start)
@@ -124,7 +136,9 @@ function renderRowsAndBars (input: GanttExportInput): { svg: string, rects: Map<
     if (row.kind === 'milestone') {
       const cx = SIDEBAR_WIDTH + input.timeScale.toX(range.end)
       const cy = y + row.height / 2
-      out.push(`<polygon points="${cx},${cy - 7} ${cx + 7},${cy} ${cx},${cy + 7} ${cx - 7},${cy}" fill="#7c3aed" stroke="#5b21b6"/>`)
+      out.push(
+        `<polygon points="${cx},${cy - 7} ${cx + 7},${cy} ${cx},${cy + 7} ${cx - 7},${cy}" fill="#7c3aed" stroke="#5b21b6"/>`
+      )
       continue
     }
     const color = row.isSummary ? '#334155' : '#2563eb'
@@ -147,11 +161,17 @@ function renderDependencies (relations: IssueRelation[], rects: Map<string, BarR
     const p1 = endpointPx(source, anchorOf(rel.kind, 'source'))
     const p2 = endpointPx(target, anchorOf(rel.kind, 'target'))
     const path = bezierPath(p1, p2)
-    const tri = arrowheadPoints(p1, p2).map(p => `${p.x},${p.y}`).join(' ')
+    const tri = arrowheadPoints(p1, p2)
+      .map((p) => `${p.x},${p.y}`)
+      .join(' ')
     const lag = signedLag(rel.lag)
-    out.push(`<g class="dependency"><path d="${path}" fill="none" stroke="#64748b" stroke-width="1.5"/><polygon points="${tri}" fill="#64748b"/>`)
+    out.push(
+      `<g class="dependency"><path d="${path}" fill="none" stroke="#64748b" stroke-width="1.5"/><polygon points="${tri}" fill="#64748b"/>`
+    )
     if (lag !== '') {
-      out.push(`<text x="${(p1.x + p2.x) / 2}" y="${(p1.y + p2.y) / 2 - 4}" font-size="10" fill="#475569">${kindCode(rel.kind)}${esc(lag)}</text>`)
+      out.push(
+        `<text x="${(p1.x + p2.x) / 2}" y="${(p1.y + p2.y) / 2 - 4}" font-size="10" fill="#475569">${kindCode(rel.kind)}${esc(lag)}</text>`
+      )
     }
     out.push('</g>')
   }

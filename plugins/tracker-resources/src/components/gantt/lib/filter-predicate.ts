@@ -35,13 +35,7 @@ export interface GanttFilter {
   milestone?: GanttFilterValue[]
 }
 
-const FILTER_KEYS: readonly (keyof GanttFilter)[] = [
-  'status',
-  'priority',
-  'assignee',
-  'component',
-  'milestone'
-]
+const FILTER_KEYS: ReadonlyArray<keyof GanttFilter> = ['status', 'priority', 'assignee', 'component', 'milestone']
 
 function readIssueValue (issue: Issue, key: keyof GanttFilter): GanttFilterValue {
   switch (key) {
@@ -76,7 +70,7 @@ function matchesKey (issue: Issue, key: keyof GanttFilter, allowed: GanttFilterV
 
 /** Apply the filter to an issue array, returning a new array (input untouched). */
 export function applyFilter (issues: readonly Issue[], filter: GanttFilter): Issue[] {
-  const activeKeys = FILTER_KEYS.filter(k => {
+  const activeKeys = FILTER_KEYS.filter((k) => {
     const v = filter[k]
     return Array.isArray(v) && v.length > 0
   })

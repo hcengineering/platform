@@ -24,14 +24,7 @@
 import type { Issue } from '@hcengineering/tracker'
 
 /** Union of all supported group-by keys. `none` disables grouping. */
-export type GroupByKey =
-  | 'none'
-  | 'status'
-  | 'priority'
-  | 'assignee'
-  | 'component'
-  | 'milestone'
-  | 'label'
+export type GroupByKey = 'none' | 'status' | 'priority' | 'assignee' | 'component' | 'milestone' | 'label'
 
 /** Authoritative list of group-by keys including `none`, in UI dropdown order. */
 export const GROUP_BY_KEYS: readonly GroupByKey[] = [
@@ -134,11 +127,7 @@ export function sortGroupKeys (keys: readonly string[], groupBy: GroupByKey): st
  * rendered the raw Mongo-style id for any non-sentinel key, which made
  * group-by unusable for Component/Milestone/Label/Status/Priority.
  */
-export function getGroupLabel (
-  key: string,
-  _groupBy: GroupByKey,
-  nameLookup?: ReadonlyMap<string, string>
-): string {
+export function getGroupLabel (key: string, _groupBy: GroupByKey, nameLookup?: ReadonlyMap<string, string>): string {
   switch (key) {
     case NONE_KEY:
       return 'All issues'

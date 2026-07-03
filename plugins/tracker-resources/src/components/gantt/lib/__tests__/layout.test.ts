@@ -166,9 +166,9 @@ describe('buildLayout — breadcrumb mode', () => {
       matchedIds: new Set(['C']),
       includeBreadcrumbs: true
     })
-    expect(rows.map(r => r.id)).toEqual(['issue:P', 'issue:C'])
-    expect(rows.find(r => r.id === 'issue:P')?.isBreadcrumb).toBe(true)
-    expect(rows.find(r => r.id === 'issue:C')?.isBreadcrumb).toBe(false)
+    expect(rows.map((r) => r.id)).toEqual(['issue:P', 'issue:C'])
+    expect(rows.find((r) => r.id === 'issue:P')?.isBreadcrumb).toBe(true)
+    expect(rows.find((r) => r.id === 'issue:C')?.isBreadcrumb).toBe(false)
   })
 
   it('hides non-matching root issues that are not breadcrumbs', () => {
@@ -179,7 +179,7 @@ describe('buildLayout — breadcrumb mode', () => {
       matchedIds: new Set(['A']),
       includeBreadcrumbs: true
     })
-    expect(rows.map(r => r.id)).toEqual(['issue:A'])
+    expect(rows.map((r) => r.id)).toEqual(['issue:A'])
     expect(rows[0].isBreadcrumb).toBe(false)
   })
 
@@ -192,14 +192,16 @@ describe('buildLayout — breadcrumb mode', () => {
       matchedIds: new Set(['C']),
       includeBreadcrumbs: true
     })
-    expect(rows.map(r => r.id)).toEqual(['issue:P', 'issue:C'])
+    expect(rows.map((r) => r.id)).toEqual(['issue:P', 'issue:C'])
   })
 
   it('does not flag breadcrumbs when includeBreadcrumbs is undefined', () => {
     const p = fakeIssue('P', undefined, true)
     const c = fakeIssue('C', 'P')
     const rows = buildLayout([p, c], [], 'none', { rowHeight: ROW_H })
-    rows.forEach(r => expect(r.isBreadcrumb ?? false).toBe(false))
+    rows.forEach((r) => {
+      expect(r.isBreadcrumb ?? false).toBe(false)
+    })
   })
 })
 
@@ -220,14 +222,14 @@ describe('buildLayout — within-level sort', () => {
       withinLevelCompare: cmp
     })
     // P2 (alpha) before P1 (beta); under P1: C2 (delta) before C1 (gamma)
-    expect(rows.map(r => r.issue?._id)).toEqual(['P2', 'P1', 'C2', 'C1'])
+    expect(rows.map((r) => r.issue?._id)).toEqual(['P2', 'P1', 'C2', 'C1'])
   })
 
   it('is a no-op when withinLevelCompare is undefined', () => {
     const p1 = fakeIssue('P1')
     const p2 = fakeIssue('P2')
     const rows = buildLayout([p1, p2], [], 'none', { rowHeight: ROW_H })
-    expect(rows.map(r => r.issue?._id)).toEqual(['P1', 'P2'])
+    expect(rows.map((r) => r.issue?._id)).toEqual(['P1', 'P2'])
   })
 
   it('sorts within milestone groups too', () => {
@@ -241,7 +243,7 @@ describe('buildLayout — within-level sort', () => {
       rowHeight: ROW_H,
       withinLevelCompare: cmp
     })
-    expect(rows.map(r => r.id)).toEqual(['milestone:m1', 'issue:b', 'issue:a'])
+    expect(rows.map((r) => r.id)).toEqual(['milestone:m1', 'issue:b', 'issue:a'])
   })
 })
 
@@ -266,7 +268,7 @@ describe('buildLayout — combined breadcrumb + sort + collapse', () => {
     // P2 has no matched descendants → filtered out. P1 stays as breadcrumb.
     // Under P1: C2 (delta) sorts before C1 (gamma); C1 is non-match and
     // non-breadcrumb so it is dropped entirely.
-    expect(rows.map(r => r.issue?._id)).toEqual(['P1', 'C2'])
+    expect(rows.map((r) => r.issue?._id)).toEqual(['P1', 'C2'])
     expect(rows[0].isBreadcrumb).toBe(true)
     expect(rows[1].isBreadcrumb).toBe(false)
   })

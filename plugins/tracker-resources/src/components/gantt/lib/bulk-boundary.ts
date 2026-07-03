@@ -44,8 +44,8 @@ export interface BulkDeltaBounds {
 
 export function computeBulkDeltaBounds (
   memberIds: ReadonlySet<Ref<Issue>>,
-  allIssues: ReadonlyArray<Issue>,
-  relations: ReadonlyArray<IssueRelation>,
+  allIssues: readonly Issue[],
+  relations: readonly IssueRelation[],
   workingDays?: WorkingDaysConfig
 ): BulkDeltaBounds {
   // Cyclic-graph bail-out (see header). Mirrors simulateCascade's Step 0.
@@ -70,14 +70,14 @@ export function computeBulkDeltaBounds (
   }
 
   let minDeltaMs = -Infinity
-  let maxDeltaMs = Infinity
+  const maxDeltaMs = Infinity
 
   for (const memberId of memberIds) {
     const member = issuesByRef.get(memberId)
     if (member === undefined) continue
     if (member.startDate == null || member.dueDate == null) continue
-    const memberStart = member.startDate as number
-    const memberDue = member.dueDate as number
+    const memberStart = member.startDate
+    const memberDue = member.dueDate
 
     const incoming = byTarget.get(memberId) ?? []
     for (const r of incoming) {
@@ -87,8 +87,8 @@ export function computeBulkDeltaBounds (
       const pred = issuesByRef.get(r.attachedTo)
       if (pred === undefined) continue
       if (pred.startDate == null || pred.dueDate == null) continue
-      const predStart = pred.startDate as number
-      const predDue = pred.dueDate as number
+      const predStart = pred.startDate
+      const predDue = pred.dueDate
       const lag = r.lag ?? 0
 
       // For each kind, compute the constraint-driven minimum of the
@@ -105,7 +105,7 @@ export function computeBulkDeltaBounds (
       } else if (r.kind === 'finish-to-finish') {
         requiredAnchor = ffAnchor(predDue, lag, workingDays)
         memberAnchor = memberDue
-      } else /* start-to-finish */ {
+      } /* start-to-finish */ else {
         requiredAnchor = sfAnchor(predStart, lag, workingDays)
         memberAnchor = memberDue
       }

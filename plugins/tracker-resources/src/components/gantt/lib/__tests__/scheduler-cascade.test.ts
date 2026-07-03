@@ -391,9 +391,7 @@ describe('simulateCascade — working-days mode', () => {
     const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22))
     const B = issue('B', Date.UTC(2026, 4, 4), Date.UTC(2026, 4, 8))
     const relations = [rel('A', 'B', 'finish-to-start', 0)]
-    const primary: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 18), newDue: Date.UTC(2026, 4, 22) }
-    ]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 18), newDue: Date.UTC(2026, 4, 22) }]
     const res = simulateCascade(primary, [A, B], relations, () => true, { workingDays: cfgMonFri })
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
@@ -405,9 +403,7 @@ describe('simulateCascade — working-days mode', () => {
     const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22))
     const B = issue('B', Date.UTC(2026, 4, 4), Date.UTC(2026, 4, 8))
     const relations = [rel('A', 'B', 'finish-to-start', 2)]
-    const primary: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 18), newDue: Date.UTC(2026, 4, 22) }
-    ]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 18), newDue: Date.UTC(2026, 4, 22) }]
     const res = simulateCascade(primary, [A, B], relations, () => true, { workingDays: cfgMonFri })
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
@@ -432,9 +428,7 @@ describe('simulateCascade — working-days mode', () => {
     const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 18))
     const B = issue('B', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 1))
     const relations = [rel('A', 'B', 'finish-to-start', 0)]
-    const primary: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 18), newDue: Date.UTC(2026, 4, 18) }
-    ]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 18), newDue: Date.UTC(2026, 4, 18) }]
     const res = simulateCascade(primary, [A, B], relations, () => true, { workingDays: cfgWithHoliday })
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
@@ -448,9 +442,7 @@ describe('simulateCascade — working-days mode', () => {
     const B = issue('B', Date.UTC(2026, 5, 15), Date.UTC(2026, 5, 19))
     const relations = [rel('A', 'B', 'finish-to-start', 0)]
     // Pull B earlier so it starts Mon May 25 — pred (A) ends Mon Jun 8 → must be pulled back.
-    const primary: PrimaryEdit[] = [
-      { issue: B, newStart: Date.UTC(2026, 4, 25), newDue: Date.UTC(2026, 4, 29) }
-    ]
+    const primary: PrimaryEdit[] = [{ issue: B, newStart: Date.UTC(2026, 4, 25), newDue: Date.UTC(2026, 4, 29) }]
     const res = simulateCascade(primary, [A, B], relations, () => true, { workingDays: cfgMonFri })
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return

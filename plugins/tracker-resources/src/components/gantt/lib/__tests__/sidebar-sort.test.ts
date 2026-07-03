@@ -104,23 +104,13 @@ describe('comparatorFor — enum columns', () => {
   it('priority asc orders by enum value (NoPriority=0 first)', () => {
     const cmp = comparatorFor('priority', 'asc')
     const sorted = [...issues].sort(cmp).map((i) => i.priority)
-    expect(sorted).toEqual([
-      IssuePriority.NoPriority,
-      IssuePriority.Urgent,
-      IssuePriority.Medium,
-      IssuePriority.Low
-    ])
+    expect(sorted).toEqual([IssuePriority.NoPriority, IssuePriority.Urgent, IssuePriority.Medium, IssuePriority.Low])
   })
 
   it('priority desc inverts the order', () => {
     const cmp = comparatorFor('priority', 'desc')
     const sorted = [...issues].sort(cmp).map((i) => i.priority)
-    expect(sorted).toEqual([
-      IssuePriority.Low,
-      IssuePriority.Medium,
-      IssuePriority.Urgent,
-      IssuePriority.NoPriority
-    ])
+    expect(sorted).toEqual([IssuePriority.Low, IssuePriority.Medium, IssuePriority.Urgent, IssuePriority.NoPriority])
   })
 })
 
@@ -168,10 +158,7 @@ describe('comparatorFor — date columns with nulls-last semantics', () => {
   })
 
   it('dueDate honours nulls-last identically', () => {
-    const list = [
-      mkIssue({ _id: 'a', dueDate: D1 }),
-      mkIssue({ _id: 'b', dueDate: null })
-    ]
+    const list = [mkIssue({ _id: 'a', dueDate: D1 }), mkIssue({ _id: 'b', dueDate: null })]
     const cmp = comparatorFor('dueDate', 'asc')
     const sorted = [...list].sort(cmp).map((i) => i.dueDate)
     expect(sorted).toEqual([D1, null])

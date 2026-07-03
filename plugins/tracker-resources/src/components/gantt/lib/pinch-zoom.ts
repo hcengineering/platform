@@ -21,22 +21,25 @@ import { MIN_PPD, MAX_PPD } from './zoom'
  *   - Pinch-out (fingers apart)   → zoom in   (ratio > 1, ppd grows).
  */
 
-export interface Point { x: number, y: number }
+export interface Point {
+  x: number
+  y: number
+}
 
 export type PinchState =
   | { kind: 'idle' }
   | { kind: 'single', id: number, x: number, y: number }
   | {
-      kind: 'pinch'
-      idA: number
-      idB: number
-      a: Point
-      b: Point
-      center: Point
-      initialDistance: number
-      currentDistance: number
-      initialPxPerDay: number
-    }
+    kind: 'pinch'
+    idA: number
+    idB: number
+    a: Point
+    b: Point
+    center: Point
+    initialDistance: number
+    currentDistance: number
+    initialPxPerDay: number
+  }
 
 export type PinchEvent =
   | { type: 'down', id: number, x: number, y: number, pxPerDay: number }
@@ -87,10 +90,7 @@ export function reducePinch (state: PinchState, event: PinchEvent): PinchState {
   }
 }
 
-function onDown (
-  state: PinchState,
-  event: Extract<PinchEvent, { type: 'down' }>
-): PinchState {
+function onDown (state: PinchState, event: Extract<PinchEvent, { type: 'down' }>): PinchState {
   if (state.kind === 'idle') {
     return { kind: 'single', id: event.id, x: event.x, y: event.y }
   }
@@ -114,10 +114,7 @@ function onDown (
   return state
 }
 
-function onMove (
-  state: PinchState,
-  event: Extract<PinchEvent, { type: 'move' }>
-): PinchState {
+function onMove (state: PinchState, event: Extract<PinchEvent, { type: 'move' }>): PinchState {
   if (state.kind === 'single') {
     if (state.id !== event.id) return state
     return { ...state, x: event.x, y: event.y }
@@ -131,10 +128,7 @@ function onMove (
   return state
 }
 
-function onUp (
-  state: PinchState,
-  event: Extract<PinchEvent, { type: 'up' }>
-): PinchState {
+function onUp (state: PinchState, event: Extract<PinchEvent, { type: 'up' }>): PinchState {
   if (state.kind === 'single') {
     if (state.id !== event.id) return state
     return { kind: 'idle' }

@@ -435,14 +435,11 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
  */
 async function migrateRelationActivityAttachment (client: MigrationClient): Promise<void> {
   const issueClass = tracker.class.Issue
-  const dums = await client.find<DocUpdateMessage>(
-    DOMAIN_ACTIVITY,
-    {
-      _class: activity.class.DocUpdateMessage,
-      objectClass: tracker.class.IssueRelation,
-      action: 'remove'
-    }
-  )
+  const dums = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    objectClass: tracker.class.IssueRelation,
+    action: 'remove'
+  })
   if (dums.length === 0) return
   for (const dum of dums) {
     const isBroken = dum.attachedToClass !== issueClass || dum.updateCollection !== 'relations'
@@ -459,11 +456,7 @@ async function migrateRelationActivityAttachment (client: MigrationClient): Prom
     )
     const createTx = createTxes[0]
     const patch: Partial<DocUpdateMessage> = {}
-    if (
-      createTx !== undefined &&
-      createTx.attachedTo !== undefined &&
-      createTx.attachedToClass !== undefined
-    ) {
+    if (createTx?.attachedTo !== undefined && createTx.attachedToClass !== undefined) {
       patch.attachedTo = createTx.attachedTo
       patch.attachedToClass = createTx.attachedToClass
       patch.updateCollection = createTx.collection ?? 'relations'
@@ -476,11 +469,7 @@ async function migrateRelationActivityAttachment (client: MigrationClient): Prom
       if (dum.updateCollection === 'relations') continue
       patch.updateCollection = 'relations'
     }
-    await client.update<DocUpdateMessage>(
-      DOMAIN_ACTIVITY,
-      { _id: dum._id },
-      patch
-    )
+    await client.update<DocUpdateMessage>(DOMAIN_ACTIVITY, { _id: dum._id }, patch)
   }
 }
 

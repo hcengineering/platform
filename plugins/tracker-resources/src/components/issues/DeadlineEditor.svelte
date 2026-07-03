@@ -48,7 +48,9 @@
     value={deadlineValue}
     {width}
     {editable}
-    onChange={(e) => { void handleDeadlineChanged(e) }}
+    onChange={(e) => {
+      void handleDeadlineChanged(e)
+    }}
     shouldIgnoreOverdue={true}
   />
 {/if}

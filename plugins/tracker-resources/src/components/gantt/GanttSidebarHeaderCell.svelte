@@ -92,13 +92,7 @@
   aria-sort={ariaSort(sortDirection)}
   style="width: {width}px;"
 >
-  <button
-    type="button"
-    class="header-label"
-    class:sortable
-    disabled={!sortable}
-    on:click={onLabelClick}
-  >
+  <button type="button" class="header-label" class:sortable disabled={!sortable} on:click={onLabelClick}>
     <span class="label-text"><Label {label} /></span>
     {#if sortDirection === 'asc'}
       <span class="sort-glyph" aria-hidden="true">▲</span>
@@ -107,12 +101,7 @@
     {/if}
   </button>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div
-    class="resize-handle"
-    role="separator"
-    aria-orientation="vertical"
-    on:mousedown={onMouseDown}
-  />
+  <div class="resize-handle" role="separator" aria-orientation="vertical" on:mousedown={onMouseDown} />
 </div>
 
 <style lang="scss">

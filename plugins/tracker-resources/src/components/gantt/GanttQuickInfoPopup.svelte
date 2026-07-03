@@ -41,27 +41,27 @@
   </header>
 
   <div class="quick-info__row">
-    <span class="label"><Label label={tracker.string.Status}/></span>
+    <span class="label"><Label label={tracker.string.Status} /></span>
     <StatusEditor value={issue} kind="link" isEditable={true} />
   </div>
 
   <div class="quick-info__row">
-    <span class="label"><Label label={tracker.string.Priority}/></span>
+    <span class="label"><Label label={tracker.string.Priority} /></span>
     <PriorityEditor value={issue} kind="link" isEditable={true} />
   </div>
 
   <div class="quick-info__row">
-    <span class="label"><Label label={tracker.string.Assignee}/></span>
+    <span class="label"><Label label={tracker.string.Assignee} /></span>
     <AssigneeEditor object={issue} kind="link" width="100%" />
   </div>
 
   <div class="quick-info__row">
-    <span class="label"><Label label={tracker.string.IssueStartDate}/></span>
+    <span class="label"><Label label={tracker.string.IssueStartDate} /></span>
     <StartDateEditor value={issueWithLookup} width="100%" editable={true} />
   </div>
 
   <div class="quick-info__row">
-    <span class="label"><Label label={tracker.string.DueDate}/></span>
+    <span class="label"><Label label={tracker.string.DueDate} /></span>
     <DueDateEditor value={issueWithLookup} width="100%" editable={true} />
   </div>
 
@@ -72,7 +72,7 @@
        issues/timereport/ — opens the same EstimationPopup as the full
        editor, so update semantics stay identical. -->
   <div class="quick-info__row">
-    <span class="label"><Label label={tracker.string.Estimation}/></span>
+    <span class="label"><Label label={tracker.string.Estimation} /></span>
     <EstimationEditor value={issue} kind="link" width="100%" isEditable={true} />
   </div>
 

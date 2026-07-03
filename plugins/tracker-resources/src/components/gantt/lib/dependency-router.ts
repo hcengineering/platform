@@ -164,8 +164,7 @@ export function classifyArrowVisibility (
 
   if (sourceVisible && targetVisible) return { kind: 'both-visible' }
 
-  const edgeOf = (bar: BarRect): 'top' | 'bottom' =>
-    bar.top >= bounds.bottom ? 'bottom' : 'top'
+  const edgeOf = (bar: BarRect): 'top' | 'bottom' => (bar.top >= bounds.bottom ? 'bottom' : 'top')
 
   if (sourceVisible) {
     return { kind: 'source-only', targetEdge: edgeOf(target) }
@@ -189,12 +188,7 @@ export function classifyArrowVisibility (
  * uses this to draw a bezier that ends at the viewport edge instead of at
  * the off-screen bar, with a small triangle indicator on top.
  */
-export function clippedEndpointPx (
-  bar: BarRect,
-  anchor: Anchor,
-  bounds: YBounds,
-  offEdge: 'top' | 'bottom'
-): Point {
+export function clippedEndpointPx (bar: BarRect, anchor: Anchor, bounds: YBounds, offEdge: 'top' | 'bottom'): Point {
   const x = anchor === 'start' ? bar.left : bar.right
   const y = offEdge === 'top' ? bounds.top : bounds.bottom
   return { x, y }

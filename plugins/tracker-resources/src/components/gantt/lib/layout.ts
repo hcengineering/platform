@@ -70,7 +70,7 @@ export function buildLayout (
   const hasFilter = matchedIds !== undefined
 
   // 1) Build issue parent/child map, dropping orphan parent refs.
-  const visibleIssueIds = new Set<string>(issues.map(i => i._id as unknown as string))
+  const visibleIssueIds = new Set<string>(issues.map((i) => i._id as unknown as string))
   const issueById = new Map<string, Issue>()
   for (const i of issues) {
     issueById.set(i._id as unknown as string, i)
@@ -107,7 +107,7 @@ export function buildLayout (
   /** True iff `issueId` should appear under the active filter (match OR breadcrumb). */
   function isVisibleUnderFilter (issueId: string): boolean {
     if (!hasFilter) return true
-    if (matchedIds?.has(issueId) === true) return true
+    if (matchedIds?.has(issueId)) return true
     return breadcrumbIds.has(issueId)
   }
 
@@ -153,7 +153,7 @@ export function buildLayout (
     // remains visible regardless of the user's persisted collapse state.
     const hasMatchingDescendant = breadcrumbIds.has(issueId)
     const collapsed = userCollapsed && !hasMatchingDescendant
-    const isBreadcrumb = hasFilter && matchedIds?.has(issueId) !== true && breadcrumbIds.has(issueId)
+    const isBreadcrumb = hasFilter && !matchedIds?.has(issueId) && breadcrumbIds.has(issueId)
     rows.push({
       kind: 'issue',
       id,
@@ -182,7 +182,7 @@ export function buildLayout (
     // Skip milestone-group entirely when none of its issues are visible under
     // the current filter (no matches AND no breadcrumb-ancestors inside).
     if (hasFilter) {
-      const anyVisible = msIssues.some(i => isVisibleUnderFilter(i._id as unknown as string))
+      const anyVisible = msIssues.some((i) => isVisibleUnderFilter(i._id as unknown as string))
       if (!anyVisible) continue
     }
     const id = `milestone:${msId}`

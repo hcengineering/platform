@@ -48,7 +48,7 @@ export function sortPredecessorsByIdentifier (
 ): PredecessorEntry[] {
   const entries: PredecessorEntry[] = []
   for (const rel of rels) {
-    const source = sources.get(rel.attachedTo as Ref<Issue>)
+    const source = sources.get(rel.attachedTo)
     if (source === undefined) continue
     entries.push({ rel, source })
   }

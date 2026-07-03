@@ -12,12 +12,7 @@ import {
   type PredecessorEntry
 } from '../predecessor-list-format'
 
-function mkRel (
-  from: string,
-  to: string,
-  kind: DependencyKind,
-  lag: number
-): IssueRelation {
+function mkRel (from: string, to: string, kind: DependencyKind, lag: number): IssueRelation {
   return {
     _id: `${from}->${to}-${kind}` as Ref<IssueRelation>,
     attachedTo: from as Ref<Issue>,
@@ -85,30 +80,22 @@ describe('sortPredecessorsByIdentifier', () => {
       ['d' as Ref<Issue>, mkIssue('d', 'PROJ-3')]
     ])
     const out = sortPredecessorsByIdentifier(rels, sources)
-    expect(out.map(e => e.source.identifier)).toEqual(['PROJ-2', 'PROJ-3', 'PROJ-5'])
+    expect(out.map((e) => e.source.identifier)).toEqual(['PROJ-2', 'PROJ-3', 'PROJ-5'])
   })
 
   it('uses numeric-aware ordering so PROJ-2 < PROJ-10', () => {
-    const rels = [
-      mkRel('x', 'b', 'finish-to-start', 0),
-      mkRel('y', 'b', 'finish-to-start', 0)
-    ]
+    const rels = [mkRel('x', 'b', 'finish-to-start', 0), mkRel('y', 'b', 'finish-to-start', 0)]
     const sources = new Map<Ref<Issue>, Issue>([
       ['x' as Ref<Issue>, mkIssue('x', 'PROJ-10')],
       ['y' as Ref<Issue>, mkIssue('y', 'PROJ-2')]
     ])
     const out = sortPredecessorsByIdentifier(rels, sources)
-    expect(out.map(e => e.source.identifier)).toEqual(['PROJ-2', 'PROJ-10'])
+    expect(out.map((e) => e.source.identifier)).toEqual(['PROJ-2', 'PROJ-10'])
   })
 
   it('filters orphan relations whose source issue is missing from the map', () => {
-    const rels = [
-      mkRel('a', 'b', 'finish-to-start', 0),
-      mkRel('ghost', 'b', 'finish-to-start', 0)
-    ]
-    const sources = new Map<Ref<Issue>, Issue>([
-      ['a' as Ref<Issue>, mkIssue('a', 'PROJ-3')]
-    ])
+    const rels = [mkRel('a', 'b', 'finish-to-start', 0), mkRel('ghost', 'b', 'finish-to-start', 0)]
+    const sources = new Map<Ref<Issue>, Issue>([['a' as Ref<Issue>, mkIssue('a', 'PROJ-3')]])
     const out = sortPredecessorsByIdentifier(rels, sources)
     expect(out).toHaveLength(1)
     expect(out[0].source.identifier).toBe('PROJ-3')

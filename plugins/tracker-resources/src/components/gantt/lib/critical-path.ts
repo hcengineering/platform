@@ -47,18 +47,17 @@ interface Bound {
  * fall back to legacy calendar-day arithmetic when `cfg` is undefined and
  * apply the +1-day FS rule consistently with the cascade scheduler.
  */
-function forwardBound (
-  rel: IssueRelation,
-  predES: number,
-  predEF: number,
-  cfg: WorkingDaysConfig | undefined
-): Bound {
+function forwardBound (rel: IssueRelation, predES: number, predEF: number, cfg: WorkingDaysConfig | undefined): Bound {
   const lag = rel.lag ?? 0
   switch (rel.kind) {
-    case 'finish-to-start':  return { field: 'ES', value: fsAnchor(predEF, lag, cfg) }
-    case 'start-to-start':   return { field: 'ES', value: ssAnchor(predES, lag, cfg) }
-    case 'finish-to-finish': return { field: 'EF', value: ffAnchor(predEF, lag, cfg) }
-    case 'start-to-finish':  return { field: 'EF', value: sfAnchor(predES, lag, cfg) }
+    case 'finish-to-start':
+      return { field: 'ES', value: fsAnchor(predEF, lag, cfg) }
+    case 'start-to-start':
+      return { field: 'ES', value: ssAnchor(predES, lag, cfg) }
+    case 'finish-to-finish':
+      return { field: 'EF', value: ffAnchor(predEF, lag, cfg) }
+    case 'start-to-finish':
+      return { field: 'EF', value: sfAnchor(predES, lag, cfg) }
   }
 }
 
@@ -69,18 +68,17 @@ function forwardBound (
  *
  * Mirrors {@link forwardBound} via the reverse anchor helpers.
  */
-function backwardBound (
-  rel: IssueRelation,
-  succLS: number,
-  succLF: number,
-  cfg: WorkingDaysConfig | undefined
-): Bound {
+function backwardBound (rel: IssueRelation, succLS: number, succLF: number, cfg: WorkingDaysConfig | undefined): Bound {
   const lag = rel.lag ?? 0
   switch (rel.kind) {
-    case 'finish-to-start':  return { field: 'EF', value: fsReverseAnchor(succLS, lag, cfg) }
-    case 'start-to-start':   return { field: 'ES', value: ssReverseAnchor(succLS, lag, cfg) }
-    case 'finish-to-finish': return { field: 'EF', value: ffReverseAnchor(succLF, lag, cfg) }
-    case 'start-to-finish':  return { field: 'ES', value: sfReverseAnchor(succLF, lag, cfg) }
+    case 'finish-to-start':
+      return { field: 'EF', value: fsReverseAnchor(succLS, lag, cfg) }
+    case 'start-to-start':
+      return { field: 'ES', value: ssReverseAnchor(succLS, lag, cfg) }
+    case 'finish-to-finish':
+      return { field: 'EF', value: ffReverseAnchor(succLF, lag, cfg) }
+    case 'start-to-finish':
+      return { field: 'ES', value: sfReverseAnchor(succLF, lag, cfg) }
   }
 }
 

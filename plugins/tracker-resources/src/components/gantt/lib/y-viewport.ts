@@ -129,10 +129,7 @@ export function yToRowIndex (y: number, rowHeight: number, totalRows: number): n
  * rows whose `[y, y + height)` intersects `bounds`. Used by the sidebar and
  * arrow layer when the canvas already emits rows in their layout-y space.
  */
-export function sliceVisibleRows<T extends { y: number, height: number }> (
-  rows: readonly T[],
-  bounds: YBounds
-): T[] {
+export function sliceVisibleRows<T extends { y: number, height: number }> (rows: readonly T[], bounds: YBounds): T[] {
   if (rows.length === 0) return []
   const out: T[] = []
   for (const r of rows) {

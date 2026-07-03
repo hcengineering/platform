@@ -40,7 +40,7 @@ describe('cascade-popup-layout: computeCascadeBodyHeight', () => {
 
   it('regression: pre-fix formula (no padding) would have clipped 3-row case', () => {
     // Sanity check on the constant the bug fix reasoning depends on.
-    const preFix = 3 * 22 + 32 // 98 — the value that clipped in 
+    const preFix = 3 * 22 + 32 // 98 — the value that clipped in
     const postFix = computeCascadeBodyHeight({ ...baseInput, rowCount: 3 })
     expect(postFix).toBeGreaterThan(preFix)
     expect(postFix - preFix).toBeGreaterThanOrEqual(8)

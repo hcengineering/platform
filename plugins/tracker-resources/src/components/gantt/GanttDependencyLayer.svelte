@@ -16,11 +16,7 @@
 
   const BOTH_VISIBLE: ArrowVisibility = { kind: 'both-visible' }
 
-  function resolveVisibility (
-    src: BarRect | null,
-    dst: BarRect | null,
-    bounds: YBounds | undefined
-  ): ArrowVisibility {
+  function resolveVisibility (src: BarRect | null, dst: BarRect | null, bounds: YBounds | undefined): ArrowVisibility {
     if (bounds === undefined) return BOTH_VISIBLE
     return classifyArrowVisibility(src, dst, bounds)
   }
@@ -73,7 +69,7 @@
 
 <g class="gantt-dep-layer">
   {#each relations as rel (rel?._id)}
-    {#if rel !== undefined && rel.kind !== undefined}
+    {#if rel?.kind !== undefined}
       {@const src = barRects.get(String(rel.attachedTo)) ?? null}
       {@const dst = barRects.get(String(rel.target)) ?? null}
       {@const visibility = resolveVisibility(src, dst, yBounds)}

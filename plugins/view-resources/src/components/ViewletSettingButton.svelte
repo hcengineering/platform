@@ -100,18 +100,18 @@
     <ViewOptionsButton {viewlet} {kind} {viewOptions} {viewOptionsConfig} {hideGroupingAndOrdering} {hideKeys} />
   {/if}
   {#if showConfigureColumns}
-  <!-- Configure-columns button gets its own IntlString so the tooltip differs
+    <!-- Configure-columns button gets its own IntlString so the tooltip differs
        from the sibling ViewOptionsButton (which keeps "Customize view"). -->
-  <ButtonIcon
-    icon={view.icon.Configure}
-    {disabled}
-    {kind}
-    size={'small'}
-    {pressed}
-    tooltip={{ label: view.string.ConfigureColumns, direction: 'bottom' }}
-    dataId={'btn-viewSetting'}
-    bind:element={btn}
-    on:click={clickHandler}
-  />
+    <ButtonIcon
+      icon={view.icon.Configure}
+      {disabled}
+      {kind}
+      size={'small'}
+      {pressed}
+      tooltip={{ label: view.string.ConfigureColumns, direction: 'bottom' }}
+      dataId={'btn-viewSetting'}
+      bind:element={btn}
+      on:click={clickHandler}
+    />
   {/if}
 {/if}

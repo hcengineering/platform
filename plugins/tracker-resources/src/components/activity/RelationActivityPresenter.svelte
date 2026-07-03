@@ -46,7 +46,7 @@
 </script>
 
 {#if value !== undefined}
-  <IssueRelationPresenter value={value} />
+  <IssueRelationPresenter {value} />
 {:else}
   <span class="placeholder">…</span>
 {/if}

@@ -96,7 +96,7 @@
   /**  — layout mode for mobile-friendly rendering. */
   export let layoutMode: LayoutMode = 'desktop'
   /** Bulk-select: set of selected issue id strings for co-drag highlighting. */
-  export let multiSelectedIssueIds: Set<string> = new Set()
+  export let multiSelectedIssueIds = new Set<string>()
 
   /**
    * Returns true iff any IssueRelation involving this issue is in the
@@ -153,10 +153,7 @@
   $: rowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
   $: totalHeight = rowsHeight + milestoneStripHeight
   $: tickViewport = computeTickViewport(viewport.left, viewport.right, dataWidth)
-  $: ticks = timeScale.ticks([
-    timeScale.fromX(tickViewport.left),
-    timeScale.fromX(tickViewport.right)
-  ])
+  $: ticks = timeScale.ticks([timeScale.fromX(tickViewport.left), timeScale.fromX(tickViewport.right)])
   // Non-working-day backgrounds. Empty in legacy mode.
   $: nonWorkingDays = nonWorkingDaysInRange(
     timeScale.fromX(tickViewport.left),
@@ -193,7 +190,6 @@
   function getDeadline (issue: Issue): number | null {
     return issue.deadline ?? null
   }
-
 
   function summaryFor (row: LayoutRow): SummaryRange | null {
     if (row.kind === 'milestone' && row.milestone !== null) {
@@ -334,7 +330,9 @@
             data-issue-id={String(row.issue._id)}
             on:dblclick|stopPropagation={layoutMode === 'phone'
               ? undefined
-              : () => row.issue !== null && openIssue(row.issue)}
+              : () => {
+                  if (row.issue !== null) openIssue(row.issue)
+                }}
           >
             <GanttBar
               issue={row.issue}
@@ -377,8 +375,10 @@
           {@const overdue = isOverdue(row.issue)}
           <g class="deadline-marker" class:overdue>
             <line
-              x1={dx} y1={dy}
-              x2={dx} y2={dy + 26}
+              x1={dx}
+              y1={dy}
+              x2={dx}
+              y2={dy + 26}
               stroke={overdue ? 'var(--theme-state-negative-color)' : 'var(--theme-warning-color)'}
               stroke-width="1.5"
               stroke-dasharray="2 2"
@@ -389,7 +389,9 @@
               fill={overdue ? 'var(--theme-state-negative-color)' : 'var(--theme-warning-color)'}
               pointer-events="none"
             >
-              <title>{overdue ? 'Overdue (past deadline)' : 'Deadline'}: {new Date(dlVal).toISOString().slice(0, 10)}</title>
+              <title
+                >{overdue ? 'Overdue (past deadline)' : 'Deadline'}: {new Date(dlVal).toISOString().slice(0, 10)}</title
+              >
             </polygon>
           </g>
         {/if}
@@ -471,18 +473,19 @@
                Static state: small grey dot, signals "you can drop here".
                Hovered state: bigger indigo dot matching the source-dot palette,
                signals "release now to create the dependency". -->
-          <circle
-            class="gantt-connector-target-dot"
-            class:active={isCurrentTarget}
-            cx={xOv - 8}
-            cy={barYOv + barHOv / 2}
-            r={isCurrentTarget ? 6 : 4}
-            fill={isCurrentTarget ? 'var(--theme-state-info-color, #6366f1)' : 'var(--theme-state-regular-color)'}
-            stroke="#ffffff"
-            stroke-width={isCurrentTarget ? 1.5 : 1}
-            opacity={isCurrentTarget ? 1 : 0.55}
-            pointer-events="none"
-          />
+            <circle
+              class="gantt-connector-target-dot"
+              class:active={isCurrentTarget}
+              cx={xOv - 8}
+              cy={barYOv + barHOv / 2}
+              r={isCurrentTarget ? 6 : 4}
+              fill={isCurrentTarget ? 'var(--theme-state-info-color, #6366f1)' : 'var(--theme-state-regular-color)'}
+              stroke="#ffffff"
+              stroke-width={isCurrentTarget ? 1.5 : 1}
+              opacity={isCurrentTarget ? 1 : 0.55}
+              pointer-events="none"
+            />
+          {/if}
         {/if}
       {/if}
     {/each}
@@ -550,6 +553,6 @@
      stays subtle in both light and dark themes. */
   :global(svg.gantt-canvas .non-working-day-rect) {
     fill: var(--theme-divider-color);
-    opacity: 0.10;
+    opacity: 0.1;
   }
 </style>

@@ -107,21 +107,21 @@ export type DragState =
   | { kind: 'idle' }
   | { kind: 'hover-bar', issueId: Ref<Issue> | Ref<Milestone>, edge: 'left' | 'right' | 'body' | 'none' }
   | {
-      kind: 'dragging-body'
-      target: DragTarget
-      originStart: number
-      originEnd: number
-      cursorStartX: number
-      previewStart: number
-      previewEnd: number
-      /** Bulk co-drag state: other selected issues being shifted in sync. */
-      coDrag?: {
-        members: Array<{ issueId: Ref<Issue>, originStart: number, originEnd: number }>
-        minDeltaMs: number
-        maxDeltaMs: number
-        anchorDeltaMs: number
-      }
+    kind: 'dragging-body'
+    target: DragTarget
+    originStart: number
+    originEnd: number
+    cursorStartX: number
+    previewStart: number
+    previewEnd: number
+    /** Bulk co-drag state: other selected issues being shifted in sync. */
+    coDrag?: {
+      members: Array<{ issueId: Ref<Issue>, originStart: number, originEnd: number }>
+      minDeltaMs: number
+      maxDeltaMs: number
+      anchorDeltaMs: number
     }
+  }
   | {
       kind: 'resizing-left'
       target: DragTarget
@@ -203,17 +203,17 @@ export type DragEvent =
        *  as `originStart` / `originEnd` and adds the cursor-delta to compute
        *  previews. Captured here at the dispatch boundary so the doc-agnostic
        *  reducer doesn't need to know which field on `target.doc` to read. */
-      originStart: number
-      originEnd: number
-      edge: 'left' | 'right' | 'body'
-      cursorX: number
-      /** Bulk co-drag state: other selected issues to shift in sync. */
-      coDrag?: {
-        members: Array<{ issueId: Ref<Issue>, originStart: number, originEnd: number }>
-        minDeltaMs: number
-        maxDeltaMs: number
-      }
+    originStart: number
+    originEnd: number
+    edge: 'left' | 'right' | 'body'
+    cursorX: number
+    /** Bulk co-drag state: other selected issues to shift in sync. */
+    coDrag?: {
+      members: Array<{ issueId: Ref<Issue>, originStart: number, originEnd: number }>
+      minDeltaMs: number
+      maxDeltaMs: number
     }
+  }
   | { type: 'mousedown-unscheduled', target: DragTarget, cursorX: number }
   | { type: 'mousemove', cursorX: number, canvasX?: number }
   | { type: 'mouseup' }

@@ -32,7 +32,7 @@
   // + 4 (bar top offset) + 14 (bar height)` = svg_height - 4. Pair that
   // with the 4px top/bottom CSS padding of .body and the previous
   // bodyHeight clipped the bottom 8 px of the last row, so the lower
-  // edge of the last bar disappeared (visible at 3 rows in the 
+  // edge of the last bar disappeared (visible at 3 rows in the
   // test). Reserve that padding explicitly so the body fits without
   // a scrollbar in the typical N<10 case and only scrolls when needed.
   const BODY_VERTICAL_PADDING = 8

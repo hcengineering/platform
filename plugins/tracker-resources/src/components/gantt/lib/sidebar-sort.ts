@@ -46,7 +46,12 @@ export type IssueComparator = (a: Issue, b: Issue) => number
 
 /** Columns where a stable, meaningful ordering exists for v1. */
 const STRING_COLS: ReadonlySet<SidebarColumnKey> = new Set<SidebarColumnKey>(['title', 'identifier'])
-const NUMBER_COLS: ReadonlySet<SidebarColumnKey> = new Set<SidebarColumnKey>(['estimation', 'priority', 'modifiedOn', 'createdOn'])
+const NUMBER_COLS: ReadonlySet<SidebarColumnKey> = new Set<SidebarColumnKey>([
+  'estimation',
+  'priority',
+  'modifiedOn',
+  'createdOn'
+])
 const DATE_COLS: ReadonlySet<SidebarColumnKey> = new Set<SidebarColumnKey>(['startDate', 'dueDate', 'deadline'])
 
 function readString (issue: Issue, col: SidebarColumnKey): string {
@@ -80,7 +85,8 @@ export function comparatorFor (column: SidebarColumnKey, direction: SortDirectio
   const sign = direction === 'asc' ? 1 : -1
 
   if (STRING_COLS.has(column)) {
-    return (a, b) => sign * readString(a, column).localeCompare(readString(b, column), undefined, { sensitivity: 'base' })
+    return (a, b) =>
+      sign * readString(a, column).localeCompare(readString(b, column), undefined, { sensitivity: 'base' })
   }
   if (NUMBER_COLS.has(column)) {
     return (a, b) => sign * (readNumber(a, column) - readNumber(b, column))

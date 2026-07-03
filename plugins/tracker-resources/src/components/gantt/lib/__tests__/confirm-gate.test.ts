@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import { isConfirming, setConfirming, __resetConfirmGate } from '../confirm-gate'
+import { isConfirming, setConfirming, resetConfirmGate } from '../confirm-gate'
 
 describe('confirm-gate', () => {
   beforeEach(() => {
-    __resetConfirmGate()
+    resetConfirmGate()
   })
 
   it('defaults to false on first read', () => {
@@ -33,7 +33,7 @@ describe('confirm-gate', () => {
 
   it('reset helper clears the flag', () => {
     setConfirming(true)
-    __resetConfirmGate()
+    resetConfirmGate()
     expect(isConfirming()).toBe(false)
   })
 })

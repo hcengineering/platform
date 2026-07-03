@@ -48,9 +48,7 @@
   $: effectiveMode = value.schedulingMode === 'manual' ? 'manual' : 'auto'
   $: labelId = effectiveMode === 'manual' ? tracker.string.SchedulingModeManual : tracker.string.SchedulingModeAuto
   $: tooltipId =
-    effectiveMode === 'manual'
-      ? tracker.string.SchedulingModeTooltipManual
-      : tracker.string.SchedulingModeTooltipAuto
+    effectiveMode === 'manual' ? tracker.string.SchedulingModeTooltipManual : tracker.string.SchedulingModeTooltipAuto
 
   async function toggle (): Promise<void> {
     if (!editable) return
@@ -67,15 +65,7 @@
   }
 </script>
 
-<Button
-  {kind}
-  {size}
-  {width}
-  disabled={!editable}
-  label={labelId}
-  showTooltip={{ label: tooltipId }}
-  on:click={toggle}
->
+<Button {kind} {size} {width} disabled={!editable} label={labelId} showTooltip={{ label: tooltipId }} on:click={toggle}>
   <svelte:fragment slot="icon">
     <Icon
       icon={view.icon.Pin}
