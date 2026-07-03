@@ -31,7 +31,7 @@ type ResultFn = (filter: Filter, refresh: () => void) => Promise<unknown>
  * parameter so unit tests can inject a mock without spinning up the full
  * plugin runtime.
  */
-const defaultResolveResource: ResourceResolver = async <T>(r: Resource<T>) => getResource(r)
+const defaultResolveResource: ResourceResolver = async <T>(r: Resource<T>) => await getResource(r)
 
 /**
  * Deep-clone a query so the helper never mutates the caller's `base`.
@@ -81,7 +81,7 @@ export async function makeFilterQuery (
     for (const key in result) {
       if (existing[key] === undefined) {
         if (key === '$in' && typeof existing === 'string') {
-          (out as any)[filterKey] = { $in: (result[key] as any[]).filter((p) => p === existing) }
+          ;(out as any)[filterKey] = { $in: (result[key] as any[]).filter((p) => p === existing) }
         } else {
           existing[key] = result[key]
         }

@@ -3,10 +3,10 @@ import type { DocumentQuery, Doc } from '@hcengineering/core'
 import type { Filter, FilterMode } from '@hcengineering/view'
 import { makeFilterQuery } from './query-builder'
 
-const mockResult = async (filter: Filter) => ({ $in: filter.value })
+const mockResult = async (filter: Filter): Promise<{ $in: unknown }> => ({ $in: filter.value })
 const mockResolveResource = jest.fn(async () => mockResult)
 
-const mockMode = { result: 'mock:resource:Result' as any } as FilterMode
+const mockMode = { result: 'mock:resource:Result' as any } as unknown as FilterMode
 const mockFilter = (key: string, value: unknown[], idx = 1): Filter => ({
   key: { _class: '' as any, key, attribute: undefined as any, label: '' as any, component: '' as any },
   mode: 'mock:mode:In' as any,
@@ -16,7 +16,9 @@ const mockFilter = (key: string, value: unknown[], idx = 1): Filter => ({
 })
 
 describe('makeFilterQuery', () => {
-  beforeEach(() => { mockResolveResource.mockClear() })
+  beforeEach(() => {
+    mockResolveResource.mockClear()
+  })
 
   it('returns base query when filter list is empty', async () => {
     const base: DocumentQuery<Doc> = { space: 'foo' as any }
@@ -35,10 +37,7 @@ describe('makeFilterQuery', () => {
 
   it('intersects $in operators across two filters on same key', async () => {
     const base: DocumentQuery<Doc> = {}
-    const filters: Filter[] = [
-      mockFilter('status', ['a', 'b'], 1),
-      mockFilter('status', ['b', 'c'], 2)
-    ]
+    const filters: Filter[] = [mockFilter('status', ['a', 'b'], 1), mockFilter('status', ['b', 'c'], 2)]
     const out = await makeFilterQuery(base, filters, async () => mockMode, mockResolveResource as any)
     expect(out).toEqual({ status: { $in: ['b'] } })
   })

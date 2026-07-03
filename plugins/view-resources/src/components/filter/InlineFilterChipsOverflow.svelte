@@ -19,11 +19,7 @@
     {#each $filterStore as filter, i (filter.index)}
       {#if i >= hiddenStartIndex}
         <div class="row">
-          <FilterSection
-            {filter}
-            {space}
-            on:remove={() => removeFilter(i)}
-          />
+          <FilterSection {filter} {space} on:remove={() => { removeFilter(i) }} />
         </div>
       {/if}
     {/each}

@@ -86,7 +86,9 @@
   // PREVIOUS view's search text — Empty-State + match-highlight could
   // then react to a stale query that the user never typed in this view.
   $: rawSearchTextStore.set(searchRaw)
-  onDestroy(() => { rawSearchTextStore.set('') })
+  onDestroy(() => {
+    rawSearchTextStore.set('')
+  })
 
   let searchQuery: DocumentQuery<Issue> = { ...query }
   function updateSearchQuery (eff: string): void {

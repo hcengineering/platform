@@ -136,7 +136,7 @@
             makeQuery(query, $filterStore)
             updateFilter(filter)
           }}
-          on:remove={() => removeFilter(i)}
+          on:remove={() => { removeFilter(i) }}
         />
       {/each}
       <div class="add-filter">
