@@ -35,11 +35,7 @@
       title={onlyIcons ? undefined : item.label}
       label={onlyIcons ? undefined : item.labelIntl}
       labelParams={onlyIcons ? undefined : item.labelParams}
-      tooltip={disabled && tooltip !== undefined
-        ? tooltip
-        : item.tooltip
-          ? { label: item.tooltip }
-          : undefined}
+      tooltip={disabled && tooltip !== undefined ? tooltip : item.tooltip ? { label: item.tooltip } : undefined}
       on:change={() => {
         if (disabled) return
         dispatch('select', item)

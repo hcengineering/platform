@@ -145,10 +145,7 @@ type Token =
   | { kind: 'field-clause', field: string, value: ClauseValue }
   | { kind: 'bare', raw: string }
 
-type ClauseValue =
-  | { kind: 'paren', inner: string }
-  | { kind: 'quoted', inner: string }
-  | { kind: 'bare', raw: string }
+type ClauseValue = { kind: 'paren', inner: string } | { kind: 'quoted', inner: string } | { kind: 'bare', raw: string }
 
 const BOOL_OPS = new Set(['AND', 'OR', 'NOT'])
 
