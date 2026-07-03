@@ -114,7 +114,13 @@
     {#each $filterStore as filter, i (filter.index)}
       {#if i < visibleCount}
         <span bind:this={chipEls[i]} class="chip-slot">
-          <FilterSection {space} {filter} on:remove={() => { removeFilter(i) }} />
+          <FilterSection
+            {space}
+            {filter}
+            on:remove={() => {
+              removeFilter(i)
+            }}
+          />
         </span>
       {/if}
     {/each}
@@ -143,7 +149,9 @@
       size="small"
       icon={IconClose}
       label={view.string.ClearFilters}
-      on:click={() => { setFilters([]) }}
+      on:click={() => {
+        setFilters([])
+      }}
     />
   {/if}
 </div>
