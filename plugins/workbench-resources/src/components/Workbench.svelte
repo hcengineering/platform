@@ -72,6 +72,7 @@
     PopupPosAlignment,
     PopupResult,
     popupstore,
+    printModeStore,
     pushRootBarComponent,
     resizeObserver,
     ResolvedLocation,
@@ -1119,7 +1120,7 @@
   <Dock />
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
-  <PanelInstance bind:this={panelInstance} contentPanel={elementPanel}>
+  <PanelInstance bind:this={panelInstance} contentPanel={elementPanel} readonly={$printModeStore}>
     <svelte:fragment slot="panel-header">
       <ActionContext context={{ mode: 'panel' }} />
     </svelte:fragment>

@@ -19,7 +19,7 @@
   import { Button, eventToHTMLElement, Label, showPopup } from '@hcengineering/ui'
   import MarkupEditorPopup from './MarkupEditorPopup.svelte'
   import { StyledTextBox } from '@hcengineering/text-editor-resources'
-  import type { EditorKitOptions } from '@hcengineering/text-editor-resources'
+  import type { EditorKitOptions, ImageUploadOptions } from '@hcengineering/text-editor-resources'
   import textEditorPlugin from '@hcengineering/text-editor'
 
   // export let label: IntlString
@@ -33,6 +33,7 @@
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'fit-content'
   export let kitOptions: Partial<EditorKitOptions> = { reference: true, emoji: true }
+  export let attachFile: ImageUploadOptions['attachFile'] | undefined = undefined
 
   let shown: boolean = false
 </script>
@@ -46,7 +47,7 @@
     height={value ? 'auto' : undefined}
     on:click={(ev) => {
       if (!shown && !readonly) {
-        showPopup(MarkupEditorPopup, { value, kitOptions }, eventToHTMLElement(ev), (res) => {
+        showPopup(MarkupEditorPopup, { value, kitOptions, attachFile }, eventToHTMLElement(ev), (res) => {
           if (res != null) {
             value = res
             onChange(value)
@@ -74,6 +75,7 @@
     {kitOptions}
     mode={2}
     {readonly}
+    {attachFile}
     on:value={(e) => {
       onChange(e.detail)
     }}

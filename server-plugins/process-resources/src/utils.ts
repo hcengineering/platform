@@ -18,6 +18,7 @@ import { getEmbeddedLabel, getResource } from '@hcengineering/platform'
 import process, {
   Execution,
   parseContext,
+  Process,
   ProcessError,
   processError,
   SelectedConst,
@@ -67,11 +68,19 @@ export async function getContextValue (value: any, control: ProcessControl, exec
   }
 }
 
+export function resolveAttributeId<T extends string> (_process: Process, key: T): T {
+  if (_process.bindings?.[key] !== undefined) {
+    return _process.bindings[key] as T
+  }
+  return key
+}
+
 function getValue (control: ProcessControl, execution: Execution, rawKey: string, card: Doc): any {
   const hierarchy = control.client.getHierarchy()
   const _process = control.client.getModel().findObject(execution.process)
   if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
-  const key = checkMixinKey(rawKey, _process.masterTag, hierarchy)
+  const realKey = resolveAttributeId(_process, rawKey)
+  const key = checkMixinKey(realKey, _process.masterTag, hierarchy)
   return getObjectValue(key, card)
 }
 
@@ -119,8 +128,11 @@ async function fillValue (
 async function getNestedValue (control: ProcessControl, execution: Execution, context: SelectedNested): Promise<any> {
   const card = control.cache.get(execution.card)
   if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card }, {}, true)
-  const attr = control.client.getHierarchy().findAttribute(card._class, context.path)
-  if (attr === undefined) throw processError(process.error.AttributeNotExists, { key: context.path })
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
+  const realPath = resolveAttributeId(_process, context.path)
+  const attr = control.client.getHierarchy().findAttribute(card._class, realPath)
+  if (attr === undefined) throw processError(process.error.AttributeNotExists, { key: realPath })
   const nestedValue = getValue(control, execution, context.path, card)
   if (nestedValue === undefined) throw processError(process.error.EmptyAttributeContextValue, {}, { attr: attr.label })
   const parentType = attr.type._class === core.class.ArrOf ? (attr.type as ArrOf<Doc>).of : attr.type
@@ -130,7 +142,8 @@ async function getNestedValue (control: ProcessControl, execution: Execution, co
     _id: { $in: refs }
   })
   if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, {}, { attr: attr.label })
-  const nested = control.client.getHierarchy().findAttribute(targetClass, context.key)
+  const realKey = resolveAttributeId(_process, context.key)
+  const nested = control.client.getHierarchy().findAttribute(targetClass, realKey)
   if (context.sourceFunction !== undefined) {
     const transform = control.client.getModel().findObject(context.sourceFunction.func)
     if (transform === undefined) {
@@ -172,7 +185,10 @@ async function getRelationValue (
   execution: Execution,
   context: SelectedRelation
 ): Promise<any> {
-  const assoc = control.client.getModel().findObject(context.association)
+  const _process = control.client.getModel().findObject(execution.process)
+  if (_process === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.process })
+  const realAssociation = resolveAttributeId(_process, context.association)
+  const assoc = control.client.getModel().findObject(realAssociation)
   if (assoc === undefined) throw processError(process.error.RelationNotExists, {})
   const targetClass = context.direction === 'A' ? assoc.classA : assoc.classB
   const q = context.direction === 'A' ? { docB: execution.card } : { docA: execution.card }
@@ -188,7 +204,8 @@ async function getRelationValue (
   })
   const target = await control.client.findAll(targetClass, { _id: { $in: ids } })
   if (target.length === 0) throw processError(process.error.RelatedObjectNotFound, { attr: context.name })
-  const attr = context.key !== '' ? control.client.getHierarchy().findAttribute(targetClass, context.key) : undefined
+  const realKey = resolveAttributeId(_process, context.key)
+  const attr = realKey !== '' ? control.client.getHierarchy().findAttribute(targetClass, realKey) : undefined
   if (context.sourceFunction !== undefined) {
     const transform = control.client.getModel().findObject(context.sourceFunction.func)
     if (transform === undefined) {

@@ -28,6 +28,7 @@ import {
   type PersonUuid,
   type SocialId as SocialIdBase,
   type UsageStatus,
+  type WorkspaceConfiguration,
   type WorkspaceDataId,
   type WorkspaceUuid,
   type WorkspaceInfo,
@@ -123,6 +124,8 @@ export interface Workspace {
   createdBy?: PersonUuid
   billingAccount?: PersonUuid
   createdOn?: Timestamp
+  // Initial-state configuration captured at workspace creation
+  pendingConfiguration?: WorkspaceConfiguration | null
 }
 
 export interface OTP {

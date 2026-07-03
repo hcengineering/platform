@@ -731,7 +731,7 @@ function addWorkerListener (): void {
 
 export function pushAvailable (): boolean {
   if (isDesktopClient()) return false
-  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  const publicKey = getPushPublicKey()
   return (
     'serviceWorker' in navigator &&
     'PushManager' in window &&
@@ -747,7 +747,7 @@ export async function subscribePush (): Promise<boolean> {
     return false
   }
   const client = getClient()
-  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  const publicKey = getPushPublicKey()
   if ('serviceWorker' in navigator && 'PushManager' in window && publicKey !== undefined) {
     try {
       const loc = getCurrentLocation()
@@ -800,6 +800,12 @@ export async function subscribePush (): Promise<boolean> {
   }
   pushAllowed.set(false)
   return false
+}
+
+function getPushPublicKey (): string | undefined {
+  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  if (publicKey === undefined) return undefined
+  return publicKey.trim() !== '' ? publicKey : undefined
 }
 
 async function cleanTag (_id: Ref<Doc>): Promise<void> {

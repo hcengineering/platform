@@ -82,6 +82,8 @@
     "SectionUnlocked": "Sekce {section} odemknuta",
     "LayoutAuto": "Auto",
     "SingleColumn": "Jeden sloupec",
+    "BaseType": "Základní typ",
+    "BaseTypeDescription": "Použijte tento typ pouze jako nadřazený. Karty lze vytvářet pouze z jeho podtypů.",
     "TwoColumns": "Dva sloupce",
     "Grid": "Mřížka",
     "RichtextProperties": "Textová pole",

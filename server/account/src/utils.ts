@@ -29,6 +29,7 @@ import {
   SocialIdType,
   type SocialKey,
   systemAccountUuid,
+  type WorkspaceConfiguration,
   type WorkspaceDataId,
   type WorkspaceInfoWithStatus as WorkspaceInfoWithStatusCore,
   type WorkspaceMode,
@@ -1120,7 +1121,8 @@ export async function createWorkspaceRecord (
   account: PersonUuid,
   region: string = '',
   initMode: WorkspaceMode = 'pending-creation',
-  dataId?: WorkspaceDataId
+  dataId?: WorkspaceDataId,
+  pendingConfiguration?: WorkspaceConfiguration
 ): Promise<CreateWorkspaceRecordResult> {
   const brandingKey = branding?.key ?? 'huly'
   const regionInfo = getRegions().find((it) => it.region === region)
@@ -1162,7 +1164,8 @@ export async function createWorkspaceRecord (
           billingAccount: account,
           allowReadOnlyGuest: false,
           allowGuestSignUp: false,
-          region
+          region,
+          ...(pendingConfiguration !== undefined ? { pendingConfiguration } : {})
         },
         {
           mode: initMode,

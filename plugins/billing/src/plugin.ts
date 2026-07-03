@@ -30,7 +30,8 @@ export const billingPlugin = plugin(billingId, {
   component: {
     Settings: '' as AnyComponent,
     WorkbenchExtension: '' as AnyComponent,
-    UsageExtension: '' as AnyComponent
+    UsageExtension: '' as AnyComponent,
+    LimitsFooterIndicator: '' as AnyComponent
   },
   string: {
     Billing: '' as IntlString,
@@ -54,7 +55,14 @@ export const billingPlugin = plugin(billingId, {
     Legendary: '' as IntlString,
     LegendaryDescription: '' as IntlString,
     UpgradePlan: '' as IntlString,
-    LimitReached: '' as IntlString
+    LimitReached: '' as IntlString,
+    LimitsExceededShort: '' as IntlString,
+    LimitExceededWarningTitle: '' as IntlString,
+    LimitExceededWarningHint: '' as IntlString,
+    LimitExceededRestrictedTitle: '' as IntlString,
+    LimitExceededRestrictedHint: '' as IntlString,
+    UploadRestrictedToast: '' as IntlString,
+    UpgradePlanCta: '' as IntlString
   },
   icon: {
     Billing: '' as Asset,

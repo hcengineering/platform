@@ -364,6 +364,39 @@ export const myEmployeeStore = derived(
   }
 )
 
+function detectBrowserTimezone (): string | undefined {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return tz !== '' ? tz : undefined
+  } catch {
+    return undefined
+  }
+}
+
+let timezoneSyncInFlight = false
+
+async function syncMyEmployeeTimezone (employee: WithLookup<Employee> | undefined): Promise<void> {
+  if (timezoneSyncInFlight || employee === undefined) return
+  const browserTz = detectBrowserTimezone()
+  if (browserTz === undefined || employee.timezone === browserTz) return
+
+  timezoneSyncInFlight = true
+  try {
+    const client = getClient()
+    await client.updateMixin(employee._id, contact.class.Person, employee.space, contact.mixin.Employee, {
+      timezone: browserTz
+    })
+  } catch (err) {
+    console.error('Failed to sync employee timezone', err)
+  } finally {
+    timezoneSyncInFlight = false
+  }
+}
+
+myEmployeeStore.subscribe((employee) => {
+  void syncMyEmployeeTimezone(employee)
+})
+
 /**
  * [Ref<Employee> => PersonId (primary)] mapping
  */

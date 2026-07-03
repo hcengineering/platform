@@ -49,6 +49,7 @@
         "DueDatePopupOverdueDescription": "{value, plural, =1 {1 gün gecikti} other {# gün gecikti}}",
         "English": "English",
         "Russian": "Русский",
+        "Polish": "Polski",
         "Portuguese": "Português",
         "PortugueseBrazil": "Português (Brasil)",
         "Spanish": "Español",

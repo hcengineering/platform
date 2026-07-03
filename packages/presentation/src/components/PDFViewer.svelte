@@ -72,6 +72,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="utils">
+    <slot name="utils" />
     {#if !isLoading && src !== ''}
       <a class="no-line" href={src} download={name} bind:this={download}>
         <Button

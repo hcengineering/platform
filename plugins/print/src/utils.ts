@@ -16,7 +16,13 @@ export function getPrintBaseURL (): string {
   return endpoint
 }
 
-export async function printToPDF (link: string, token: string): Promise<string> {
+export type PrintPageOrientation = 'portrait' | 'landscape'
+
+export interface PrintToPDFOptions {
+  orientation?: PrintPageOrientation
+}
+
+export async function printToPDF (link: string, token: string, options?: PrintToPDFOptions): Promise<string> {
   if (token === '') {
     return ''
   }
@@ -24,6 +30,9 @@ export async function printToPDF (link: string, token: string): Promise<string> 
   const url: URL = new URL(`${getPrintBaseURL()}/print`)
   url.searchParams.append('link', encodeURIComponent(link))
   url.searchParams.append('kind', 'pdf')
+  if (options?.orientation !== undefined) {
+    url.searchParams.append('orientation', options.orientation)
+  }
 
   const response = await fetch(url, {
     method: 'GET',

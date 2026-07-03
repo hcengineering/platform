@@ -40,6 +40,7 @@ export interface MasterTag extends Class<Card> {
   removed?: boolean
   roles?: CollectionSize<Role>
   singleColumn?: boolean
+  baseType?: boolean
 }
 
 export interface Tag extends MasterTag, Mixin<Card> {}

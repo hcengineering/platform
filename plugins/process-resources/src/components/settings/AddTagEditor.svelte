@@ -14,13 +14,15 @@
 -->
 <script lang="ts">
   import cardPlugin, { Tag } from '@hcengineering/card'
-  import { Process, Step } from '@hcengineering/process'
+  import { Process, Step, createContext } from '@hcengineering/process'
   import ParamsEditor from './ParamsEditor.svelte'
   import { Ref } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
-  import { Button, eventToHTMLElement, Label, SelectPopup, showPopup, tooltip } from '@hcengineering/ui'
+  import { generateContextId } from '../../utils'
+  import { Button, eventToHTMLElement, Label, SelectPopup, showPopup, Toggle, tooltip } from '@hcengineering/ui'
   import TagSelector from './TagSelector.svelte'
   import { createEventDispatcher } from 'svelte'
+  import plugin from '../../plugin'
 
   export let process: Process
   export let step: Step<Tag>
@@ -41,6 +43,16 @@
       params._id = _id
       props = {}
       params.props = props
+      if (params.askRequired) {
+        params.requiredProperties = createContext({
+          type: 'userRequest',
+          id: generateContextId(),
+          _class: _id,
+          key: 'requiredProperties'
+        })
+      } else {
+        delete params.requiredProperties
+      }
       step.params = params
       if (step.context != null) {
         step.context._class = _id
@@ -91,6 +103,27 @@
     step.params = params
     dispatch('change', step)
   }
+
+  let askRequired = params.askRequired ?? false
+  $: askRequired = params.askRequired ?? false
+
+  function changeAskRequired (e: CustomEvent<boolean>): void {
+    if (e.detail !== undefined) {
+      params.askRequired = e.detail
+      if (e.detail) {
+        params.requiredProperties = createContext({
+          type: 'userRequest',
+          id: generateContextId(),
+          _class: _id,
+          key: 'requiredProperties'
+        })
+      } else {
+        delete params.requiredProperties
+      }
+      step.params = params
+      dispatch('change', step)
+    }
+  }
 </script>
 
 <div class="flex-col flex-gap-2">
@@ -104,6 +137,17 @@
       <Label label={cardPlugin.string.Tag} />
     </span>
     <TagSelector {process} tag={_id} on:change={changeTag} />
+    <span
+      class="labelOnPanel"
+      use:tooltip={{
+        props: { label: plugin.string.AskRequired }
+      }}
+    >
+      <Label label={plugin.string.AskRequired} />
+    </span>
+    <div>
+      <Toggle on={askRequired} on:change={changeAskRequired} />
+    </div>
   </div>
   <ParamsEditor
     {process}

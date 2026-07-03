@@ -98,6 +98,7 @@
     "CreateCard": "Create card",
     "WhenCardMatches": "When card matches",
     "WhenFieldChanges": "When field changes",
+    "WhenRequiredFieldsFilled": "When required fields are filled",
     "ArraySizeEquals": "Size equals",
     "ArraySizeGt": "Size greater than",
     "ArraySizeGte": "Size greater than or equal",
@@ -151,6 +152,10 @@
     "UnlockSection": "Unlock section",
     "CancelToDo": "Cancel Action item",
     "Export": "Export",
+    "ExportWithSlots": "Export with slots",
+    "ExportWithoutSlots": "Export without slots",
+    "RequiredSlots": "Required slots",
+    "Bindings": "Bindings",
     "Import": "Import",
     "CancelProcess": "Cancel process",
     "SyncWithField": "Sync with field",
@@ -177,6 +182,7 @@
     "TextFromSelect": "Text from select",
     "SelectFromText": "Select from text",
     "AskSubclass": "Ask subclass",
+    "AskRequired": "Ask all required fields",
     "TextFromIdentifier": "Text from identifier"
   },
   "error": {

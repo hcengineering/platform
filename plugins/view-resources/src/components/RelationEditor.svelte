@@ -1,4 +1,5 @@
 <script lang="ts">
+  import card, { type MasterTag } from '@hcengineering/card'
   import core, { Association, Doc, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient, ObjectCreate } from '@hcengineering/presentation'
@@ -25,13 +26,28 @@
   function getCreate (): ObjectCreate | undefined {
     const factory = client.getHierarchy().classHierarchyMixin(_class, view.mixin.ObjectFactory)
     if (factory) {
+      const usePopup = isBaseCardTypeWithSubtypes()
       return {
-        component: factory.component,
+        component: usePopup ? factory.component : undefined,
         func: factory.create,
         label,
-        props: { _class, space: object.space }
+        props: { _class, type: _class, space: object.space, changeType: usePopup }
       }
     }
+  }
+
+  function isBaseCardTypeWithSubtypes (): boolean {
+    const hierarchy = client.getHierarchy()
+    if (!hierarchy.isDerived(_class, card.class.Card)) return false
+
+    const clazz = hierarchy.getClass(_class) as MasterTag | undefined
+    if (clazz?.baseType !== true) return false
+
+    return hierarchy.getDescendants(_class).some((descendant) => {
+      if (descendant === _class || hierarchy.isMixin(descendant)) return false
+      const descendantClass = hierarchy.getClass(descendant) as MasterTag | undefined
+      return descendantClass?._class === card.class.MasterTag && descendantClass.removed !== true
+    })
   }
 
   function add (): void {
