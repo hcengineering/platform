@@ -29,7 +29,7 @@
   import contact from '@hcengineering/contact'
   import { issuePriorities } from '../../types'
   import { connectedIssueIds } from './lib/dependency-router'
-  import { wouldCreateCycle, simulateCascade, addScheduleDays } from './lib/scheduler'
+  import { wouldCreateCycle, simulateCascade, addScheduleDays, descendantsWithDates } from './lib/scheduler'
   import { newCascadeToken } from './lib/cascade-token'
   import { sendDependencyShiftedNotifications } from './lib/dependency-shift-send'
   import { toggleSelection, selectRange, selectAll, clearSelection } from './lib/bulk-selection'
@@ -37,23 +37,30 @@
   import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from './lib/working-days'
   import { computeCriticalPath } from './lib/critical-path'
   import type {
-    CriticalPathResult, PrimaryEdit, SimulateResult, CascadeShift,
-    type DragState,
-    type DragTarget,
-    type LayoutRow,
-    type MilestoneMarker,
-    type SummaryRange,
-    type ZoomLevel
+    CriticalPathResult,
+    PrimaryEdit,
+    SimulateResult,
+    CascadeShift,
+    DragState,
+    DragTarget,
+    LayoutRow,
+    MilestoneMarker,
+    SummaryRange,
+    ZoomLevel
   } from './lib/types'
   import { exportGanttDataToPdf, exportGanttDataToPng } from './lib/exporter'
   import GanttHelpPopup from './GanttHelpPopup.svelte'
   import GanttQuickInfoPopup from './GanttQuickInfoPopup.svelte'
   import { type BarLabelSlot } from './lib/bar-labels'
-    import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
+  import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
   import DependencyEditor from '../DependencyEditor.svelte'
   import EditMilestone from '../milestones/EditMilestone.svelte'
   import {
-    Loading, addNotification, NotificationSeverity, themeStore, getCurrentResolvedLocation,
+    Loading,
+    addNotification,
+    NotificationSeverity,
+    themeStore,
+    getCurrentResolvedLocation,
     DropdownLabelsIntl,
     EditBox,
     Icon,
@@ -63,6 +70,7 @@
     Label,
     SelectPopup,
     eventToHTMLElement,
+    getEventPositionElement,
     showPanel,
     showPopup,
     tooltip
@@ -72,7 +80,7 @@
   import view from '@hcengineering/view'
   import { selectedFilterStore, showMenu, statusStore } from '@hcengineering/view-resources'
   import core from '@hcengineering/core'
-    import { onDestroy, onMount, tick } from 'svelte'
+  import { onDestroy, onMount, tick } from 'svelte'
   import { writable } from 'svelte/store'
   import tracker from '../../plugin'
   import { canEditIssue, canEditMilestone } from '../../utils'
@@ -119,10 +127,10 @@
   // Mobile-Friendly Gantt.
   import { detectLayoutMode, type LayoutMode } from './lib/breakpoint'
   import { initial as pinchInitial, reducePinch, computePxPerDayFromRatio, type PinchState } from './lib/pinch-zoom'
-    import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
-    import type { DropdownIntlItem, SelectPopupValueType } from '@hcengineering/ui'
+  import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
+  import type { DropdownIntlItem, SelectPopupValueType } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
-    import { ganttExtraActions } from './lib/menu-actions'
+  import { ganttExtraActions } from './lib/menu-actions'
   import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
   import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
   import NavPrev from '@hcengineering/ui/src/components/icons/NavPrev.svelte'
@@ -381,7 +389,9 @@
   const nextUndoDescription = undoManager.nextUndoDescription
   const nextRedoDescription = undoManager.nextRedoDescription
   const undoFlashStore = createFlashStore()
-  onDestroy(() => { undoManager.clear() })
+  onDestroy(() => {
+    undoManager.clear()
+  })
   /**
    * When the user picks a new group-by mode, drop the collapsed-state — it
    * was indexed by keys from the previous mode and would either be a no-op

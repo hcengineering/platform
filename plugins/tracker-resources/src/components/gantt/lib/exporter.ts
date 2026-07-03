@@ -79,7 +79,7 @@ function expandForCapture (root: HTMLElement): StyleSnapshot {
   mutate(root, 'height', 'auto')
 
   // Internal vertical scroller must show all rows.
-  const scroller = root.querySelector('.gantt-scroller')
+  const scroller = root.querySelector<HTMLElement>('.gantt-scroller')
   if (scroller !== null) {
     mutate(scroller, 'overflow', 'visible')
     mutate(scroller, 'max-height', 'none')
@@ -88,7 +88,7 @@ function expandForCapture (root: HTMLElement): StyleSnapshot {
 
   // Horizontal proxy: reset the translateX so the chart is captured
   // from x=0 instead of from the user's current scroll position.
-  const hscrollInner = root.querySelector('.hscroll-inner')
+  const hscrollInner = root.querySelector<HTMLElement>('.hscroll-inner')
   if (hscrollInner !== null) {
     mutate(hscrollInner, 'transform', 'translateX(0)')
   }
