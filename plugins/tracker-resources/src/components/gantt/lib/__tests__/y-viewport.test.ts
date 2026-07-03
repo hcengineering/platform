@@ -3,12 +3,7 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import {
-  computeYViewport,
-  rowIndexToY,
-  sliceVisibleRows,
-  yToRowIndex
-} from '../y-viewport'
+import { computeYViewport, rowIndexToY, sliceVisibleRows, yToRowIndex } from '../y-viewport'
 
 describe('computeYViewport', () => {
   it('returns empty range for zero rows', () => {
