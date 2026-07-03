@@ -25,7 +25,7 @@
   becomes the RIGHTMOST visible element of the section.
 -->
 <script lang="ts">
-  import { DropdownLabelsIntl, EditBox, Icon, tooltip } from '@hcengineering/ui'
+  import { DropdownLabelsIntl, EditBox, Icon, IconMoreV, Label, tooltip } from '@hcengineering/ui'
   import JumpToStart from '@hcengineering/ui/src/components/icons/JumpToStart.svelte'
   import JumpToEnd from '@hcengineering/ui/src/components/icons/JumpToEnd.svelte'
   import NavPrev from '@hcengineering/ui/src/components/icons/NavPrev.svelte'
