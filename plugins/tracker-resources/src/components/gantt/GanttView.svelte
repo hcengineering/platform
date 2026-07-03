@@ -394,6 +394,14 @@
     }
   }
 
+  // Stable void-returning wrapper so add/removeEventListener share one
+  // reference (a per-call arrow would leak the listener) while satisfying
+  // the void-listener signature — the mouseup commit is intentionally
+  // fire-and-forget, with its own internal error handling.
+  const onWindowMouseUp = (): void => {
+    void handleCanvasMouseUp()
+  }
+
   /** True when the preview window is different from the origin window. */
   function previewChangedFromOrigin (state: DragState): boolean {
     if (state.kind === 'dragging-body' || state.kind === 'dragging-unscheduled') {
@@ -471,14 +479,14 @@
   // Attach/detach window-level mousemove + mouseup only while a drag is active.
   $: if ($activeDrag.kind !== 'idle' && $activeDrag.kind !== 'hover-bar') {
     window.addEventListener('mousemove', handleCanvasMouseMove)
-    window.addEventListener('mouseup', handleCanvasMouseUp)
+    window.addEventListener('mouseup', onWindowMouseUp)
   } else {
     window.removeEventListener('mousemove', handleCanvasMouseMove)
-    window.removeEventListener('mouseup', handleCanvasMouseUp)
+    window.removeEventListener('mouseup', onWindowMouseUp)
   }
   onDestroy(() => {
     window.removeEventListener('mousemove', handleCanvasMouseMove)
-    window.removeEventListener('mouseup', handleCanvasMouseUp)
+    window.removeEventListener('mouseup', onWindowMouseUp)
   })
 
   /**
