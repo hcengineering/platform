@@ -17,20 +17,33 @@
   import { wouldCreateCycle, simulateCascade, addScheduleDays, descendantsWithDates } from './lib/scheduler'
   import { computeCriticalPath } from './lib/critical-path'
   import type {
-    CriticalPathResult, PrimaryEdit, SimulateResult, CascadeShift,
-    type DragState,
-    type DragTarget,
-    type LayoutRow,
-    type MilestoneMarker,
-    type SummaryRange,
-    type ZoomLevel
+    CriticalPathResult,
+    PrimaryEdit,
+    SimulateResult,
+    CascadeShift,
+    DragState,
+    DragTarget,
+    LayoutRow,
+    MilestoneMarker,
+    SummaryRange,
+    ZoomLevel
   } from './lib/types'
   import { exportAndDownload } from './lib/exporter'
   import GanttHelpPopup from './GanttHelpPopup.svelte'
-    import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
+  import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
   import DependencyEditor from '../DependencyEditor.svelte'
   import EditMilestone from '../milestones/EditMilestone.svelte'
-  import { Loading, addNotification, NotificationSeverity, Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
+  import {
+    Loading,
+    addNotification,
+    NotificationSeverity,
+    Icon,
+    Label,
+    showPanel,
+    showPopup,
+    tooltip,
+    getEventPositionElement
+  } from '@hcengineering/ui'
   import { translate } from '@hcengineering/platform'
   import { type Viewlet, type ViewOptions } from '@hcengineering/view'
   import { onDestroy, onMount } from 'svelte'
@@ -44,9 +57,9 @@
   import { reduce } from './lib/drag-controller'
   import { buildLayout } from './lib/layout'
   import { shouldPromoteCanvasPan, shouldStartCanvasPan } from './lib/pan-target'
-    import { createTimeScale } from './lib/time-scale'
-    import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
-    import CreateIssue from '../CreateIssue.svelte'
+  import { createTimeScale } from './lib/time-scale'
+  import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
+  import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
   import { getEventPositionElement } from '@hcengineering/ui'
   import { ganttExtraActions } from './lib/menu-actions'
@@ -526,7 +539,7 @@
   // produced double mousedown handling. Keep this handler the only one.
 
   function handleBarHover (e: CustomEvent<{ issue: Issue | null }>): void {
-    hoveredIssue = (e.detail.issue?._id ?? null)
+    hoveredIssue = e.detail.issue?._id ?? null
   }
 
   function handleHoverEdge (e: CustomEvent<{ source: Ref<Issue>, target: Ref<Issue> } | null>): void {
@@ -742,7 +755,9 @@
       state.kind !== 'dragging-unscheduled' &&
       state.kind !== 'resizing-left' &&
       state.kind !== 'resizing-right'
-    ) { return false }
+    ) {
+      return false
+    }
     const newStart = state.kind === 'resizing-right' ? state.originStart : state.previewStart
     const newDue = state.kind === 'resizing-left' ? state.originEnd : state.previewEnd
     const kind: 'move' | 'resize' =
@@ -1082,7 +1097,9 @@
       state.kind !== 'dragging-unscheduled' &&
       state.kind !== 'resizing-left' &&
       state.kind !== 'resizing-right'
-    ) { return }
+    ) {
+      return
+    }
     // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
     // clicked the drag-grip and released without moving) must NOT silently
     // schedule the issue to "today".
