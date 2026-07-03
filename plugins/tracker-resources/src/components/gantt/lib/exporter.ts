@@ -61,14 +61,22 @@ function inlineStyles (source: Element, clone: Element): void {
     const name = srcStyle.item(i)
     const value = srcStyle.getPropertyValue(name)
     // Skip layout-only properties that don't affect SVG rendering.
-    if (name.startsWith('font-') || name === 'fill' || name === 'stroke' || name === 'stroke-width' ||
-        name === 'stroke-dasharray' || name === 'stroke-opacity' || name === 'fill-opacity' ||
-        name === 'opacity' || name === 'color') {
+    if (
+      name.startsWith('font-') ||
+      name === 'fill' ||
+      name === 'stroke' ||
+      name === 'stroke-width' ||
+      name === 'stroke-dasharray' ||
+      name === 'stroke-opacity' ||
+      name === 'fill-opacity' ||
+      name === 'opacity' ||
+      name === 'color'
+    ) {
       cssText.push(`${name}:${value}`)
     }
   }
   if (cssText.length > 0) {
-    (clone as HTMLElement).setAttribute('style', cssText.join(';'))
+    ;(clone as HTMLElement).setAttribute('style', cssText.join(';'))
   }
   for (let i = 0; i < source.children.length; i++) {
     if (clone.children[i] !== undefined) {
@@ -84,10 +92,7 @@ function inlineStyles (source: Element, clone: Element): void {
  * `<canvas>.drawImage()` → `toBlob('image/png')`. Each step is well-supported
  * since Chrome 60 / Firefox 56 / Safari 11.
  */
-export async function exportGanttSvgToPng (
-  svg: SVGSVGElement,
-  options: ExportOptions = {}
-): Promise<Blob> {
+export async function exportGanttSvgToPng (svg: SVGSVGElement, options: ExportOptions = {}): Promise<Blob> {
   const scale = options.scale ?? Math.max(1, window.devicePixelRatio ?? 1)
   const background = options.background ?? '#ffffff'
 
@@ -100,8 +105,12 @@ export async function exportGanttSvgToPng (
 
   const img = new Image()
   await new Promise<void>((resolve, reject) => {
-    img.onload = () => { resolve() }
-    img.onerror = (e) => { reject(new Error(`SVG image load failed: ${String(e)}`)) }
+    img.onload = () => {
+      resolve()
+    }
+    img.onerror = (e) => {
+      reject(new Error(`SVG image load failed: ${String(e)}`))
+    }
     img.src = dataUrl
   })
 
@@ -135,7 +144,9 @@ export function downloadBlob (blob: Blob, filename: string): void {
   a.click()
   document.body.removeChild(a)
   // Revoke after the click event has time to fire.
-  setTimeout(() => { URL.revokeObjectURL(url) }, 1000)
+  setTimeout(() => {
+    URL.revokeObjectURL(url)
+  }, 1000)
 }
 
 /** Convenience: export the named SVG to PNG and trigger a browser download. */

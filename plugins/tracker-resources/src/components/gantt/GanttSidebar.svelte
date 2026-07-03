@@ -28,8 +28,8 @@
   export let relations: IssueRelation[] = []
   export let showPredecessors: boolean = false
   // PR5: slack column (numeric days) + CP badge
-  export let slack: Map<Ref<Issue>, number> = new Map()
-  export let criticalSet: Set<Ref<Issue>> = new Set()
+  export let slack = new Map<Ref<Issue>, number>()
+  export let criticalSet = new Set<Ref<Issue>>()
   export let showCriticalPath: boolean = false
   export let showSlackColumn: boolean = false
 

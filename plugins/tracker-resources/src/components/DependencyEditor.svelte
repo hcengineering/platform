@@ -81,12 +81,7 @@
   <div class="row">
     <span class="label"><Label label={tracker.string.DependencyLag} /></span>
     <div class="lag-spinner">
-      <NumberInput
-        bind:value={lagValue}
-        minValue={-30}
-        maxValue={90}
-        disabled={!canEdit}
-      />
+      <NumberInput bind:value={lagValue} minValue={-30} maxValue={90} disabled={!canEdit} />
     </div>
   </div>
 
@@ -94,13 +89,26 @@
     <div class="confirm">
       <Label label={tracker.string.DependencyDeleteConfirm} />
       <div class="confirm-buttons">
-        <Button kind="regular" label={view.string.Cancel} on:click={() => { confirmingDelete = false }} />
+        <Button
+          kind="regular"
+          label={view.string.Cancel}
+          on:click={() => {
+            confirmingDelete = false
+          }}
+        />
         <Button kind="dangerous" label={tracker.string.DependencyDelete} on:click={doDelete} />
       </div>
     </div>
   {:else}
     <div class="footer">
-      <Button kind="dangerous" label={tracker.string.DependencyDelete} disabled={!canEdit} on:click={() => { confirmingDelete = true }} />
+      <Button
+        kind="dangerous"
+        label={tracker.string.DependencyDelete}
+        disabled={!canEdit}
+        on:click={() => {
+          confirmingDelete = true
+        }}
+      />
       <span class="spacer" />
       <Button kind="regular" label={view.string.Cancel} on:click={cancel} />
       <Button kind="primary" label={view.string.Save} disabled={!canEdit || !dirty} on:click={save} />
@@ -170,5 +178,7 @@
     gap: 8px;
     margin-top: 4px;
   }
-  .footer .spacer { flex: 1; }
+  .footer .spacer {
+    flex: 1;
+  }
 </style>

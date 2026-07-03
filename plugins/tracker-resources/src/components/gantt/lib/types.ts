@@ -4,7 +4,12 @@
 //
 
 import { type Ref } from '@hcengineering/core'
-import { type Issue, type IssueRelation, type Component as TrackerComponent, type Milestone } from '@hcengineering/tracker'
+import {
+  type Issue,
+  type IssueRelation,
+  type Component as TrackerComponent,
+  type Milestone
+} from '@hcengineering/tracker'
 
 /** Zoom presets — controls pxPerDay and header tick density. */
 export type ZoomLevel = 'day' | 'week' | 'month' | 'quarter'
@@ -81,75 +86,73 @@ export type DragKind = 'body' | 'left' | 'right' | 'unscheduled'
  * unchanged: callers wrap with `{ kind: 'issue', doc }` at the dispatch
  * boundary.
  */
-export type DragTarget =
-  | { kind: 'issue', doc: Issue }
-  | { kind: 'milestone', doc: Milestone }
+export type DragTarget = { kind: 'issue', doc: Issue } | { kind: 'milestone', doc: Milestone }
 
 /** Discriminated state of the live drag/resize interaction. */
 export type DragState =
   | { kind: 'idle' }
   | { kind: 'hover-bar', issueId: Ref<Issue> | Ref<Milestone>, edge: 'left' | 'right' | 'body' | 'none' }
   | {
-      kind: 'dragging-body'
-      target: DragTarget
-      originStart: number
-      originEnd: number
-      cursorStartX: number
-      previewStart: number
-      previewEnd: number
-    }
+    kind: 'dragging-body'
+    target: DragTarget
+    originStart: number
+    originEnd: number
+    cursorStartX: number
+    previewStart: number
+    previewEnd: number
+  }
   | {
-      kind: 'resizing-left'
-      target: DragTarget
-      originStart: number
-      originEnd: number
-      cursorStartX: number
-      previewStart: number
-    }
+    kind: 'resizing-left'
+    target: DragTarget
+    originStart: number
+    originEnd: number
+    cursorStartX: number
+    previewStart: number
+  }
   | {
-      kind: 'resizing-right'
-      target: DragTarget
-      originStart: number
-      originEnd: number
-      cursorStartX: number
-      previewEnd: number
-    }
+    kind: 'resizing-right'
+    target: DragTarget
+    originStart: number
+    originEnd: number
+    cursorStartX: number
+    previewEnd: number
+  }
   | {
-      kind: 'dragging-unscheduled'
-      target: DragTarget
-      /** Anchor date the drag was started from (defaults to today at UTC midnight). */
-      originStart: number
-      /** originStart + 1 day; used for ghost-outline / commit symmetry with dragging-body. */
-      originEnd: number
-      cursorStartX: number
-      previewStart: number
-      previewEnd: number
-      /**
+    kind: 'dragging-unscheduled'
+    target: DragTarget
+    /** Anchor date the drag was started from (defaults to today at UTC midnight). */
+    originStart: number
+    /** originStart + 1 day; used for ghost-outline / commit symmetry with dragging-body. */
+    originEnd: number
+    cursorStartX: number
+    previewStart: number
+    previewEnd: number
+    /**
        * True once the cursor has been over the canvas during the drag and a real
        * canvas-X has been observed. Guards against the click-without-drag case
        * where mouseup fires before the user has moved over the canvas — committing
        * such a "drag" would schedule the issue to today silently. `commitDrag`
        * treats `dragging-unscheduled && !hasCanvasTarget` as a no-op.
        */
-      hasCanvasTarget: boolean
-    }
+    hasCanvasTarget: boolean
+  }
   | {
-      kind: 'connector-drawing'
-      /** Source issue the user is drawing the dependency from. */
-      source: Issue
-      /** Pixel x/y of the connector-dot on the source bar (where the curve starts). */
-      originPx: { x: number, y: number }
-      /** Live cursor x/y in canvas-content coordinates (where the curve ends). */
-      cursorPx: { x: number, y: number }
-    }
+    kind: 'connector-drawing'
+    /** Source issue the user is drawing the dependency from. */
+    source: Issue
+    /** Pixel x/y of the connector-dot on the source bar (where the curve starts). */
+    originPx: { x: number, y: number }
+    /** Live cursor x/y in canvas-content coordinates (where the curve ends). */
+    cursorPx: { x: number, y: number }
+  }
   | {
-      kind: 'connector-target-hover'
-      source: Issue
-      originPx: { x: number, y: number }
-      cursorPx: { x: number, y: number }
-      /** Candidate target issue under the pointer. */
-      target: Issue
-    }
+    kind: 'connector-target-hover'
+    source: Issue
+    originPx: { x: number, y: number }
+    cursorPx: { x: number, y: number }
+    /** Candidate target issue under the pointer. */
+    target: Issue
+  }
 
 /**
  * Input events fed into the drag-controller reducer.
@@ -173,33 +176,33 @@ export type DragEvent =
   | { type: 'mouseenter-bar', issueId: Ref<Issue> | Ref<Milestone>, edge: 'left' | 'right' | 'body' }
   | { type: 'mouseleave-bar' }
   | {
-      type: 'mousedown-bar'
-      target: DragTarget
-      /** Start / end dates of the target at mousedown; reducer stores these
+    type: 'mousedown-bar'
+    target: DragTarget
+    /** Start / end dates of the target at mousedown; reducer stores these
        *  as `originStart` / `originEnd` and adds the cursor-delta to compute
        *  previews. Captured here at the dispatch boundary so the doc-agnostic
        *  reducer doesn't need to know which field on `target.doc` to read. */
-      originStart: number
-      originEnd: number
-      edge: 'left' | 'right' | 'body'
-      cursorX: number
-    }
+    originStart: number
+    originEnd: number
+    edge: 'left' | 'right' | 'body'
+    cursorX: number
+  }
   | { type: 'mousedown-unscheduled', target: DragTarget, cursorX: number }
   | { type: 'mousemove', cursorX: number, canvasX?: number }
   | { type: 'mouseup' }
   | { type: 'cancel' }
   | {
-      type: 'mousedown-connector'
-      source: Issue
-      originPx: { x: number, y: number }
-      cursorPx: { x: number, y: number }
-    }
+    type: 'mousedown-connector'
+    source: Issue
+    originPx: { x: number, y: number }
+    cursorPx: { x: number, y: number }
+  }
   | {
-      type: 'mousemove-connector'
-      cursorPx: { x: number, y: number }
-      /** Bar under the cursor right now, or null when over empty canvas. */
-      hoveredBar: Issue | null
-    }
+    type: 'mousemove-connector'
+    cursorPx: { x: number, y: number }
+    /** Bar under the cursor right now, or null when over empty canvas. */
+    hoveredBar: Issue | null
+  }
   | { type: 'mouseup-connector' }
 
 // ---------------------------------------------------------------------------
@@ -228,9 +231,15 @@ export interface CascadeShift {
 export type SimulateResult =
   | { kind: 'no-cascade', primary: PrimaryEdit[] }
   | { kind: 'cascade', primary: PrimaryEdit[], shifts: CascadeShift[], skippedUnscheduled: number }
-  | { kind: 'cycle', cycleNodes: Ref<Issue>[] }
+  | { kind: 'cycle', cycleNodes: Array<Ref<Issue>> }
   | { kind: 'iteration-overflow' }
-  | { kind: 'permission-denied', lockedIssues: Issue[], primary: PrimaryEdit[], shifts: CascadeShift[], skippedUnscheduled: number }
+  | {
+    kind: 'permission-denied'
+    lockedIssues: Issue[]
+    primary: PrimaryEdit[]
+    shifts: CascadeShift[]
+    skippedUnscheduled: number
+  }
 
 // ---------------------------------------------------------------------------
 // PR5 — Critical Path types

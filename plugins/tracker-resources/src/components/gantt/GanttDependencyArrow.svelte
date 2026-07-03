@@ -67,17 +67,20 @@
 </script>
 
 {#if path !== null && head !== null && mid !== null}
-  <g
-    class="gantt-dep-arrow"
-    class:dimmed
-    on:mouseenter={onEnter}
-    on:mouseleave={onLeave}
-  >
+  <g class="gantt-dep-arrow" class:dimmed on:mouseenter={onEnter} on:mouseleave={onLeave}>
     <!-- Invisible wider stroke for an easier click target -->
     <path d={path} stroke="transparent" stroke-width={12} fill="none" on:click={onOpen} />
-    <path d={path} class="curve" class:critical={isCritical} class:violated={isViolated}
-      stroke={arrowStroke} stroke-width={arrowStrokeWidth} stroke-dasharray={arrowDash}
-      fill="none" pointer-events="none" />
+    <path
+      d={path}
+      class="curve"
+      class:critical={isCritical}
+      class:violated={isViolated}
+      stroke={arrowStroke}
+      stroke-width={arrowStrokeWidth}
+      stroke-dasharray={arrowDash}
+      fill="none"
+      pointer-events="none"
+    />
     <polygon
       points={`${head[0].x},${head[0].y} ${head[1].x},${head[1].y} ${head[2].x},${head[2].y}`}
       class="arrowhead"
@@ -86,15 +89,10 @@
       fill={arrowStroke}
       pointer-events="none"
     />
-    {#if signedLag(relation.lag) !== '' }
+    {#if signedLag(relation.lag) !== ''}
       <!-- Lag pill at the curve midpoint. Same click handler as the curve. -->
-      <g
-        class="lag-pill"
-        transform={`translate(${mid.x - pillWidth / 2}, ${mid.y - 8})`}
-        on:click={onOpen}
-      >
-        <rect width={pillWidth} height={16} rx={8} ry={8}
-          fill="#ffffff" stroke="#94a3b8" stroke-width={1} />
+      <g class="lag-pill" transform={`translate(${mid.x - pillWidth / 2}, ${mid.y - 8})`} on:click={onOpen}>
+        <rect width={pillWidth} height={16} rx={8} ry={8} fill="#ffffff" stroke="#94a3b8" stroke-width={1} />
         <text x={pillWidth / 2} y={11} text-anchor="middle" class="lag-pill-text">{pillText}</text>
       </g>
     {/if}
@@ -111,8 +109,12 @@
   :global(svg.gantt-canvas .gantt-dep-arrow .lag-pill) {
     cursor: pointer;
   }
-  :global(svg.gantt-canvas .gantt-dep-arrow:hover .curve) { stroke: #475569; }
-  :global(svg.gantt-canvas .gantt-dep-arrow:hover .arrowhead) { fill: #475569; }
+  :global(svg.gantt-canvas .gantt-dep-arrow:hover .curve) {
+    stroke: #475569;
+  }
+  :global(svg.gantt-canvas .gantt-dep-arrow:hover .arrowhead) {
+    fill: #475569;
+  }
   :global(svg.gantt-canvas .lag-pill-text) {
     font-size: 10px;
     font-weight: 600;

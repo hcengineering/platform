@@ -23,7 +23,12 @@ function issue (id: string, start?: number, due?: number): Issue {
   } as unknown as Issue
 }
 
-function rel (source: string, target: string, kind: 'finish-to-start' | 'start-to-start' | 'finish-to-finish' | 'start-to-finish' = 'finish-to-start', lag = 0): IssueRelation {
+function rel (
+  source: string,
+  target: string,
+  kind: 'finish-to-start' | 'start-to-start' | 'finish-to-finish' | 'start-to-finish' = 'finish-to-start',
+  lag = 0
+): IssueRelation {
   return {
     _id: `rel:${source}->${target}` as any,
     _class: 'tracker:class:IssueRelation' as any,
@@ -87,9 +92,7 @@ describe('simulateCascade — FS basic', () => {
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
     const relations = [rel('A', 'B', 'finish-to-start', 0)]
-    const primary: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }
-    ]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 4), newDue: Date.UTC(2026, 4, 8) }]
     const res = simulateCascade(primary, [A, B], relations, () => true)
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
@@ -104,9 +107,7 @@ describe('simulateCascade — FS basic', () => {
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 20), Date.UTC(2026, 4, 25))
     const relations = [rel('A', 'B', 'finish-to-start', 0)]
-    const primary: PrimaryEdit[] = [
-      { issue: A, newStart: Date.UTC(2026, 4, 2), newDue: Date.UTC(2026, 4, 6) }
-    ]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 2), newDue: Date.UTC(2026, 4, 6) }]
     const res = simulateCascade(primary, [A, B], relations, () => true)
     expect(res.kind).toBe('no-cascade')
   })

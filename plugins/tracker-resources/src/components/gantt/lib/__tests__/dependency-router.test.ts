@@ -3,11 +3,9 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { DependencyKind } from '@hcengineering/tracker'
+import type { DependencyKind, Issue, IssueRelation } from '@hcengineering/tracker'
 import { anchorOf, endpointPx, type BarRect } from '../dependency-router'
-import { bezierPath, pathMidpoint, arrowheadPoints } from '../dependency-router'
-import { connectedIssueIds } from '../dependency-router'
-import type { Issue, IssueRelation } from '@hcengineering/tracker'
+import { bezierPath, pathMidpoint, arrowheadPoints, connectedIssueIds } from '../dependency-router'
 import type { Ref } from '@hcengineering/core'
 
 describe('anchorOf', () => {

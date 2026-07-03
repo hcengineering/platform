@@ -14,7 +14,15 @@
 -->
 <script lang="ts">
   import { Issue, trackerId } from '@hcengineering/tracker'
-  import { Button, IconScaleFull, Label, closeTooltip, getCurrentResolvedLocation, navigate, showPopup } from '@hcengineering/ui'
+  import {
+    Button,
+    IconScaleFull,
+    Label,
+    closeTooltip,
+    getCurrentResolvedLocation,
+    navigate,
+    showPopup
+  } from '@hcengineering/ui'
   import { createFilter, restrictionStore, setFilters } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import LinkSubIssueActionPopup from '../../LinkSubIssueActionPopup.svelte'
@@ -38,22 +46,13 @@
    * `hasSubIssues` slot-gate.
    */
   function openSubChooser (): void {
-    showPopup(
-      HierarchyAddPopup,
-      { direction: 'sub' },
-      'top',
-      (mode?: 'create' | 'link') => {
-        if (mode === 'link') {
-          showPopup(LinkSubIssueActionPopup, { value: issue }, 'top')
-        } else if (mode === 'create') {
-          showPopup(
-            tracker.component.CreateIssue,
-            { space: issue.space, parentIssue: issue, shouldSaveDraft },
-            'top'
-          )
-        }
+    showPopup(HierarchyAddPopup, { direction: 'sub' }, 'top', (mode?: 'create' | 'link') => {
+      if (mode === 'link') {
+        showPopup(LinkSubIssueActionPopup, { value: issue }, 'top')
+      } else if (mode === 'create') {
+        showPopup(tracker.component.CreateIssue, { space: issue.space, parentIssue: issue, shouldSaveDraft }, 'top')
       }
-    )
+    })
   }
 </script>
 

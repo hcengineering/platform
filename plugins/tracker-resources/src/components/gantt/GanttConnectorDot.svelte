@@ -50,11 +50,7 @@
   }
 </script>
 
-<g
-  class="gantt-connector"
-  data-source-id={sourceId}
-  data-source-space={sourceSpace}
->
+<g class="gantt-connector" data-source-id={sourceId} data-source-space={sourceSpace}>
   <circle
     class="gantt-connector-hit"
     {cx}

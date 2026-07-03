@@ -16,10 +16,7 @@
   // as the canvas-stack: SVG must extend across the whole scroll content,
   // not just the visible viewport.
   $: tickViewport = computeTickViewport(viewport.left, viewport.right, dataWidth)
-  $: visibleRange = [
-    timeScale.fromX(tickViewport.left),
-    timeScale.fromX(tickViewport.right)
-  ] as [number, number]
+  $: visibleRange = [timeScale.fromX(tickViewport.left), timeScale.fromX(tickViewport.right)] as [number, number]
   $: ticks = timeScale.ticks(visibleRange)
 </script>
 

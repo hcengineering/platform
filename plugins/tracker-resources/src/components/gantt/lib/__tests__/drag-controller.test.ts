@@ -231,11 +231,7 @@ describe('drag-controller — unscheduled drag', () => {
   const undatedTarget: DragTarget = { kind: 'issue', doc: undated }
 
   it('mousedown-unscheduled from idle transitions to dragging-unscheduled with origin fields', () => {
-    const next = reduce(
-      { kind: 'idle' },
-      { type: 'mousedown-unscheduled', target: undatedTarget, cursorX: 100 },
-      ts
-    )
+    const next = reduce({ kind: 'idle' }, { type: 'mousedown-unscheduled', target: undatedTarget, cursorX: 100 }, ts)
     expect(next.kind).toBe('dragging-unscheduled')
     if (next.kind !== 'dragging-unscheduled') return
     expect(next.previewStart).toBeGreaterThan(0)

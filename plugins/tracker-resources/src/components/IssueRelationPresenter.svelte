@@ -40,10 +40,14 @@
 
   function kindBg (kind: IssueRelation['kind']): string {
     switch (kind) {
-      case 'finish-to-start': return '#6366f1'
-      case 'start-to-start': return '#8b5cf6'
-      case 'finish-to-finish': return '#f59e0b'
-      case 'start-to-finish': return '#ef4444'
+      case 'finish-to-start':
+        return '#6366f1'
+      case 'start-to-start':
+        return '#8b5cf6'
+      case 'finish-to-finish':
+        return '#f59e0b'
+      case 'start-to-finish':
+        return '#ef4444'
     }
   }
 </script>

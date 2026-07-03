@@ -52,29 +52,17 @@
   let allProjectRelations: IssueRelation[] = []
   let otherIssues = new Map<string, Issue>()
 
-  $: incomingQuery.query(
-    tracker.class.IssueRelation,
-    { target: issue._id },
-    (res: IssueRelation[]) => {
-      incoming = res
-      void resolveOtherIssues()
-    }
-  )
-  $: outgoingQuery.query(
-    tracker.class.IssueRelation,
-    { attachedTo: issue._id },
-    (res: IssueRelation[]) => {
-      outgoing = res
-      void resolveOtherIssues()
-    }
-  )
-  $: allProjectRelationsQuery.query(
-    tracker.class.IssueRelation,
-    { space: issue.space },
-    (res: IssueRelation[]) => {
-      allProjectRelations = res
-    }
-  )
+  $: incomingQuery.query(tracker.class.IssueRelation, { target: issue._id }, (res: IssueRelation[]) => {
+    incoming = res
+    void resolveOtherIssues()
+  })
+  $: outgoingQuery.query(tracker.class.IssueRelation, { attachedTo: issue._id }, (res: IssueRelation[]) => {
+    outgoing = res
+    void resolveOtherIssues()
+  })
+  $: allProjectRelationsQuery.query(tracker.class.IssueRelation, { space: issue.space }, (res: IssueRelation[]) => {
+    allProjectRelations = res
+  })
 
   async function resolveOtherIssues (): Promise<void> {
     const refs = new Set<Ref<Issue>>()
@@ -104,7 +92,7 @@
         canEdit = await canEditIssue(issue)
       } else {
         const source = otherIssues.get(String(rel.attachedTo))
-        canEdit = source !== undefined && await canEditIssue(source)
+        canEdit = source !== undefined && (await canEditIssue(source))
       }
     }
     showPopup(DependencyEditor, { relation: rel, canEdit }, 'middle')
@@ -115,24 +103,18 @@
     // then open the project-scoped picker. The chooser pattern mirrors
     // HierarchyAddPopup so the "+" affordance is consistent across the
     // hierarchy and dependency panels — neither silently picks a side.
-    showPopup(
-      DependencyDirectionPopup,
-      {},
-      'top',
-      (dir?: 'predecessor' | 'successor') => {
-        if (dir === undefined) return
-        pickAndAttach(dir)
-      }
-    )
+    showPopup(DependencyDirectionPopup, {}, 'top', (dir?: 'predecessor' | 'successor') => {
+      if (dir === undefined) return
+      pickAndAttach(dir)
+    })
   }
 
   function pickAndAttach (direction: 'predecessor' | 'successor'): void {
     // ignoreObjects must exclude the current issue and any already-existing
     // relations on the chosen side. Outgoing for 'successor', incoming for
     // 'predecessor' — adding an existing edge would just be a duplicate.
-    const existingOnSide: Ref<Issue>[] = direction === 'successor'
-      ? outgoing.map((r) => r.target)
-      : incoming.map((r) => r.attachedTo)
+    const existingOnSide: Ref<Issue>[] =
+      direction === 'successor' ? outgoing.map((r) => r.target) : incoming.map((r) => r.attachedTo)
     showPopup(
       SelectDependencyIssuePopup,
       { issue, outgoing: [], extraIgnore: existingOnSide },
@@ -152,9 +134,15 @@
         // 'predecessor' direction the source is the picked issue, so the
         // user must have edit rights on it.
         const sourceIssue = direction === 'successor' ? issue : picked
-        if (!await canEditIssue(sourceIssue)) {
+        if (!(await canEditIssue(sourceIssue))) {
           const title = await translate(tracker.string.GanttDragFailed, {}, undefined)
-          addNotification(title, 'No permission on source issue', undefined as any, undefined, NotificationSeverity.Warning)
+          addNotification(
+            title,
+            'No permission on source issue',
+            undefined as any,
+            undefined,
+            NotificationSeverity.Warning
+          )
           return
         }
         const ops = client.apply(undefined, 'add-dependency-from-issue-editor')
@@ -177,7 +165,7 @@
     const isOutgoing = String(rel.attachedTo) === String(issue._id)
     const source = isOutgoing ? issue : otherIssues.get(String(rel.attachedTo))
     if (source === undefined) return
-    if (!await canEditIssue(source)) return
+    if (!(await canEditIssue(source))) return
     // Confirm via MessageBox to match the in-editor Delete button's
     // two-step pattern (DependencyEditor.svelte: confirmingDelete state).
     // Without confirmation, the hover-× shortcut would let a misclick drop
@@ -209,10 +197,14 @@
    *  badge colours used in the Gantt predecessor column. */
   function kindClass (kind: IssueRelation['kind']): string {
     switch (kind) {
-      case 'finish-to-start': return 'kind-fs'
-      case 'start-to-start': return 'kind-ss'
-      case 'finish-to-finish': return 'kind-ff'
-      case 'start-to-finish': return 'kind-sf'
+      case 'finish-to-start':
+        return 'kind-fs'
+      case 'start-to-start':
+        return 'kind-ss'
+      case 'finish-to-finish':
+        return 'kind-ff'
+      case 'start-to-finish':
+        return 'kind-sf'
     }
   }
 
@@ -222,12 +214,7 @@
 <span class="labelTop labelTop--with-action">
   <Label label={tracker.string.Dependencies} />
   {#if !readonly}
-    <button
-      class="add-btn"
-      type="button"
-      title="Add dependency"
-      on:click={onAddDependency}
-    >+</button>
+    <button class="add-btn" type="button" title="Add dependency" on:click={onAddDependency}>+</button>
   {/if}
 </span>
 {#if total === 0}
@@ -259,8 +246,8 @@
               class="del-btn"
               type="button"
               title="Remove dependency"
-              on:click|stopPropagation={() => removeDependency(rel)}
-            >×</button>
+              on:click|stopPropagation={() => removeDependency(rel)}>×</button
+            >
           {/if}
         </div>
       {/each}
@@ -288,8 +275,8 @@
               class="del-btn"
               type="button"
               title="Remove dependency"
-              on:click|stopPropagation={() => removeDependency(rel)}
-            >×</button>
+              on:click|stopPropagation={() => removeDependency(rel)}>×</button
+            >
           {/if}
         </div>
       {/each}
@@ -387,10 +374,18 @@
     color: white;
     letter-spacing: 0.5px;
   }
-  .kind.kind-fs { background: #6366f1; }
-  .kind.kind-ss { background: #8b5cf6; }
-  .kind.kind-ff { background: #f59e0b; }
-  .kind.kind-sf { background: #ef4444; }
+  .kind.kind-fs {
+    background: #6366f1;
+  }
+  .kind.kind-ss {
+    background: #8b5cf6;
+  }
+  .kind.kind-ff {
+    background: #f59e0b;
+  }
+  .kind.kind-sf {
+    background: #ef4444;
+  }
   .lag {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 10px;

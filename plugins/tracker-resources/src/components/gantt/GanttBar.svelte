@@ -41,9 +41,7 @@
   export let showSlackGlyph: boolean = false
 
   const DAY_MS_FOR_SLACK = 86_400_000
-  $: slackPx = showSlackGlyph && slackMs > 0
-    ? Math.max(2, (slackMs / DAY_MS_FOR_SLACK) * timeScale.pxPerDay)
-    : 0
+  $: slackPx = showSlackGlyph && slackMs > 0 ? Math.max(2, (slackMs / DAY_MS_FOR_SLACK) * timeScale.pxPerDay) : 0
 
   const dispatch = createEventDispatcher<{
     barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
@@ -120,9 +118,7 @@
   $: dragState = $activeDrag
   // PR3.3: DragState carries `target: { kind, doc }` (Issue or Milestone)
   // since the refactor. Read doc._id for the active-bar match.
-  $: isThisBarActive =
-    issueRef !== undefined &&
-    activeDragTargetId(dragState) === issueRef
+  $: isThisBarActive = issueRef !== undefined && activeDragTargetId(dragState) === issueRef
   $: isThisConnectorActive =
     issueRef !== undefined &&
     (dragState.kind === 'connector-drawing' || dragState.kind === 'connector-target-hover') &&
@@ -258,8 +254,8 @@
       rx={3}
       ry={3}
       fill={barColors.fill}
-      stroke={(isCritical || isViolated) ? '#dc2626' : barColors.border}
-      stroke-width={(isCritical || isViolated) ? 2 : 1}
+      stroke={isCritical || isViolated ? '#dc2626' : barColors.border}
+      stroke-width={isCritical || isViolated ? 2 : 1}
       stroke-dasharray={isViolated ? '4 2' : 'none'}
       class="bar"
       class:editable
@@ -289,7 +285,7 @@
            status fill. pointer-events: none so drag/click stays routed
            to the underlying bar rect. -->
       <rect
-        x={x}
+        {x}
         y={barY}
         width={w}
         height={barH}
@@ -407,7 +403,7 @@
   .bar.focused {
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 1px;
-    stroke-dasharray: 2,2;
+    stroke-dasharray: 2, 2;
   }
   /*
    * Click-to-select state: thick solid blue outline + glow. Made deliberately
@@ -438,6 +434,6 @@
     fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 18%, transparent);
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 1.5px;
-    stroke-dasharray: 4,2;
+    stroke-dasharray: 4, 2;
   }
 </style>

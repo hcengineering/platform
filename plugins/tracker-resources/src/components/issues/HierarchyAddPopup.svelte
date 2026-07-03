@@ -50,14 +50,7 @@
     <span class="title"><Label label={titleLabel} /></span>
   </div>
   <div class="actions">
-    <Button
-      icon={IconAdd}
-      label={createLabel}
-      kind={'ghost'}
-      justify={'left'}
-      width={'100%'}
-      on:click={onCreate}
-    />
+    <Button icon={IconAdd} label={createLabel} kind={'ghost'} justify={'left'} width={'100%'} on:click={onCreate} />
     <Button
       icon={tracker.icon.Parent}
       label={linkLabel}

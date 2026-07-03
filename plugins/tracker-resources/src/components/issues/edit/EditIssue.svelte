@@ -211,32 +211,27 @@
   function openParentChooser (): void {
     if (issue === undefined || effectiveReadonly) return
     const target: Issue = issue
-    showPopup(
-      HierarchyAddPopup,
-      { direction: 'parent' },
-      'top',
-      (mode?: 'create' | 'link') => {
-        if (mode === 'link') {
-          showPopup(SetParentIssueActionPopup, { value: target }, 'top')
-        } else if (mode === 'create') {
-          showPopup(
-            tracker.component.CreateIssue,
-            { space: target.space, shouldSaveDraft: true },
-            'top',
-            async (newId?: Ref<Issue>) => {
-              if (newId === undefined) return
-              const lastAttached = await client.findOne(
-                tracker.class.Issue,
-                { attachedTo: newId },
-                { sort: { rank: SortingOrder.Descending } }
-              )
-              const rank = makeRank(lastAttached?.rank, undefined)
-              await client.update(target, { attachedTo: newId, rank })
-            }
-          )
-        }
+    showPopup(HierarchyAddPopup, { direction: 'parent' }, 'top', (mode?: 'create' | 'link') => {
+      if (mode === 'link') {
+        showPopup(SetParentIssueActionPopup, { value: target }, 'top')
+      } else if (mode === 'create') {
+        showPopup(
+          tracker.component.CreateIssue,
+          { space: target.space, shouldSaveDraft: true },
+          'top',
+          async (newId?: Ref<Issue>) => {
+            if (newId === undefined) return
+            const lastAttached = await client.findOne(
+              tracker.class.Issue,
+              { attachedTo: newId },
+              { sort: { rank: SortingOrder.Descending } }
+            )
+            const rank = makeRank(lastAttached?.rank, undefined)
+            await client.update(target, { attachedTo: newId, rank })
+          }
+        )
       }
-    )
+    })
   }
 </script>
 

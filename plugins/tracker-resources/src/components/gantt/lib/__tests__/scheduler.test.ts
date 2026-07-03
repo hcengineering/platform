@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { Issue } from '@hcengineering/tracker'
+import type { Issue, IssueRelation, DependencyKind } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
-import { descendantsWithDates } from '../scheduler'
+import { descendantsWithDates, wouldCreateCycle } from '../scheduler'
 
 /**
  * Huly's Issue parent relation lives on `issue.parents` (an array of
@@ -88,9 +88,6 @@ describe('descendantsWithDates', () => {
     expect(new Set(result.map((i) => i._id))).toEqual(new Set(['c', 'g']))
   })
 })
-
-import { wouldCreateCycle } from '../scheduler'
-import type { IssueRelation, DependencyKind } from '@hcengineering/tracker'
 
 function mkRel (from: string, to: string, kind: DependencyKind = 'finish-to-start'): IssueRelation {
   return {

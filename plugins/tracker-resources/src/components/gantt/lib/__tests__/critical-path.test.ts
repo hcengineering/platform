@@ -22,7 +22,12 @@ function issue (id: string, start?: number, due?: number): Issue {
   } as unknown as Issue
 }
 
-function rel (source: string, target: string, kind: 'finish-to-start' | 'start-to-start' | 'finish-to-finish' | 'start-to-finish' = 'finish-to-start', lag = 0): IssueRelation {
+function rel (
+  source: string,
+  target: string,
+  kind: 'finish-to-start' | 'start-to-start' | 'finish-to-finish' | 'start-to-finish' = 'finish-to-start',
+  lag = 0
+): IssueRelation {
   return {
     _id: `rel:${source}->${target}` as any,
     _class: 'tracker:class:IssueRelation' as any,
@@ -83,7 +88,7 @@ describe('computeCriticalPath — forward pass', () => {
   it('two parallel paths — only longer is critical', () => {
     // A → B (short) and A → C → D (long). D ends after B.
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
-    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 8))  // 3-day task
+    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 8)) // 3-day task
     const C = issue('C', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10)) // 5-day task
     const D = issue('D', Date.UTC(2026, 4, 11), Date.UTC(2026, 4, 13)) // 3-day task
     const rAB = rel('A', 'B')
@@ -141,7 +146,7 @@ describe('computeCriticalPath — lag + anchor variants', () => {
 
   it('user-pinned earlier start than dependency allows → violatedRelations contains it', () => {
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
-    const B = issue('B', Date.UTC(2026, 4, 3), Date.UTC(2026, 4, 7))  // user pinned B.start before A.due
+    const B = issue('B', Date.UTC(2026, 4, 3), Date.UTC(2026, 4, 7)) // user pinned B.start before A.due
     const r1 = rel('A', 'B', 'finish-to-start', 0)
     const res = computeCriticalPath([A, B], [r1])
     expect(res.violatedRelations.has(r1._id)).toBe(true)

@@ -42,10 +42,14 @@ interface Bound {
 function forwardBound (rel: IssueRelation, predES: number, predEF: number): Bound {
   const lag = rel.lag ?? 0
   switch (rel.kind) {
-    case 'finish-to-start':  return { field: 'ES', value: predEF + DAY_MS + lag * DAY_MS }
-    case 'start-to-start':   return { field: 'ES', value: addScheduleDays(predES, lag) }
-    case 'finish-to-finish': return { field: 'EF', value: addScheduleDays(predEF, lag) }
-    case 'start-to-finish':  return { field: 'EF', value: addScheduleDays(predES, lag) }
+    case 'finish-to-start':
+      return { field: 'ES', value: predEF + DAY_MS + lag * DAY_MS }
+    case 'start-to-start':
+      return { field: 'ES', value: addScheduleDays(predES, lag) }
+    case 'finish-to-finish':
+      return { field: 'EF', value: addScheduleDays(predEF, lag) }
+    case 'start-to-finish':
+      return { field: 'EF', value: addScheduleDays(predES, lag) }
   }
 }
 
@@ -59,10 +63,14 @@ function forwardBound (rel: IssueRelation, predES: number, predEF: number): Boun
 function backwardBound (rel: IssueRelation, succLS: number, succLF: number): Bound {
   const lag = rel.lag ?? 0
   switch (rel.kind) {
-    case 'finish-to-start':  return { field: 'EF', value: succLS - DAY_MS - lag * DAY_MS }
-    case 'start-to-start':   return { field: 'ES', value: addScheduleDays(succLS, -lag) }
-    case 'finish-to-finish': return { field: 'EF', value: addScheduleDays(succLF, -lag) }
-    case 'start-to-finish':  return { field: 'ES', value: addScheduleDays(succLF, -lag) }
+    case 'finish-to-start':
+      return { field: 'EF', value: succLS - DAY_MS - lag * DAY_MS }
+    case 'start-to-start':
+      return { field: 'ES', value: addScheduleDays(succLS, -lag) }
+    case 'finish-to-finish':
+      return { field: 'EF', value: addScheduleDays(succLF, -lag) }
+    case 'start-to-finish':
+      return { field: 'ES', value: addScheduleDays(succLF, -lag) }
   }
 }
 
@@ -81,14 +89,14 @@ function topoSort (issues: ScheduledIssue[], relations: IssueRelation[]): Schedu
       inDegree.set(r.target, (inDegree.get(r.target) ?? 0) + 1)
     }
   }
-  const out = new Map<Ref<Issue>, Ref<Issue>[]>()
+  const out = new Map<Ref<Issue>, Array<Ref<Issue>>>()
   for (const r of relations) {
     if (!byRef.has(r.attachedTo) || !byRef.has(r.target)) continue
     const bucket = out.get(r.attachedTo)
     if (bucket === undefined) out.set(r.attachedTo, [r.target])
     else bucket.push(r.target)
   }
-  const queue: Ref<Issue>[] = []
+  const queue: Array<Ref<Issue>> = []
   for (const [ref, deg] of inDegree) if (deg === 0) queue.push(ref)
   const order: ScheduledIssue[] = []
   while (queue.length > 0) {
@@ -120,10 +128,7 @@ function topoSort (issues: ScheduledIssue[], relations: IssueRelation[]): Schedu
  * side-effects. Callers memoize the result via 200ms debounce in GanttView's
  * reactive recompute.
  */
-export function computeCriticalPath (
-  issues: Issue[],
-  relations: IssueRelation[]
-): CriticalPathResult {
+export function computeCriticalPath (issues: Issue[], relations: IssueRelation[]): CriticalPathResult {
   // Graceful degrade on cycle (reuse PR4b's DFS helper).
   if (detectCycle(relations) !== null) {
     return { ...EMPTY_RESULT, cycle: true }
@@ -169,7 +174,7 @@ export function computeCriticalPath (
   for (const i of order) {
     const incRels = incoming.get(i._id) ?? []
     if (incRels.length === 0) continue
-    const dur = i.dueDate - i.startDate  // inclusive: EF - ES in ms
+    const dur = i.dueDate - i.startDate // inclusive: EF - ES in ms
     let newES = i.startDate
     let newEF = i.dueDate
     for (const r of incRels) {
@@ -179,9 +184,15 @@ export function computeCriticalPath (
       const predEF = ef.get(pred._id) ?? pred.dueDate
       const b = forwardBound(r, predES, predEF)
       if (b.field === 'ES') {
-        if (b.value > newES) { newES = b.value; newEF = newES + dur }
+        if (b.value > newES) {
+          newES = b.value
+          newEF = newES + dur
+        }
       } else {
-        if (b.value > newEF) { newEF = b.value; newES = newEF - dur }
+        if (b.value > newEF) {
+          newEF = b.value
+          newES = newEF - dur
+        }
       }
     }
     // Clamp back to user-stored dates — if a relation would have shifted
@@ -234,9 +245,15 @@ export function computeCriticalPath (
       const succLF = lf.get(succ._id) ?? succ.dueDate
       const b = backwardBound(r, succLS, succLF)
       if (b.field === 'EF') {
-        if (b.value < newLF) { newLF = b.value; newLS = newLF - dur }
+        if (b.value < newLF) {
+          newLF = b.value
+          newLS = newLF - dur
+        }
       } else {
-        if (b.value < newLS) { newLS = b.value; newLF = newLS + dur }
+        if (b.value < newLS) {
+          newLS = b.value
+          newLF = newLS + dur
+        }
       }
     }
     ls.set(i._id, newLS)

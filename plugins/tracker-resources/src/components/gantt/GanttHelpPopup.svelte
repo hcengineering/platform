@@ -28,7 +28,10 @@
     }
   })
 
-  interface Row { key: string, label: string }
+  interface Row {
+    key: string
+    label: string
+  }
   const rows: Row[] = [
     { key: '?', label: 'Show this help' },
     { key: '←  →', label: 'Move selected issue ±1 day' },

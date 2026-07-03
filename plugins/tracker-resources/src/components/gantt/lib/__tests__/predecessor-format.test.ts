@@ -7,12 +7,7 @@ import type { Issue, IssueRelation, DependencyKind } from '@hcengineering/tracke
 import type { Ref } from '@hcengineering/core'
 import { kindCode, kindFromCode, signedLag, formatPredecessors } from '../predecessor-format'
 
-function mkRel (
-  from: string,
-  to: string,
-  kind: DependencyKind,
-  lag: number
-): IssueRelation {
+function mkRel (from: string, to: string, kind: DependencyKind, lag: number): IssueRelation {
   return {
     _id: `${from}->${to}` as Ref<IssueRelation>,
     attachedTo: from as Ref<Issue>,
@@ -23,11 +18,12 @@ function mkRel (
   } as unknown as IssueRelation
 }
 
-const labelOf = (ref: Ref<Issue>): string => ({
-  a: '11',
-  b: '12',
-  c: '13'
-})[ref as unknown as string] ?? String(ref)
+const labelOf = (ref: Ref<Issue>): string =>
+  ({
+    a: '11',
+    b: '12',
+    c: '13'
+  })[ref as unknown as string] ?? String(ref)
 
 describe('kindCode + kindFromCode', () => {
   it.each<[DependencyKind, string]>([
@@ -42,13 +38,19 @@ describe('kindCode + kindFromCode', () => {
 })
 
 describe('signedLag', () => {
-  it('omits suffix for zero', () => { expect(signedLag(0)).toBe('') })
-  it('prefixes positive with +', () => { expect(signedLag(2)).toBe('+2d') })
-  it('prefixes negative with -', () => { expect(signedLag(-1)).toBe('-1d') })
+  it('omits suffix for zero', () => {
+    expect(signedLag(0)).toBe('')
+  })
+  it('prefixes positive with +', () => {
+    expect(signedLag(2)).toBe('+2d')
+  })
+  it('prefixes negative with -', () => {
+    expect(signedLag(-1)).toBe('-1d')
+  })
 })
 
 describe('formatPredecessors', () => {
-  const issueB = { _id: 'b' as Ref<Issue> } as Issue
+  const issueB = { _id: 'b' as Ref<Issue> } as unknown as Issue
 
   it('returns empty string when no relations target the issue', () => {
     expect(formatPredecessors(issueB, [], labelOf)).toBe('')
@@ -75,10 +77,7 @@ describe('formatPredecessors', () => {
   })
 
   it('joins multiple predecessors with ", " preserving relation-array order', () => {
-    const rels = [
-      mkRel('a', 'b', 'finish-to-start', 2),
-      mkRel('c', 'b', 'start-to-start', -1)
-    ]
+    const rels = [mkRel('a', 'b', 'finish-to-start', 2), mkRel('c', 'b', 'start-to-start', -1)]
     expect(formatPredecessors(issueB, rels, labelOf)).toBe('11FS+2d, 13SS-1d')
   })
 })

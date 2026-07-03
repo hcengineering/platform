@@ -30,7 +30,7 @@
   const BODY_MAX_HEIGHT = 360
   const POPUP_WIDTH = 760
 
-  type Row = {
+  interface Row {
     id: string
     label: string
     oldStart: number
@@ -203,13 +203,9 @@
           stroke="#e5e7eb"
           stroke-width="1"
         />
-        <text
-          x={LABEL_WIDTH + xOf(t)}
-          y={BAR_TOP_PADDING - 8}
-          text-anchor="middle"
-          font-size="10"
-          fill="#6b7280"
-        >{fmtTick(t)}</text>
+        <text x={LABEL_WIDTH + xOf(t)} y={BAR_TOP_PADDING - 8} text-anchor="middle" font-size="10" fill="#6b7280"
+          >{fmtTick(t)}</text
+        >
       {/each}
 
       <!-- Vertical separator between the label column and the timeline.
@@ -230,8 +226,8 @@
           y={BAR_TOP_PADDING + idx * ROW_HEIGHT + 14}
           font-size="11"
           fill="#374151"
-          clip-path="url(#cascade-label-clip)"
-        >{row.label}</text>
+          clip-path="url(#cascade-label-clip)">{row.label}</text
+        >
         <rect
           x={LABEL_WIDTH + xOf(row.oldStart)}
           y={BAR_TOP_PADDING + idx * ROW_HEIGHT + 4}
@@ -276,11 +272,7 @@
 
   <div class="footer">
     <div bind:this={cancelWrapperEl}>
-      <Button
-        label={tracker.string.CascadeConfirmCancel}
-        kind="ghost"
-        on:click={onCancel}
-      />
+      <Button label={tracker.string.CascadeConfirmCancel} kind="ghost" on:click={onCancel} />
     </div>
     <div bind:this={confirmWrapperEl}>
       <Button
@@ -309,11 +301,14 @@
     font-weight: 600;
     border-bottom: 1px solid var(--theme-popup-divider);
   }
-  .hint, .warning {
+  .hint,
+  .warning {
     padding: 8px 16px;
     font-size: 12px;
   }
-  .hint { color: var(--theme-content-trans-color); }
+  .hint {
+    color: var(--theme-content-trans-color);
+  }
   .warning {
     background: var(--theme-warning-color, #fef2f2);
     color: var(--theme-error-color, #b91c1c);
@@ -323,7 +318,9 @@
     overflow-x: hidden;
     padding: 4px 16px;
   }
-  .timeline { display: block; }
+  .timeline {
+    display: block;
+  }
   .legend {
     display: flex;
     flex-wrap: wrap;
@@ -347,9 +344,15 @@
     margin-right: 2px;
     vertical-align: middle;
   }
-  .legend-swatch.primary { background: #6366f1; }
-  .legend-swatch.push { background: #f59e0b; }
-  .legend-swatch.pull { background: #8b5cf6; }
+  .legend-swatch.primary {
+    background: #6366f1;
+  }
+  .legend-swatch.push {
+    background: #f59e0b;
+  }
+  .legend-swatch.pull {
+    background: #8b5cf6;
+  }
   .legend-pair {
     display: inline-flex;
     align-items: center;

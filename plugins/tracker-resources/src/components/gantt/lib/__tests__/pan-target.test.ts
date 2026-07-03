@@ -9,7 +9,7 @@ function targetWithClosest (matches: Set<string>): Pick<Element, 'closest'> {
   return {
     closest: (selector: string) => {
       for (const part of selector.split(',').map((s) => s.trim())) {
-        if (matches.has(part)) return {} as Element
+        if (matches.has(part)) return {} as unknown as Element
       }
       return null
     }
