@@ -86,6 +86,8 @@ export interface BackupMigrations {
   forcedCompact?: string
   /** Version of forced full check migration */
   forcedFullCheck?: string
+  /** Account domains for which the initial full rescan has been completed */
+  accountsRescan?: Partial<Record<Domain, boolean>>
 }
 
 /**
