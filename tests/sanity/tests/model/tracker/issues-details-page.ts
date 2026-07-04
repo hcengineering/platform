@@ -84,6 +84,10 @@ export class IssuesDetailsPage extends CommonTrackerPage {
 
   async clickButtonAddSubIssue (): Promise<void> {
     await this.buttonAddSubIssue().click()
+    // The add-sub-issue button now opens the HierarchyAddPopup chooser
+    // (create-new vs. link-existing). Select "Create new sub-issue" to
+    // reach the CreateIssue form, matching the pre-chooser direct flow.
+    await this.page.locator('.hier-popup button', { hasText: 'Create new sub-issue' }).click()
   }
 
   async clickRemoveBlockedBy (): Promise<void> {
