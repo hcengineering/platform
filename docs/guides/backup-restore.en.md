@@ -16,8 +16,10 @@ becomes unavailable.
 
 1. **Download** — from *Settings → Backup* in the workspace you want to move,
    grab a full copy of your data.
-2. **Restore** — replay that backup into the destination workspace using the
-   platform's admin tool (`dev/tool`).
+2. **Restore** — replay that backup into the destination workspace — either
+   with the ready-made [huly-selfhost](https://github.com/hcengineering/huly-selfhost)
+   scripts (`restore-workspace.sh`) or with the platform's admin tool
+   (`dev/tool`) directly.
 
 ## Step 1. Download your backup
 
@@ -71,22 +73,81 @@ individual files, e.g. to verify access or fetch a single snapshot.
 You'll need a Huly platform you control to restore into — either
 [huly-selfhost](https://github.com/hcengineering/huly-selfhost), a
 self-hosted deployment built from this monorepo, or another hosted instance
-where you have admin access. Create the destination workspace first if it
-doesn't exist yet.
+where you have admin access.
 
-Restoring is done with the `backup-restore` command of the platform admin
-tool (`@hcengineering/tool`, `dev/tool` in this repo). Exactly how you invoke
-it depends on how the destination platform is run:
+### Option A: huly-selfhost scripts (recommended)
 
-- **Docker / self-hosted setup** — run it inside your `tool` container
-  (e.g. `docker compose run --rm tool backup-restore ...` or
-  `docker compose exec tool ...`, adjusted to your compose service name).
+The [huly-selfhost](https://github.com/hcengineering/huly-selfhost)
+repository ships helper scripts that wrap the admin tool with the right
+connection settings read from your `huly_v7.conf` (created by `./setup.sh`).
+Make sure the stack is running (`docker compose up -d`), then from the
+`huly-selfhost` folder:
+
+- [`restore-workspace.sh`](https://github.com/hcengineering/huly-selfhost/blob/main/restore-workspace.sh)
+  — one-shot migration: creates the admin account, creates and assigns the
+  workspace, then restores the backup into it.
+
+  ```
+  ./restore-workspace.sh <backup-dir> <workspace> [options] [-- <extra args>]
+  ```
+
+  Useful options: `-e/--email` and `-p/--password` for the admin account
+  (password is generated and printed if omitted), `--skip-account` /
+  `--skip-workspace` if they already exist, `--date <ms>` to pick a
+  snapshot. Anything after `--` is passed to the underlying restore
+  (e.g. `-- --merge`).
+
+- [`backup-restore.sh`](https://github.com/hcengineering/huly-selfhost/blob/main/backup-restore.sh)
+  — restore into an **existing** workspace:
+
+  ```
+  ./backup-restore.sh <backup-dir> <workspace> [date] [--no-accounts] [--no-upgrade]
+  ```
+
+  Accounts restore and the post-restore workspace upgrade are **on by
+  default** (disable with `--no-accounts` / `--no-upgrade`), so there's no
+  need to pass `--accounts` or configure `ACCOUNT_DB_URL` manually.
+
+- [`run-tool.sh`](https://github.com/hcengineering/huly-selfhost/blob/main/run-tool.sh)
+  — general-purpose wrapper that runs any admin tool command (or an
+  interactive shell) against your deployment, e.g.
+  `./run-tool.sh create-account user@example.com -p pass -f First -l Last`.
+
+Example — full migration in one command:
+
+```
+./restore-workspace.sh ./backups/myws myws -e me@example.com
+```
+
+### Option B: run the admin tool manually
+
+For other deployments, restoring is done with the `backup-restore` command
+of the platform admin tool (`@hcengineering/tool`, `dev/tool` in this repo).
+Create the destination workspace first if it doesn't exist yet. Exactly how
+you invoke the tool depends on how the destination platform is run:
+
+- **huly-selfhost deployment** — use
+  [`run-tool.sh`](https://github.com/hcengineering/huly-selfhost/blob/main/run-tool.sh):
+  it starts the `hardcoreeng/tool` container with all connection settings
+  taken from your `huly_v7.conf`. Mount the backup folder into the container
+  via `RUN_TOOL_DOCKER_ARGS`:
+
+  ```
+  RUN_TOOL_DOCKER_ARGS="-v /abs/path/to/backup:/backup" \
+    ./run-tool.sh backup-restore /backup <target-workspace> --accounts
+  ```
+
+- **Other Docker setups** — run the `hardcoreeng/tool` image on your stack's
+  network with the same environment variables your services use
+  (`SERVER_SECRET`, `DB_URL`, `ACCOUNT_DB_URL`, `STORAGE_CONFIG`,
+  `ACCOUNTS_URL`, `TRANSACTOR_URL`, ...) and the backup folder mounted —
+  `run-tool.sh` is a good reference for the full invocation.
 - **Monorepo checkout with Rush** — from `dev/tool`, run it against your
   configured environment, e.g. `rushx run-local backup-restore ...` for a
   local dev stack, or your own script that sets the same environment
   variables against your real databases.
 
-In both cases the command and its arguments are the same:
+In all cases the command and its arguments are the same:
 
 ```
 backup-restore <path-to-backup-folder> <target-workspace> [date] --accounts
@@ -121,14 +182,28 @@ Our team is happy to help with migration. Join the [Huly community](https://link
 - **401 Unauthorized while downloading** — your token expired, or you're not
   an owner/admin of the workspace. Get a fresh token from the Backup page.
 - **Members are missing after restore** — re-run with `--accounts` and a
-  valid `ACCOUNT_DB_URL`; without both, only documents are restored.
+  valid `ACCOUNT_DB_URL`; without both, only documents are restored. (The
+  huly-selfhost scripts do this by default — check you didn't pass
+  `--no-accounts`.)
 - **A file/video is missing on the destination** — check the **Not backed
   up** list on the Backup page and download it individually; it isn't part
   of the regular backup.
 - **Restore fails with a model/version error** — add `--upgrade` if the
-  destination runs a newer platform version than the source.
+  destination runs a newer platform version than the source. (The
+  huly-selfhost `backup-restore.sh` upgrades the workspace after restore by
+  default.)
+- **`Config not found: huly_v7.conf`** — the huly-selfhost scripts read
+  connection settings from the config created by `./setup.sh`; run it first.
+- **`Network ... not found`** — the huly-selfhost scripts need the stack
+  running; start it with `docker compose up -d`.
+- **Warning about `blobs/blobs.json`** — the backup came from a
+  datalake-based deployment and contains extra blobs the minio-based
+  self-host stack can't ingest automatically; those blobs were not uploaded.
 
 ## See also
 
 - [huly-selfhost](https://github.com/hcengineering/huly-selfhost) — official
-  self-hosted distribution.
+  self-hosted distribution, including
+  [`restore-workspace.sh`](https://github.com/hcengineering/huly-selfhost/blob/main/restore-workspace.sh),
+  [`backup-restore.sh`](https://github.com/hcengineering/huly-selfhost/blob/main/backup-restore.sh) and
+  [`run-tool.sh`](https://github.com/hcengineering/huly-selfhost/blob/main/run-tool.sh).
