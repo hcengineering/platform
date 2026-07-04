@@ -295,6 +295,9 @@ function renderToken (tok: Token): string {
           }
           return `${field}:(${escapeForQueryString(value.raw)})`
       }
+      // ClauseValue is exhaustively handled above; this break keeps the
+      // outer switch free of implicit fall-through (eslint no-fallthrough).
+      break
     }
 
     case 'bare': {
