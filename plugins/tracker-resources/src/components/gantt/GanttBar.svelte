@@ -20,7 +20,7 @@
   import { classifyPointer, type PointerKind } from './lib/pointer-classify'
   import { LONG_PRESS_MS, MOVE_THRESHOLD_PX } from './lib/long-press'
 
-    // Bar is rendered for both Issues and synthetic milestone summaries.
+  // Bar is rendered for both Issues and synthetic milestone summaries.
   // GanttBarIssueLike has all bar-data fields optional (T2). Real Issues and
   // synthetic milestone-summary bars (GanttCanvas.svelte:299) satisfy it.
   export let issue: GanttBarIssueLike

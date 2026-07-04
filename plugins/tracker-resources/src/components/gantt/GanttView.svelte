@@ -204,7 +204,9 @@
   $: if (!loadingIssues && !loadingMilestones) {
     resultIssueCountStore.set(issues.length + milestones.length)
   }
-  onDestroy(() => { resultIssueCountStore.set(-1) })
+  onDestroy(() => {
+    resultIssueCountStore.set(-1)
+  })
 
   // PR 3 edit-mode state: a single source of truth for explicit drag/resize
   // interactions. Normal bar-body mouse drags are no longer issue moves; they

@@ -3,10 +3,10 @@ import type { DocumentQuery, Doc } from '@hcengineering/core'
 import type { Filter, FilterMode } from '@hcengineering/view'
 import { makeFilterQuery } from './query-builder'
 
-const mockResult = async (filter: Filter) => ({ $in: filter.value })
+const mockResult = async (filter: Filter): Promise<{ $in: unknown }> => ({ $in: filter.value })
 const mockResolveResource = jest.fn(async () => mockResult)
 
-const mockMode = { result: 'mock:resource:Result' as any } as FilterMode
+const mockMode = { result: 'mock:resource:Result' as any } as unknown as FilterMode
 const mockFilter = (key: string, value: unknown[], idx = 1): Filter => ({
   key: { _class: '' as any, key, attribute: undefined as any, label: '' as any, component: '' as any },
   mode: 'mock:mode:In' as any,
