@@ -75,7 +75,9 @@
   // search produced new results.
   let queryReady = false
   $: if (queryReady) resultIssueCountStore.set(docs.length)
-  onDestroy(() => resultIssueCountStore.set(-1))
+  onDestroy(() => {
+    resultIssueCountStore.set(-1)
+  })
 
   $: orderBy = viewOptions.orderBy
 

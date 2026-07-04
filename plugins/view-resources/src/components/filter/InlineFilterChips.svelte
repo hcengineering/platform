@@ -29,7 +29,7 @@
   let chipEls: HTMLElement[] = []
   let visibleCount = 0
   let hiddenCount = 0
-  let widthByIndex = new Map<number, number>()
+  const widthByIndex = new Map<number, number>()
   const BADGE_RESERVE_PX = 64
 
   // Reset chipEls + per-index width cache whenever the filter SET changes
@@ -42,9 +42,7 @@
   let lastIndexes: number[] = []
   $: {
     const currentIndexes = $filterStore.map((f) => f.index)
-    const sameSet =
-      currentIndexes.length === lastIndexes.length &&
-      currentIndexes.every((v, i) => v === lastIndexes[i])
+    const sameSet = currentIndexes.length === lastIndexes.length && currentIndexes.every((v, i) => v === lastIndexes[i])
     if (!sameSet) {
       visibleCount = $filterStore.length
       hiddenCount = 0
@@ -119,7 +117,9 @@
           <FilterSection
             {space}
             {filter}
-            on:remove={() => removeFilter(i)}
+            on:remove={() => {
+              removeFilter(i)
+            }}
           />
         </span>
       {/if}
@@ -149,7 +149,9 @@
       size="small"
       icon={IconClose}
       label={view.string.ClearFilters}
-      on:click={() => setFilters([])}
+      on:click={() => {
+        setFilters([])
+      }}
     />
   {/if}
 </div>
@@ -175,7 +177,9 @@
     min-width: 0;
     flex: 1 1 0;
   }
-  .chip-slot { flex-shrink: 0; }
+  .chip-slot {
+    flex-shrink: 0;
+  }
   .filter-overflow-badge {
     display: inline-flex;
     align-items: center;
@@ -205,5 +209,7 @@
   }
   /* Unused IconClose import wired for the trailing button visual hint;
      removed if Lint flags as dead. */
-  :global(.inline-filter-chips-wrap .button.ghost.small svg) { opacity: 0.7; }
+  :global(.inline-filter-chips-wrap .button.ghost.small svg) {
+    opacity: 0.7;
+  }
 </style>

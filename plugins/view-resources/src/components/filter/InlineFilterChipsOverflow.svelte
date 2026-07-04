@@ -22,7 +22,9 @@
           <FilterSection
             {filter}
             {space}
-            on:remove={() => removeFilter(i)}
+            on:remove={() => {
+              removeFilter(i)
+            }}
           />
         </div>
       {/if}
