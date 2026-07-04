@@ -14,6 +14,12 @@ import type { Issue, IssueStatus, Component, Milestone } from '@hcengineering/tr
 import { IssuePriority } from '@hcengineering/tracker'
 import type { Person } from '@hcengineering/contact'
 
+// ---------------------------------------------------------------------------
+// Task 5 — Bar-color resolver
+// ---------------------------------------------------------------------------
+
+import { PaletteColorIndexes } from '@hcengineering/ui'
+
 /**
  * Shape consumed by the resolver + predicates. Real Issues satisfy this
  * directly. Synthetic milestone-summary bars (GanttCanvas.svelte:299)
@@ -34,12 +40,6 @@ export interface GanttBarIssueLike {
   subIssues?: number
   attachedTo?: Ref<Issue>
 }
-
-// ---------------------------------------------------------------------------
-// Task 5 — Bar-color resolver
-// ---------------------------------------------------------------------------
-
-import { PaletteColorIndexes } from '@hcengineering/ui'
 
 export type BarColorMode = 'status' | 'priority' | 'assignee' | 'component' | 'milestone' | 'none'
 
@@ -66,13 +66,13 @@ export interface BarColorContext {
 
 const PRIORITY_PALETTE: Record<IssuePriority, number> = {
   [IssuePriority.NoPriority]: PaletteColorIndexes.Blueberry,
-  [IssuePriority.Urgent]:     PaletteColorIndexes.Orange,
-  [IssuePriority.High]:       PaletteColorIndexes.Sunshine,
-  [IssuePriority.Medium]:     PaletteColorIndexes.Ocean,
-  [IssuePriority.Low]:        PaletteColorIndexes.Cloud
+  [IssuePriority.Urgent]: PaletteColorIndexes.Orange,
+  [IssuePriority.High]: PaletteColorIndexes.Sunshine,
+  [IssuePriority.Medium]: PaletteColorIndexes.Ocean,
+  [IssuePriority.Low]: PaletteColorIndexes.Cloud
 }
 
-const PALETTE_SIZE_24 = 24  // count of entries in PaletteColorIndexes enum (Firework..Porpoise, see packages/ui/src/colors.ts)
+const PALETTE_SIZE_24 = 24 // count of entries in PaletteColorIndexes enum (Firework..Porpoise, see packages/ui/src/colors.ts)
 
 const NEUTRAL: BarColorTriple = {
   fill: 'var(--theme-button-default)',

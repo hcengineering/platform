@@ -155,7 +155,7 @@
   // stick after a successful search yielded new tasks.
   let queryReady = false
   $: if (queryReady) resultIssueCountStore.set(tasks.length)
-  onDestroy(() => resultIssueCountStore.set(-1))
+  onDestroy(() => { resultIssueCountStore.set(-1) })
 
   $: groupByDocs = groupBy(tasks, groupByKey, categories)
 

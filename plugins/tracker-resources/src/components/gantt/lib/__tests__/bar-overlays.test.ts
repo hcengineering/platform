@@ -6,28 +6,29 @@ import type { Ref } from '@hcengineering/core'
 import type { Issue, IssueStatus } from '@hcengineering/tracker'
 import { isPastDue, isBlocked } from '../bar-overlays'
 
-const baseIssue = (overrides: Partial<Issue> = {}): Issue => ({
-  _id: 'issue-1' as Ref<Issue>,
-  _class: 'tracker:class:Issue' as any,
-  space: 'project-1' as any,
-  modifiedOn: 0,
-  createdBy: 'user-a' as any,
-  modifiedBy: 'user-a' as any,
-  ...overrides
-} as unknown as Issue)
+const baseIssue = (overrides: Partial<Issue> = {}): Issue =>
+  ({
+    _id: 'issue-1' as Ref<Issue>,
+    _class: 'tracker:class:Issue' as any,
+    space: 'project-1' as any,
+    modifiedOn: 0,
+    createdBy: 'user-a' as any,
+    modifiedBy: 'user-a' as any,
+    ...overrides
+  }) as unknown as Issue
 
 describe('isPastDue', () => {
-  const NOW = Date.UTC(2026, 4, 20)   // 2026-05-20 UTC
+  const NOW = Date.UTC(2026, 4, 20) // 2026-05-20 UTC
 
   it('returns true when dueDate is in the past and status is not Done', () => {
     const issue = baseIssue({ dueDate: NOW - 86_400_000, status: 'sid-todo' as Ref<IssueStatus> })
-    const cat = (_id: Ref<IssueStatus>) => 'task:statusCategory:ToDo'
+    const cat = (_id: Ref<IssueStatus>): string => 'task:statusCategory:ToDo'
     expect(isPastDue(issue, cat, NOW)).toBe(true)
   })
 
   it('returns false when status category is Won (Done)', () => {
     const issue = baseIssue({ dueDate: NOW - 86_400_000, status: 'sid-done' as Ref<IssueStatus> })
-    const cat = (_id: Ref<IssueStatus>) => 'task:statusCategory:Won'
+    const cat = (_id: Ref<IssueStatus>): string => 'task:statusCategory:Won'
     expect(isPastDue(issue, cat, NOW)).toBe(false)
   })
 
@@ -64,7 +65,8 @@ describe('isBlocked', () => {
       ['pred-1', 'sid-active' as Ref<IssueStatus>],
       ['pred-2', 'sid-done' as Ref<IssueStatus>]
     ])
-    const cat: CatLookup = (sid) => (sid === ('sid-active' as Ref<IssueStatus>) ? 'task:statusCategory:Active' : 'task:statusCategory:Won')
+    const cat: CatLookup = (sid) =>
+      sid === ('sid-active' as Ref<IssueStatus>) ? 'task:statusCategory:Active' : 'task:statusCategory:Won'
     expect(isBlocked(baseIssue(), predIds, predStatusOf, cat)).toBe(true)
   })
 

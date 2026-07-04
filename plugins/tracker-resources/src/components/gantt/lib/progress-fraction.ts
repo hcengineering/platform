@@ -15,11 +15,7 @@ import type { StatusCategoryLookup } from './bar-overlays'
  *
  * Returns null if there is no data to compute a fraction from.
  */
-export function progressFraction (
-  issue: Issue,
-  subs: Issue[],
-  statusCategoryFor: StatusCategoryLookup
-): number | null {
+export function progressFraction (issue: Issue, subs: Issue[], statusCategoryFor: StatusCategoryLookup): number | null {
   if (issue.subIssues === 0) return null
   if (subs.length === 0) return null
   const done = subs.filter((s) => statusCategoryFor(s.status) === 'task:statusCategory:Won').length

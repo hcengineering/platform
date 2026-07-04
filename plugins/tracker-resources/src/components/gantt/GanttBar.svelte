@@ -11,7 +11,7 @@
   import GanttConnectorDot from './GanttConnectorDot.svelte'
   import { activeDragTargetId } from './lib/drag-state'
   import { resolveBarLabel, type BarLabelSlot } from './lib/bar-labels'
-  import { resolveBarColors, type BarColorMode, type BarColorContext } from './lib/bar-colors'
+  import { resolveBarColors, type BarColorMode, type BarColorContext, GanttBarIssueLike } from './lib/bar-colors'
   import { isPastDue, isBlocked } from './lib/bar-overlays'
   import { progressFraction } from './lib/progress-fraction'
   import { getPlatformColor, themeStore } from '@hcengineering/ui'
@@ -20,12 +20,11 @@
   import { classifyPointer, type PointerKind } from './lib/pointer-classify'
   import { LONG_PRESS_MS, MOVE_THRESHOLD_PX } from './lib/long-press'
 
-  import type { GanttBarIssueLike } from './lib/bar-colors'
-  // Bar is rendered for both Issues and synthetic milestone summaries.
+    // Bar is rendered for both Issues and synthetic milestone summaries.
   // GanttBarIssueLike has all bar-data fields optional (T2). Real Issues and
   // synthetic milestone-summary bars (GanttCanvas.svelte:299) satisfy it.
   export let issue: GanttBarIssueLike
-  export let row: { y: number; height: number }
+  export let row: { y: number, height: number }
   export let timeScale: TimeScale
   export let isSummary: boolean = false
   export let summaryRange: { startDate: number | null; dueDate: number | null } | null = null
@@ -224,18 +223,20 @@
   // neutral NEUTRAL triple if the contexts are not present (e.g. in unit
   // tests that mount GanttBar in isolation).
   const modeStore = getContext<Writable<BarColorMode>>('gantt-bar-color-mode')
-  const ctxStore  = getContext<Readable<BarColorContext>>('gantt-bar-color-context')
+  const ctxStore = getContext<Readable<BarColorContext>>('gantt-bar-color-context')
 
   // Overlay toggle stores — may be undefined outside GanttView context.
-  const pastDueStore    = getContext<Writable<boolean>>('gantt-overlay-past-due')
-  const blockedStore    = getContext<Writable<boolean>>('gantt-overlay-blocked')
-  const predsByIdStore  = getContext<Readable<Map<string, Array<Ref<Issue>>>>>('gantt-predecessors-by-issue')
+  const pastDueStore = getContext<Writable<boolean>>('gantt-overlay-past-due')
+  const blockedStore = getContext<Writable<boolean>>('gantt-overlay-blocked')
+  const predsByIdStore = getContext<Readable<Map<string, Array<Ref<Issue>>>>>('gantt-predecessors-by-issue')
   const predStatusStore = getContext<Readable<Map<string, Ref<IssueStatus>>>>('gantt-pred-status-by-issue')
 
   $: predecessorIds = issue._id != null ? ($predsByIdStore?.get(String(issue._id)) ?? []) : []
-  $: showPastDue = (pastDueStore !== undefined ? $pastDueStore : true) &&
+  $: showPastDue =
+    (pastDueStore !== undefined ? $pastDueStore : true) &&
     isPastDue(issue, ctxStore !== undefined ? $ctxStore.statusCategoryFor : () => null, Date.now())
-  $: showBlocked = (blockedStore !== undefined ? $blockedStore : true) &&
+  $: showBlocked =
+    (blockedStore !== undefined ? $blockedStore : true) &&
     isBlocked(
       issue,
       predecessorIds,
@@ -247,12 +248,21 @@
   const progressStore = getContext<Writable<boolean>>('gantt-progress-fill')
 
   $: mode = modeStore !== undefined ? $modeStore : 'status'
-  $: progressFrac = (!isSummary && (progressStore !== undefined ? ($progressStore ?? false) : false) && mode === 'status' && issue._id != null)
-    ? progressFraction(issue as any, $subsStore?.get(String(issue._id)) ?? [], ctxStore !== undefined ? $ctxStore.statusCategoryFor : () => null)
-    : null
-  $: triple = (ctxStore !== undefined && modeStore !== undefined)
-    ? resolveBarColors(issue, mode, $ctxStore)
-    : resolveBarColors(issue, 'status', {
+  $: progressFrac =
+    !isSummary &&
+    (progressStore !== undefined ? ($progressStore ?? false) : false) &&
+    mode === 'status' &&
+    issue._id != null
+      ? progressFraction(
+        issue as any,
+        $subsStore?.get(String(issue._id)) ?? [],
+        ctxStore !== undefined ? $ctxStore.statusCategoryFor : () => null
+      )
+      : null
+  $: triple =
+    ctxStore !== undefined && modeStore !== undefined
+      ? resolveBarColors(issue, mode, $ctxStore)
+      : resolveBarColors(issue, 'status', {
         statusCategoryFor: () => null,
         priorityFor: (i) => i.priority,
         assigneeRankFor: () => null,
@@ -260,12 +270,10 @@
         milestoneColorFor: () => null,
         hashFromId: () => 0
       })
-  $: resolvedFill = triple.paletteIndex !== undefined
-    ? getPlatformColor(triple.paletteIndex, $themeStore.dark)
-    : triple.fill
-  $: resolvedBorder = triple.paletteIndex !== undefined
-    ? getPlatformColor(triple.paletteIndex, $themeStore.dark)
-    : triple.border
+  $: resolvedFill =
+    triple.paletteIndex !== undefined ? getPlatformColor(triple.paletteIndex, $themeStore.dark) : triple.fill
+  $: resolvedBorder =
+    triple.paletteIndex !== undefined ? getPlatformColor(triple.paletteIndex, $themeStore.dark) : triple.border
   $: resolvedText = triple.text
 
   $: effectiveStart = isSummary ? summaryRange?.startDate ?? issue.startDate : issue.startDate
@@ -477,8 +485,8 @@
       rx={3}
       ry={3}
       fill={resolvedFill}
-      stroke={(isCritical || isViolated) ? 'var(--theme-state-negative-color)' : resolvedBorder}
-      stroke-width={(isCritical || isViolated || statusCategory === 'task:statusCategory:Lost') ? 2 : 1}
+      stroke={isCritical || isViolated ? 'var(--theme-state-negative-color)' : resolvedBorder}
+      stroke-width={isCritical || isViolated || statusCategory === 'task:statusCategory:Lost' ? 2 : 1}
       stroke-dasharray={isViolated ? '4 2' : 'none'}
       class="bar"
       class:editable
@@ -507,7 +515,7 @@
     />
     {#if progressFrac !== null && progressFrac > 0}
       <rect
-        x={x}
+        {x}
         y={barY}
         width={w * progressFrac}
         height={barH}
@@ -519,11 +527,17 @@
       />
     {/if}
     {#if showBlocked}
-      <pattern id={`hatch-${issue._id ?? 'syn'}`} patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <pattern
+        id={`hatch-${issue._id ?? 'syn'}`}
+        patternUnits="userSpaceOnUse"
+        width="6"
+        height="6"
+        patternTransform="rotate(45)"
+      >
         <line x1="0" y1="0" x2="0" y2="6" stroke="var(--theme-content-color)" stroke-opacity="0.15" stroke-width="2" />
       </pattern>
       <rect
-        x={x}
+        {x}
         y={barY}
         width={w}
         height={barH}
@@ -535,14 +549,7 @@
     {/if}
 
     {#if showPastDue}
-      <rect
-        x={x}
-        y={barY}
-        width={3}
-        height={barH}
-        fill="var(--theme-state-negative-color)"
-        pointer-events="none"
-      />
+      <rect {x} y={barY} width={3} height={barH} fill="var(--theme-state-negative-color)" pointer-events="none" />
     {/if}
 
     {#if isCritical && showSlackGlyph}
@@ -607,20 +614,8 @@
            in the bar with 4 px of leading padding. pointer-events: none so
            drag/click stays routed to the underlying bar rect. -->
       <g class="manual-pin" pointer-events="none">
-        <circle
-          cx={x + 9}
-          cy={barY + barH / 2}
-          r={4}
-          fill={resolvedText}
-          stroke={resolvedFill}
-          stroke-width={1}
-        />
-        <circle
-          cx={x + 9}
-          cy={barY + barH / 2}
-          r={1.6}
-          fill={resolvedFill}
-        />
+        <circle cx={x + 9} cy={barY + barH / 2} r={4} fill={resolvedText} stroke={resolvedFill} stroke-width={1} />
+        <circle cx={x + 9} cy={barY + barH / 2} r={1.6} fill={resolvedFill} />
         <path
           d="M {x + 5} {barY + barH / 2} L {x + 1.5} {barY + barH / 2 - 0.5} L {x + 1.5} {barY + barH / 2 + 0.5} Z"
           fill={resolvedText}
@@ -633,8 +628,8 @@
         y={barY + barH / 2 + 4}
         class="bar-label-inside"
         fill={resolvedText}
-        pointer-events="none"
-      >{insideLabel}</text>
+        pointer-events="none">{insideLabel}</text
+      >
     {/if}
     {#if rightLabel !== ''}
       <text

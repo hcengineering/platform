@@ -6,7 +6,7 @@ import type { Ref } from '@hcengineering/core'
 import type { Issue, IssueStatus, Component, Milestone } from '@hcengineering/tracker'
 import { IssuePriority } from '@hcengineering/tracker'
 import { PaletteColorIndexes } from '@hcengineering/ui'
-import { resolveBarColors, type BarColorContext, type BarColorMode } from '../bar-colors'
+import { resolveBarColors, type BarColorContext } from '../bar-colors'
 
 const ctx: BarColorContext = {
   statusCategoryFor: () => 'task:statusCategory:ToDo',
@@ -29,15 +29,25 @@ const issue = {
 describe('resolveBarColors', () => {
   it('mode=status returns the status-fill triple', () => {
     const c = resolveBarColors(issue, 'status', ctx)
-    expect(c.fill).toContain('state-primary')  // contrast-fix variant
+    expect(c.fill).toContain('state-primary') // contrast-fix variant
   })
 
   it('mode=priority maps Urgent→Orange, High→Sunshine, Medium→Ocean, Low→Cloud, NoPriority→Blueberry', () => {
-    expect(resolveBarColors({ ...issue, priority: IssuePriority.Urgent } as any, 'priority', ctx).paletteIndex).toBe(PaletteColorIndexes.Orange)
-    expect(resolveBarColors({ ...issue, priority: IssuePriority.High }   as any, 'priority', ctx).paletteIndex).toBe(PaletteColorIndexes.Sunshine)
-    expect(resolveBarColors({ ...issue, priority: IssuePriority.Medium } as any, 'priority', ctx).paletteIndex).toBe(PaletteColorIndexes.Ocean)
-    expect(resolveBarColors({ ...issue, priority: IssuePriority.Low }    as any, 'priority', ctx).paletteIndex).toBe(PaletteColorIndexes.Cloud)
-    expect(resolveBarColors({ ...issue, priority: IssuePriority.NoPriority } as any, 'priority', ctx).paletteIndex).toBe(PaletteColorIndexes.Blueberry)
+    expect(resolveBarColors({ ...issue, priority: IssuePriority.Urgent } as any, 'priority', ctx).paletteIndex).toBe(
+      PaletteColorIndexes.Orange
+    )
+    expect(resolveBarColors({ ...issue, priority: IssuePriority.High } as any, 'priority', ctx).paletteIndex).toBe(
+      PaletteColorIndexes.Sunshine
+    )
+    expect(resolveBarColors({ ...issue, priority: IssuePriority.Medium } as any, 'priority', ctx).paletteIndex).toBe(
+      PaletteColorIndexes.Ocean
+    )
+    expect(resolveBarColors({ ...issue, priority: IssuePriority.Low } as any, 'priority', ctx).paletteIndex).toBe(
+      PaletteColorIndexes.Cloud
+    )
+    expect(
+      resolveBarColors({ ...issue, priority: IssuePriority.NoPriority } as any, 'priority', ctx).paletteIndex
+    ).toBe(PaletteColorIndexes.Blueberry)
   })
 
   it('mode=assignee uses assigneeRankFor; null → neutral fill', () => {
@@ -56,7 +66,7 @@ describe('resolveBarColors', () => {
   it('mode=component, undefined explicit color → hash-from-id fallback', () => {
     const ctxFallback = { ...ctx, componentColorFor: () => undefined }
     const c = resolveBarColors(issue, 'component', ctxFallback)
-    expect(c.paletteIndex).toBe(ctx.hashFromId('cmp-1') % 24)  // 24 = PaletteColorIndexes size
+    expect(c.paletteIndex).toBe(ctx.hashFromId('cmp-1') % 24) // 24 = PaletteColorIndexes size
   })
 
   it('mode=milestone analogous to component', () => {
@@ -71,7 +81,9 @@ describe('resolveBarColors', () => {
 
   it('synthetic milestone-summary bar (no status, no priority) returns NEUTRAL in any mode', () => {
     const synthetic = { title: 'Sprint 5', startDate: 0, dueDate: 1 } as any
-    expect(resolveBarColors(synthetic, 'status',   ctx).fill).toContain('button-default')
-    expect(resolveBarColors(synthetic, 'priority', { ...ctx, priorityFor: () => undefined }).fill).toContain('button-default')
+    expect(resolveBarColors(synthetic, 'status', ctx).fill).toContain('button-default')
+    expect(resolveBarColors(synthetic, 'priority', { ...ctx, priorityFor: () => undefined }).fill).toContain(
+      'button-default'
+    )
   })
 })

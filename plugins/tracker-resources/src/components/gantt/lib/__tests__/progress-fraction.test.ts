@@ -6,7 +6,7 @@ import type { Ref } from '@hcengineering/core'
 import type { Issue, IssueStatus } from '@hcengineering/tracker'
 import { progressFraction } from '../progress-fraction'
 
-const sub = (status: string): Issue => ({ status } as unknown as Issue)
+const sub = (status: string): Issue => ({ status }) as unknown as Issue
 const cat = (id: Ref<IssueStatus>): string | null =>
   String(id).startsWith('done-') ? 'task:statusCategory:Won' : 'task:statusCategory:Active'
 

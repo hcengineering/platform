@@ -46,10 +46,7 @@
   </h2>
   {#if activeFilters.length > 0}
     <div class="filters-info">
-      <Label
-        label={tracker.string.SearchEmptyActiveFilters}
-        params={{ filters: activeFilters.join(', ') }}
-      />
+      <Label label={tracker.string.SearchEmptyActiveFilters} params={{ filters: activeFilters.join(', ') }} />
     </div>
   {/if}
   <div class="actions">

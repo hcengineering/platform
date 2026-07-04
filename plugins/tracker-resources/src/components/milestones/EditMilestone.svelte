@@ -16,7 +16,15 @@
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Milestone } from '@hcengineering/tracker'
-  import { DatePresenter, EditBox, getPlatformColor, getPlatformColors, Label, showPopup, themeStore } from '@hcengineering/ui'
+  import {
+    DatePresenter,
+    EditBox,
+    getPlatformColor,
+    getPlatformColors,
+    Label,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
   import { ColorsPopup } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
@@ -65,7 +73,7 @@
     return Math.abs(h)
   }
 
-  $: effectiveColor = object.color ?? (hashFromId(object._id) % getPlatformColors($themeStore.dark).length)
+  $: effectiveColor = object.color ?? hashFromId(object._id) % getPlatformColors($themeStore.dark).length
   $: swatchCss = getPlatformColor(effectiveColor, $themeStore.dark)
   $: selectedName = getPlatformColors($themeStore.dark)[effectiveColor]?.name
 
@@ -97,13 +105,7 @@
       }
     }}
   />
-  <button
-    type="button"
-    class="color-swatch"
-    style:background={swatchCss}
-    on:click={pickColor}
-    aria-label="Color"
-  />
+  <button type="button" class="color-swatch" style:background={swatchCss} on:click={pickColor} aria-label="Color" />
 </div>
 
 <div class="dates-row mt-4">

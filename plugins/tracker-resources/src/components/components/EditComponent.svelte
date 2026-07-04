@@ -38,7 +38,7 @@
     return Math.abs(h)
   }
 
-  $: effectiveColor = object.color ?? (hashFromId(object._id) % getPlatformColors($themeStore.dark).length)
+  $: effectiveColor = object.color ?? hashFromId(object._id) % getPlatformColors($themeStore.dark).length
   $: swatchCss = getPlatformColor(effectiveColor, $themeStore.dark)
   $: selectedName = getPlatformColors($themeStore.dark)[effectiveColor]?.name
 
@@ -71,13 +71,7 @@
       }
     }}
   />
-  <button
-    type="button"
-    class="color-swatch"
-    style:background={swatchCss}
-    on:click={pickColor}
-    aria-label="Color"
-  />
+  <button type="button" class="color-swatch" style:background={swatchCss} on:click={pickColor} aria-label="Color" />
 </div>
 
 <div class="w-full mt-6">

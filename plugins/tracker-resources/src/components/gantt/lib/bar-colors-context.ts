@@ -10,7 +10,7 @@
 //                          the Top-N assignee classification)
 //
 import type { Ref } from '@hcengineering/core'
-import type { Issue, IssueStatus, Component, Milestone } from '@hcengineering/tracker'
+import type { Issue, Component, Milestone } from '@hcengineering/tracker'
 import type { BarColorContext } from './bar-colors'
 
 const DONE_CATS = new Set(['task:statusCategory:Won', 'task:statusCategory:Lost'])
@@ -39,7 +39,7 @@ export function buildBarColorContext (
     assigneeRankFor: (issue) => {
       if (issue.assignee == null) return null
       const r = rankById.get(String(issue.assignee))
-      return r ?? 8   // 9th palette slot = "other"
+      return r ?? 8 // 9th palette slot = "other"
     },
     componentColorFor: (issue) => {
       const cid = (issue as any).component as Ref<Component> | null | undefined

@@ -34,14 +34,10 @@ export type StatusCategoryLookup = (id: Ref<IssueStatus>) => string | null
  * field, and an old milestone is not a past-due issue. When `status`
  * is undefined we return false.
  */
-export function isPastDue (
-  issue: GanttBarIssueLike,
-  statusCategoryFor: StatusCategoryLookup,
-  now: number
-): boolean {
+export function isPastDue (issue: GanttBarIssueLike, statusCategoryFor: StatusCategoryLookup, now: number): boolean {
   if (issue.dueDate == null) return false
   if (issue.dueDate >= now) return false
-  if (issue.status === undefined) return false   // synthetic milestone-summary bar
+  if (issue.status === undefined) return false // synthetic milestone-summary bar
   return statusCategoryFor(issue.status) !== 'task:statusCategory:Won'
 }
 

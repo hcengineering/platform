@@ -4,7 +4,16 @@
 <script lang="ts">
   import { type ApplyOperations, type Class, type Doc, type DocumentQuery, generateId, getCurrentAccount, type Ref, type Space, SortingOrder } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { type Component, type Issue, type IssueRelation, type IssueStatus, type Milestone, type Project, type WorkingDaysConfig, IssuePriority } from '@hcengineering/tracker'
+  import {
+    type Component,
+    type Issue,
+    type IssueRelation,
+    type IssueStatus,
+    type Milestone,
+    type Project,
+    type WorkingDaysConfig,
+    IssuePriority
+  } from '@hcengineering/tracker'
   import { type TagElement } from '@hcengineering/tags'
   import { type Person } from '@hcengineering/contact'
   import tags from '@hcengineering/tags'
@@ -73,13 +82,7 @@
   import { shouldPromoteCanvasPan, shouldStartCanvasPan } from './lib/pan-target'
   import { descendantsWithDates } from './lib/scheduler'
   import { createTimeScale } from './lib/time-scale'
-  import {
-    applyWheelZoom,
-    cursorAnchoredScrollLeft,
-    pxPerDayToTickZoom,
-    ZOOM_PX_PER_DAY,
-    MIN_PPD
-  } from './lib/zoom'
+  import { applyWheelZoom, cursorAnchoredScrollLeft, pxPerDayToTickZoom, ZOOM_PX_PER_DAY, MIN_PPD } from './lib/zoom'
   import {
     dropdownSelectionForPxPerDay,
     visibleDaysFromPxPerDay,
@@ -201,8 +204,7 @@
   $: if (!loadingIssues && !loadingMilestones) {
     resultIssueCountStore.set(issues.length + milestones.length)
   }
-  onDestroy(() => resultIssueCountStore.set(-1))
-
+  onDestroy(() => { resultIssueCountStore.set(-1) })
 
   // PR 3 edit-mode state: a single source of truth for explicit drag/resize
   // interactions. Normal bar-body mouse drags are no longer issue moves; they
@@ -225,7 +227,7 @@
   // Predecessor maps for the blocked-hatch overlay — populated reactively
   // below; GanttBar reads them via context.
   const predecessorsByIssueIdStore = writable<Map<string, Array<Ref<Issue>>>>(new Map())
-  const predStatusByIssueIdStore   = writable<Map<string, Ref<IssueStatus>>>(new Map())
+  const predStatusByIssueIdStore = writable<Map<string, Ref<IssueStatus>>>(new Map())
 
   // Init contexts ONCE at component setup. Updates flow via .set() below.
   setContext('gantt-bar-color-mode', ganttBarColorBy)
@@ -234,7 +236,7 @@
   setContext('gantt-progress-fill', ganttShowSubIssueProgress)
   setContext('gantt-bar-color-context', barColorContextStore)
   setContext('gantt-predecessors-by-issue', predecessorsByIssueIdStore)
-  setContext('gantt-pred-status-by-issue',  predStatusByIssueIdStore)
+  setContext('gantt-pred-status-by-issue', predStatusByIssueIdStore)
 
   const subIssuesByParent = writable<Map<string, Issue[]>>(new Map())
   setContext('gantt-sub-issues-by-parent', subIssuesByParent)
@@ -547,24 +549,15 @@
     // previous saved view cannot leak into the loaded view.
     const mode = raw?.ganttBarColorBy
     ganttBarColorBy.set(
-      (typeof mode === 'string' && (['status', 'priority', 'assignee', 'component', 'milestone', 'none'] as const).includes(mode as any))
+      typeof mode === 'string' &&
+        (['status', 'priority', 'assignee', 'component', 'milestone', 'none'] as const).includes(mode as any)
         ? (mode as BarColorMode)
         : 'status'
     )
-    ganttShowPastDueOverlay.set(
-      typeof raw?.ganttShowPastDueOverlay === 'boolean'
-        ? raw.ganttShowPastDueOverlay
-        : true
-    )
-    ganttShowBlockedOverlay.set(
-      typeof raw?.ganttShowBlockedOverlay === 'boolean'
-        ? raw.ganttShowBlockedOverlay
-        : true
-    )
+    ganttShowPastDueOverlay.set(typeof raw?.ganttShowPastDueOverlay === 'boolean' ? raw.ganttShowPastDueOverlay : true)
+    ganttShowBlockedOverlay.set(typeof raw?.ganttShowBlockedOverlay === 'boolean' ? raw.ganttShowBlockedOverlay : true)
     ganttShowSubIssueProgress.set(
-      typeof raw?.ganttShowSubIssueProgress === 'boolean'
-        ? raw.ganttShowSubIssueProgress
-        : false
+      typeof raw?.ganttShowSubIssueProgress === 'boolean' ? raw.ganttShowSubIssueProgress : false
     )
     // Wait one tick so the new zoom propagates into `timeScale` before we
     // scroll — otherwise toX() uses the previous pxPerDay and the anchor
@@ -961,9 +954,10 @@
     if (ts.length < 2) return 0
     return (Math.max(...ts) - Math.min(...ts)) / DAY_MS
   })()
-  $: dynamicMinPpd = (canvasViewportWidth > 0 && barExtentDays > 0)
-    ? Math.max(MIN_PPD, (BAR_COVERAGE_MIN * canvasViewportWidth) / barExtentDays)
-    : MIN_PPD
+  $: dynamicMinPpd =
+    canvasViewportWidth > 0 && barExtentDays > 0
+      ? Math.max(MIN_PPD, (BAR_COVERAGE_MIN * canvasViewportWidth) / barExtentDays)
+      : MIN_PPD
   // Re-clamp the wheel-zoom override if the dataset or viewport shrinks
   // so an already-overridden value never sits below the new floor.
   $: if (userPxPerDay !== null && userPxPerDay < dynamicMinPpd) {
@@ -977,9 +971,7 @@
   )
 
   // Bar-color context: components lookup for component-color mode.
-  $: componentsById = new Map<string, Component>(
-    components.map((c) => [String(c._id), c])
-  )
+  $: componentsById = new Map<string, Component>(components.map((c) => [String(c._id), c]))
 
   // Predecessor maps for blocked-hatch overlay (Step 8.1).
   // Map<successorId stringified, Array<predecessorId>> — FS dependencies only.
@@ -988,7 +980,7 @@
     for (const rel of relations) {
       if (rel.kind !== 'finish-to-start') continue
       const downstream = String(rel.target)
-      const upstream = rel.attachedTo as Ref<Issue>
+      const upstream = rel.attachedTo
       const arr = m.get(downstream)
       if (arr === undefined) m.set(downstream, [upstream])
       else arr.push(upstream)
@@ -997,33 +989,31 @@
   })()
 
   // Map<issueId stringified, Ref<IssueStatus>> — predecessor status lookup.
-  $: predStatusByIssueId = new Map<string, Ref<IssueStatus>>(
-    issues.map((i) => [String(i._id), i.status])
-  )
+  $: predStatusByIssueId = new Map<string, Ref<IssueStatus>>(issues.map((i) => [String(i._id), i.status]))
 
   // Push predecessor maps into context stores whenever they change.
   $: predecessorsByIssueIdStore.set(predecessorsByIssueId)
   $: predStatusByIssueIdStore.set(predStatusByIssueId)
 
   $: if ($ganttShowSubIssueProgress) {
-    const parents = issues.filter(i => i.subIssues > 0).map(i => i._id)
+    const parents = issues.filter((i) => i.subIssues > 0).map((i) => i._id)
     if (parents.length === 0) {
       subIssuesByParent.set(new Map())
     } else {
       // Global query — ignores the active filter on purpose, per spec section D.
-      subIssuesQuery.query(
-        tracker.class.Issue,
-        { attachedTo: { $in: parents } },
-        (loaded: Issue[]) => {
-          const m = new Map<string, Issue[]>()
-          for (const s of loaded) {
-            const k = String(s.attachedTo)
-            if (!m.has(k)) m.set(k, [])
-            m.get(k)!.push(s)
+      subIssuesQuery.query(tracker.class.Issue, { attachedTo: { $in: parents } }, (loaded: Issue[]) => {
+        const m = new Map<string, Issue[]>()
+        for (const s of loaded) {
+          const k = String(s.attachedTo)
+          let arr = m.get(k)
+          if (arr === undefined) {
+            arr = []
+            m.set(k, arr)
           }
-          subIssuesByParent.set(m)
+          arr.push(s)
         }
-      )
+        subIssuesByParent.set(m)
+      })
     }
   } else {
     subIssuesQuery.unsubscribe()
@@ -1259,14 +1249,9 @@
 
   // Push a freshly-built BarColorContext whenever inputs change.
   // componentsById is derived above (near milestonesById).
-  $: barColorContextStore.set(
-    buildBarColorContext(issues, statusCategoryMap, componentsById, milestonesById)
-  )
+  $: barColorContextStore.set(buildBarColorContext(issues, statusCategoryMap, componentsById, milestonesById))
 
-  function computeSummaryRanges (
-    layoutRows: LayoutRow[],
-    allIssues: Issue[]
-  ): Map<string, SummaryRange> {
+  function computeSummaryRanges (layoutRows: LayoutRow[], allIssues: Issue[]): Map<string, SummaryRange> {
     const result = new Map<string, SummaryRange>()
     const childrenOf = new Map<string, Issue[]>()
     const issuesByMilestone = new Map<string, Issue[]>()
@@ -3491,9 +3476,14 @@
               type="button"
               class="corner-tree-btn"
               class:tree-btn-disabled={ganttGroupBy !== 'none'}
-              use:tooltip={{ label: ganttGroupBy === 'none' ? tracker.string.GanttCollapseAll : tracker.string.GanttCornerNoOpInSwimlane }}
+              use:tooltip={{
+                label:
+                  ganttGroupBy === 'none' ? tracker.string.GanttCollapseAll : tracker.string.GanttCornerNoOpInSwimlane
+              }}
               aria-label={ariaLabelOf(tracker.string.GanttCollapseAll)}
-              on:click={() => { if (ganttGroupBy === 'none') collapseAllTree() }}
+              on:click={() => {
+                if (ganttGroupBy === 'none') collapseAllTree()
+              }}
             >
               <Icon icon={IconChevronRight} size="small" />
             </button>
@@ -3501,9 +3491,14 @@
               type="button"
               class="corner-tree-btn"
               class:tree-btn-disabled={ganttGroupBy !== 'none'}
-              use:tooltip={{ label: ganttGroupBy === 'none' ? tracker.string.GanttExpandAll : tracker.string.GanttCornerNoOpInSwimlane }}
+              use:tooltip={{
+                label:
+                  ganttGroupBy === 'none' ? tracker.string.GanttExpandAll : tracker.string.GanttCornerNoOpInSwimlane
+              }}
               aria-label={ariaLabelOf(tracker.string.GanttExpandAll)}
-              on:click={() => { if (ganttGroupBy === 'none') expandAllTree() }}
+              on:click={() => {
+                if (ganttGroupBy === 'none') expandAllTree()
+              }}
             >
               <Icon icon={IconChevronDown} size="small" />
             </button>
@@ -4105,11 +4100,21 @@
   .corner-tree-btn.tree-btn-disabled:hover {
     background: transparent;
   }
-  .corner .col-toggle { flex: 0 0 18px; }
-  .corner .col-status { flex: 0 0 22px; }
-  .corner .col-id { flex: 0 0 80px; }
-  .corner .col-title { flex: 1 1 auto; }
-  .corner .col-jump { flex: 0 0 28px; }
+  .corner .col-toggle {
+    flex: 0 0 18px;
+  }
+  .corner .col-status {
+    flex: 0 0 22px;
+  }
+  .corner .col-id {
+    flex: 0 0 80px;
+  }
+  .corner .col-title {
+    flex: 1 1 auto;
+  }
+  .corner .col-jump {
+    flex: 0 0 28px;
+  }
   .resize-corner {
     position: sticky;
     top: 0;
