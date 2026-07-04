@@ -29,11 +29,15 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly textEstimation = (): Locator =>
     this.page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button/span')
 
-  // ControlPanel now renders Start Date + Due Date rows unconditionally
-  // (Gantt schema PR — Issue.startDate). Both editors emit a `<div><button>`
-  // pair that sits between Assignee (div/button #2) and Estimation, pushing
-  // Estimation from the 3rd to the 5th `div/button` under the side-panel grid.
-  readonly buttonEstimation = (): Locator => this.page.locator('(//span[text()="Estimation"]/../div/button)[5]')
+  // Target the Estimation editor button via the same following-sibling path as
+  // textEstimation instead of a positional (//...div/button)[N] index. The
+  // Gantt schema PR adds several unconditional rows (Start date, Due date,
+  // Deadline, Scheduling mode) between Assignee and Estimation, so any fixed
+  // index is brittle; the following-sibling div of the Estimation label always
+  // holds its own editor button regardless of how many rows precede it.
+  readonly buttonEstimation = (): Locator =>
+    this.page.locator('//span[text()="Estimation"]/following-sibling::div[1]/button')
+
   readonly buttonCreatedBy = (): Locator =>
     this.page.locator('//span[text()="Created by"]/following-sibling::div[1]/button')
 
