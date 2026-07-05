@@ -12,8 +12,13 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import card, { Card, CardSpace, MasterTag } from '@hcengineering/card'
-  import presentation, { getClient, getCommunicationClient, SpaceSelector } from '@hcengineering/presentation'
+  import card, { Card, CardSpace, type CreateCardExtension, MasterTag } from '@hcengineering/card'
+  import presentation, {
+    createQuery,
+    getClient,
+    getCommunicationClient,
+    SpaceSelector
+  } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import core, { Data, generateId, Ref, Markup, notEmpty, getCurrentAccount } from '@hcengineering/core'
   import { getResource, translate, getEmbeddedLabel } from '@hcengineering/platform'
@@ -24,13 +29,13 @@
   import { SelectUsersPopup, employeeByIdStore, permissionsStore } from '@hcengineering/contact-resources'
   import view from '@hcengineering/view'
 
-  import { createCard, isBaseTypeWithSubtypes } from '../utils'
+  import { createCard, getRootType, isBaseTypeWithSubtypes } from '../utils'
   import CardCollaborators from './CardCollaborators.svelte'
   import { TypeSelector } from '../index'
   import { canCreateObject } from '@hcengineering/view-resources'
 
   export let title: string = ''
-  export let type: Ref<MasterTag> = card.types.Document
+  export let type: Ref<MasterTag> | null = card.types.Document
   export let space: Ref<CardSpace> | undefined = undefined
   export let changeType: boolean = false
   export let allowChangeSpace: boolean = true
@@ -43,17 +48,34 @@
   const me = getCurrentEmployee()
   const _id = generateId<Card>()
 
-  $: extension =
-    type != null
-      ? client
-        .getModel()
-        .findAllSync(card.mixin.CreateCardExtension, {})
-        .find((it) => hierarchy.isDerived(type, it._id))
-      : undefined
+  function getCreateCardExtension (_type: Ref<MasterTag> | null): CreateCardExtension | undefined {
+    if (_type == null) return undefined
+
+    return client
+      .getModel()
+      .findAllSync(card.mixin.CreateCardExtension, {})
+      .find((it) => hierarchy.isDerived(_type, it._id))
+  }
+
+  $: extension = getCreateCardExtension(type)
 
   let data: Partial<Data<Card>> = { title }
   let _space: Ref<CardSpace> | undefined = space
+  let selectedSpace: CardSpace | undefined
   let collaborators: Ref<Employee>[] = [me]
+
+  const spaceQuery = createQuery()
+  $: if (_space != null) {
+    if (selectedSpace?._id !== _space) {
+      selectedSpace = undefined
+    }
+    spaceQuery.query(card.class.CardSpace, { _id: _space }, (result) => {
+      selectedSpace = result[0]
+    })
+  } else {
+    spaceQuery.unsubscribe()
+    selectedSpace = undefined
+  }
 
   let creating = false
 
@@ -102,12 +124,17 @@
 
   let label: string = ''
 
-  $: void updateLabel($languageStore)
+  $: void updateLabel($languageStore, type)
 
-  async function updateLabel (lang: string): Promise<void> {
-    const _clazz = hierarchy.getClass(type)
-    const typeString = await translate(_clazz.label, {}, lang)
+  async function updateLabel (lang: string, _type: Ref<MasterTag> | null): Promise<void> {
     const createString = await translate(presentation.string.Create, {}, lang)
+    if (_type == null) {
+      label = createString
+      return
+    }
+
+    const _clazz = hierarchy.getClass(_type)
+    const typeString = await translate(_clazz.label, {}, lang)
     label = `${createString} ${typeString}`
   }
 
@@ -142,8 +169,14 @@
     }
   }
 
+  $: typeAllowedBySpace =
+    type != null && selectedSpace != null && selectedSpace.types.includes(getRootType(hierarchy, type))
   $: allowed =
-    _space != null && canCreateObject(type, _space, $permissionsStore) && !isBaseTypeWithSubtypes(hierarchy, type)
+    _space != null &&
+    type != null &&
+    typeAllowedBySpace &&
+    canCreateObject(type, _space, $permissionsStore) &&
+    !isBaseTypeWithSubtypes(hierarchy, type)
 </script>
 
 <Modal
@@ -168,26 +201,28 @@
       autoFocus={!(extension?.disableTitle ?? false)}
     />
 
-    <AttachmentStyledBox
-      objectId={_id}
-      _class={type}
-      space={_space}
-      alwaysEdit
-      showButtons={false}
-      bind:content={description}
-      placeholder={core.string.Description}
-      kind="indented"
-      isScrollable={true}
-      kitOptions={{ reference: true }}
-      enableAttachments={false}
-    />
+    {#if type != null}
+      <AttachmentStyledBox
+        objectId={_id}
+        _class={type}
+        space={_space}
+        alwaysEdit
+        showButtons={false}
+        bind:content={description}
+        placeholder={core.string.Description}
+        kind="indented"
+        isScrollable={true}
+        kitOptions={{ reference: true }}
+        enableAttachments={false}
+      />
+    {/if}
   </div>
 
   <div class="hulyModal-content__settingsSet">
     {#if changeType}
       <div class="hulyModal-content__settingsSet-line">
         <span class="label"><Label label={card.string.MasterTag} /></span>
-        <TypeSelector bind:value={type} excludeBaseTypes />
+        <TypeSelector bind:value={type} allowedRootTypes={selectedSpace?.types} excludeBaseTypes />
       </div>
     {/if}
     {#if (space == null || allowChangeSpace) && !(extension?.hideSpace ?? false)}
