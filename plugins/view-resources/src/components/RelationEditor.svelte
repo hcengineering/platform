@@ -23,6 +23,19 @@
 
   $: _class = direction === 'B' ? association.classB : association.classA
 
+  $: uniqueDocs = deduplicate(docs)
+
+  function deduplicate (list: Doc[] | undefined): Doc[] {
+    if (!list) return []
+    const seen = new Set<string>()
+    return list.filter((item) => {
+      if (item?._id == null) return false
+      if (seen.has(item._id)) return false
+      seen.add(item._id)
+      return true
+    })
+  }
+
   function getCreate (): ObjectCreate | undefined {
     const factory = client.getHierarchy().classHierarchyMixin(_class, view.mixin.ObjectFactory)
     if (factory) {
@@ -53,7 +66,7 @@
   function add (): void {
     const create = getCreate()
     const isVersionable = client.getHierarchy().classHierarchyMixin(_class, core.mixin.VersionableClass) !== undefined
-    const baseQuery = { _id: { $nin: docs.map((p) => p._id) } }
+    const baseQuery = { _id: { $nin: uniqueDocs.map((p) => p._id) } }
     const docQuery = isVersionable ? { isLatest: true, ...baseQuery } : baseQuery
     showPopup(
       ObjectBoxPopup,
@@ -120,7 +133,7 @@
     return direction === 'B'
   }
 
-  $: allowToCreate = isAllowedToCreate(association, docs, direction)
+  $: allowToCreate = isAllowedToCreate(association, uniqueDocs, direction)
 
   $: classLabel = client.getHierarchy().getClass(_class).label
 </script>
@@ -139,9 +152,9 @@
   </svelte:fragment>
 
   <svelte:fragment slot="content">
-    {#if docs?.length > 0 && config != null}
+    {#if uniqueDocs?.length > 0 && config != null}
       <Scroller horizontal>
-        <DocTable objects={docs} {_class} {config} {onContextMenu} />
+        <DocTable objects={uniqueDocs} {_class} {config} {onContextMenu} />
       </Scroller>
     {:else if !readonly}
       <div
