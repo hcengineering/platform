@@ -10446,6 +10446,9 @@ importers:
       '@hcengineering/server-notification':
         specifier: workspace:^0.7.0
         version: link:../../server-plugins/notification
+      '@hcengineering/view':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/view
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.21

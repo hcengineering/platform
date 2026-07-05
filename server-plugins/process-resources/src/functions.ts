@@ -804,7 +804,7 @@ export async function CreateToDo (
 
       todoResults.push({
         _id: generateId() as any as ContextId,
-        name: attr.name,
+        name: attr.label,
         key: attr.name,
         type: attr.type
       })

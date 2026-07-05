@@ -243,10 +243,9 @@ export class ProcessMiddleware extends BasePresentationMiddleware implements Pre
         results = await Promise.all(
           results.map(async (r) => {
             if (r.key !== undefined) {
-              const h = this.client.getHierarchy()
               const _process = this.client.getModel().findObject(execution.process)
               if (_process !== undefined) {
-                const attr = h.findAttribute(_process.masterTag, r.key)
+                const attr = this.client.getModel().findAllSync(core.class.Attribute, { name: r.key })[0]
                 if (attr?.label !== undefined) {
                   const name = await translate(attr.label, {})
                   return { ...r, name }
