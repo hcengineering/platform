@@ -309,6 +309,7 @@ function defineApplication (
     issuesId: string
     componentsId: string
     milestonesId: string
+    timeReportsId: string
     templatesId: string
     labelsId: string
   }
@@ -421,6 +422,12 @@ function defineApplication (
                 component: tracker.component.Milestones
               },
               {
+                id: opt.timeReportsId,
+                label: tracker.string.TeamTimeReport,
+                icon: tracker.icon.TimeReport,
+                component: tracker.component.ProjectTimeReports
+              },
+              {
                 id: opt.templatesId,
                 label: tracker.string.IssueTemplates,
                 icon: tracker.icon.IssueTemplates,
@@ -501,6 +508,7 @@ export function createModel (builder: Builder): void {
   const issuesId = 'issues'
   const componentsId = 'components'
   const milestonesId = 'milestones'
+  const timeReportsId = 'timeReports'
   const templatesId = 'templates'
   const myIssuesId = 'my-issues'
   const allIssuesId = 'all-issues'
@@ -624,7 +632,16 @@ export function createModel (builder: Builder): void {
     tracker.ids.IssueTemplateUpdatedActivityViewlet
   )
 
-  defineApplication(builder, { myIssuesId, allIssuesId, issuesId, componentsId, milestonesId, templatesId, labelsId })
+  defineApplication(builder, {
+    myIssuesId,
+    allIssuesId,
+    issuesId,
+    componentsId,
+    milestonesId,
+    timeReportsId,
+    templatesId,
+    labelsId
+  })
 
   defineActions(builder, issuesId, componentsId, myIssuesId)
 

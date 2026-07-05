@@ -106,6 +106,7 @@ import { formatIssueValue } from './issueTableFormatter'
 import MilestoneEditor from './components/milestones/MilestoneEditor.svelte'
 import MilestonePresenter from './components/milestones/MilestonePresenter.svelte'
 import Milestones from './components/milestones/Milestones.svelte'
+import ProjectTimeReports from './components/issues/timereport/ProjectTimeReports.svelte'
 import MilestoneSelector from './components/milestones/MilestoneSelector.svelte'
 import MilestoneStatusEditor from './components/milestones/MilestoneStatusEditor.svelte'
 import MilestoneStatusIcon from './components/milestones/MilestoneStatusIcon.svelte'
@@ -440,6 +441,7 @@ export default async (): Promise<Resources> => ({
     CreateIssue,
     CreateIssueTemplate,
     Milestones,
+    ProjectTimeReports,
     MilestonePresenter,
     EditMilestone,
     MilestoneStatusPresenter,

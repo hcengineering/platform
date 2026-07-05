@@ -38,15 +38,55 @@ import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
-import tracker, {
+import {
   type Issue,
   type IssueStatus,
   type Project,
   TimeReportDayType,
   trackerId
 } from '@hcengineering/tracker'
+import workbench, { type Application } from '@hcengineering/workbench'
 
 import { classicIssueTaskStatuses } from '.'
+import tracker from './plugin'
+
+const TIME_REPORTS_SPECIAL_ID = 'timeReports'
+const PROJECTS_SPACE_ID = 'projects'
+
+/** One-time patch for workspaces created before the tab existed in the model. */
+async function addTimeReportsTabToApp (client: MigrationUpgradeClient): Promise<void> {
+  const tx = new TxOperations(client, core.account.System)
+
+  const app = await tx.findOne<Application>(workbench.class.Application, { _id: tracker.app.Tracker })
+  if (app === undefined) return
+
+  const projectsSpace = app?.navigatorModel?.spaces?.find((s) => s.id === PROJECTS_SPACE_ID)
+  if (projectsSpace === undefined) return
+  if (projectsSpace.specials?.some((s) => s.id === TIME_REPORTS_SPECIAL_ID) === true) return
+
+  const timeReportsTab = {
+    id: TIME_REPORTS_SPECIAL_ID,
+    label: tracker.string.TeamTimeReport,
+    icon: tracker.icon.TimeReport,
+    component: tracker.component.ProjectTimeReports
+  }
+  const specials = [...(projectsSpace.specials ?? [])]
+  const templatesIdx = specials.findIndex((s) => s.id === 'templates')
+  if (templatesIdx >= 0) {
+    specials.splice(templatesIdx, 0, timeReportsTab)
+  } else {
+    specials.push(timeReportsTab)
+  }
+
+  const navigatorModel = { ...app.navigatorModel }
+  if (navigatorModel.spaces != null) {
+    navigatorModel.spaces = navigatorModel.spaces.map((space) =>
+      space.id === PROJECTS_SPACE_ID ? { ...space, specials } : space
+    )
+  }
+
+  await tx.update(app, { navigatorModel })
+}
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -409,6 +449,14 @@ export const trackerOperation: MigrateOperation = {
           const tx = new TxOperations(client, core.account.System)
           await createDefaults(tx)
         }
+      },
+      {
+        state: 'add-time-reports-tab',
+        func: addTimeReportsTabToApp
+      },
+      {
+        state: 'add-time-reports-tab-v2',
+        func: addTimeReportsTabToApp
       }
     ])
   }

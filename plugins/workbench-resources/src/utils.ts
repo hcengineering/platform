@@ -39,7 +39,9 @@ import {
   setMetadataLocalStorage
 } from '@hcengineering/ui'
 import view from '@hcengineering/view'
-import workbench, { type Application, type NavigatorModel } from '@hcengineering/workbench'
+import { type Asset, type IntlString } from '@hcengineering/platform'
+import { type AnyComponent } from '@hcengineering/ui/src/types'
+import workbench, { type Application, type NavigatorModel, type SpecialNavModel } from '@hcengineering/workbench'
 import { derived, writable } from 'svelte/store'
 
 export const workspaceCreating = writable<number | undefined>(undefined)
@@ -173,6 +175,30 @@ export const currentWorkspaceStore = derived(
   }
 )
 
+// Tracker team time report: static model has the tab, but old workspaces keep an
+// Application doc without it until a model tx applies (often skipped on upgrade).
+const TRACKER_TIME_REPORTS_TAB: SpecialNavModel = {
+  id: 'timeReports',
+  label: 'tracker:string:TeamTimeReport' as IntlString,
+  icon: 'tracker:icon:TimeReport' as Asset,
+  component: 'tracker:component:ProjectTimeReports' as AnyComponent
+}
+
+function ensureTrackerTimeReportsTab (model: NavigatorModel | undefined): NavigatorModel | undefined {
+  if (model === undefined) return model
+  const spaces = model.spaces?.map((space) => {
+    if (space.id !== 'projects') return space
+    const specials = space.specials ?? []
+    if (specials.some((s) => s.id === TRACKER_TIME_REPORTS_TAB.id)) return space
+    const next = [...specials]
+    const templatesIdx = next.findIndex((s) => s.id === 'templates')
+    if (templatesIdx >= 0) next.splice(templatesIdx, 0, TRACKER_TIME_REPORTS_TAB)
+    else next.push(TRACKER_TIME_REPORTS_TAB)
+    return { ...space, specials: next }
+  })
+  return spaces !== undefined ? { ...model, spaces } : model
+}
+
 /**
  * @public
  */
@@ -203,6 +229,9 @@ export async function buildNavModel (
         specials: [...(newNavModel?.specials ?? []), ...(nm.specials ?? [])]
       }
     }
+  }
+  if (currentApplication?.alias === 'tracker') {
+    newNavModel = ensureTrackerTimeReportsTab(newNavModel)
   }
   return newNavModel
 }
