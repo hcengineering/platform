@@ -24,6 +24,13 @@
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined
+  // Overflow collapsing + the 22rem width cap exist ONLY to keep the crowded
+  // Gantt toolbar row from being pushed off-screen. In the below-header /
+  // list placement there is a full-width row available, so collapsing chips
+  // into the "+N" popover just hides the active filter (and removes
+  // div.filter-section from the DOM). `constrained` opts INTO the toolbar
+  // behaviour; the default renders every chip inline like the legacy bar.
+  export let constrained: boolean = false
 
   let containerWidth = 0
   let chipEls: HTMLElement[] = []
@@ -58,6 +65,15 @@
 
   async function recompute (): Promise<void> {
     await tick()
+    // Unconstrained (below-header/list) placement never collapses: keep every
+    // chip visible so its div.filter-section stays in the DOM.
+    if (!constrained) {
+      if (visibleCount !== $filterStore.length || hiddenCount !== 0) {
+        visibleCount = $filterStore.length
+        hiddenCount = 0
+      }
+      return
+    }
     if (containerWidth === 0) return
     const filters = $filterStore
     if (filters.length === 0) return
@@ -104,7 +120,7 @@
   $: void _class
 </script>
 
-<div class="inline-filter-chips-wrap">
+<div class="inline-filter-chips-wrap" class:constrained>
   <!-- Inner container is the scroll/measurement viewport. The wrap layer
        above caps the width so the chip cluster cannot push the rest of
        the toolbar off-screen. computeOverflow uses the inner container
@@ -163,18 +179,26 @@
     gap: var(--spacing-1);
     min-width: 0;
     flex: 0 1 auto;
-    /* Hard cap on chip cluster width — beyond this, the +N popover takes
-       over. Without this cap, chips push the rest of the toolbar (date
-       nav, zoom, undo/redo, hamburger, fullscreen) off-screen. */
+  }
+  /* Hard cap on chip cluster width — beyond this, the +N popover takes
+     over. Only applied in the Gantt toolbar (constrained) where chips would
+     otherwise push the date nav, zoom, undo/redo, hamburger and fullscreen
+     controls off-screen. The below-header/list placement has a full-width
+     row and must render every chip. */
+  .inline-filter-chips-wrap.constrained {
     max-width: 22rem;
   }
   .inline-filter-chips {
     display: flex;
     align-items: center;
     gap: var(--spacing-1);
+    flex-wrap: wrap;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .inline-filter-chips-wrap.constrained .inline-filter-chips {
     flex-wrap: nowrap;
     overflow: hidden;
-    min-width: 0;
     flex: 1 1 0;
   }
   .chip-slot {

@@ -170,7 +170,7 @@
            leftmost). -->
       <GanttToolbarBar section="search-end" />
       <GanttToolbarBar section="search-mid" />
-      <InlineFilterChips _class={tracker.class.Issue} {space} />
+      <InlineFilterChips _class={tracker.class.Issue} {space} constrained />
       <FilterButton _class={tracker.class.Issue} {space} />
       {#if modeSelectorProps !== undefined && (viewOptions?.showQuickModeSelector ?? true) !== false}
         <ModeSelector kind={'subtle'} props={modeSelectorProps} />
