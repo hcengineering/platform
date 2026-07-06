@@ -251,18 +251,28 @@
     <InlineFilterChips _class={tracker.class.Issue} {space} />
   </div>
 {/if}
-<!-- Viewlet stays mounted regardless of the empty-state card. Unmounting
-     it on showEmptyState (an earlier iteration) created a self-lock: with
-     no viewlet around, the resultIssueCountStore never updates when the
-     user retypes the search, so the card stuck.
-
-     Use `display: contents` on the wrapper so ViewletContentView remains a
-     direct flex child of the page-level layout — that's the chain Gantt's
-     `height: 100%` depends on. When showEmptyState is true, the wrapper
-     becomes `display: none` instead: the Svelte components keep running
-     (createQuery callbacks still fire because they're independent of DOM
-     rendering) while the empty-state card visually replaces the area. -->
-<div class="viewlet-wrap" class:viewlet-hidden={showEmptyState}>
+<!-- Viewlet stays mounted AND laid out regardless of the empty-state card.
+     Two earlier iterations broke live list updates:
+       1. Unmounting the viewlet on showEmptyState created a self-lock — with
+          no viewlet around, resultIssueCountStore never updated on retype so
+          the card stuck.
+       2. Keeping it mounted but toggling `display: none` on showEmptyState
+          starved the virtualized viewlets (List / Gantt use a viewport-
+          measured virtual scroller since the pr6 virtualization tier): while
+          hidden the scroller measures a 0-height viewport and caches it, so
+          when the count returns to a positive value and the wrapper re-shows,
+          the stale 0-height measurement leaves ZERO rows rendered — a
+          freshly created / searched issue never appears in the list even
+          though its LiveQuery already delivered it. That is the uitest
+          regression (issues + mentions "create → search → open" timing out
+          on the row locator).
+     The empty-state is therefore a non-suppressive sibling: the live viewlet
+     is never collapsed, so its scroller always has a real viewport and always
+     renders its rows. The card only ever adds an informational panel; it can
+     never hide a populated list. `display: contents` is kept so
+     ViewletContentView stays a direct flex child of the page-level layout —
+     the chain Gantt's `height: 100%` depends on. -->
+<div class="viewlet-wrap">
   {#if viewlet && viewOptions}
     <ViewletContentView
       _class={tracker.class.Issue}
@@ -294,15 +304,12 @@
   }
   /* `display: contents` lets the wrapper disappear from layout so
      ViewletContentView stays a direct flex item of the page-level chain
-     (Gantt's `height: 100%` depends on that). Toggling to `display: none`
-     when the empty-state takes over hides the viewlet subtree visually
-     without unmounting it — Svelte components remain mounted, their
-     createQuery callbacks keep firing, and the empty-state can dismiss
-     itself as soon as a new query writes a non-zero count. */
+     (Gantt's `height: 100%` depends on that). The wrapper is NEVER switched
+     to `display: none` — doing so starved the virtualized viewlet's scroller
+     of a viewport and left rows unrendered after the empty-state dismissed
+     itself (see the template comment above). The empty-state card is a
+     sibling, so the live viewlet's layout is always intact. */
   .viewlet-wrap {
     display: contents;
-  }
-  .viewlet-wrap.viewlet-hidden {
-    display: none;
   }
 </style>
