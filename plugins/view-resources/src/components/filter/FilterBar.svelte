@@ -15,10 +15,10 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { getClient, reduceCalls } from '@hcengineering/presentation'
-  import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, IconClose, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
   import { Filter, FilterMode, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { filterStore, removeFilter, selectedFilterStore, updateFilter } from '../../filter'
+  import { filterStore, removeFilter, selectedFilterStore, setFilters, updateFilter } from '../../filter'
   import { makeFilterQuery } from '../../filter/query-builder'
   import view from '../../plugin'
   import { activeViewlet, getActiveViewletId, makeViewletKey } from '../../utils'
@@ -144,6 +144,22 @@
       <div class="add-filter">
         <Button size={'small'} icon={IconAdd} kind={'ghost'} on:click={add} />
       </div>
+      <!-- Clear-all affordance for the legacy (non-Tracker) consumers that
+           render their chips here. The Tracker path sets hideChips=true so
+           this row never renders — its clear-all lives in <InlineFilterChips>
+           instead, avoiding a duplicate button. Mirrors the pre-redesign
+           FilterButton toggle (IconClose + view.string.ClearFilters). -->
+      <div class="clear-filters">
+        <Button
+          size={'small'}
+          icon={IconClose}
+          label={view.string.ClearFilters}
+          kind={'ghost'}
+          on:click={() => {
+            setFilters([])
+          }}
+        />
+      </div>
     </div>
 
     {#if !hideSaveButtons}
@@ -219,6 +235,10 @@
     }
     .add-filter {
       margin-bottom: 0.375rem;
+    }
+    .clear-filters {
+      margin-bottom: 0.375rem;
+      margin-left: 0.25rem;
     }
   }
   .filterbar-saveas-container {
