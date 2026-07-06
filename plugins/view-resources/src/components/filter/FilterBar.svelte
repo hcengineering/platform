@@ -86,7 +86,16 @@
     await client.findOne(view.class.FilterMode, { _id: id })
 
   const makeQuery = reduceCalls(async (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> => {
-    const next = await makeFilterQuery(query, filters, resolveMode, undefined, hierarchy)
+    // Pass a real refresh callback (6th arg) instead of the no-op default in
+    // makeFilterQuery. A filter's async result-fn invokes refresh when its
+    // underlying data resolves/changes (e.g. lookup filters that load their
+    // value set asynchronously) so the query must be rebuilt and re-dispatched.
+    // This restores develop's behaviour, where the inline makeQuery passed
+    // `() => makeQuery(query, filters)` to each filter's result(). reduceCalls
+    // coalesces the re-entrant call, so this cannot spin into an infinite loop.
+    const next = await makeFilterQuery(query, filters, resolveMode, undefined, hierarchy, () => {
+      void makeQuery(query, filters)
+    })
     dispatch('change', next)
   })
 
