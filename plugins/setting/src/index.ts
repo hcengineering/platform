@@ -306,6 +306,8 @@ export default plugin(settingId, {
     BackupCopyScript: '' as IntlString,
     BackupCopyToken: '' as IntlString,
     BackupScriptInfo: '' as IntlString,
+    BackupRestoreGuide: '' as IntlString,
+    BackupRestoreGuideInfo: '' as IntlString,
     NonBackupedBlobs: '' as IntlString,
     AddAttribute: '' as IntlString,
     Mailboxes: '' as IntlString,

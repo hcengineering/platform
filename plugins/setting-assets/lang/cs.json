@@ -141,6 +141,8 @@
     "BackupCopyScript": "Kopírovat skript pro stažení",
     "BackupCopyToken": "Kopírovat token",
     "BackupScriptInfo": "Shellový skript, který stáhne všechny soubory zálohy pomocí curl. Uložte jej a spusťte v terminálu; vyžádá si váš token zálohy, takže ve skriptu nejsou uložena žádná tajemství.",
+    "BackupRestoreGuide": "Průvodce zálohováním a obnovou",
+    "BackupRestoreGuideInfo": "Podrobný návod, jak stáhnout tuto zálohu a obnovit ji v jiné instanci Huly.",
     "NonBackupedBlobs": "Non Backed up blobs",
     "Calendar": "Kalendář",
     "StartOfTheWeek": "Začátek týdne",

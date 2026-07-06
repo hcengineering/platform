@@ -12,8 +12,8 @@
 <!-- limitations under the License. -->
 
 <script lang="ts">
-  import card, { Card as TypeCard, CardSpace, MasterTag } from '@hcengineering/card'
-  import presentation, { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
+  import card, { Card as TypeCard, CardSpace, type CreateCardExtension, MasterTag } from '@hcengineering/card'
+  import presentation, { Card, createQuery, getClient, SpaceSelector } from '@hcengineering/presentation'
   import { createEventDispatcher } from 'svelte'
   import core, { Data, generateId, Ref, Markup, getCurrentAccount } from '@hcengineering/core'
   import { getResource, translate, getEmbeddedLabel } from '@hcengineering/platform'
@@ -22,12 +22,12 @@
   import { permissionsStore } from '@hcengineering/contact-resources'
   import view from '@hcengineering/view'
 
-  import { createCard, isBaseTypeWithSubtypes } from '../utils'
+  import { createCard, getRootType, isBaseTypeWithSubtypes } from '../utils'
   import { TypeSelector } from '../index'
   import { canCreateObject } from '@hcengineering/view-resources'
 
   export let title: string = ''
-  export let type: Ref<MasterTag> = card.types.Document
+  export let type: Ref<MasterTag> | null = card.types.Document
   export let space: Ref<CardSpace> | undefined = undefined
   export let description: Markup = EmptyMarkup
 
@@ -36,16 +36,33 @@
   const hierarchy = client.getHierarchy()
   const _id = generateId<TypeCard>()
 
-  $: extension =
-    type != null
-      ? client
-        .getModel()
-        .findAllSync(card.mixin.CreateCardExtension, {})
-        .find((it) => hierarchy.isDerived(type, it._id))
-      : undefined
+  function getCreateCardExtension (_type: Ref<MasterTag> | null): CreateCardExtension | undefined {
+    if (_type == null) return undefined
+
+    return client
+      .getModel()
+      .findAllSync(card.mixin.CreateCardExtension, {})
+      .find((it) => hierarchy.isDerived(_type, it._id))
+  }
+
+  $: extension = getCreateCardExtension(type)
 
   const data: Partial<Data<TypeCard>> = { title }
   let _space: Ref<CardSpace> | undefined = space
+  let selectedSpace: CardSpace | undefined
+
+  const spaceQuery = createQuery()
+  $: if (_space != null) {
+    if (selectedSpace?._id !== _space) {
+      selectedSpace = undefined
+    }
+    spaceQuery.query(card.class.CardSpace, { _id: _space }, (result) => {
+      selectedSpace = result[0]
+    })
+  } else {
+    spaceQuery.unsubscribe()
+    selectedSpace = undefined
+  }
 
   let creating = false
 
@@ -83,15 +100,26 @@
 
   $: void updateLabel($languageStore, type)
 
-  async function updateLabel (lang: string, _type: Ref<MasterTag>): Promise<void> {
+  async function updateLabel (lang: string, _type: Ref<MasterTag> | null): Promise<void> {
+    const createString = await translate(presentation.string.Create, {}, lang)
+    if (_type == null) {
+      label = createString
+      return
+    }
+
     const _clazz = hierarchy.getClass(_type)
     const typeString = await translate(_clazz.label, {}, lang)
-    const createString = await translate(presentation.string.Create, {}, lang)
     label = `${createString} ${typeString}`
   }
 
+  $: typeAllowedBySpace =
+    type != null && selectedSpace != null && selectedSpace.types.includes(getRootType(hierarchy, type))
   $: allowed =
-    _space != null && canCreateObject(type, _space, $permissionsStore) && !isBaseTypeWithSubtypes(hierarchy, type)
+    _space != null &&
+    type != null &&
+    typeAllowedBySpace &&
+    canCreateObject(type, _space, $permissionsStore) &&
+    !isBaseTypeWithSubtypes(hierarchy, type)
 </script>
 
 <Card
@@ -119,7 +147,7 @@
       kind={'regular'}
       size={'large'}
     />
-    <TypeSelector bind:value={type} excludeBaseTypes />
+    <TypeSelector bind:value={type} allowedRootTypes={selectedSpace?.types} excludeBaseTypes />
   </svelte:fragment>
   <ModernEditbox bind:value={data.title} label={view.string.Title} size="medium" kind="ghost" autoFocus />
   <svelte:fragment slot="pool">

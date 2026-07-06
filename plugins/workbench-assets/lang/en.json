@@ -35,15 +35,6 @@
     "ConfigureWidgets": "Configure widgets",
     "Tab": "Tab",
     "WorkspaceIsArchived": "Workspace is archived because of being unused, Please contact us to restore...",
-    "WorkspaceIsMigrating": "Workspace is being updated. Please wait...",
-    "ShutdownWarningShort": "Service shutting down — migrate data",
-    "ShutdownWarningTitle": "Hosted Huly is shutting down",
-    "ShutdownWarningHint": "The hosted service is being discontinued because its hosting is no longer being funded. Please export and back up anything you can't afford to lose, and migrate as soon as possible — we can help you move to either a self-hosted setup or a hosted option.",
-    "ShutdownNextEventBefore": "The service shutdown is expected on ",
-    "ShutdownNextEventDate": "July 20",
-    "ShutdownNextEventAfter": ". Please make sure to export and migrate your data before then.",
-    "ShutdownCommunityHint": "Have questions or want updates? Join the Huly community to discuss migration and stay informed.",
-    "JoinCommunityCta": "Join the Huly community",
-    "ShutdownContactPrefix": "Questions? Contact "
+    "WorkspaceIsMigrating": "Workspace is being updated. Please wait..."
   }
 }

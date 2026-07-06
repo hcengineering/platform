@@ -14,6 +14,7 @@
 //
 
 import {
+  backupRestoreGuideLink,
   buildStoreZip,
   collectBackupFileNames,
   crc32,
@@ -115,6 +116,20 @@ describe('generateRestoreReadme', () => {
   it('warns about blobs excluded from the backup', () => {
     expect(readme.toLowerCase()).toContain('video')
     expect(readme.toLowerCase()).toContain('blob')
+  })
+
+  it('mentions the --accounts flag needed to restore the original users', () => {
+    expect(readme).toContain('--accounts')
+  })
+
+  it('links to the full backup & restore guide', () => {
+    expect(readme).toContain(backupRestoreGuideLink)
+  })
+})
+
+describe('backupRestoreGuideLink', () => {
+  it('is an https link', () => {
+    expect(backupRestoreGuideLink.startsWith('https://')).toBe(true)
   })
 })
 

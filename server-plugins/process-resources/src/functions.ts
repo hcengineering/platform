@@ -791,7 +791,9 @@ export async function CreateToDo (
   const todoResults = results ?? []
   if (params.askRequired === true) {
     const h = control.client.getHierarchy()
-    const classId = _process.masterTag
+    const card = control.cache.get(execution.card)
+    if (card === undefined) throw processError(process.error.ObjectNotFound, { _id: execution.card })
+    const classId = h.isMixin(_process.masterTag) ? _process.masterTag : h.getBaseClass(card._class)
     const allAttributes = Array.from(
       h.isMixin(classId) ? h.getOwnAttributes(classId).values() : h.getAllAttributes(classId, core.class.Doc).values()
     )
@@ -802,7 +804,7 @@ export async function CreateToDo (
 
       todoResults.push({
         _id: generateId() as any as ContextId,
-        name: attr.name,
+        name: attr.label,
         key: attr.name,
         type: attr.type
       })

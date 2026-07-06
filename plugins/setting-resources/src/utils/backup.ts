@@ -16,6 +16,16 @@
 import { type BackupInfo } from '../types'
 
 /**
+ * Link to the full backup & restore guide (download + restore into another
+ * Huly instance). Shown on the Backup settings page and embedded in the
+ * generated RESTORE.md so it travels with the backup.
+ *
+ * @public
+ */
+export const backupRestoreGuideLink =
+  'https://github.com/hcengineering/platform/blob/develop/docs/guides/backup-restore.en.md'
+
+/**
  * Shape of the data returned from `<backupUrl>/<workspace>/index.json`.
  * Mirrors the inline type used by the backup settings page.
  */
@@ -164,9 +174,12 @@ admin tool.
 3. From the platform monorepo, restore the backup into that workspace:
 
        cd dev/tool
-       rushx tool backup-restore <path-to-this-folder> <target-workspace>
+       rushx tool backup-restore <path-to-this-folder> <target-workspace> --accounts
 
-   Add \`--upgrade\` if the target runs a newer model version.
+   Add \`--upgrade\` if the target runs a newer model version. Add
+   \`--accounts\` to also restore the original users (skip it if you'll invite
+   members manually instead) — it needs its own account-database connection,
+   see server/backup/README.md.
 
 ## Notes
 
@@ -177,6 +190,8 @@ admin tool.
   than the server's blob limit — are listed in \`blob-info.json.gz\` but their
   contents are NOT included here; they remain in the source workspace's live
   storage.
+
+Full guide, including troubleshooting: ${backupRestoreGuideLink}
 `
 }
 

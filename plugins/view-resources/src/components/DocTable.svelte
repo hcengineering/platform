@@ -47,7 +47,20 @@
 
   const refs: HTMLElement[] = []
 
-  $: refs.length = objects.length
+  $: uniqueObjects = deduplicate(objects)
+
+  function deduplicate (list: Doc[] | undefined): Doc[] {
+    if (!list) return []
+    const seen = new Set<string>()
+    return list.filter((item) => {
+      if (item?._id == null) return false
+      if (seen.has(item._id)) return false
+      seen.add(item._id)
+      return true
+    })
+  }
+
+  $: refs.length = uniqueObjects.length
 
   $: viewlet = getViewlet(_class)
 
@@ -210,9 +223,9 @@
         </tr>
       </thead>
     {/if}
-    {#if objects.length > 0}
+    {#if uniqueObjects.length > 0}
       <tbody>
-        {#each objects as object, row (object._id)}
+        {#each uniqueObjects as object, row (object._id)}
           <tr
             class="antiTable-body__row"
             class:fixed={row === selection}

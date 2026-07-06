@@ -84,6 +84,10 @@ export interface ExportOptions {
   skipDeletedObsolete?: boolean
   // Whether to export only documents with effective status
   exportOnlyEffective?: boolean
+  // Whether to recursively export child (collection) documents of each exported doc.
+  // When false, only the documents matched by the top-level query are exported and
+  // their attached collection items are skipped.
+  includeChildren?: boolean
   // Class-specific export handlers, applied before the default flow. Useful
   // for collapsing or deduplicating documents (e.g. ProductVersion).
   customHandlers?: CustomExportHandler[]

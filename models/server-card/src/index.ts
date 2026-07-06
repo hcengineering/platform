@@ -21,6 +21,7 @@ import serverCard from '@hcengineering/server-card'
 import card from '@hcengineering/card'
 import communication from '@hcengineering/communication'
 import serverNotification from '@hcengineering/server-notification'
+import view from '@hcengineering/view'
 
 export { serverCardId } from '@hcengineering/server-card'
 
@@ -40,6 +41,16 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: core.class.Attribute
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverCard.trigger.OnViewletUpdate,
+    isAsync: true,
+    txMatch: {
+      _class: core.class.TxUpdateDoc,
+      objectClass: view.class.Viewlet,
+      'operations.config': { $exists: true }
     }
   })
 
