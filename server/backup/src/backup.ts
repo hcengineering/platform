@@ -65,7 +65,9 @@ import {
   extendZero,
   getObjectHash,
   isAccountDomain,
+  isValidAccountDomainKey,
   loadDigest,
+  shouldRescanAccountDomain,
   rebuildSizeInfo,
   toAccountDomain,
   verifyDocsFromSnapshot,
@@ -939,12 +941,22 @@ export async function backup (
       let getObjKey: (obj: any) => string
       let affectedObjects: Set<BackupDocId>
 
+      // Rescan all persons/social identities on full check or until the initial rescan is completed,
+      // to make sure accounts are present even if there were no recent contact/channel updates.
+      const rescan = shouldRescanAccountDomain(domain, fullCheck, backupInfo.migrations)
+      const markRescanDone = async (): Promise<void> => {
+        if (backupInfo.migrations.accountsRescan?.[domain] !== true) {
+          backupInfo.migrations.accountsRescan = { ...backupInfo.migrations.accountsRescan, [domain]: true }
+          await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
+        }
+      }
+
       if (isPersonDomain) {
         collection = 'person'
         key = 'uuid'
         getObjKey = (obj: GlobalPerson) => obj.uuid
 
-        if (fullCheck) {
+        if (rescan) {
           let idx: number | undefined
           while (true) {
             const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(ctx, DOMAIN_CONTACT, idx))
@@ -973,7 +985,7 @@ export async function backup (
         key = '_id'
         getObjKey = (obj: SocialId) => obj._id
 
-        if (fullCheck) {
+        if (rescan) {
           let idx: number | undefined
           while (true) {
             const currentChunk = await ctx.with('loadChunk', {}, () => connection.loadChunk(ctx, DOMAIN_CHANNEL, idx))
@@ -1031,17 +1043,11 @@ export async function backup (
       // 2. We need to check updates for all records present in digest
       const batchSize = 1000
       const toLoad = new Set(
-        [...digest.keys(), ...affectedObjects].filter((it) => {
-          try {
-            BigInt(it)
-            return true
-          } catch (err: any) {
-            return false
-          }
-        })
+        [...digest.keys(), ...affectedObjects].filter((it) => isValidAccountDomainKey(domain, it))
       ) as Set<PersonUuid>
       if (toLoad.size === 0) {
         ctx.info('No records updates')
+        await markRescanDone()
         return
       }
 
@@ -1184,6 +1190,8 @@ export async function backup (
         // This will allow to retry in case of critical error.
         await storage.writeFile(infoFile, gzipSync(JSON.stringify(backupInfo, undefined, 2), { level: defaultLevel }))
       }
+      // Domain is processed completely, no need to rescan it on the next run.
+      await markRescanDone()
     }
 
     let domainProgress = 0

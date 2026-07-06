@@ -44,7 +44,7 @@
         type
       }
       if (key !== undefined) {
-        const attr = client.getHierarchy().findAttribute(process.masterTag, key)
+        const attr = client.getModel().findAllSync(core.class.Attribute, { name: key })[0]
         if (attr?.label !== undefined) {
           name = await translate(attr.label, {})
           result.name = name

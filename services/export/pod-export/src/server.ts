@@ -414,7 +414,8 @@ export function createServer (
           relations: rawRelations,
           fieldMappers,
           skipDeletedObsolete,
-          exportOnlyEffective
+          exportOnlyEffective,
+          includeChildren
         }: {
           targetWorkspace: WorkspaceUuid
           _class: Ref<Class<Doc>>
@@ -427,6 +428,7 @@ export function createServer (
           fieldMappers?: Record<string, Record<string, any>>
           skipDeletedObsolete?: boolean
           exportOnlyEffective?: boolean
+          includeChildren?: boolean
         } = req.body
 
         // Validate required parameters
@@ -543,6 +545,7 @@ export function createServer (
             fieldMappers,
             skipDeletedObsolete: skipDeletedObsolete ?? true,
             exportOnlyEffective: exportOnlyEffective ?? false,
+            includeChildren: includeChildren ?? false,
             customHandlers: [createProductVersionHandler()]
           }
 

@@ -147,6 +147,8 @@
     "BackupCopyScript": "Kopiuj skrypt pobierania",
     "BackupCopyToken": "Kopiuj token",
     "BackupScriptInfo": "Skrypt powłoki, który pobiera wszystkie pliki kopii zapasowej za pomocą curl. Zapisz go i uruchom w terminalu; poprosi o token kopii zapasowej, więc w skrypcie nie są przechowywane żadne sekrety.",
+    "BackupRestoreGuide": "Przewodnik po kopii zapasowej i przywracaniu",
+    "BackupRestoreGuideInfo": "Instrukcja krok po kroku dotycząca pobierania tej kopii zapasowej i przywracania jej w innej instancji Huly.",
     "NonBackupedBlobs": "Pliki nieobjęte kopią zapasową",
     "Calendar": "Kalendarz",
     "StartOfTheWeek": "Początek tygodnia",

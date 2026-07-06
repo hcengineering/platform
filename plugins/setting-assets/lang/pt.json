@@ -138,6 +138,8 @@
     "BackupCopyScript": "Copiar script de transferência",
     "BackupCopyToken": "Copiar token",
     "BackupScriptInfo": "Um script de shell que transfere todos os ficheiros da cópia de segurança com curl. Guarde-o e execute-o num terminal; irá pedir o seu token da cópia de segurança, pelo que não são armazenados segredos no script.",
+    "BackupRestoreGuide": "Guia de cópia de segurança e restauro",
+    "BackupRestoreGuideInfo": "Instruções passo a passo para transferir esta cópia de segurança e restaurá-la noutra instância do Huly.",
     "NonBackupedBlobs": "Non Backed up blobs",
     "Calendar": "Calendário",
     "StartOfTheWeek": "Início da semana",

@@ -138,6 +138,8 @@
     "BackupCopyScript": "Copiar script de download",
     "BackupCopyToken": "Copiar token",
     "BackupScriptInfo": "Um script de shell que baixa todos os arquivos de backup com curl. Salve-o e execute-o em um terminal; ele solicitará seu token de backup, então nenhum segredo é armazenado no script.",
+    "BackupRestoreGuide": "Guia de backup e restauração",
+    "BackupRestoreGuideInfo": "Instruções passo a passo para baixar este backup e restaurá-lo em outra instância do Huly.",
     "NonBackupedBlobs": "Blobs sem backup",
     "Calendar": "Calendário",
     "StartOfTheWeek": "Início da semana",

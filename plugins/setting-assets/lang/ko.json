@@ -147,6 +147,8 @@
         "BackupCopyScript": "다운로드 스크립트 복사",
         "BackupCopyToken": "토큰 복사",
         "BackupScriptInfo": "curl로 모든 백업 파일을 다운로드하는 셸 스크립트입니다. 저장한 후 터미널에서 실행하세요. 백업 토큰을 입력하라는 메시지가 표시되므로 스크립트에 비밀 정보가 저장되지 않습니다.",
+        "BackupRestoreGuide": "백업 및 복원 가이드",
+        "BackupRestoreGuideInfo": "이 백업을 다운로드하여 다른 Huly 인스턴스로 복원하는 단계별 안내입니다.",
         "NonBackupedBlobs": "백업되지 않은 Blob",
         "Calendar": "캘린더",
         "StartOfTheWeek": "주 시작일",

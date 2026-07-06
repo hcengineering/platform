@@ -75,7 +75,8 @@ export class DocumentExporter {
     sourceHierarchy: Hierarchy,
     sourceLowLevel: LowLevelStorage,
     existingDocsMap: Map<Ref<Doc>, Doc>,
-    relations: RelationDefinition[]
+    relations: RelationDefinition[],
+    includeChildren: boolean = false
   ): Promise<boolean> {
     if (this.state.processingDocs.has(doc._id)) {
       return false
@@ -127,7 +128,8 @@ export class DocumentExporter {
         conflictStrategy,
         includeAttachments,
         sourceHierarchy,
-        sourceLowLevel
+        sourceLowLevel,
+        includeChildren
       )
 
       // Create the document
@@ -145,7 +147,8 @@ export class DocumentExporter {
         conflictStrategy,
         includeAttachments,
         sourceHierarchy,
-        sourceLowLevel
+        sourceLowLevel,
+        includeChildren
       )
       await this.exportSpaceRelations(
         doc,
@@ -154,7 +157,8 @@ export class DocumentExporter {
         includeAttachments,
         sourceHierarchy,
         sourceLowLevel,
-        relations
+        relations,
+        includeChildren
       )
 
       // Handle attachments
@@ -165,8 +169,12 @@ export class DocumentExporter {
       // Handle collaborative content blobs (e.g., document content)
       await this.attachmentExporter.exportCollaborativeContent(doc, sourceHierarchy)
 
-      // Handle collections (child documents)
-      await this.exportCollections(doc, targetId, sourceHierarchy, sourceLowLevel, relations)
+      // Handle collections (child documents) — only when explicitly requested.
+      // When disabled, only the top-level documents matched by the export query
+      // are exported and their attached collection items are skipped.
+      if (includeChildren) {
+        await this.exportCollections(doc, targetId, sourceHierarchy, sourceLowLevel, relations, includeChildren)
+      }
 
       return true
     } catch (err: any) {
@@ -230,7 +238,8 @@ export class DocumentExporter {
     includeAttachments: boolean,
     sourceHierarchy: Hierarchy,
     sourceLowLevel: LowLevelStorage,
-    relations: RelationDefinition[]
+    relations: RelationDefinition[],
+    includeChildren: boolean
   ): Promise<void> {
     try {
       if (this.relationExporter === undefined) {
@@ -256,7 +265,8 @@ export class DocumentExporter {
         conflictStrategy,
         includeAttachments,
         sourceHierarchy,
-        sourceLowLevel
+        sourceLowLevel,
+        includeChildren
       )
     } catch (err: any) {
       this.context.error(`Failed to export relations for space ${space}:`, {
@@ -310,7 +320,8 @@ export class DocumentExporter {
     targetDocId: Ref<Doc>,
     sourceHierarchy: Hierarchy,
     sourceLowLevel: LowLevelStorage,
-    relations: RelationDefinition[]
+    relations: RelationDefinition[],
+    includeChildren: boolean
   ): Promise<void> {
     const attributes = sourceHierarchy.getAllAttributes(sourceDoc._class)
 
@@ -349,7 +360,8 @@ export class DocumentExporter {
             sourceHierarchy,
             sourceLowLevel,
             new Map(),
-            relations
+            relations,
+            includeChildren
           )
         } catch (err: any) {
           this.context.error(`Failed to export collection item ${collectionDoc._id}:`, {
