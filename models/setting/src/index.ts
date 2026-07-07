@@ -419,7 +419,7 @@ export function createModel (builder: Builder): void {
       component: exportPlugin.component.ExportSettings,
       group: 'settings-editor',
       feature: 'export',
-      role: AccountRole.User,
+      role: AccountRole.Owner,
       order: 4800
     },
     setting.ids.Export
