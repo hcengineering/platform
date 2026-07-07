@@ -2323,6 +2323,13 @@ export async function getLoginWithWorkspaceInfo (
   let workspace: WorkspaceUuid | undefined
   try {
     ;({ account: accountUuid, extra, workspace } = decodeTokenVerbose(ctx, token))
+    // C2: enforce disable + token-version on the transactor session path.
+    // verifyTokenVersion throws TokenError('Account disabled') when disabledAt
+    // is set and TokenError('Token version invalidated') on a stale claim.
+    // Workspace JWTs have no exp, so a disabled account holding a never-expiring
+    // token must NOT be able to (re)establish a session here. Guest/system/
+    // read-only-guest/service principals are early-returned inside the helper.
+    await verifyTokenVersion(ctx, db, token)
   } catch (err: any) {
     Analytics.handleError(err)
     ctx.error('Invalid token', { token })
