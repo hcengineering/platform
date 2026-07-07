@@ -22,6 +22,7 @@
   import IconSearch from './icons/Search.svelte'
   import plugin from '../plugin'
   import { encodeSearch, type SearchScope } from './SearchInputAdvanced.encoder'
+  import { reconcilePropValue } from './SearchInputAdvanced.helpers'
 
   /**
    * `value` is the RAW user input. NEVER write the encoded wire-string
@@ -44,15 +45,23 @@
   let input: HTMLInputElement
   let phTranslate: string = ''
   let _search = value ?? ''
+  let lastPropValue: string | undefined = value
   const dispatch = createEventDispatcher<{ change: { raw: string, encoded: string } }>()
   let timer: any
 
   $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
     phTranslate = res
   })
-  // Only re-sync from the parent prop when it actually changes — never
-  // overwrite `_search` mid-typing (would clobber the cursor + value).
-  $: if (value !== _search && value !== undefined) _search = value
+  // Re-sync ONLY on a genuine parent-prop change. The reactive block reads
+  // `value` + `lastPropValue` but NOT `_search`, so a keystroke (which only
+  // mutates `_search`) can never re-trigger it — see reconcilePropValue /
+  // C1. `lastPropValue` is written here, which re-runs the block once, but
+  // then `value === lastPropValue` makes it a no-op.
+  $: {
+    const r = reconcilePropValue(value, lastPropValue, _search)
+    _search = r.value
+    lastPropValue = r.lastProp
+  }
 
   // Re-emit when the scope prop changes so a Customize-View toggle from
   // e.g. `all` to `title` immediately re-encodes the current input —
