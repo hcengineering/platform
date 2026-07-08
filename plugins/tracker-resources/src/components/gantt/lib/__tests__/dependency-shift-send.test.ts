@@ -3,10 +3,19 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { AccountUuid, Ref, TxOperations } from '@hcengineering/core'
-import type { Issue } from '@hcengineering/tracker'
+import type { Ref, TxOperations } from '@hcengineering/core'
+import tracker, { type Issue } from '@hcengineering/tracker'
 import { sendDependencyShiftedNotifications, type DependencyShiftSendArgs } from '../dependency-shift-send'
 import type { CascadeShift, PrimaryEdit } from '../types'
+
+// NOTE (H2 refactor): the client no longer resolves collaborators / recipient
+// PersonSpaces and no longer writes notifications directly. It now emits a
+// single `DependencyShiftRequest` doc into the trigger-issue's project space;
+// the server trigger `OnDependencyShiftRequest` does the privileged recipient
+// resolution + notification writes. Recipient-resolution behaviour is therefore
+// covered by `server-plugins/tracker-resources` `dependency-shift-trigger.test.ts`,
+// not here. These tests assert only the client contract: build payloads → one
+// createDoc → return 1, and fail-soft error handling.
 
 function issue (id: string, identifier: string, title: string, start: number | null, due: number | null): Issue {
   return {
@@ -28,192 +37,72 @@ function issue (id: string, identifier: string, title: string, start: number | n
 
 const TRIGGER_ISSUE = issue('A', 'PROJ-1', 'Alpha', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
 const SHIFT_ISSUE = issue('B', 'PROJ-2', 'Beta', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
-const TRIGGER_USER = 'acc-trigger' as AccountUuid
 
-/**
- * Build a `TxOperations` stub good enough for the send pipeline. Each
- * find/create method records its calls and returns the value the test set
- * via `findAllResults[<className>]`. Unmatched classes fall back to an
- * empty array (so empty collaborator / empty PersonSpace branches trigger).
- */
-interface ClientStub {
-  client: TxOperations
-  calls: Array<{ method: string, args: unknown[] }>
-  findAllResults: Record<string, unknown[]>
-  findOneResult: unknown
+const SHIFT: CascadeShift = {
+  issue: SHIFT_ISSUE,
+  oldStart: 0,
+  oldDue: 1,
+  newStart: 2,
+  newDue: 3,
+  reason: 'push-successor',
+  triggeredBy: TRIGGER_ISSUE._id
 }
 
-function makeClientStub (overrides?: Partial<Pick<ClientStub, 'findAllResults' | 'findOneResult'>>): ClientStub {
-  const calls: Array<{ method: string, args: unknown[] }> = []
-  const findAllResults: Record<string, unknown[]> = overrides?.findAllResults ?? {}
-  const findOneResult: unknown = overrides?.findOneResult
-  const client = {
-    findAll: jest.fn(async (clazz: { toString: () => string } | string, ..._rest: unknown[]) => {
-      const key = typeof clazz === 'string' ? clazz : String(clazz)
-      calls.push({ method: 'findAll', args: [key] })
-      return findAllResults[key] ?? []
-    }),
-    findOne: jest.fn(async (..._args: unknown[]) => {
-      calls.push({ method: 'findOne', args: [..._args] })
-      return findOneResult
-    }),
-    createDoc: jest.fn(async (..._args: unknown[]) => {
-      calls.push({ method: 'createDoc', args: [..._args] })
-      return 'newId' as any
-    }),
-    updateDoc: jest.fn(async (..._args: unknown[]) => {
-      calls.push({ method: 'updateDoc', args: [..._args] })
-      return 'ok' as any
-    })
-  } as unknown as TxOperations
-  return { client, calls, findAllResults, findOneResult }
+function makeClient (createImpl?: () => Promise<unknown>): { client: TxOperations, createDoc: jest.Mock } {
+  const createDoc = jest.fn(createImpl ?? (async () => 'newId' as any))
+  return { client: { createDoc } as unknown as TxOperations, createDoc }
 }
 
 function args (primaries: PrimaryEdit[] = [], shifts: CascadeShift[] = []): DependencyShiftSendArgs {
   return {
     triggerIssue: TRIGGER_ISSUE,
-    triggerUser: TRIGGER_USER,
+    triggerUser: 'acc-trigger' as any,
     primaries,
     shifts,
     cascadeToken: 'gantt-cascade:42-1'
   }
 }
 
-describe('sendDependencyShiftedNotifications — early returns', () => {
-  it('returns 0 when no primaries and no shifts are supplied', async () => {
-    const stub = makeClientStub()
-    const created = await sendDependencyShiftedNotifications(stub.client, args([], []))
+describe('sendDependencyShiftedNotifications — client emits request doc', () => {
+  it('returns 0 and creates nothing when no primaries and no shifts are supplied', async () => {
+    const { client, createDoc } = makeClient()
+    const created = await sendDependencyShiftedNotifications(client, args([], []))
     expect(created).toBe(0)
-    // No collaborator lookup should have happened.
-    expect(stub.calls.find((c) => c.method === 'findAll')).toBeUndefined()
+    expect(createDoc).not.toHaveBeenCalled()
   })
 
-  it('returns 0 when buildRecipientBundles finds no non-trigger recipients', async () => {
-    // Trigger-user is the only collaborator on the shift -> bundle is empty.
-    const stub = makeClientStub({
-      findAllResults: {
-        // Collaborator lookup: only the trigger user is attached.
-        'tracker:class:Collaborator': [],
-        // Force assignee fallback to map B to the trigger-user.
-        'contact:mixin:Employee': []
-      }
-    })
-    const created = await sendDependencyShiftedNotifications(
-      stub.client,
-      args(
-        [],
-        [
-          {
-            issue: SHIFT_ISSUE,
-            oldStart: 0,
-            oldDue: 1,
-            newStart: 2,
-            newDue: 3,
-            reason: 'push-successor',
-            triggeredBy: TRIGGER_ISSUE._id
-          }
-        ]
-      )
-    )
-    expect(created).toBe(0)
-    // createDoc must not have been called for a notification.
-    expect((stub.client.createDoc as jest.Mock).mock.calls.length).toBe(0)
+  it('writes one DependencyShiftRequest into the trigger-issue space and returns 1', async () => {
+    const { client, createDoc } = makeClient()
+    const created = await sendDependencyShiftedNotifications(client, args([], [SHIFT]))
+    expect(created).toBe(1)
+    expect(createDoc).toHaveBeenCalledTimes(1)
+    const [clazz, space, payload] = (createDoc.mock.calls[0] ?? []) as [unknown, unknown, any]
+    expect(clazz).toBe(tracker.class.DependencyShiftRequest)
+    // Written into the *trigger issue's own* space — never a foreign PersonSpace.
+    expect(space).toBe(TRIGGER_ISSUE.space)
+    expect(payload.triggerIssueId).toBe(TRIGGER_ISSUE._id)
+    expect(payload.cascadeToken).toBe('gantt-cascade:42-1')
+    expect(Array.isArray(payload.shiftedIssues)).toBe(true)
+    expect(payload.shiftedIssues.length).toBe(1)
   })
 })
 
 describe('sendDependencyShiftedNotifications — error handling', () => {
-  it('returns 0 and forwards thrown errors to onError without throwing', async () => {
+  it('returns 0 and forwards thrown createDoc errors to onError without throwing', async () => {
     const boom = new Error('db down')
-    const client = {
-      findAll: jest.fn(async () => {
-        throw boom
-      })
-    } as unknown as TxOperations
+    const { client } = makeClient(async () => {
+      throw boom
+    })
     const errors: unknown[] = []
-    const created = await sendDependencyShiftedNotifications(
-      client,
-      args(
-        [],
-        [
-          {
-            issue: SHIFT_ISSUE,
-            oldStart: 0,
-            oldDue: 1,
-            newStart: 2,
-            newDue: 3,
-            reason: 'push-successor',
-            triggeredBy: TRIGGER_ISSUE._id
-          }
-        ]
-      ),
-      (e) => errors.push(e)
-    )
+    const created = await sendDependencyShiftedNotifications(client, args([], [SHIFT]), (e) => errors.push(e))
     expect(created).toBe(0)
     expect(errors).toEqual([boom])
   })
 
-  it('swallows errors silently when no onError hook is provided', async () => {
-    const client = {
-      findAll: jest.fn(async () => {
-        throw new Error('db down')
-      })
-    } as unknown as TxOperations
-    await expect(
-      sendDependencyShiftedNotifications(
-        client,
-        args(
-          [],
-          [
-            {
-              issue: SHIFT_ISSUE,
-              oldStart: 0,
-              oldDue: 1,
-              newStart: 2,
-              newDue: 3,
-              reason: 'push-successor',
-              triggeredBy: TRIGGER_ISSUE._id
-            }
-          ]
-        )
-      )
-    ).resolves.toBe(0)
-  })
-})
-
-describe('sendDependencyShiftedNotifications — recipient resolution', () => {
-  it('drops recipients whose PersonSpace cannot be resolved', async () => {
-    // A non-trigger collaborator exists, but their Employee/PersonSpace lookup
-    // returns nothing -> recipient is dropped, created should be 0.
-    const otherUser = 'acc-other' as AccountUuid
-    const collab = {
-      _id: 'col-1',
-      attachedTo: SHIFT_ISSUE._id,
-      collaborator: otherUser
-    }
-    const stub = makeClientStub({
-      findAllResults: {
-        'tracker:class:Collaborator': [collab],
-        // No matching Employee for that AccountUuid -> empty PersonSpace map.
-        'contact:mixin:Employee': []
-      }
+  it('swallows createDoc errors silently when no onError hook is provided', async () => {
+    const { client } = makeClient(async () => {
+      throw new Error('db down')
     })
-    const created = await sendDependencyShiftedNotifications(
-      stub.client,
-      args(
-        [],
-        [
-          {
-            issue: SHIFT_ISSUE,
-            oldStart: 0,
-            oldDue: 1,
-            newStart: 2,
-            newDue: 3,
-            reason: 'push-successor',
-            triggeredBy: TRIGGER_ISSUE._id
-          }
-        ]
-      )
-    )
-    expect(created).toBe(0)
+    await expect(sendDependencyShiftedNotifications(client, args([], [SHIFT]))).resolves.toBe(0)
   })
 })
