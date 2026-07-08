@@ -142,10 +142,6 @@ export function computeCriticalPath (
   workingDays?: WorkingDaysConfig
 ): CriticalPathResult {
   const cfg = workingDays
-  // Graceful degrade on cycle (reuse PR4b's DFS helper).
-  if (detectCycle(relations) !== null) {
-    return { ...EMPTY_RESULT, cycle: true }
-  }
 
   const scheduled: ScheduledIssue[] = issues.filter(isScheduled)
   if (scheduled.length === 0) return EMPTY_RESULT
@@ -159,6 +155,13 @@ export function computeCriticalPath (
   // Filter relations to only those whose both endpoints are scheduled.
   const scheduledSet = new Set<Ref<Issue>>(scheduled.map((i) => i._id))
   const activeRels = relations.filter((r) => scheduledSet.has(r.attachedTo) && scheduledSet.has(r.target))
+
+  // Graceful degrade on cycle (reuse PR4b's DFS helper). Only cycles among the
+  // *scheduled* relations (activeRels) matter for the CP computation — a cycle
+  // that lives entirely among unscheduled issues must not disable the panel.
+  if (detectCycle(activeRels) !== null) {
+    return { ...EMPTY_RESULT, cycle: true }
+  }
 
   // ES/EF maps initialised from stored dates.
   const es = new Map<Ref<Issue>, number>()

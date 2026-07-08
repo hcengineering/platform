@@ -55,6 +55,20 @@ describe('computeCriticalPath — graceful degrade', () => {
     expect(res.slack.size).toBe(0)
   })
 
+  it('cycle among unscheduled issues does not disable the critical path (L-G3)', () => {
+    // A→B is a valid scheduled chain; C↔D is a cycle but both are unscheduled
+    // (null dates), so its relations are filtered out of activeRels. The cycle
+    // check must run on the scheduled sub-graph only and NOT degrade here.
+    const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
+    const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
+    const C = issue('C') // unscheduled
+    const D = issue('D') // unscheduled
+    const relations = [rel('A', 'B'), rel('C', 'D'), rel('D', 'C')]
+    const res = computeCriticalPath([A, B, C, D], relations)
+    expect(res.cycle).toBe(false)
+    expect(res.critical.has('B' as Ref<Issue>)).toBe(true)
+  })
+
   it('two unrelated issues, no relations — only the latest is critical', () => {
     // Standard single-project CPM: project finish
     // = max(EF) across all sinks. Issue A (ends May 5) has 5d slack
