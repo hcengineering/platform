@@ -171,8 +171,9 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
    *
    * For such classes, a guest-tier account that obtained read visibility ONLY
    * through Collaborator status (i.e. is NOT in the doc's space.members) must
-   * not be able to modify the doc's fields via TxUpdateDoc. Comments via
-   * chunter.class.ChatMessage createAccessLevel still pass through.
+   * not be able to modify the doc's fields via TxUpdateDoc NOR delete it via
+   * TxRemoveDoc (L-RM). Comments via chunter.class.ChatMessage createAccessLevel
+   * still pass through.
    *
    * Space-member guests retain their current behavior — they pass through
    * this check untouched and their normal access rules continue to apply.
@@ -185,7 +186,8 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
     cudTx: TxCUD<Doc>,
     account: Account
   ): Promise<boolean> {
-    if (cudTx._class !== core.class.TxUpdateDoc) return false
+    // L-RM: veto covers both field-updates AND removes by collab-only guests.
+    if (cudTx._class !== core.class.TxUpdateDoc && cudTx._class !== core.class.TxRemoveDoc) return false
 
     const isGuest =
       account.role === AccountRole.Guest ||
