@@ -944,7 +944,12 @@
   $: componentQuery.query(tracker.class.Component, componentDocQuery, (res: Component[]) => {
     components = res
   })
-  $: personQuery.query(contact.class.Person, {}, (res: Person[]) => {
+  // M-G8: persons feed ONLY the assignee label map (see labelMap below), so
+  // scope the query to the assignee refs actually present on loaded issues
+  // instead of pulling every Person in the workspace. Empty `$in` matches no
+  // docs (correct: no assignees → no person labels needed).
+  $: assigneeIds = Array.from(new Set(issues.map((i) => i.assignee).filter((a): a is Ref<Person> => a != null)))
+  $: personQuery.query(contact.class.Person, { _id: { $in: assigneeIds } }, (res: Person[]) => {
     persons = res
   })
   $: tagElementQuery.query(tags.class.TagElement, { targetClass: tracker.class.Issue }, (res: TagElement[]) => {
