@@ -328,7 +328,13 @@ export default mergeIds(trackerId, tracker, {
     AccessGrantWarningRead: '' as IntlString,
     AccessGrantWarningWrite: '' as IntlString,
     AccessGrantWarningAdmin: '' as IntlString,
-    GrantAccessConfirm: '' as IntlString
+    GrantAccessConfirm: '' as IntlString,
+    AddGroupAccess: '' as IntlString,
+    GroupMembersCount: '' as IntlString,
+    GroupAccessAutoHint: '' as IntlString,
+    SelectAccessGroup: '' as IntlString,
+    NoAccessGroups: '' as IntlString,
+    RevokeGroupAccess: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

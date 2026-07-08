@@ -314,7 +314,13 @@
     "AccessGrantWarningRead": "{name} erhält Lese- und Kommentarzugriff auf \"{issue}\", obwohl die Person kein Projekt-Mitglied ist.",
     "AccessGrantWarningWrite": "{name} erhält Lese-, Kommentar- und Bearbeitungszugriff auf \"{issue}\", obwohl die Person kein Projekt-Mitglied ist.",
     "AccessGrantWarningAdmin": "{name} erhält Lese-, Kommentar- und Bearbeitungszugriff auf \"{issue}\" und darf den Zugriff dieses Issues verwalten, obwohl die Person kein Projekt-Mitglied ist.",
-    "GrantAccessConfirm": "Zugriff gewähren"
+    "GrantAccessConfirm": "Zugriff gewähren",
+    "AddGroupAccess": "Gruppe hinzufügen",
+    "GroupMembersCount": "{count, plural, =1 {1 Person} other {# Personen}}",
+    "GroupAccessAutoHint": "Zukünftige Gruppen-Mitglieder erhalten automatisch Zugriff (Level: {level}).",
+    "SelectAccessGroup": "Gruppe auswählen",
+    "NoAccessGroups": "Es existieren noch keine Zugriffsgruppen.",
+    "RevokeGroupAccess": "Gruppen-Zugriff entfernen"
   },
   "status": {}
 }

@@ -314,7 +314,13 @@
     "AccessGrantWarningRead": "{name} will get read and comment access to \"{issue}\", although they are not a member of this project.",
     "AccessGrantWarningWrite": "{name} will get read, comment and edit access to \"{issue}\", although they are not a member of this project.",
     "AccessGrantWarningAdmin": "{name} will get read, comment and edit access to \"{issue}\" and may manage this issue's access, although they are not a member of this project.",
-    "GrantAccessConfirm": "Grant access"
+    "GrantAccessConfirm": "Grant access",
+    "AddGroupAccess": "Add group",
+    "GroupMembersCount": "{count, plural, =1 {1 person} other {# people}}",
+    "GroupAccessAutoHint": "Future group members automatically receive access (level: {level}).",
+    "SelectAccessGroup": "Select a group",
+    "NoAccessGroups": "No access groups exist yet.",
+    "RevokeGroupAccess": "Remove group access"
   },
   "status": {}
 }

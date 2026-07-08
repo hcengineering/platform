@@ -25,9 +25,11 @@
     getCurrentAccount,
     hasAccountRole,
     hasAtLeast,
+    type AccessGroup,
     type AccessLevel,
     type AccountUuid,
     type Collaborator,
+    type GroupGrant,
     type Ref,
     type Space
   } from '@hcengineering/core'
@@ -48,6 +50,7 @@
 
   import tracker from '../../../plugin'
   import IssueAccessGrantConfirm from './IssueAccessGrantConfirm.svelte'
+  import SelectAccessGroupPopup from './SelectAccessGroupPopup.svelte'
 
   export let issue: Issue
   export let readonly: boolean = false
@@ -74,6 +77,25 @@
     space = res[0]
   })
 
+  let groupGrants: GroupGrant[] = []
+  const groupGrantQuery = createQuery()
+  $: groupGrantQuery.query(core.class.GroupGrant, { attachedTo: issue._id }, (res) => {
+    groupGrants = res
+  })
+
+  let groupsById = new Map<Ref<AccessGroup>, AccessGroup>()
+  const groupsQuery = createQuery()
+  $: groupsQuery.query(core.class.AccessGroup, {}, (res) => {
+    groupsById = new Map(res.map((g) => [g._id, g]))
+  })
+
+  let expandedGroups = new Set<Ref<GroupGrant>>()
+  function toggleGroup (id: Ref<GroupGrant>): void {
+    if (expandedGroups.has(id)) expandedGroups.delete(id)
+    else expandedGroups.add(id)
+    expandedGroups = expandedGroups
+  }
+
   // Non-structural (explicitly granted) records; structural ones (grantedVia == null)
   // stem from createdBy/assignee and are shown in the read-only members section.
   $: grants = collaborators.filter((c) => c.grantedVia != null)
@@ -85,6 +107,9 @@
   $: hasAdminGrant = collaborators.some((c) => c.collaborator === me.uuid && hasAtLeast(c.level, 'admin'))
   // Client-side courtesy gate; the server enforces authority via CollaboratorGuardMiddleware.
   $: canGrant = !readonly && (isSpaceMemberUser || isSpaceOwner || isMaintainerPlus || hasAdminGrant)
+  // Group grants are stronger than manual grants (future members inherit access),
+  // so they need owner / maintainer+ / admin-grantee authority (no ≥User path) — G3.
+  $: canGrantGroup = !readonly && (isSpaceOwner || isMaintainerPlus || hasAdminGrant)
 
   function canRevoke (record: Collaborator): boolean {
     if (readonly) return false
@@ -207,6 +232,55 @@
     })
   }
 
+  // GroupGrant.level IS mutable (guard allows a level-only update); the reconcile
+  // trigger propagates the new level onto the derived group-collaborators.
+  async function changeGroupLevel (grant: GroupGrant, newLevel: AccessLevel): Promise<void> {
+    if (newLevel === (grant.level ?? 'read')) return
+    try {
+      await client.update(grant, { level: newLevel })
+    } catch (err: any) {
+      void setPlatformStatus(unknownError(err))
+    }
+  }
+
+  async function revokeGroup (grant: GroupGrant): Promise<void> {
+    try {
+      await client.remove(grant)
+    } catch (err: any) {
+      void setPlatformStatus(unknownError(err))
+    }
+  }
+
+  function addGroup (): void {
+    const alreadyGranted = new Set(groupGrants.map((g) => g.group))
+    showPopup(SelectAccessGroupPopup, { skip: [...alreadyGranted] }, undefined, (group?: AccessGroup) => {
+      if (group == null) return
+      showPopup(
+        IssueAccessGrantConfirm,
+        {
+          personName: group.name,
+          issueTitle: issue.title,
+          initialLevel: 'read' as AccessLevel,
+          memberCount: group.members?.length ?? 0,
+          isGroup: true
+        },
+        undefined,
+        async (level?: AccessLevel) => {
+          if (level == null) return
+          try {
+            await client.addCollection(core.class.GroupGrant, issue.space, issue._id, issue._class, 'groupGrants', {
+              group: group._id,
+              grantedBy: me.uuid,
+              level
+            })
+          } catch (err: any) {
+            void setPlatformStatus(unknownError(err))
+          }
+        }
+      )
+    })
+  }
+
   let membersExpanded = false
 </script>
 
@@ -291,15 +365,89 @@
       </div>
     {/each}
 
-    {#if canGrant}
+    {#each groupGrants as grant (grant._id)}
+      {@const group = groupsById.get(grant.group)}
+      <div class="grant-row">
+        <div class="grant-person">
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div class="group-head clickable" on:click={() => toggleGroup(grant._id)}>
+            <span class="overflow-label group-name">{group?.name ?? grant.group}</span>
+            <span class="count">
+              <Label label={tracker.string.GroupMembersCount} params={{ count: group?.members?.length ?? 0 }} />
+            </span>
+          </div>
+          <div class="provenance">
+            <Label label={tracker.string.GrantedViaGroup} />
+            {#if granterName(grant.grantedBy) !== undefined}
+              <span class="ml-1"
+                ><Label label={tracker.string.GrantedByOn} params={{ name: granterName(grant.grantedBy) }} /></span
+              >
+            {/if}
+          </div>
+        </div>
+
+        <div class="grant-level">
+          {#if canGrantGroup}
+            <DropdownLabelsIntl
+              items={levelItems}
+              selected={grant.level ?? 'read'}
+              label={tracker.string.AccessLevelLabel}
+              kind={'ghost'}
+              size={'small'}
+              on:selected={(e) => changeGroupLevel(grant, e.detail)}
+            />
+          {:else}
+            <span class="level-badge"><Label label={levelLabel(grant.level)} /></span>
+          {/if}
+        </div>
+
+        {#if canGrantGroup}
+          <ButtonIcon
+            icon={IconClose}
+            size={'extra-small'}
+            kind={'tertiary'}
+            tooltip={{ label: tracker.string.RevokeGroupAccess }}
+            on:click={() => revokeGroup(grant)}
+          />
+        {/if}
+      </div>
+      {#if group !== undefined}
+        <ExpandCollapse isExpanded={expandedGroups.has(grant._id)}>
+          <div class="group-members">
+            {#each group.members ?? [] as account (account)}
+              {@const emp = $employeeByAccountStore.get(account)}
+              {#if emp !== undefined}
+                <div class="grant-row indented">
+                  <UserInfo value={emp} size={'x-small'} />
+                </div>
+              {/if}
+            {/each}
+          </div>
+        </ExpandCollapse>
+      {/if}
+    {/each}
+
+    {#if canGrant || canGrantGroup}
       <div class="actions">
-        <Button
-          icon={IconAdd}
-          kind={'ghost'}
-          size={'small'}
-          label={tracker.string.AddPersonAccess}
-          on:click={addPerson}
-        />
+        {#if canGrant}
+          <Button
+            icon={IconAdd}
+            kind={'ghost'}
+            size={'small'}
+            label={tracker.string.AddPersonAccess}
+            on:click={addPerson}
+          />
+        {/if}
+        {#if canGrantGroup}
+          <Button
+            icon={IconAdd}
+            kind={'ghost'}
+            size={'small'}
+            label={tracker.string.AddGroupAccess}
+            on:click={addGroup}
+          />
+        {/if}
       </div>
     {/if}
   </div>
@@ -368,6 +516,33 @@
     color: var(--theme-dark-color);
   }
   .actions {
+    display: flex;
+    gap: 0.5rem;
     margin-top: 0.25rem;
+  }
+  .group-head {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+
+    &.clickable {
+      cursor: pointer;
+    }
+    .count {
+      font-size: 0.75rem;
+      color: var(--theme-dark-color);
+    }
+  }
+  .group-name {
+    color: var(--theme-content-color);
+  }
+  .group-members {
+    padding-left: 0.5rem;
+    border-left: 1px solid var(--theme-divider-color);
+    margin-left: 0.25rem;
+  }
+  .grant-row.indented {
+    min-height: 1.75rem;
   }
 </style>

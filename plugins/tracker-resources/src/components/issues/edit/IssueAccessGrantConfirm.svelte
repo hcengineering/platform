@@ -15,17 +15,27 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import type { AccessLevel } from '@hcengineering/core'
-  import { Button, DropdownLabelsIntl, Label } from '@hcengineering/ui'
+  import { Button, DropdownLabelsIntl, Label, themeStore } from '@hcengineering/ui'
   import type { DropdownIntlItem } from '@hcengineering/ui'
+  import { translate, type IntlString } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import tracker from '../../../plugin'
 
-  // Name(s) of the grantee(s) — joined by the caller when multiple.
+  // Name(s) of the grantee(s) — joined by the caller when multiple. For a group
+  // grant this is the group name and `isGroup` is set (adds the auto-access hint).
   export let personName: string
   export let issueTitle: string
   export let initialLevel: AccessLevel = 'read'
+  export let isGroup: boolean = false
+  export let memberCount: number = 0
 
   let level: AccessLevel = initialLevel
+
+  const levelName: Record<AccessLevel, IntlString> = {
+    read: tracker.string.LevelRead,
+    write: tracker.string.LevelWrite,
+    admin: tracker.string.LevelAdmin
+  }
 
   const dispatch = createEventDispatcher()
 
@@ -41,6 +51,11 @@
       : level === 'write'
         ? tracker.string.AccessGrantWarningWrite
         : tracker.string.AccessGrantWarningRead
+
+  let levelText = ''
+  $: void translate(levelName[level], {}, $themeStore.language).then((t) => {
+    levelText = t
+  })
 
   function onCancel (): void {
     dispatch('close', undefined) // undefined => caller treats as cancel
@@ -72,6 +87,13 @@
     <Label label={warningLabel} params={{ name: personName, issue: issueTitle }} />
   </div>
 
+  {#if isGroup}
+    <div class="mb-4 group-hint">
+      <div><Label label={tracker.string.GroupMembersCount} params={{ count: memberCount }} /></div>
+      <div><Label label={tracker.string.GroupAccessAutoHint} params={{ level: levelText }} /></div>
+    </div>
+  {/if}
+
   <div class="flex-row-reverse mt-4">
     <Button label={tracker.string.GrantAccessConfirm} kind="primary" on:click={onConfirm} />
     <div class="mr-2">
@@ -87,5 +109,9 @@
     padding: 1rem;
     min-width: 20rem;
     max-width: 30rem;
+  }
+  .group-hint {
+    font-size: 0.8125rem;
+    color: var(--theme-dark-color);
   }
 </style>
