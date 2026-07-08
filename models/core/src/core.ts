@@ -14,6 +14,7 @@
 //
 
 import {
+  type AccessGroup,
   type AccessLevel,
   type AccountUuid,
   type AnyAttribute,
@@ -27,11 +28,13 @@ import {
   type Collaborator,
   type CollaboratorProvenance,
   type Collection,
+  type GroupGrant,
   type Configuration,
   type ConfigurationElement,
   type CustomSequence,
   type Doc,
   type Domain,
+  DOMAIN_ACCESS_GROUP,
   DOMAIN_BLOB,
   DOMAIN_COLLABORATOR,
   DOMAIN_CONFIGURATION,
@@ -66,12 +69,14 @@ import {
   type VersionableClass
 } from '@hcengineering/core'
 import {
+  ArrOf,
   Hidden,
   Index,
   Mixin as MMixin,
   Model,
   Prop,
   ReadOnly,
+  TypeAccountUuid,
   TypeBoolean,
   TypeFileSize,
   TypeIntlString,
@@ -449,7 +454,30 @@ export class TCollaborator extends TAttachedDoc implements Collaborator {
   grantedVia?: CollaboratorProvenance
   grantedBy?: AccountUuid
   grantedByMessage?: Ref<Doc>
-  grantedByGroup?: Ref<Doc> // P1: typed as Ref<Doc>; P4 sharpens to Ref<GroupGrant>
+  grantedByGroup?: Ref<GroupGrant> // P4: sharpened from Ref<Doc>
+  level?: AccessLevel
+}
+
+@Model(core.class.AccessGroup, core.class.Doc, DOMAIN_ACCESS_GROUP)
+export class TAccessGroup extends TDoc implements AccessGroup {
+  @Prop(TypeString(), core.string.Name)
+  @Index(IndexKind.FullText)
+    name!: string
+
+  @Prop(TypeString(), core.string.Description)
+    description?: string
+
+  @Prop(ArrOf(TypeAccountUuid()), core.string.Members)
+    members!: AccountUuid[]
+
+  @Prop(ArrOf(TypeAccountUuid()), core.string.Owners)
+    owners!: AccountUuid[]
+}
+
+@Model(core.class.GroupGrant, core.class.AttachedDoc, DOMAIN_ACCESS_GROUP)
+export class TGroupGrant extends TAttachedDoc implements GroupGrant {
+  group!: Ref<AccessGroup>
+  grantedBy!: AccountUuid
   level?: AccessLevel
 }
 

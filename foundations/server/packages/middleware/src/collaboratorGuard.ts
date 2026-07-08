@@ -27,6 +27,7 @@ import core, {
   type Collaborator,
   type Doc,
   getClassCollaborators,
+  type GroupGrant,
   hasAccountRole,
   hasAtLeast,
   type MeasureContext,
@@ -37,7 +38,8 @@ import core, {
   type TxApplyIf,
   type TxCreateDoc,
   type TxCUD,
-  TxProcessor
+  TxProcessor,
+  type TxUpdateDoc
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 
@@ -74,6 +76,10 @@ function forbidden (): PlatformError<Record<string, any>> {
  *    space-owners / workspace-maintainer+.
  *  - Any other CUD (TxUpdateDoc / TxMixin) on a secured collaborator is
  *    rejected: grant records are immutable, a level change is Remove + Create.
+ *  - GroupGrant CUD is gated too (P4.1): create/remove/re-level only by
+ *    space-owners / workspace-Maintainer+ / an admin-level grantee of the doc.
+ *    A GroupGrant `level` update is allowed (it is the one mutable field — the
+ *    reconcile trigger propagates it); every other GroupGrant update is rejected.
  *
  * Collaborators of non-secured classes (channels etc.) are untouched.
  *
@@ -109,6 +115,10 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
     }
     if (!TxProcessor.isExtendsCUD(tx._class)) return
     const cud = tx as TxCUD<Doc>
+    if (this.context.hierarchy.isDerived(cud.objectClass, core.class.GroupGrant)) {
+      await this.checkGroupGrantTx(ctx, cud, account)
+      return
+    }
     if (!this.context.hierarchy.isDerived(cud.objectClass, core.class.Collaborator)) return
 
     if (cud._class === core.class.TxCreateDoc) {
@@ -191,6 +201,86 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
     if (record.grantedVia != null && (await this.hasAdminGrant(ctx, record.attachedTo, account))) return
 
     throw forbidden()
+  }
+
+  /**
+   * GroupGrant CUD gate (design 2.4 / P4.1). GroupGrants are strictly stronger
+   * than manual grants (future members inherit access), so authority is NOT
+   * lowered to ≥ User members: only space-owners, workspace-Maintainer+, or an
+   * admin-level grantee of the doc may create/remove/modify one.
+   *
+   * Unlike Collaborator grant records, a GroupGrant's `level` IS mutable — the
+   * reconcile trigger propagates a level change onto the derived collaborators.
+   * A TxUpdateDoc is therefore allowed, but only when it touches nothing but
+   * `level` (with a valid value). Any other field update, or a TxMixin, is
+   * rejected.
+   */
+  private async checkGroupGrantTx (
+    ctx: MeasureContext<SessionData>,
+    cud: TxCUD<Doc>,
+    account: Account
+  ): Promise<void> {
+    if (cud._class === core.class.TxCreateDoc) {
+      const createTx = cud as TxCreateDoc<GroupGrant>
+      const attrs = createTx.attributes as Partial<GroupGrant>
+      if (attrs.level !== undefined && !VALID_LEVELS.has(attrs.level)) throw forbidden()
+      const target = createTx.attachedToClass ?? (createTx.attributes as any)?.attachedToClass
+      // fail-closed: a GroupGrant only has meaning on a secured class.
+      if (!this.isSecuredClass(target)) throw forbidden()
+      const attachedTo = createTx.attachedTo ?? (createTx.attributes as any)?.attachedTo
+      if (!(await this.canGrantGroup(ctx, createTx.objectSpace, attachedTo, account))) throw forbidden()
+      return
+    }
+
+    // Remove / update / mixin: resolve the existing grant.
+    const existing = (
+      await this.findAll<GroupGrant>(
+        ctx,
+        core.class.GroupGrant,
+        { _id: cud.objectId as Ref<GroupGrant> },
+        { limit: 1 }
+      )
+    )[0]
+    // fail-closed: cannot resolve the grant we are asked to mutate → reject.
+    if (existing === undefined) throw forbidden()
+
+    if (cud._class === core.class.TxUpdateDoc) {
+      const upd = cud as TxUpdateDoc<GroupGrant>
+      // Only a pure level change is permitted; any other operation is rejected.
+      const ops = upd.operations as Record<string, any>
+      const keys = Object.keys(ops)
+      if (keys.length !== 1 || keys[0] !== 'level') throw forbidden()
+      if (ops.level !== undefined && !VALID_LEVELS.has(ops.level)) throw forbidden()
+      if (!(await this.canGrantGroup(ctx, existing.space, existing.attachedTo, account))) throw forbidden()
+      return
+    }
+
+    if (cud._class === core.class.TxRemoveDoc) {
+      if (!(await this.canGrantGroup(ctx, existing.space, existing.attachedTo, account))) throw forbidden()
+      return
+    }
+    // TxMixin (or anything else) on a GroupGrant: reject.
+    throw forbidden()
+  }
+
+  /**
+   * Authority to create / remove / re-level a GroupGrant on the doc:
+   *  - workspace Maintainer+, OR
+   *  - space owner, OR
+   *  - caller already holds an admin-level grant on the target doc.
+   * Fail-closed: unresolvable space → not authorized. (No ≥ User member path.)
+   */
+  private async canGrantGroup (
+    ctx: MeasureContext<SessionData>,
+    space: Ref<Space>,
+    attachedTo: Ref<Doc> | undefined,
+    account: Account
+  ): Promise<boolean> {
+    if (hasAccountRole(account, AccountRole.Maintainer)) return true
+    const spaceDoc = await this.loadSpace(ctx, space)
+    if (spaceDoc === undefined) return false
+    if (spaceDoc.owners?.includes(account.uuid) === true) return true
+    return await this.hasAdminGrant(ctx, attachedTo, account)
   }
 
   /**

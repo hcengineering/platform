@@ -469,6 +469,14 @@ export const DOMAIN_RELATION = 'relation' as Domain
 export const DOMAIN_COLLABORATOR = 'collaborator' as Domain
 
 /**
+ * Domain for AccessGroup and GroupGrant documents. Not the collaborator table
+ * (whose notNull columns attachedTo/collaborator do not apply here) — falls
+ * back to the postgres defaultSchema.
+ * @public
+ */
+export const DOMAIN_ACCESS_GROUP = 'access_group' as Domain
+
+/**
  * @public
  */
 export interface TransientConfiguration extends Class<Doc> {
@@ -1047,11 +1055,41 @@ export interface Collaborator extends AttachedDoc {
   grantedVia?: CollaboratorProvenance
   grantedBy?: AccountUuid // actor account that triggered the grant
   grantedByMessage?: Ref<Doc> // only when grantedVia === 'mention'
-  grantedByGroup?: Ref<Doc> // only when grantedVia === 'group'; P4 sharpens to Ref<GroupGrant>
+  // only when grantedVia === 'group'; references the GroupGrant (not the group)
+  // so two grants of the same group on the same doc stay distinguishable.
+  grantedByGroup?: Ref<GroupGrant>
   // Access level of this grant. undefined at structural records === no explicit
   // grant (visibility comes from space membership). At grantedVia records:
   // missing ⇒ interpreted as 'read' (fail-safe minimal).
   level?: AccessLevel
+}
+
+/**
+ * A workspace-wide named group of accounts. Not a Space and not a security
+ * carrier by itself — it only becomes an access-grant once a GroupGrant
+ * references it on a secured doc, at which point a server trigger materializes
+ * one Collaborator per member (design section 2.2 / 2.8, G2 = materialized).
+ * @public
+ */
+export interface AccessGroup extends Doc {
+  name: string
+  description?: string
+  members: AccountUuid[]
+  owners: AccountUuid[] // may edit the group (membership / name)
+}
+
+/**
+ * A group access-grant attached to a secured doc (e.g. an Issue). The reconcile
+ * trigger materializes one `grantedVia: 'group'` Collaborator per group member,
+ * copying `level` onto each derived record. Unlike Collaborator records,
+ * `GroupGrant.level` is mutable (guarded) — the trigger propagates the new
+ * level to the derived collaborators.
+ * @public
+ */
+export interface GroupGrant extends AttachedDoc {
+  group: Ref<AccessGroup>
+  grantedBy: AccountUuid
+  level?: AccessLevel // default 'read'
 }
 
 /**

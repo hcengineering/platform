@@ -34,6 +34,7 @@ import core, {
   type Class,
   type Collaborator,
   type Doc,
+  type GroupGrant,
   type MeasureContext,
   type PersonId,
   type Ref,
@@ -116,8 +117,8 @@ function makeSpace (members: AccountUuid[], owners: AccountUuid[] = []): Space {
   return { _id: ISSUE_SPACE, members, owners } as any
 }
 
-/** findAll that serves an optional space and an optional list of existing collaborators. */
-function serve (opts: { space?: Space, collaborators?: Collaborator[] }): FindAllFn {
+/** findAll that serves an optional space and optional collaborators / group grants. */
+function serve (opts: { space?: Space, collaborators?: Collaborator[], groupGrants?: GroupGrant[] }): FindAllFn {
   return async (_ctx, _class, query) => {
     if (_class === core.class.Space) {
       return opts.space !== undefined && query?._id === opts.space._id ? [opts.space] : []
@@ -127,6 +128,11 @@ function serve (opts: { space?: Space, collaborators?: Collaborator[] }): FindAl
       if (query?._id !== undefined) list = list.filter((c) => c._id === query._id)
       if (query?.attachedTo !== undefined) list = list.filter((c) => c.attachedTo === query.attachedTo)
       if (query?.collaborator !== undefined) list = list.filter((c) => c.collaborator === query.collaborator)
+      return list as any
+    }
+    if (_class === core.class.GroupGrant) {
+      let list = opts.groupGrants ?? []
+      if (query?._id !== undefined) list = list.filter((g) => g._id === query._id)
       return list as any
     }
     return []
@@ -152,6 +158,43 @@ function makeRemoveTx (account: Account, collabId: Ref<Collaborator>): Tx {
 function makeUpdateTx (account: Account, collabId: Ref<Collaborator>): Tx {
   const factory = new TxFactory(account.primarySocialId)
   return factory.createTxUpdateDoc(core.class.Collaborator, ISSUE_SPACE, collabId, { level: 'admin' } as any)
+}
+
+function makeGroupCreateTx (
+  account: Account,
+  attrs: Partial<GroupGrant>,
+  targetClass: Ref<Class<Doc>> = SECURED_CLASS,
+  attachedTo: Ref<Doc> = ISSUE_ID
+): Tx {
+  const factory = new TxFactory(account.primarySocialId)
+  const inner = factory.createTxCreateDoc<GroupGrant>(core.class.GroupGrant, ISSUE_SPACE, attrs as any)
+  return factory.createTxCollectionCUD(targetClass, attachedTo as any, ISSUE_SPACE, 'groupGrants', inner)
+}
+
+function makeGroupRemoveTx (account: Account, grantId: Ref<GroupGrant>): Tx {
+  const factory = new TxFactory(account.primarySocialId)
+  return factory.createTxRemoveDoc(core.class.GroupGrant, ISSUE_SPACE, grantId)
+}
+
+function makeGroupUpdateTx (account: Account, grantId: Ref<GroupGrant>, operations: Record<string, any>): Tx {
+  const factory = new TxFactory(account.primarySocialId)
+  return factory.createTxUpdateDoc(core.class.GroupGrant, ISSUE_SPACE, grantId, operations as any)
+}
+
+function groupGrantRecord (over: Partial<GroupGrant>): GroupGrant {
+  return {
+    _id: (over._id ?? generateId()) as Ref<GroupGrant>,
+    _class: core.class.GroupGrant,
+    space: ISSUE_SPACE,
+    attachedTo: ISSUE_ID,
+    attachedToClass: SECURED_CLASS,
+    collection: 'groupGrants',
+    modifiedOn: Date.now(),
+    modifiedBy: 'test' as PersonId,
+    group: generateId() as any,
+    grantedBy: uuid(),
+    ...over
+  } as any
 }
 
 function collabRecord (over: Partial<Collaborator>): Collaborator {
@@ -275,7 +318,11 @@ describe('CollaboratorGuardMiddleware', () => {
       return {}
     })
     // group-provenance create that a client could never do:
-    const tx = makeCreateTx(sys, { collaborator: uuid(), grantedVia: 'group', grantedByGroup: generateId() })
+    const tx = makeCreateTx(sys, {
+      collaborator: uuid(),
+      grantedVia: 'group',
+      grantedByGroup: generateId() as Ref<GroupGrant>
+    })
     await mw.tx(makeCtx(sys), [tx])
     expect(nextCalled).toBe(true)
   })
@@ -375,5 +422,114 @@ describe('CollaboratorGuardMiddleware', () => {
     })
     await mw.tx(makeCtx(actor), [makeRemoveTx(actor, rec._id)])
     expect(nextCalled).toBe(true)
+  })
+
+  // ─── GroupGrant CUD (P4.1) ─────────────────────────────────────────────────
+  it('allows GroupGrant create by space owner', async () => {
+    const owner = makeAccount(AccountRole.User)
+    let nextCalled = false
+    const mw = makeMw(serve({ space: makeSpace([], [owner.uuid]) }), async () => {
+      nextCalled = true
+      return {}
+    })
+    const tx = makeGroupCreateTx(owner, { group: generateId() as any, grantedBy: owner.uuid, level: 'read' })
+    await mw.tx(makeCtx(owner), [tx])
+    expect(nextCalled).toBe(true)
+  })
+
+  it('rejects GroupGrant create by a non-owner space member (role User, no ≥User path)', async () => {
+    const member = makeAccount(AccountRole.User)
+    const mw = makeMw(serve({ space: makeSpace([member.uuid]) }))
+    const tx = makeGroupCreateTx(member, { group: generateId() as any, grantedBy: member.uuid, level: 'read' })
+    await expect(mw.tx(makeCtx(member), [tx])).rejects.toThrow()
+  })
+
+  it('allows GroupGrant create by an admin-level grantee of the doc', async () => {
+    const actor = makeAccount(AccountRole.User)
+    let nextCalled = false
+    const adminGrant = collabRecord({ collaborator: actor.uuid, grantedVia: 'manual', level: 'admin' })
+    const mw = makeMw(serve({ space: makeSpace([]), collaborators: [adminGrant] }), async () => {
+      nextCalled = true
+      return {}
+    })
+    const tx = makeGroupCreateTx(actor, { group: generateId() as any, grantedBy: actor.uuid, level: 'write' })
+    await mw.tx(makeCtx(actor), [tx])
+    expect(nextCalled).toBe(true)
+  })
+
+  it('rejects GroupGrant create with invalid level', async () => {
+    const owner = makeAccount(AccountRole.User)
+    const mw = makeMw(serve({ space: makeSpace([], [owner.uuid]) }))
+    const tx = makeGroupCreateTx(owner, { group: generateId() as any, grantedBy: owner.uuid, level: 'root' as any })
+    await expect(mw.tx(makeCtx(owner), [tx])).rejects.toThrow()
+  })
+
+  it('allows GroupGrant level-only update (the one mutable field)', async () => {
+    const owner = makeAccount(AccountRole.User)
+    let nextCalled = false
+    const rec = groupGrantRecord({ level: 'read' })
+    const mw = makeMw(serve({ space: makeSpace([], [owner.uuid]), groupGrants: [rec] }), async () => {
+      nextCalled = true
+      return {}
+    })
+    await mw.tx(makeCtx(owner), [makeGroupUpdateTx(owner, rec._id, { level: 'write' })])
+    expect(nextCalled).toBe(true)
+  })
+
+  it('rejects GroupGrant update of a non-level field', async () => {
+    const owner = makeAccount(AccountRole.Maintainer)
+    const rec = groupGrantRecord({ level: 'read' })
+    const mw = makeMw(serve({ space: makeSpace([], [owner.uuid]), groupGrants: [rec] }))
+    await expect(
+      mw.tx(makeCtx(owner), [makeGroupUpdateTx(owner, rec._id, { group: generateId() as any })])
+    ).rejects.toThrow()
+  })
+
+  it('rejects GroupGrant level update to an invalid value', async () => {
+    const owner = makeAccount(AccountRole.Maintainer)
+    const rec = groupGrantRecord({ level: 'read' })
+    const mw = makeMw(serve({ space: makeSpace([], [owner.uuid]), groupGrants: [rec] }))
+    await expect(
+      mw.tx(makeCtx(owner), [makeGroupUpdateTx(owner, rec._id, { level: 'root' })])
+    ).rejects.toThrow()
+  })
+
+  it('allows GroupGrant remove by workspace Maintainer', async () => {
+    const maint = makeAccount(AccountRole.Maintainer)
+    let nextCalled = false
+    const rec = groupGrantRecord({})
+    const mw = makeMw(serve({ space: makeSpace([]), groupGrants: [rec] }), async () => {
+      nextCalled = true
+      return {}
+    })
+    await mw.tx(makeCtx(maint), [makeGroupRemoveTx(maint, rec._id)])
+    expect(nextCalled).toBe(true)
+  })
+
+  it('rejects GroupGrant remove by an unrelated non-privileged user', async () => {
+    const stranger = makeAccount(AccountRole.User)
+    const rec = groupGrantRecord({})
+    const mw = makeMw(serve({ space: makeSpace([stranger.uuid]), groupGrants: [rec] }))
+    await expect(mw.tx(makeCtx(stranger), [makeGroupRemoveTx(stranger, rec._id)])).rejects.toThrow()
+  })
+
+  it('fail-closed: reject GroupGrant remove when the grant cannot be resolved', async () => {
+    const owner = makeAccount(AccountRole.Maintainer)
+    const mw = makeMw(serve({ space: makeSpace([]), groupGrants: [] }))
+    await expect(
+      mw.tx(makeCtx(owner), [makeGroupRemoveTx(owner, generateId() as Ref<GroupGrant>)])
+    ).rejects.toThrow()
+  })
+
+  it('rejects GroupGrant create on a non-secured class (fail-closed)', async () => {
+    const owner = makeAccount(AccountRole.Maintainer)
+    const mw = makeMw(serve({ space: makeSpace([], [owner.uuid]) }))
+    const tx = makeGroupCreateTx(
+      owner,
+      { group: generateId() as any, grantedBy: owner.uuid, level: 'read' },
+      CHANNEL_CLASS,
+      'test:doc:Channel1' as Ref<Doc>
+    )
+    await expect(mw.tx(makeCtx(owner), [tx])).rejects.toThrow()
   })
 })

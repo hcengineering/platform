@@ -27,6 +27,7 @@ import { type Builder } from '@hcengineering/model'
 import { TBenchmarkDoc } from './benchmark'
 import core from './component'
 import {
+  TAccessGroup,
   TArrOf,
   TAssociation,
   TAttachedDoc,
@@ -36,6 +37,7 @@ import {
   TClassCollaborators,
   TCollaborator,
   TCollection,
+  TGroupGrant,
   TConfiguration,
   TConfigurationElement,
   TCustomSequence,
@@ -187,6 +189,8 @@ export function createModel (builder: Builder): void {
     TTransientConfiguration,
     TClassCollaborators,
     TCollaborator,
+    TAccessGroup,
+    TGroupGrant,
     TVersionableClass
   )
 
