@@ -64,7 +64,14 @@
     allProjectRelations = res
   })
 
+  // M-G7: the incoming/outgoing query callbacks both fire resolveOtherIssues()
+  // concurrently; without a guard a slower findAll from an earlier call can
+  // resolve last and clobber the fresher result. Stamp each invocation with a
+  // monotonic generation and drop the response if a newer call has started.
+  let resolveGen = 0
+
   async function resolveOtherIssues (): Promise<void> {
+    const gen = ++resolveGen
     const refs = new Set<Ref<Issue>>()
     for (const r of incoming) refs.add(r.attachedTo)
     for (const r of outgoing) refs.add(r.target)
@@ -73,6 +80,7 @@
       return
     }
     const docs = await client.findAll(tracker.class.Issue, { _id: { $in: Array.from(refs) } })
+    if (gen !== resolveGen) return // a newer resolve started; drop this stale response
     const next = new Map<string, Issue>()
     for (const i of docs) next.set(String(i._id), i)
     otherIssues = next
