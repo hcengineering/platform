@@ -48,6 +48,7 @@ import { serverAttachmentId, createModel as serverAttachmentModel } from '@hceng
 import { serverCalendarId, createModel as serverCalendarModel } from '@hcengineering/model-server-calendar'
 import { serverCardId, createModel as serverCardModel } from '@hcengineering/model-server-card'
 import { serverChunterId, createModel as serverChunterModel } from '@hcengineering/model-server-chunter'
+import { serverAccessGroupId, createModel as serverAccessGroupModel } from '@hcengineering/model-server-access-group'
 import {
   serverCollaborationId,
   createModel as serverCollaborationModel
@@ -541,6 +542,7 @@ export default function buildModel (): Builder {
     [serverContactModel, serverContactId],
     [serveSettingModel, serverSettingId],
     [serverChunterModel, serverChunterId],
+    [serverAccessGroupModel, serverAccessGroupId],
     [serverInventoryModel, serverInventoryId],
     [serverLeadModel, serverLeadId],
     [serverTagsModel, serverTagsId],

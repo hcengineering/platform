@@ -1,4 +1,5 @@
 import { addLocation } from '@hcengineering/platform'
+import { serverAccessGroupId } from '@hcengineering/server-access-group'
 import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
 import { serverCardId } from '@hcengineering/server-card'
@@ -38,6 +39,7 @@ export function registerServerPlugins (): void {
   addLocation(serverNotificationId, () => import('@hcengineering/server-notification-resources'))
   addLocation(serverSettingId, () => import('@hcengineering/server-setting-resources'))
   addLocation(serverChunterId, () => import('@hcengineering/server-chunter-resources'))
+  addLocation(serverAccessGroupId, () => import('@hcengineering/server-access-group-resources'))
   addLocation(serverInventoryId, () => import('@hcengineering/server-inventory-resources'))
   addLocation(serverLeadId, () => import('@hcengineering/server-lead-resources'))
   addLocation(serverRecruitId, () => import('@hcengineering/server-recruit-resources'))

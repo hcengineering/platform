@@ -1341,6 +1341,21 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/server-access-group",
+      "projectFolder": "server-plugins/access-group",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/model-server-access-group",
+      "projectFolder": "models/server-access-group",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/server-access-group-resources",
+      "projectFolder": "server-plugins/access-group-resources",
+      "shouldPublish": false
+    },
+    {
       "packageName": "@hcengineering/server-inventory",
       "projectFolder": "server-plugins/inventory",
       "shouldPublish": false
