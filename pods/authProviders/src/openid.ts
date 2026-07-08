@@ -154,6 +154,11 @@ export function registerOpenid (
 
       if (redirectUrl !== '') {
         ctx.redirect(redirectUrl)
+      } else {
+        // L-AUTH-4: handleProviderAuth signals an unresolvable login with '' (e.g.
+        // no account + signup disabled). Terminate fail-closed with an explicit
+        // 302 to /login instead of leaving a hanging/empty response.
+        ctx.redirect(loginUrl + '?error=oidc_no_account')
       }
 
       await next()
