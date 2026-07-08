@@ -3,6 +3,13 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
+// Convention: every timestamp reaching the Gantt is UTC-midnight-normalized at
+// the data boundary (see `toGanttDay` in `time-scale.ts`, applied in the
+// issue/milestone query callbacks of `GanttView.svelte`). The helpers here
+// therefore assume — and re-assert via `utcMidnight` — that dates are UTC days,
+// never local-midnight, keeping working-day/holiday classification and the
+// scheduler/CPM in the same calendar frame regardless of the viewer's zone.
+
 import type { WorkingDaysConfig } from '@hcengineering/tracker'
 
 const DAY_MS = 86_400_000

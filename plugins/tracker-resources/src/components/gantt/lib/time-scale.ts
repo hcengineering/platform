@@ -20,6 +20,20 @@ export function snapToUtcMidnight (t: number): number {
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
 }
 
+/**
+ * Canonical boundary normalizer for issue/milestone date fields entering the
+ * Gantt. The Gantt computes exclusively in UTC-midnight (scheduler, CPM,
+ * non-working-day tint, layout, bar rects). Editors elsewhere may persist a
+ * local-midnight timestamp; feeding that raw value in causes off-by-one tint
+ * days and a visible bar-jump on the first drag (drag-commit snaps, read did
+ * not). Snapping every date at the data boundary makes read and write agree.
+ *
+ * `null`/`undefined` (unscheduled / no deadline) map to `null`.
+ */
+export function toGanttDay (t: number | null | undefined): number | null {
+  return t == null ? null : snapToUtcMidnight(t)
+}
+
 export interface TimeScale {
   /** Pixel width of one calendar day at the current zoom. */
   pxPerDay: number

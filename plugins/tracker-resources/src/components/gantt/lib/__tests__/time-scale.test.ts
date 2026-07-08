@@ -3,9 +3,33 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import { createTimeScale, snapToUtcMidnight } from '../time-scale'
+import { createTimeScale, snapToUtcMidnight, toGanttDay } from '../time-scale'
 
 const DAY_MS = 86_400_000
+
+describe('toGanttDay', () => {
+  it('maps null and undefined to null', () => {
+    expect(toGanttDay(null)).toBeNull()
+    expect(toGanttDay(undefined)).toBeNull()
+  })
+
+  it('snaps a mid-day timestamp to its UTC midnight', () => {
+    const t = Date.UTC(2026, 4, 15, 17, 30, 45)
+    expect(toGanttDay(t)).toBe(Date.UTC(2026, 4, 15))
+  })
+
+  it('collapses any time-of-day on the same UTC calendar day to one value (no drag-jump)', () => {
+    const morning = Date.UTC(2026, 4, 15, 1, 0, 0)
+    const evening = Date.UTC(2026, 4, 15, 23, 59, 0)
+    expect(toGanttDay(morning)).toBe(toGanttDay(evening))
+    expect(toGanttDay(morning)).toBe(Date.UTC(2026, 4, 15))
+  })
+
+  it('is idempotent (already-snapped value is unchanged)', () => {
+    const snapped = Date.UTC(2026, 0, 1)
+    expect(toGanttDay(snapped)).toBe(snapped)
+  })
+})
 
 describe('snapToUtcMidnight', () => {
   it('returns 0 unchanged', () => {
