@@ -55,9 +55,13 @@ const S1 = 'test:space:S1' as Ref<Space> // guest IS a member
 const S2 = 'test:space:S2' as Ref<Space> // guest is NOT a member (collab-only)
 
 function makeGuest (): Account {
+  return makeAccount(AccountRole.Guest)
+}
+
+function makeAccount (role: AccountRole): Account {
   return {
     uuid: generateId() as any,
-    role: AccountRole.Guest,
+    role,
     primarySocialId: 'test' as PersonId,
     socialIds: ['test' as PersonId],
     fullSocialIds: []
@@ -231,6 +235,70 @@ describe('SpaceSecurityMiddleware - collab-read backend guard (H5)', () => {
     it('Postgres backend: drops the _id space filter', async () => {
       const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, derivedFromSpace: true })
       const account = makeGuest()
+      ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
+
+      await mw.findAll(makeCtx(account), SPACE_CLASS, {})
+
+      expect(captured.query._id).toBeUndefined()
+    })
+  })
+
+  // ─── P2.2: collab-read bypass fires for ALL non-admin roles (per-doc grants) ──
+  // Before P2 the bypass only fired for Guest/ReadOnlyGuest, so a grant to a
+  // regular User was invisible (space filter blocked the granted doc). The role
+  // condition is widened to `role !== Admin && role !== DocGuest`, but stays
+  // gated behind the backend-support (H5-A) check so Mongo remains fail-closed.
+  describe('P2.2 role-widening of collabReadBypass', () => {
+    it('role User with backend support: drops the space filter (grant becomes effective)', async () => {
+      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true })
+      const account = makeAccount(AccountRole.User)
+      ;(mw as any).allowedSpaces = { [account.uuid]: [S1] } // member of S1 only
+
+      await mw.findAll(makeCtx(account), ISSUE_CLASS, {})
+
+      // Bypass now fires for User → adapter collab-branch widens to granted docs.
+      expect(captured.query.space).toBeUndefined()
+    })
+
+    it('role Maintainer with backend support: drops the space filter', async () => {
+      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true })
+      const account = makeAccount(AccountRole.Maintainer)
+      ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
+
+      await mw.findAll(makeCtx(account), ISSUE_CLASS, {})
+
+      expect(captured.query.space).toBeUndefined()
+    })
+
+    it('role User on Mongo/unknown backend: KEEPS the space filter (no cross-space leak)', async () => {
+      const { mw, captured } = makeMiddleware({ backendSupportsCollab: false, provideSecurity: true })
+      const account = makeAccount(AccountRole.User)
+      ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
+
+      await mw.findAll(makeCtx(account), ISSUE_CLASS, {})
+
+      // No adapter clause → bypass must NOT fire → space filter kept, S2 excluded.
+      expect(captured.query.space).toBeDefined()
+      const admitted = admittedSpaces(captured.query.space)
+      expect(admitted).not.toContain(S2)
+      expect(admitted).toContain(S1)
+    })
+
+    it('role User with backend support but non-collab class: keeps the space filter', async () => {
+      // provideSecurity=false → not an access-secured class → normal space filter.
+      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: false })
+      const account = makeAccount(AccountRole.User)
+      ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
+
+      await mw.findAll(makeCtx(account), ISSUE_CLASS, {})
+
+      expect(captured.query.space).toBeDefined()
+      expect(admittedSpaces(captured.query.space)).not.toContain(S2)
+    })
+
+    it('role User listing Spaces with backend support: drops the _id filter (spaceCollabBypass)', async () => {
+      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, derivedFromSpace: true })
+      const account = makeAccount(AccountRole.User)
       ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
 
       await mw.findAll(makeCtx(account), SPACE_CLASS, {})

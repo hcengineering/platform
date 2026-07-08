@@ -666,10 +666,18 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     // gate all three bypasses behind this single check. Unknown backend => false =>
     // the normal space filter stays in place.
     const collabBackendSupported = domain !== DOMAIN_MODEL && this.isCollabBackendSupported(domain)
+    // P2.2: per-doc collaborator grants must be effective for regular members,
+    // not just guests. The bypass therefore fires for every non-admin role
+    // (Admin already gets full visibility through the normal path; DocGuest stays
+    // excluded — it has its own guest handling). The backend-support gate above
+    // is preserved, so widening the roles never re-opens the Mongo cross-space
+    // leak (H5-A fail-closed): without an adapter collab-branch the bypass simply
+    // does not fire and the normal space filter stays in place.
     const collabReadBypass =
       collabBackendSupported &&
       (collabSec?.provideSecurity === true || collabSec?.provideAttachedSecurity === true) &&
-      [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)
+      account.role !== AccountRole.Admin &&
+      account.role !== AccountRole.DocGuest
     // Self-Collaborator visibility: let the Postgres adapter's self-collab OR-branch
     // (storage.ts, addSecurity) fire for any non-System caller when reading the
     // Collaborator class itself. Required for queries like the tracker "Subscribed"
@@ -680,8 +688,14 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     // space-collab OR-branch surface Spaces that host docs the caller is a
     // Collaborator on. Required so the project/space nav tree can list projects
     // where the user is collab-only (no member status).
+    // P2.2: widened to all non-admin roles (see collabReadBypass) so the space/
+    // project nav tree can surface a private space that a regular member only
+    // reaches through a per-doc collaborator grant. Still backend-gated.
     const spaceCollabBypass =
-      collabBackendSupported && isSpace && [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(account.role)
+      collabBackendSupported &&
+      isSpace &&
+      account.role !== AccountRole.Admin &&
+      account.role !== AccountRole.DocGuest
 
     if (
       !isSystem(account, ctx) &&

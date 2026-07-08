@@ -644,13 +644,19 @@ abstract class PostgresAdapterBase implements DbAdapter {
 
         const collabSec = getClassCollaborators(this.modelDb, this.hierarchy, _class)
         let collabRes = ''
-        if ([AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(acc.role)) {
-          if (collabSec?.provideSecurity === true) {
-            collabRes += ` OR EXISTS (SELECT 1 FROM ${translateDomain(DOMAIN_COLLABORATOR)} collab_sec WHERE collab_sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND collab_sec."attachedTo" = ${domain}._id AND collab_sec.collaborator = '${acc.uuid}')`
-          }
-          if (collabSec?.provideAttachedSecurity === true) {
-            collabRes += ` OR EXISTS (SELECT 1 FROM ${translateDomain(DOMAIN_COLLABORATOR)} collab_sec WHERE collab_sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND collab_sec."attachedTo" = ${domain}."attachedTo" AND collab_sec.collaborator = '${acc.uuid}')`
-          }
+        // P2.2: the collab-grant read branch now applies to EVERY role that reaches
+        // here — Admin and DocGuest (and the system account) already returned above,
+        // so the remaining roles are ReadOnlyGuest/Guest/User/Maintainer/Owner. Widening
+        // from Guest-only makes a per-doc grant to a regular member effective. This is
+        // the primary enforcement of per-doc grants on Postgres: the space-security
+        // middleware drops its space filter for these roles (spaceSecurity.ts
+        // collabReadBypass) and relies on this OR-branch to re-restrict visibility to
+        // member spaces PLUS docs the caller holds a Collaborator record on.
+        if (collabSec?.provideSecurity === true) {
+          collabRes += ` OR EXISTS (SELECT 1 FROM ${translateDomain(DOMAIN_COLLABORATOR)} collab_sec WHERE collab_sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND collab_sec."attachedTo" = ${domain}._id AND collab_sec.collaborator = '${acc.uuid}')`
+        }
+        if (collabSec?.provideAttachedSecurity === true) {
+          collabRes += ` OR EXISTS (SELECT 1 FROM ${translateDomain(DOMAIN_COLLABORATOR)} collab_sec WHERE collab_sec."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND collab_sec."attachedTo" = ${domain}."attachedTo" AND collab_sec.collaborator = '${acc.uuid}')`
         }
         // Self-Collaborator visibility: any non-Admin/non-System caller can always read
         // their own Collaborator records, regardless of space membership. Without this,
@@ -667,7 +673,10 @@ abstract class PostgresAdapterBase implements DbAdapter {
         // mirrors the parent doc's `space`, so existence of any such record naming
         // the caller is sufficient evidence that the Space contains something they
         // can see.
-        if (domain === DOMAIN_SPACE && [AccountRole.Guest, AccountRole.ReadOnlyGuest].includes(acc.role)) {
+        // P2.2: widened from Guest-only to every remaining role (Admin/DocGuest/system
+        // already returned above) so a private space is surfaced in the nav tree when a
+        // regular member only reaches it through a per-doc collaborator grant.
+        if (domain === DOMAIN_SPACE) {
           collabRes += ` OR EXISTS (SELECT 1 FROM ${translateDomain(DOMAIN_COLLABORATOR)} space_collab WHERE space_collab."workspaceId" = ${vars.add(this.workspaceId, '::uuid')} AND space_collab.space = ${domain}._id AND space_collab.collaborator = '${acc.uuid}')`
         }
         return `AND (${res}${collabRes})`
