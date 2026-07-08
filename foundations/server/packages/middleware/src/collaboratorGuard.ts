@@ -183,7 +183,14 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
     if (attrs.level !== undefined && !VALID_LEVELS.has(attrs.level)) throw forbidden()
 
     const attachedTo = createTx.attachedTo ?? (createTx.attributes as any)?.attachedTo
-    const authorized = await this.canGrant(ctx, createTx.objectSpace, attachedTo, account)
+    const attachedToClass = createTx.attachedToClass ?? (createTx.attributes as any)?.attachedToClass
+    // C-01: authorize against the target doc's REAL space, never the client-chosen
+    // objectSpace. The Postgres visibility grant keys on `attachedTo` alone, so a
+    // grant written into a space the caller controls would otherwise confer access
+    // to a doc that lives in a foreign space. resolveTargetSpace is fail-closed.
+    const targetSpace = await this.resolveTargetSpace(ctx, createTx.objectSpace, attachedTo, attachedToClass)
+    if (targetSpace === undefined) throw forbidden()
+    const authorized = await this.canGrant(ctx, targetSpace, attachedTo, account)
     if (!authorized) throw forbidden()
   }
 
@@ -236,7 +243,11 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
       // fail-closed: a GroupGrant only has meaning on a secured class.
       if (!this.isSecuredClass(target)) throw forbidden()
       const attachedTo = createTx.attachedTo ?? (createTx.attributes as any)?.attachedTo
-      if (!(await this.canGrantGroup(ctx, createTx.objectSpace, attachedTo, account))) throw forbidden()
+      // C-01: authorize against the target doc's REAL space, not the client-chosen
+      // objectSpace (same cross-space-laundering vector as manual grants).
+      const targetSpace = await this.resolveTargetSpace(ctx, createTx.objectSpace, attachedTo, target)
+      if (targetSpace === undefined) throw forbidden()
+      if (!(await this.canGrantGroup(ctx, targetSpace, attachedTo, account))) throw forbidden()
       return
     }
 
@@ -378,5 +389,30 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
 
   private async loadSpace (ctx: MeasureContext<SessionData>, space: Ref<Space>): Promise<Space | undefined> {
     return (await this.findAll<Space>(ctx, core.class.Space, { _id: space }, { limit: 1 }))[0]
+  }
+
+  /**
+   * Resolve the target doc's REAL space and enforce that the grant record's own
+   * space (`objectSpace`) mirrors it (C-01). The Postgres visibility grant keys on
+   * `attachedTo` alone (see postgres addSecurity: `collab_sec.attachedTo =
+   * domain._id`), independent of the grant record's own space — so a grant whose
+   * objectSpace does not match the target doc's space would confer cross-space
+   * visibility. Authority must therefore be judged against the returned real space,
+   * never the client-supplied objectSpace.
+   *
+   * Fail-closed → undefined (caller rejects) when: attachedTo/class missing, the
+   * target doc cannot be loaded, or the record's space does not mirror it.
+   */
+  private async resolveTargetSpace (
+    ctx: MeasureContext<SessionData>,
+    recordSpace: Ref<Space>,
+    attachedTo: Ref<Doc> | undefined,
+    attachedToClass: Ref<Class<Doc>> | undefined
+  ): Promise<Ref<Space> | undefined> {
+    if (attachedTo === undefined || attachedToClass === undefined) return undefined
+    const targetDoc = (await this.findAll<Doc>(ctx, attachedToClass, { _id: attachedTo }, { limit: 1 }))[0]
+    if (targetDoc === undefined) return undefined
+    if (recordSpace !== targetDoc.space) return undefined
+    return targetDoc.space
   }
 }

@@ -121,6 +121,9 @@ function makeSpace (members: AccountUuid[], owners: AccountUuid[] = []): Space {
 /** findAll that serves an optional space and optional collaborators / group grants / access groups. */
 function serve (opts: {
   space?: Space
+  /** The attachedTo target doc the guard loads to authorize against its REAL space.
+   *  Defaults to an Issue living in ISSUE_SPACE (mirrors the tx objectSpace). */
+  targetDoc?: Doc
   collaborators?: Collaborator[]
   groupGrants?: GroupGrant[]
   accessGroups?: AccessGroup[]
@@ -128,6 +131,12 @@ function serve (opts: {
   return async (_ctx, _class, query) => {
     if (_class === core.class.Space) {
       return opts.space !== undefined && query?._id === opts.space._id ? [opts.space] : []
+    }
+    if (_class === SECURED_CLASS) {
+      // The target doc the grant attaches to. Default lives in ISSUE_SPACE so the
+      // grant record's objectSpace (ISSUE_SPACE) mirrors it (the non-exploit case).
+      const doc = opts.targetDoc ?? ({ _id: ISSUE_ID, _class: SECURED_CLASS, space: ISSUE_SPACE } as any)
+      return query?._id === doc._id ? [doc as any] : []
     }
     if (_class === core.class.Collaborator) {
       let list = opts.collaborators ?? []
@@ -350,6 +359,37 @@ describe('CollaboratorGuardMiddleware', () => {
     const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'admin' })
     await mw.tx(makeCtx(actor), [tx])
     expect(nextCalled).toBe(true)
+  })
+
+  // ─── C-01: cross-space authority laundering ──────────────────────────────────
+  // The Postgres visibility grant keys on `attachedTo` alone (collab_sec.attachedTo
+  // = domain._id), independent of the grant record's own space. So authority MUST
+  // be judged against the target doc's REAL space, never the client-chosen
+  // objectSpace. A user who owns/joins space A must not be able to grant themselves
+  // access to a doc that lives in a foreign space B by writing the grant into A.
+  it('C-01: rejects manual grant whose objectSpace ≠ the target doc space', async () => {
+    const actor = makeAccount(AccountRole.User)
+    // actor OWNS ISSUE_SPACE (= tx objectSpace) but the target issue lives in a foreign space.
+    const foreignDoc = { _id: ISSUE_ID, _class: SECURED_CLASS, space: 'test:space:Foreign' as Ref<Space> } as any
+    const mw = makeMw(serve({ space: makeSpace([], [actor.uuid]), targetDoc: foreignDoc }))
+    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'admin' })
+    await expect(mw.tx(makeCtx(actor), [tx])).rejects.toThrow()
+  })
+
+  it('C-01: rejects GroupGrant whose objectSpace ≠ the target doc space', async () => {
+    const actor = makeAccount(AccountRole.User)
+    const foreignDoc = { _id: ISSUE_ID, _class: SECURED_CLASS, space: 'test:space:Foreign' as Ref<Space> } as any
+    const mw = makeMw(serve({ space: makeSpace([], [actor.uuid]), targetDoc: foreignDoc }))
+    const tx = makeGroupCreateTx(actor, { group: generateId() as any, grantedBy: actor.uuid, level: 'admin' })
+    await expect(mw.tx(makeCtx(actor), [tx])).rejects.toThrow()
+  })
+
+  it('C-01 fail-closed: rejects manual grant when the target doc cannot be resolved', async () => {
+    const actor = makeAccount(AccountRole.User)
+    // Owner of the space, but the attachedTo doc does not exist → cannot prove its space.
+    const mw = makeMw(serve({ space: makeSpace([], [actor.uuid]), targetDoc: { _id: 'test:doc:Absent' as Ref<Doc>, _class: SECURED_CLASS, space: ISSUE_SPACE } as any }))
+    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'read' })
+    await expect(mw.tx(makeCtx(actor), [tx])).rejects.toThrow()
   })
 
   // ─── system / trigger path ───────────────────────────────────────────────────
