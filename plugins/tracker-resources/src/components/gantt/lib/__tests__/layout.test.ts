@@ -205,6 +205,45 @@ describe('buildLayout — breadcrumb mode', () => {
   })
 })
 
+describe('buildLayout — hard filter (no breadcrumbs)', () => {
+  it('keeps a matching child of a non-matching parent (promoted to root)', () => {
+    const parent = fakeIssue('P', undefined, true)
+    const child = fakeIssue('C', 'P')
+    const rows = buildLayout([parent, child], [], 'none', {
+      rowHeight: ROW_H,
+      matchedIds: new Set(['C'])
+      // includeBreadcrumbs omitted → hard filter
+    })
+    const ids = rows.map((r) => r.id)
+    expect(ids).toContain('issue:C') // matching child must survive
+    expect(ids).not.toContain('issue:P') // non-matching parent hidden in hard filter
+    expect(rows.find((r) => r.id === 'issue:C')?.depth).toBe(0) // promoted to root
+  })
+
+  it('keeps a matching grandchild under non-matching intermediate parents', () => {
+    const gp = fakeIssue('GP', undefined, true)
+    const p = fakeIssue('P', 'GP', true)
+    const g = fakeIssue('G', 'P')
+    const rows = buildLayout([gp, p, g], [], 'none', {
+      rowHeight: ROW_H,
+      matchedIds: new Set(['G'])
+    })
+    expect(rows.map((r) => r.id)).toEqual(['issue:G'])
+    expect(rows[0].depth).toBe(0)
+  })
+
+  it('nests a matching child under a matching parent without double-emitting', () => {
+    const p = fakeIssue('P', undefined, true)
+    const c = fakeIssue('C', 'P')
+    const rows = buildLayout([p, c], [], 'none', {
+      rowHeight: ROW_H,
+      matchedIds: new Set(['P', 'C'])
+    })
+    expect(rows.map((r) => r.id)).toEqual(['issue:P', 'issue:C'])
+    expect(rows.find((r) => r.id === 'issue:C')?.depth).toBe(1)
+  })
+})
+
 describe('buildLayout — within-level sort', () => {
   it('sorts siblings without flattening hierarchy', () => {
     const p1 = fakeIssue('P1', undefined, true)

@@ -30,7 +30,8 @@ export interface BuildLayoutOptions {
    *  — when true together with {@link matchedIds}, non-matching
    * ancestors of matching issues are emitted as breadcrumb rows
    * (`isBreadcrumb: true`) for filter-context. When false / undefined, only
-   * matching issues are emitted (hard filter).
+   * matching issues are emitted (hard filter) — a matching issue whose parent
+   * is filtered out is promoted to a top-level row rather than dropped.
    */
   includeBreadcrumbs?: boolean
   /**
@@ -51,7 +52,8 @@ export interface BuildLayoutOptions {
  *           └── Issue-child (sub-issue)
  *
  * Issues without a milestone are emitted as roots after the milestone groups.
- * Issues whose parent is filtered out are promoted to roots so they don't
+ * Issues whose parent is filtered out (orphaned parent ref, or a non-matching
+ * parent under a hard filter) are promoted to roots so matching issues don't
  * silently disappear from the Gantt.
  */
 export function buildLayout (
@@ -139,6 +141,28 @@ export function buildLayout (
     }
   }
 
+  // 2b) M-G5 — hard-filter promotion. In hard-filter mode (a filter is active
+  // but breadcrumb ancestors are NOT shown) a non-matching parent's `emitIssue`
+  // returns before recursing, which would silently drop its matching
+  // descendants. Re-root every matching issue whose parent is not itself
+  // visible under the filter, so those matches survive as top-level rows.
+  // (In breadcrumb mode every ancestor is a breadcrumb and therefore already
+  // recursed through, so no promotion is needed.)
+  const hardFilterPromotedRoots: Issue[] = []
+  if (hasFilter && !includeBreadcrumbs) {
+    for (const i of issues) {
+      const issueId = i._id as unknown as string
+      if (!(matchedIds?.has(issueId))) continue
+      const parentId = parentOf.get(issueId)
+      if (parentId !== undefined && !isVisibleUnderFilter(parentId)) {
+        hardFilterPromotedRoots.push(i)
+      }
+    }
+    if (withinLevelCompare !== undefined) {
+      hardFilterPromotedRoots.sort(withinLevelCompare)
+    }
+  }
+
   const rows: LayoutRow[] = []
   let y = 0
 
@@ -209,6 +233,12 @@ export function buildLayout (
 
   // 3b) Issues without milestone.
   for (const r of issuesWithoutMilestone) emitIssue(r, 0)
+
+  // 3c) M-G5 — matching issues whose (would-be) visible parent was filtered
+  // out in hard-filter mode. Each is re-rooted at depth 0; its own matching
+  // descendants are reached via the normal recursion inside `emitIssue`, so no
+  // row is emitted twice.
+  for (const r of hardFilterPromotedRoots) emitIssue(r, 0)
 
   return rows
 }
