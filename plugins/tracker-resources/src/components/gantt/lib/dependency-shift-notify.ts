@@ -16,8 +16,14 @@
  */
 
 import type { AccountUuid, Ref } from '@hcengineering/core'
-import type { Issue, ShiftedIssuePayload } from '@hcengineering/tracker'
+import { type Issue, type ShiftedIssuePayload, groupShiftsByRecipient } from '@hcengineering/tracker'
 import type { CascadeShift, PrimaryEdit } from './types'
+
+// Re-export the pure recipient-grouping helper. The single source of truth now
+// lives in `@hcengineering/tracker` so the server-side dispatch trigger
+// (`OnDependencyShiftRequest`) and this client module share identical logic
+// without divergence. Existing call sites / tests keep importing it from here.
+export { groupShiftsByRecipient }
 
 /**
  * Build a `ShiftedIssuePayload` entry from a primary edit. The trigger issue
@@ -76,41 +82,6 @@ export function buildPayloadFromShift (sh: CascadeShift): ShiftedIssuePayload {
     oldDue: sh.oldDue,
     newDue: sh.newDue
   }
-}
-
-/**
- * Group `ShiftedIssuePayload`s by recipient, given a per-issue collaborator
- * lookup. The trigger user is filtered out from every recipient bundle so
- * the user who initiated the cascade does not get pinged about their own
- * action (matches the "self-suppress" rule in the design spec §6).
- *
- * Returns a `Map` so callers can iterate deterministically (Map iteration is
- * insertion-order, which is what the tests rely on).
- */
-export function groupShiftsByRecipient (
-  triggerUserId: AccountUuid | undefined,
-  entries: ShiftedIssuePayload[],
-  collaboratorsByIssue: Map<Ref<Issue>, AccountUuid[]>
-): Map<AccountUuid, ShiftedIssuePayload[]> {
-  const result = new Map<AccountUuid, ShiftedIssuePayload[]>()
-
-  for (const entry of entries) {
-    const collaborators = collaboratorsByIssue.get(entry.issueId) ?? []
-    const seenForThisEntry = new Set<AccountUuid>()
-    for (const acc of collaborators) {
-      if (triggerUserId !== undefined && acc === triggerUserId) continue
-      if (seenForThisEntry.has(acc)) continue
-      seenForThisEntry.add(acc)
-      const bucket = result.get(acc)
-      if (bucket === undefined) {
-        result.set(acc, [entry])
-      } else {
-        bucket.push(entry)
-      }
-    }
-  }
-
-  return result
 }
 
 /**
