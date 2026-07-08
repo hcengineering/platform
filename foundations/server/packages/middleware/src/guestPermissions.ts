@@ -8,9 +8,11 @@ import core, {
   type Account,
   AccountRole,
   type Class,
+  type Collaborator,
   type Doc,
   type ClassPermission,
   getClassCollaborators,
+  hasAtLeast,
   type Permission,
   hasAccountRole,
   type MeasureContext,
@@ -165,35 +167,35 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
   }
 
   /**
-   * Class-agnostic veto for field updates on docs whose class has opted into
-   * mention-grants-access. The opt-in is the pair (provideSecurity: true,
-   * mentionsGrantAccess: true) on the class's ClassCollaborators model entry.
+   * Class-agnostic, level-aware veto for field updates / removes on docs whose
+   * class has opted into access-granting collaborators (provideSecurity: true,
+   * mentionsGrantAccess: true on the ClassCollaborators model entry).
    *
-   * For such classes, a guest-tier account that obtained read visibility ONLY
-   * through Collaborator status (i.e. is NOT in the doc's space.members) must
-   * not be able to modify the doc's fields via TxUpdateDoc NOR delete it via
-   * TxRemoveDoc (L-RM). Comments via chunter.class.ChatMessage createAccessLevel
-   * still pass through.
+   * The caller is "collab-only" on the target doc when their only route to it is
+   * a per-doc Collaborator grant, i.e. they are NOT a space member and:
+   *   - they are a guest-tier account, OR
+   *   - they are a regular User and the space is PRIVATE (a public space is a
+   *     normal collaborative space reached without a grant → unchanged behavior).
+   * Workspace-privileged accounts (Maintainer+) and space members always pass.
    *
-   * Space-member guests retain their current behavior — they pass through
-   * this check untouched and their normal access rules continue to apply.
-   * User+ accounts always pass through.
+   * For a collab-only caller the grant LEVEL decides (P2.3, ordinal read<write<admin):
+   *   - TxUpdateDoc (field write): allowed only if the caller holds a Collaborator
+   *     record with level >= write on the doc (max over all their records);
+   *     a read-only grant (or no grant) is vetoed.
+   *   - TxRemoveDoc (L-RM): deleting the doc itself is reserved for space
+   *     members/owners and is vetoed regardless of grant level.
+   *   - Comments via chunter.class.ChatMessage keep flowing (createAccessLevel).
    *
-   * If the class has not opted in, this veto is a no-op (returns false).
+   * L-GP fail-closed: an unresolvable space forbids. If the class has not opted
+   * in, this veto is a no-op (returns false).
    */
   private async isForbiddenCollabOnlyGuestFieldUpdate (
     ctx: MeasureContext<SessionData>,
     cudTx: TxCUD<Doc>,
     account: Account
   ): Promise<boolean> {
-    // L-RM: veto covers both field-updates AND removes by collab-only guests.
+    // L-RM: veto covers both field-updates AND removes.
     if (cudTx._class !== core.class.TxUpdateDoc && cudTx._class !== core.class.TxRemoveDoc) return false
-
-    const isGuest =
-      account.role === AccountRole.Guest ||
-      account.role === AccountRole.DocGuest ||
-      account.role === AccountRole.ReadOnlyGuest
-    if (!isGuest) return false
 
     const classCollab = getClassCollaborators(this.context.modelDb, this.context.hierarchy, cudTx.objectClass)
     if (classCollab?.provideSecurity !== true) return false
@@ -201,10 +203,34 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
 
     const space = (await this.findAll<Space>(ctx, core.class.Space, { _id: cudTx.objectSpace }))[0]
     // L-GP: fail-closed — if the doc's space cannot be resolved we cannot prove
-    // the caller is a space member, so the collab-only-guest veto must FORBID
-    // (previously returned false = fail-open = mutation allowed).
+    // the caller is a space member, so the veto must FORBID.
     if (space === undefined) return true
     if (space.members?.includes(account.uuid)) return false
+
+    // Non-member. Decide whether the caller is "collab-only" (subject to the veto).
+    const isGuest =
+      account.role === AccountRole.Guest ||
+      account.role === AccountRole.DocGuest ||
+      account.role === AccountRole.ReadOnlyGuest
+    if (!isGuest) {
+      // Workspace-privileged accounts keep broad authority (unchanged).
+      if (hasAccountRole(account, AccountRole.Maintainer)) return false
+      // A regular User is only collab-only on a PRIVATE space; on a public space
+      // they participate through normal visibility (no grant) → unchanged pass.
+      // Fail-closed: treat anything other than an explicit public flag as private.
+      if (space.private === false) return false
+    }
+
+    // Collab-only caller. Field updates require level >= write; removes stay
+    // vetoed. A person may hold several records (e.g. mention:read + manual:write)
+    // — the highest level wins.
+    if (cudTx._class === core.class.TxUpdateDoc) {
+      const grants = await this.findAll<Collaborator>(ctx, core.class.Collaborator, {
+        attachedTo: cudTx.objectId,
+        collaborator: account.uuid
+      })
+      if (grants.some((g) => hasAtLeast(g.level, 'write'))) return false
+    }
 
     return true
   }
