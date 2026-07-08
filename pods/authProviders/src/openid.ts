@@ -85,32 +85,38 @@ export function registerOpenid (
       // PRIVACY: never log raw code, raw state, tokens, or full ctx.state.user.
       await new Promise<void>((resolve) => {
         passport.authenticate('oidc', { failureRedirect: loginUrl }, (err: any, user: any, info: any, status: any) => {
-          const diag = {
+          // L-AUTH-2: keep only a terse error line in normal operation; the
+          // verbose diagnostics (errStack/sessionKeys/host/…) are enabled by
+          // OIDC_DEBUG so anonymous repeated invalid callbacks cannot flood logs.
+          const baseDiag = {
             stage: 'oidc_callback',
             hasErr: err != null,
-            errMessage: err?.message,
             errName: err?.name,
-            errStack: err?.stack,
-            hasUser: user != null,
-            infoSummary: info?.message ?? String(info ?? ''),
+            errMessage: err?.message,
             statusCode: status,
-            // session + cookie diagnostics (no raw values)
-            hasSession: ctx.session != null,
-            sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
-            hasCookieHeader: ctx.request.headers.cookie != null,
-            // request shape
-            host: ctx.request.headers.host,
-            forwardedProto: ctx.request.headers['x-forwarded-proto'],
-            // state presence (length only, not value)
-            statePresent: typeof ctx.query?.state === 'string',
-            stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
-            codePresent: typeof ctx.query?.code === 'string'
+            hasUser: user != null
           }
+          const diag =
+            process.env.OIDC_DEBUG === 'true'
+              ? {
+                  ...baseDiag,
+                  errStack: err?.stack,
+                  infoSummary: info?.message ?? String(info ?? ''),
+                  hasSession: ctx.session != null,
+                  sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
+                  hasCookieHeader: ctx.request.headers.cookie != null,
+                  host: ctx.request.headers.host,
+                  forwardedProto: ctx.request.headers['x-forwarded-proto'],
+                  statePresent: typeof ctx.query?.state === 'string',
+                  stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
+                  codePresent: typeof ctx.query?.code === 'string'
+                }
+              : baseDiag
           if (err != null || user == null) {
             measureCtx.error('OIDC callback failed', diag)
           } else {
             measureCtx.info('OIDC callback succeeded — entering handleProviderAuth', {
-              hasSession: diag.hasSession
+              hasSession: ctx.session != null
             })
             ctx.state.user = user
           }
@@ -153,24 +159,33 @@ export function registerOpenid (
       await next()
     } catch (err: any) {
       // Permanent invalid-callback guard: ANY failure → 302 to /login, never 500.
-      measureCtx.error('OIDC callback failed', {
+      // L-AUTH-2: verbose fields behind OIDC_DEBUG (see the callback diag above).
+      const baseDiag = {
         stage: 'oidc_callback',
         hasErr: true,
-        errMessage: err?.message,
         errName: err?.name,
-        errStack: err?.stack,
-        hasUser: ctx.state?.user != null,
-        infoSummary: '',
+        errMessage: err?.message,
         statusCode: undefined,
-        hasSession: ctx.session != null,
-        sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
-        hasCookieHeader: ctx.request.headers.cookie != null,
-        host: ctx.request.headers.host,
-        forwardedProto: ctx.request.headers['x-forwarded-proto'],
-        statePresent: typeof ctx.query?.state === 'string',
-        stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
-        codePresent: typeof ctx.query?.code === 'string'
-      })
+        hasUser: ctx.state?.user != null
+      }
+      measureCtx.error(
+        'OIDC callback failed',
+        process.env.OIDC_DEBUG === 'true'
+          ? {
+              ...baseDiag,
+              errStack: err?.stack,
+              infoSummary: '',
+              hasSession: ctx.session != null,
+              sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
+              hasCookieHeader: ctx.request.headers.cookie != null,
+              host: ctx.request.headers.host,
+              forwardedProto: ctx.request.headers['x-forwarded-proto'],
+              statePresent: typeof ctx.query?.state === 'string',
+              stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
+              codePresent: typeof ctx.query?.code === 'string'
+            }
+          : baseDiag
+      )
       ctx.redirect(loginUrl + '?error=oidc_callback_failed')
     }
   })
