@@ -73,6 +73,14 @@ export function createModel (builder: Builder): void {
     }
   })
 
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTracker.trigger.OnDependencyShiftRequest,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: tracker.class.DependencyShiftRequest
+    }
+  })
+
   builder.mixin(
     tracker.ids.AssigneeNotification,
     notification.class.NotificationType,

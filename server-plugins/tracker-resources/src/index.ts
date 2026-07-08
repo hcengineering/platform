@@ -14,11 +14,14 @@
 //
 
 import chunter, { ChatMessage } from '@hcengineering/chunter'
-import { Person } from '@hcengineering/contact'
+import contact, { Employee, Person, PersonSpace } from '@hcengineering/contact'
 import core, {
+  AccountUuid,
   concatLink,
+  Data,
   Doc,
   DocumentUpdate,
+  generateId,
   Ref,
   Space,
   Tx,
@@ -29,13 +32,17 @@ import core, {
   TxUpdateDoc,
   WithLookup
 } from '@hcengineering/core'
-import { NotificationContent } from '@hcengineering/notification'
+import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
+import { getAccountBySocialId } from '@hcengineering/server-contact'
 import { NOTIFICATION_BODY_SIZE } from '@hcengineering/server-notification'
 import { stripTags } from '@hcengineering/text-core'
 import tracker, {
   Component,
+  type DependencyShiftedNotification,
+  type DependencyShiftRequest,
+  groupShiftsByRecipient,
   Issue,
   IssueParentInfo,
   TimeSpendReport,
@@ -504,6 +511,218 @@ async function issueLinkIdProvider (issue: Issue): Promise<string> {
   return issue.identifier
 }
 
+/**
+ *  — Notification on Dependency-Shift (server-side dispatch).
+ *
+ * Resolve the per-issue collaborator list server-side. Reads
+ * `core.class.Collaborator` attached to each shifted issue and falls back to
+ * the issue's `assignee` (resolved to an `AccountUuid` via the Employee mixin)
+ * for issues nobody has opened yet — matching the retired client-side helper.
+ */
+async function collectShiftCollaborators (
+  control: TriggerControl,
+  issueIds: Array<Ref<Issue>>
+): Promise<Map<Ref<Issue>, AccountUuid[]>> {
+  const map = new Map<Ref<Issue>, AccountUuid[]>()
+  if (issueIds.length === 0) return map
+
+  const uniqueIds = Array.from(new Set(issueIds))
+  const collabs = await control.findAll(control.ctx, core.class.Collaborator, {
+    attachedTo: { $in: uniqueIds as Array<Ref<Doc>> }
+  })
+  for (const c of collabs) {
+    const target = c.attachedTo as Ref<Issue>
+    const bucket = map.get(target)
+    if (bucket === undefined) {
+      map.set(target, [c.collaborator])
+    } else if (!bucket.includes(c.collaborator)) {
+      bucket.push(c.collaborator)
+    }
+  }
+
+  // Assignee fallback for issues without Collaborator docs. The shift payload
+  // carries no assignee, so re-read the issues server-side (fresh, ACL-safe).
+  const missingIds = uniqueIds.filter((id) => !map.has(id))
+  if (missingIds.length > 0) {
+    const issues = await control.findAll(
+      control.ctx,
+      tracker.class.Issue,
+      { _id: { $in: missingIds } },
+      { projection: { _id: 1, assignee: 1 } }
+    )
+    const withAssignee = issues.filter((i) => i.assignee != null)
+    if (withAssignee.length > 0) {
+      const employees = await control.findAll(
+        control.ctx,
+        contact.mixin.Employee,
+        { _id: { $in: withAssignee.map((i) => i.assignee as Ref<Employee>) } },
+        { projection: { _id: 1, personUuid: 1 } }
+      )
+      const byEmpId = new Map(employees.map((e) => [e._id, e.personUuid]))
+      for (const i of withAssignee) {
+        const acc = byEmpId.get(i.assignee as Ref<Employee>)
+        if (acc != null) map.set(i._id, [acc])
+      }
+    }
+  }
+
+  return map
+}
+
+/**
+ *  — Notification on Dependency-Shift (server-side dispatch).
+ *
+ * Resolve recipient `AccountUuid` → `PersonSpace` server-side. The
+ * notification/context `space` MUST be the recipient's own `PersonSpace` (the
+ * inbox routing key), so this runs privileged in the trigger rather than being
+ * a client cross-space write. Deactivated recipients drop out silently.
+ */
+async function resolveShiftRecipientSpaces (
+  control: TriggerControl,
+  recipients: AccountUuid[]
+): Promise<Map<AccountUuid, Ref<PersonSpace>>> {
+  const map = new Map<AccountUuid, Ref<PersonSpace>>()
+  if (recipients.length === 0) return map
+
+  const employees = await control.findAll(
+    control.ctx,
+    contact.mixin.Employee,
+    { personUuid: { $in: recipients }, active: true },
+    { projection: { _id: 1, personUuid: 1 } }
+  )
+  if (employees.length === 0) return map
+
+  const spaces = await control.findAll(
+    control.ctx,
+    contact.class.PersonSpace,
+    { person: { $in: employees.map((e) => e._id) } },
+    { projection: { _id: 1, person: 1 } }
+  )
+  const spaceByPerson = new Map(spaces.map((s) => [s.person, s._id]))
+  for (const e of employees) {
+    if (e.personUuid == null) continue
+    const space = spaceByPerson.get(e._id)
+    if (space != null) map.set(e.personUuid, space)
+  }
+  return map
+}
+
+/**
+ *  — Notification on Dependency-Shift (server-side dispatch).
+ *
+ * Server-side replacement for the retired client-side notification writes.
+ * Reacts to a `DependencyShiftRequest` create, fans out one
+ * `DependencyShiftedNotification` per recipient into that recipient's own
+ * `PersonSpace`, then removes the request doc.
+ *
+ * Anti-spoofing: `triggerUserId` is derived from `tx.modifiedBy`
+ * (`getAccountBySocialId`) — never from client-supplied payload. If the
+ * originating account cannot be resolved the dispatch is skipped (fail-closed);
+ * the request is still removed so no residue accumulates.
+ * @public
+ */
+export async function OnDependencyShiftRequest (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxCreateDoc) continue
+    const createTx = tx as TxCreateDoc<DependencyShiftRequest>
+    if (createTx.objectClass !== tracker.class.DependencyShiftRequest) continue
+
+    const req = TxProcessor.createDoc2Doc(createTx)
+
+    // Always clean up the request doc, whatever happens below.
+    result.push(control.txFactory.createTxRemoveDoc(createTx.objectClass, createTx.objectSpace, createTx.objectId))
+
+    // Anti-spoofing: resolve the trigger user from the tx author, not payload.
+    const triggerUserId = await getAccountBySocialId(control, createTx.modifiedBy)
+    if (triggerUserId == null) continue // fail-closed: no trusted author → no dispatch
+
+    const shiftedIssues = req.shiftedIssues ?? []
+    if (shiftedIssues.length === 0) continue
+
+    const collaborators = await collectShiftCollaborators(
+      control,
+      shiftedIssues.map((s) => s.issueId)
+    )
+    const bundles = groupShiftsByRecipient(triggerUserId, shiftedIssues, collaborators)
+    if (bundles.size === 0) continue
+
+    const spaces = await resolveShiftRecipientSpaces(control, Array.from(bundles.keys()))
+    if (spaces.size === 0) continue
+
+    for (const [recipient, recipientShifts] of bundles) {
+      const space = spaces.get(recipient)
+      if (space === undefined) continue
+
+      const existing = await control.findAll(
+        control.ctx,
+        notification.class.DocNotifyContext,
+        { objectId: req.triggerIssueId, user: recipient },
+        { limit: 1 }
+      )
+
+      let contextId: Ref<DocNotifyContext>
+      if (existing.length > 0) {
+        contextId = existing[0]._id
+        result.push(
+          control.txFactory.createTxUpdateDoc(existing[0]._class, existing[0].space, existing[0]._id, {
+            hidden: false,
+            lastUpdateTimestamp: Date.now()
+          })
+        )
+      } else {
+        contextId = generateId<DocNotifyContext>()
+        const contextData: Data<DocNotifyContext> = {
+          user: recipient,
+          objectId: req.triggerIssueId,
+          objectClass: tracker.class.Issue,
+          objectSpace: req.triggerIssueSpace,
+          hidden: false,
+          isPinned: false,
+          lastUpdateTimestamp: Date.now()
+        }
+        result.push(
+          control.txFactory.createTxCreateDoc(
+            notification.class.DocNotifyContext,
+            space as unknown as Ref<Space>,
+            contextData,
+            contextId
+          )
+        )
+      }
+
+      const notifData: Data<DependencyShiftedNotification> = {
+        user: recipient,
+        isViewed: false,
+        docNotifyContext: contextId,
+        objectId: req.triggerIssueId,
+        objectClass: tracker.class.Issue,
+        archived: false,
+        header: tracker.string.DependencyShiftedHeader,
+        message: tracker.string.DependencyShiftedMessage,
+        intlParams: {
+          count: recipientShifts.length,
+          trigger: req.triggerIssueIdentifier
+        },
+        triggerIssueId: req.triggerIssueId,
+        triggerIssueIdentifier: req.triggerIssueIdentifier,
+        triggerIssueTitle: req.triggerIssueTitle,
+        triggerUserId,
+        shiftedIssues: recipientShifts,
+        cascadeToken: req.cascadeToken
+      }
+      result.push(
+        control.txFactory.createTxCreateDoc(
+          tracker.class.DependencyShiftedNotification,
+          space as unknown as Ref<Space>,
+          notifData
+        )
+      )
+    }
+  }
+  return result
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export default async () => ({
   function: {
@@ -515,6 +734,7 @@ export default async () => ({
   trigger: {
     OnIssueUpdate,
     OnComponentRemove,
-    OnProjectRemove
+    OnProjectRemove,
+    OnDependencyShiftRequest
   }
 })
