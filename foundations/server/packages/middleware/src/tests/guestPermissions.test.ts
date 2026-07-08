@@ -494,4 +494,66 @@ describe('GuestPermissionsMiddleware', () => {
       expect((mw as any).permissionsCache).toBeUndefined()
     })
   })
+
+  // ─── collab-only guest veto: fail-closed (L-GP) + covers remove (L-RM) ────────
+  describe('collab-only guest veto (mention-grants opt-in)', () => {
+    const ISSUE_CLASS = 'test:class:Issue' as Ref<Class<Doc>>
+    const ISSUE_SPACE = 'test:space:Issue' as Ref<Space>
+
+    // Build a middleware whose model opts ISSUE_CLASS into mention-grants
+    // (provideSecurity + mentionsGrantAccess). `space` controls what findAll
+    // returns for the doc's space (undefined => unresolvable).
+    function makeCollabMw (space: Space | undefined): GuestPermissionsMiddleware {
+      const mw = makeMiddleware(async (_ctx, _class) => (space !== undefined ? [space] : []))
+      ;(mw as any).context.hierarchy.getAncestors = (id: any) => [id]
+      ;(mw as any).context.hierarchy.isDerived = (a: any, b: any) => a === b
+      ;(mw as any).context.hierarchy.classHierarchyMixin = () => undefined
+      ;(mw as any).context.modelDb = {
+        findAllSync: (_class: any, _q: any) => [
+          { attachedTo: ISSUE_CLASS, provideSecurity: true, mentionsGrantAccess: true }
+        ]
+      }
+      return mw
+    }
+
+    function makeSpace (members: any[]): Space {
+      return { _id: ISSUE_SPACE, members } as any
+    }
+
+    it('L-GP: fail-closed — unresolvable space forbids a guest field update', async () => {
+      const mw = makeCollabMw(undefined)
+      const guest = makeAccount(AccountRole.Guest)
+      const factory = new TxFactory('test:account:System' as PersonId)
+      const tx = factory.createTxUpdateDoc(ISSUE_CLASS, ISSUE_SPACE, generateId() as any, {})
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(guest), tx, guest)
+      expect(forbidden).toBe(true)
+    })
+
+    it('L-RM: collab-only guest TxRemoveDoc on opted-in doc is forbidden', async () => {
+      const guest = makeAccount(AccountRole.Guest)
+      const mw = makeCollabMw(makeSpace([])) // guest is NOT a space member
+      const factory = new TxFactory('test:account:System' as PersonId)
+      const tx = factory.createTxRemoveDoc(ISSUE_CLASS, ISSUE_SPACE, generateId() as any)
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(guest), tx, guest)
+      expect(forbidden).toBe(true)
+    })
+
+    it('space-member guest is NOT vetoed (update stays allowed)', async () => {
+      const guest = makeAccount(AccountRole.Guest)
+      const mw = makeCollabMw(makeSpace([guest.uuid]))
+      const factory = new TxFactory('test:account:System' as PersonId)
+      const tx = factory.createTxUpdateDoc(ISSUE_CLASS, ISSUE_SPACE, generateId() as any, {})
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(guest), tx, guest)
+      expect(forbidden).toBe(false)
+    })
+
+    it('non-guest (User) TxRemoveDoc passes the veto', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]))
+      const factory = new TxFactory('test:account:System' as PersonId)
+      const tx = factory.createTxRemoveDoc(ISSUE_CLASS, ISSUE_SPACE, generateId() as any)
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(user), tx, user)
+      expect(forbidden).toBe(false)
+    })
+  })
 })

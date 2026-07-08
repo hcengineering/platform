@@ -200,7 +200,10 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
     if (classCollab.mentionsGrantAccess !== true) return false
 
     const space = (await this.findAll<Space>(ctx, core.class.Space, { _id: cudTx.objectSpace }))[0]
-    if (space === undefined) return false
+    // L-GP: fail-closed — if the doc's space cannot be resolved we cannot prove
+    // the caller is a space member, so the collab-only-guest veto must FORBID
+    // (previously returned false = fail-open = mutation allowed).
+    if (space === undefined) return true
     if (space.members?.includes(account.uuid)) return false
 
     return true
