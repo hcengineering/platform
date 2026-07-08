@@ -16,6 +16,7 @@
 import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import core, {
   DOMAIN_MODEL_TX,
+  DOMAIN_TX,
   DOMAIN_STATUS,
   type Ref,
   type Status,
@@ -433,7 +434,7 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
  * (cannot import across package layers — models/tracker is below
  * tracker-resources). The helper module is the one with unit tests.
  */
-async function migrateRelationActivityAttachment (client: MigrationClient): Promise<void> {
+export async function migrateRelationActivityAttachment (client: MigrationClient): Promise<void> {
   const issueClass = tracker.class.Issue
   const dums = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {
     _class: activity.class.DocUpdateMessage,
@@ -447,7 +448,7 @@ async function migrateRelationActivityAttachment (client: MigrationClient): Prom
     // Find the create-tx for this relation. The relation objectId remains
     // the same across the doc's whole life — that's the key we look up.
     const createTxes = await client.find<TxCreateDoc<IssueRelation>>(
-      DOMAIN_MODEL_TX,
+      DOMAIN_TX,
       {
         _class: core.class.TxCreateDoc,
         objectId: dum.objectId as Ref<IssueRelation>
@@ -525,7 +526,7 @@ export const trackerOperation: MigrateOperation = {
       },
       {
         //  — Activity-Log Remove-Detail Fix.
-        state: 'relation-activity-attached-v1',
+        state: 'relation-activity-attached-v2',
         mode: 'upgrade',
         func: migrateRelationActivityAttachment
       }
