@@ -43,6 +43,9 @@
       relations = res
     })
   } else {
+    // M-G6: drop the live subscription when there is no value, otherwise a
+    // recycled cell keeps firing the old query's callback (zombie updates).
+    relQuery.unsubscribe()
     relations = []
   }
 
@@ -52,6 +55,8 @@
   $: {
     const sourceIds = relations.map((r) => r.attachedTo as unknown as Ref<Issue>)
     if (sourceIds.length === 0) {
+      // M-G6: same — release the previous source subscription when emptied.
+      sourceQuery.unsubscribe()
       sources = new Map()
     } else {
       sourceQuery.query(tracker.class.Issue, { _id: { $in: sourceIds } }, (res) => {
