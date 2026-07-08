@@ -79,6 +79,42 @@ describe('disableAccount', () => {
     expect(res).toEqual({ ok: true })
   })
 
+  it('L-RACE: rolls back disable + throws when post-write recheck finds this was the last admin', async () => {
+    // Two admins configured; the OTHER admin is active during the pre-write
+    // guard but shows up disabled on the post-write recheck (simulating a
+    // concurrent disable that committed in between). The write must be rolled
+    // back and last_admin thrown so at least one admin stays active.
+    process.env.ADMIN_EMAILS = 'admin@example.com,other@example.com'
+    const OTHER = 'other-admin-uuid'
+    const updates: any[] = []
+    let otherLookups = 0
+    const db: any = {
+      account: {
+        findOne: async ({ uuid }: any) => {
+          if (uuid === OTHER) {
+            otherLookups++
+            return { uuid: OTHER, disabledAt: otherLookups >= 2 ? 123 : null, tokenVersion: 0 }
+          }
+          return { uuid: TARGET, disabledAt: null, tokenVersion: 0 }
+        },
+        update: async (query: any, ops: any) => {
+          updates.push({ query, ops })
+        }
+      },
+      socialId: {
+        find: async () => [{ personUuid: TARGET, type: 'email', value: 'admin@example.com' }],
+        findOne: async ({ value }: any) =>
+          value === 'other@example.com' ? { personUuid: OTHER, type: 'email', value } : null
+      },
+      adminAuditLog: { insert: async () => undefined }
+    }
+    await expect(disableAccount(ctx, db, null, {}, ADMIN_TOKEN, { accountUuid: TARGET })).rejects.toThrow(/last_admin/)
+    // First update = disable, second update = rollback restoring prior disabledAt (null).
+    expect(updates).toHaveLength(2)
+    expect(updates[0].ops.disabledAt).toBeDefined()
+    expect(updates[1].ops.disabledAt).toBeNull()
+  })
+
   it('uses $inc for tokenVersion to avoid race', async () => {
     const updateCalls: any[] = []
     const db = {

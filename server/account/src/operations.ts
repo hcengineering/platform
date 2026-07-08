@@ -3372,14 +3372,19 @@ export async function setWorkspaceMemberRole (
   }
 
   if (currentRole === AccountRole.Owner && params.newRole !== AccountRole.Owner) {
-    const members = await db.getWorkspaceMembers(params.workspaceUuid)
-    const otherOwners = members.filter((m) => m.role === AccountRole.Owner && m.person !== params.accountUuid)
-    if (otherOwners.length === 0) {
+    // L-RACE: atomic conditional demote — the last-owner check and the write
+    // happen under one lock so two parallel demotes cannot both pass.
+    const applied = await db.updateWorkspaceRoleIfOtherOwnerExists(
+      params.accountUuid,
+      params.workspaceUuid,
+      params.newRole
+    )
+    if (!applied) {
       throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
     }
+  } else {
+    await db.updateWorkspaceRole(params.accountUuid, params.workspaceUuid, params.newRole)
   }
-
-  await db.updateWorkspaceRole(params.accountUuid, params.workspaceUuid, params.newRole)
   await db.adminAuditLog.insert({
     adminAccount: adminUuid,
     targetAccount: params.accountUuid,
@@ -3405,15 +3410,12 @@ export async function removeWorkspaceMember (
     return { ok: true, wasMember: false }
   }
 
-  if (currentRole === AccountRole.Owner) {
-    const members = await db.getWorkspaceMembers(params.workspaceUuid)
-    const otherOwners = members.filter((m) => m.role === AccountRole.Owner && m.person !== params.accountUuid)
-    if (otherOwners.length === 0) {
-      throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
-    }
+  // L-RACE: atomic conditional removal — last-owner check + delete under one
+  // lock so parallel owner-removals cannot both drop the final owner.
+  const applied = await db.unassignIfNotLastOwner(params.accountUuid, params.workspaceUuid)
+  if (!applied) {
+    throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
   }
-
-  await db.unassignWorkspace(params.accountUuid, params.workspaceUuid)
   await db.adminAuditLog.insert({
     adminAccount: adminUuid,
     targetAccount: params.accountUuid,
@@ -3493,15 +3495,11 @@ export async function removeWorkspaceMemberInternal (
     return { ok: true, wasMember: false }
   }
 
-  if (currentRole === AccountRole.Owner) {
-    const members = await db.getWorkspaceMembers(params.workspaceUuid)
-    const otherOwners = members.filter((m) => m.role === AccountRole.Owner && m.person !== params.accountUuid)
-    if (otherOwners.length === 0) {
-      throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
-    }
+  // L-RACE: atomic conditional removal (see removeWorkspaceMember).
+  const applied = await db.unassignIfNotLastOwner(params.accountUuid, params.workspaceUuid)
+  if (!applied) {
+    throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
   }
-
-  await db.unassignWorkspace(params.accountUuid, params.workspaceUuid)
   await db.adminAuditLog.insert({
     adminAccount: adminUuid,
     targetAccount: params.accountUuid,
@@ -3607,7 +3605,22 @@ export async function disableAccountInternal (
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
   }
+  const priorDisabledAt = account.disabledAt ?? null
   await db.account.update({ uuid: params.accountUuid }, { disabledAt: Date.now(), $inc: { tokenVersion: 1 } } as any)
+
+  // L-RACE: the last-admin guard above and this write are not a single atomic
+  // op; a concurrent disable of the OTHER remaining admin could have passed its
+  // own pre-write guard. Re-verify the invariant against now-committed state and
+  // roll back (re-enable) if this write left zero active admins. In the
+  // symmetric two-admin race both writers observe the invariant broken and both
+  // roll back — over-conservative but fail-closed: at least one admin always
+  // stays active. The bumped tokenVersion is intentionally NOT un-bumped on
+  // rollback (never lower a token version); the account is simply re-enabled.
+  if (targetEmail != null && (await isLastAdmin(db, targetEmail))) {
+    await db.account.update({ uuid: params.accountUuid }, { disabledAt: priorDisabledAt } as any)
+    await auditAdminActionDenied(ctx, db, adminUuid, 'last_admin', methodName, params.accountUuid)
+    throw new PlatformError(new Status(Severity.ERROR, 'last_admin' as any, {}))
+  }
   await db.adminAuditLog.insert({
     adminAccount: adminUuid,
     targetAccount: params.accountUuid,

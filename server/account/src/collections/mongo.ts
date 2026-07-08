@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import {
-  type AccountRole,
+  AccountRole,
   type Data,
   type Person,
   type Version,
@@ -671,6 +671,20 @@ export class MongoAccountDB implements AccountDB {
     })
   }
 
+  async unassignIfNotLastOwner (accountId: AccountUuid, workspaceId: WorkspaceUuid): Promise<boolean> {
+    // L-RACE (Mongo: best-effort). Mongo is deprecated in Huly v7 and this path
+    // has no cross-document lock, so the check+delete is NOT fully atomic under
+    // concurrency. It still closes the common non-concurrent hole; deployments
+    // requiring hard last-owner guarantees run Postgres/CockroachDB.
+    const owners = await this.workspaceMembers.find({ workspaceUuid: workspaceId, role: AccountRole.Owner })
+    const isOwner = owners.some((o) => o.accountUuid === accountId)
+    if (isOwner && owners.filter((o) => o.accountUuid !== accountId).length === 0) {
+      return false
+    }
+    await this.workspaceMembers.deleteMany({ workspaceUuid: workspaceId, accountUuid: accountId })
+    return true
+  }
+
   async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {
     const res = await this.workspace.insertOne(data)
 
@@ -858,6 +872,21 @@ export class MongoAccountDB implements AccountDB {
       },
       { role }
     )
+  }
+
+  async updateWorkspaceRoleIfOtherOwnerExists (
+    accountId: AccountUuid,
+    workspaceId: WorkspaceUuid,
+    role: AccountRole
+  ): Promise<boolean> {
+    // L-RACE (Mongo: best-effort — see unassignIfNotLastOwner). No cross-doc
+    // lock; not fully atomic. Hard guarantees require Postgres/CockroachDB.
+    const owners = await this.workspaceMembers.find({ workspaceUuid: workspaceId, role: AccountRole.Owner })
+    if (owners.filter((o) => o.accountUuid !== accountId).length === 0) {
+      return false
+    }
+    await this.workspaceMembers.update({ workspaceUuid: workspaceId, accountUuid: accountId }, { role })
+    return true
   }
 
   async getWorkspaceRole (accountId: AccountUuid, workspaceId: WorkspaceUuid): Promise<AccountRole | null> {

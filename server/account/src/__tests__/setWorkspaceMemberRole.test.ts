@@ -28,6 +28,9 @@ function mockDb (currentRole: AccountRole | null, members: WorkspaceMemberInfo[]
     getWorkspaceRole: async () => currentRole,
     getWorkspaceMembers: async () => members,
     updateWorkspaceRole: async () => undefined,
+    // L-RACE: conditional demote mirrors the real DB guard (blocks last Owner).
+    updateWorkspaceRoleIfOtherOwnerExists: async (accountId: any) =>
+      members.filter((m) => m.role === AccountRole.Owner && m.person !== accountId).length > 0,
     adminAuditLog: { insert: async () => undefined }
   }
 }

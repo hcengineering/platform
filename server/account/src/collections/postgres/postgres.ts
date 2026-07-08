@@ -18,7 +18,7 @@ import {
   type Version,
   type Person,
   type WorkspaceMemberInfo,
-  type AccountRole,
+  AccountRole,
   type WorkspaceUuid,
   type AccountUuid,
   type PersonUuid
@@ -1085,11 +1085,47 @@ export class PostgresAccountDB implements AccountDB {
     )
   }
 
+  async unassignIfNotLastOwner (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<boolean> {
+    // L-RACE: lock the workspace's Owner rows FOR UPDATE so concurrent
+    // owner-removals serialize; the last-owner check + delete then run against
+    // a consistent, locked snapshot. On a serializable backend (CockroachDB)
+    // a conflicting txn retries via withRetry; on READ COMMITTED the row locks
+    // force the second caller to observe the first commit before re-checking.
+    return await this.withRetry(async (rTx) => {
+      const owners: any =
+        await rTx`SELECT account_uuid FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND role = ${AccountRole.Owner} FOR UPDATE`
+      const isOwner = owners.some((o: any) => o.account_uuid === accountUuid)
+      if (isOwner) {
+        const otherOwners = owners.filter((o: any) => o.account_uuid !== accountUuid)
+        if (otherOwners.length === 0) return false
+      }
+      await rTx`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+      return true
+    })
+  }
+
   async updateWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this.withRetry(
       async (rTx) =>
         await rTx`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
     )
+  }
+
+  async updateWorkspaceRoleIfOtherOwnerExists (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid,
+    role: AccountRole
+  ): Promise<boolean> {
+    // L-RACE: see unassignIfNotLastOwner. Lock Owner rows, verify another Owner
+    // remains, then demote — all within one serialized transaction.
+    return await this.withRetry(async (rTx) => {
+      const owners: any =
+        await rTx`SELECT account_uuid FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND role = ${AccountRole.Owner} FOR UPDATE`
+      const otherOwners = owners.filter((o: any) => o.account_uuid !== accountUuid)
+      if (otherOwners.length === 0) return false
+      await rTx`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+      return true
+    })
   }
 
   async getWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<AccountRole | null> {

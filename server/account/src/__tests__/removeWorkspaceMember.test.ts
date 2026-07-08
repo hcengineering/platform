@@ -26,6 +26,13 @@ function mockDb (currentRole: AccountRole | null, members: WorkspaceMemberInfo[]
     getWorkspaceRole: async () => currentRole,
     getWorkspaceMembers: async () => members,
     unassignWorkspace: async () => undefined,
+    // L-RACE: conditional removal mirrors the real DB guard (blocks last Owner).
+    unassignIfNotLastOwner: async (accountId: any) => {
+      const owners = members.filter((m) => m.role === AccountRole.Owner)
+      const isOwner = owners.some((m) => m.person === accountId)
+      if (isOwner && owners.filter((m) => m.person !== accountId).length === 0) return false
+      return true
+    },
     adminAuditLog: { insert: async () => undefined }
   }
 }

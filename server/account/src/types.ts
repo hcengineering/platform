@@ -444,7 +444,26 @@ export interface AccountDB {
   assignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
   batchAssignWorkspace: (data: [AccountUuid, WorkspaceUuid, AccountRole][]) => Promise<void>
   updateWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
+  /**
+   * L-RACE: atomically demote an Owner only if at least one OTHER Owner remains.
+   * Returns true if the role was changed, false if the change was blocked
+   * because `accountId` is the last Owner of the workspace. Callers MUST treat
+   * `false` as `last_owner_in_workspace`. Only meaningful when demoting an
+   * Owner; for non-owner role changes use `updateWorkspaceRole`.
+   */
+  updateWorkspaceRoleIfOtherOwnerExists: (
+    accountId: AccountUuid,
+    workspaceId: WorkspaceUuid,
+    role: AccountRole
+  ) => Promise<boolean>
   unassignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<void>
+  /**
+   * L-RACE: atomically remove a member unless doing so would remove the last
+   * Owner. Returns true if the member was removed (or was not an Owner), false
+   * if removal was blocked because `accountId` is the last Owner. Callers MUST
+   * treat `false` as `last_owner_in_workspace`.
+   */
+  unassignIfNotLastOwner: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<boolean>
   getWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<AccountRole | null>
   getWorkspaceRoles: (accountId: AccountUuid) => Promise<Map<WorkspaceUuid, AccountRole>>
   getWorkspaceMembers: (workspaceId: WorkspaceUuid) => Promise<WorkspaceMemberInfo[]>
