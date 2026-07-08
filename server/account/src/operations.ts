@@ -169,6 +169,18 @@ export async function loginAsGuest (
  * Returns login affordance flags so clients can hide sign-up and guest-login
  * controls when they are disabled by env vars or unavailable (no guest person).
  */
+// L-AUTH-1: getLoginCapabilities is unauthenticated; without caching every
+// anonymous call hits the DB (db.person.findOne on the guest account) and lets
+// a caller probe the guest-person's existence at will. The guest-person state
+// changes practically never, so we cache the boolean with a short TTL.
+let guestPersonCache: { value: boolean, at: number } | undefined
+const GUEST_PERSON_CACHE_TTL_MS = 60_000
+
+/** Clears the getLoginCapabilities guest-person cache. For tests / ops. */
+export function resetGuestPersonCache (): void {
+  guestPersonCache = undefined
+}
+
 export async function getLoginCapabilities (
   ctx: MeasureContext,
   db: AccountDB,
@@ -179,8 +191,12 @@ export async function getLoginCapabilities (
 
   let guestLoginAvailable = false
   if (process.env.DISABLE_GUEST_LOGIN !== 'true') {
-    const guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
-    guestLoginAvailable = guestPerson != null
+    const now = Date.now()
+    if (guestPersonCache === undefined || now - guestPersonCache.at > GUEST_PERSON_CACHE_TTL_MS) {
+      const guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
+      guestPersonCache = { value: guestPerson != null, at: now }
+    }
+    guestLoginAvailable = guestPersonCache.value
   }
 
   return { signUpEnabled, guestLoginAvailable }

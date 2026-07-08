@@ -38,6 +38,7 @@ import {
   releaseSocialId,
   loginAsGuest,
   getLoginCapabilities,
+  resetGuestPersonCache,
   loginOtp,
   login,
   confirm,
@@ -1583,6 +1584,11 @@ describe('account operations', () => {
     })
 
     describe('getLoginCapabilities', () => {
+      // L-AUTH-1: the guest-person lookup is cached module-wide; reset before
+      // each test so per-test mock return values are observed deterministically.
+      beforeEach(() => {
+        resetGuestPersonCache()
+      })
       const restoreEnv = (key: string, prev: string | undefined): void => {
         if (prev === undefined) {
           Reflect.deleteProperty(process.env, key)
@@ -1654,6 +1660,28 @@ describe('account operations', () => {
 
           expect(result).toEqual({ signUpEnabled: true, guestLoginAvailable: false })
           expect(mockDb.person.findOne).not.toHaveBeenCalled()
+        } finally {
+          restoreEnv('DISABLE_SIGNUP', prevSignup)
+          restoreEnv('DISABLE_GUEST_LOGIN', prevGuest)
+        }
+      })
+
+      test('L-AUTH-1: caches the guest-person lookup within TTL (single DB hit)', async () => {
+        const prevSignup = process.env.DISABLE_SIGNUP
+        const prevGuest = process.env.DISABLE_GUEST_LOGIN
+        delete process.env.DISABLE_SIGNUP
+        delete process.env.DISABLE_GUEST_LOGIN
+        try {
+          ;(mockDb.person.findOne as jest.Mock).mockClear()
+          ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({ uuid: readOnlyGuestAccountUuid })
+
+          const r1 = await getLoginCapabilities(mockCtx, mockDb, mockBranding, mockToken)
+          const r2 = await getLoginCapabilities(mockCtx, mockDb, mockBranding, mockToken)
+
+          expect(r1).toEqual({ signUpEnabled: true, guestLoginAvailable: true })
+          expect(r2).toEqual({ signUpEnabled: true, guestLoginAvailable: true })
+          // Second call within TTL must be served from cache -> exactly one DB hit.
+          expect(mockDb.person.findOne).toHaveBeenCalledTimes(1)
         } finally {
           restoreEnv('DISABLE_SIGNUP', prevSignup)
           restoreEnv('DISABLE_GUEST_LOGIN', prevGuest)
