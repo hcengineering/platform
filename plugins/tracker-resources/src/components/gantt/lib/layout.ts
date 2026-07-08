@@ -152,7 +152,7 @@ export function buildLayout (
   if (hasFilter && !includeBreadcrumbs) {
     for (const i of issues) {
       const issueId = i._id as unknown as string
-      if (!(matchedIds?.has(issueId))) continue
+      if (!matchedIds?.has(issueId)) continue
       const parentId = parentOf.get(issueId)
       if (parentId !== undefined && !isVisibleUnderFilter(parentId)) {
         hardFilterPromotedRoots.push(i)
