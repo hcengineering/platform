@@ -52,7 +52,7 @@ import view, { type ViewOptionModel } from '@hcengineering/view'
 import { classicIssueTaskStatuses } from '.'
 import tracker from './plugin'
 import { DOMAIN_TRACKER } from './types'
-import { ganttViewOptions } from './viewlets'
+import { ganttViewOptions, issuesOptions } from './viewlets'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -217,6 +217,40 @@ async function addGanttPhase1ViewOptions (client: MigrationUpgradeClient): Promi
         other: [...currentOther, ...missing]
       }
     })
+  }
+}
+
+// L-G10: SEARCH_VIEW_OPTIONS (showQuickModeSelector / searchScope /
+// searchHighlight) are appended to issuesOptions(), which feeds the stored
+// List (IssueList) and Kanban (IssueKanban) viewlet docs. As with the Gantt
+// viewlet, builder.createDoc is idempotent, so existing workspaces never pick
+// up the new `other` entries on upgrade. Merge the missing keys into both
+// viewlets by `key` — mirrors addGanttPhase1ViewOptions and is idempotent, so
+// a re-run (or a partially-migrated workspace) is a no-op.
+async function addSearchViewOptions (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+
+  const targets = [
+    { id: tracker.viewlet.IssueList, desired: issuesOptions(false).other ?? [] },
+    { id: tracker.viewlet.IssueKanban, desired: issuesOptions(true).other ?? [] }
+  ]
+
+  for (const t of targets) {
+    const viewlets = await client.findAll(view.class.Viewlet, { _id: t.id })
+    for (const v of viewlets) {
+      const current = v.viewOptions ?? { groupBy: [], orderBy: [], other: [] }
+      const currentOther: ViewOptionModel[] = current.other ?? []
+      const existingKeys = new Set(currentOther.map((o) => o.key))
+      const missing = t.desired.filter((o) => !existingKeys.has(o.key))
+      if (missing.length === 0) continue
+
+      await txOp.update(v, {
+        viewOptions: {
+          ...current,
+          other: [...currentOther, ...missing]
+        }
+      })
+    }
   }
 }
 
@@ -544,6 +578,10 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'add-gantt-phase1-view-options',
         func: addGanttPhase1ViewOptions
+      },
+      {
+        state: 'add-search-view-options',
+        func: addSearchViewOptions
       }
     ])
   }
