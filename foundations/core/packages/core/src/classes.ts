@@ -1021,8 +1021,37 @@ export interface ClassCollaborators<T extends Doc> extends Doc {
   mentionsGrantAccess?: boolean
 }
 
+/**
+ * Provenance of a Collaborator grant. Distinguishes explicit, revocable
+ * access-grants from structural (fields-derived / notification / legacy)
+ * collaborators. `undefined` === structural collaborator — such records are
+ * NEVER touched by revocation logic.
+ * @public
+ */
+export type CollaboratorProvenance = 'mention' | 'manual' | 'group'
+
+/**
+ * Ordinal access-level of a grant: read < write < admin.
+ * v1 as string-enum; designed to be evolvable to a `Ref<Role>` of a per-issue
+ * role definition without a schema break — consumers compare via the
+ * accessLevel.ts helper (accessLevelRank / hasAtLeast), never by string
+ * equality, so the later switch stays a helper-only change.
+ * @public
+ */
+export type AccessLevel = 'read' | 'write' | 'admin'
+
 export interface Collaborator extends AttachedDoc {
   collaborator: AccountUuid
+  // Provenance of the grant. undefined === structural collaborator
+  // (fields-derived / notification / legacy) — never removed automatically.
+  grantedVia?: CollaboratorProvenance
+  grantedBy?: AccountUuid // actor account that triggered the grant
+  grantedByMessage?: Ref<Doc> // only when grantedVia === 'mention'
+  grantedByGroup?: Ref<Doc> // only when grantedVia === 'group'; P4 sharpens to Ref<GroupGrant>
+  // Access level of this grant. undefined at structural records === no explicit
+  // grant (visibility comes from space membership). At grantedVia records:
+  // missing ⇒ interpreted as 'read' (fail-safe minimal).
+  level?: AccessLevel
 }
 
 /**

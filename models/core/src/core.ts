@@ -14,6 +14,7 @@
 //
 
 import {
+  type AccessLevel,
   type AccountUuid,
   type AnyAttribute,
   type ArrOf,
@@ -24,6 +25,7 @@ import {
   type ClassCollaborators,
   type ClassifierKind,
   type Collaborator,
+  type CollaboratorProvenance,
   type Collection,
   type Configuration,
   type ConfigurationElement,
@@ -444,6 +446,11 @@ export class TClassCollaborators extends TDoc implements ClassCollaborators<Doc>
 @Model(core.class.Collaborator, core.class.Doc, DOMAIN_COLLABORATOR)
 export class TCollaborator extends TAttachedDoc implements Collaborator {
   collaborator!: AccountUuid
+  grantedVia?: CollaboratorProvenance
+  grantedBy?: AccountUuid
+  grantedByMessage?: Ref<Doc>
+  grantedByGroup?: Ref<Doc> // P1: typed as Ref<Doc>; P4 sharpens to Ref<GroupGrant>
+  level?: AccessLevel
 }
 
 @MMixin(core.mixin.VersionableClass, core.class.Class)
