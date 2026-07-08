@@ -302,6 +302,49 @@ export async function canEditIssue (issue?: Issue | WithLookup<Issue>): Promise<
 }
 
 /**
+ * Batched form of {@link canEditIssue} (M-G9).
+ *
+ * Resolves edit-permission for many issues at once. Semantically identical to
+ * calling {@link canEditIssue} on each issue, but for guests it collapses the
+ * per-issue Collaborator `findOne` into a SINGLE `findAll` keyed by
+ * `attachedTo: { $in }` — turning the old O(n) round-trips into O(1).
+ *
+ * Decision order per issue matches {@link canEditIssue} exactly:
+ *   1. non-guest account  → `true` (no query at all)
+ *   2. guest & creator     → `true`
+ *   3. guest & collaborator → `true`
+ *   4. otherwise            → `false`
+ */
+export async function canEditIssuesBatch (issues: Issue[]): Promise<Map<Ref<Issue>, boolean>> {
+  const result = new Map<Ref<Issue>, boolean>()
+
+  const account = getCurrentAccount()
+  const isGuest =
+    account.role === AccountRole.Guest ||
+    account.role === AccountRole.DocGuest ||
+    account.role === AccountRole.ReadOnlyGuest
+
+  if (!isGuest) {
+    for (const issue of issues) result.set(issue._id, true)
+    return result
+  }
+
+  const client = getClient()
+  const collaborators = await client.findAll(core.class.Collaborator, {
+    attachedTo: { $in: issues.map((i) => i._id) },
+    collaborator: account.uuid
+  })
+  const collaboratorOf = new Set<string>(collaborators.map((c) => String(c.attachedTo)))
+  const socialIds = Array.isArray(account.socialIds) ? account.socialIds : []
+
+  for (const issue of issues) {
+    const isCreator = issue.createdBy !== undefined && socialIds.includes(issue.createdBy)
+    result.set(issue._id, isCreator || collaboratorOf.has(String(issue._id)))
+  }
+  return result
+}
+
+/**
  * Mirrors {@link canEditIssue} for Milestones (PR3.2 Gantt edit-parity).
  * Milestones don't have createdBy-as-Person semantics in the same way Issues
  * do — a project-member who can see the milestone can typically also edit it.

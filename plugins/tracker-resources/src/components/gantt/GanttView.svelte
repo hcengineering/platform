@@ -9,6 +9,7 @@
     type DocumentQuery,
     generateId,
     getCurrentAccount,
+    type Projection,
     type Ref,
     type Space,
     SortingOrder
@@ -86,7 +87,7 @@
   import type { BarColorMode, BarColorContext } from './lib/bar-colors'
   import { buildBarColorContext } from './lib/bar-colors-context'
   import tracker from '../../plugin'
-  import { canEditIssue, canEditMilestone } from '../../utils'
+  import { canEditIssue, canEditIssuesBatch, canEditMilestone } from '../../utils'
   import GanttCanvas from './GanttCanvas.svelte'
   import GanttConfirmCommitPopup from './GanttConfirmCommitPopup.svelte'
   import GanttHeader from './GanttHeader.svelte'
@@ -1943,6 +1944,24 @@
     })
   }
 
+  // M-G9: the drag-commit / cascade paths only read scheduling-relevant
+  // fields off the full-space fetch (dates, parents, schedulingMode, assignee,
+  // milestone — all data-blob fields — plus the base columns `space` and
+  // `createdBy` needed by ops.update() and canEditIssue()'s guest creator
+  // short-circuit). Projecting to them avoids selecting the unused base
+  // columns while keeping every consumer's inputs byte-identical.
+  const dragCommitProjection: Projection<Issue> = {
+    _id: 1,
+    space: 1,
+    createdBy: 1,
+    startDate: 1,
+    dueDate: 1,
+    parents: 1,
+    schedulingMode: 1,
+    assignee: 1,
+    milestone: 1
+  }
+
   /**
    * Commit a drag for an Issue target. Mirrors the PR3 commit path; the
    * cascade walks descendant issues (parent → children shift by delta).
@@ -1961,7 +1980,11 @@
         // active Tracker filter wouldn't shift with the parent and the
         // tree would drift out of sync.
         const client = getClient()
-        const allInSpace = await client.findAll(tracker.class.Issue, { space: target.doc.space })
+        const allInSpace = await client.findAll(
+          tracker.class.Issue,
+          { space: target.doc.space },
+          { projection: dragCommitProjection }
+        )
         for (const child of descendantsWithDates(target.doc, allInSpace)) {
           await ops.update(child, {
             startDate: (child.startDate as number) + delta,
@@ -2000,7 +2023,11 @@
       const delta = (state as any).previewStart - (state as any).originStart
       if (delta !== 0) {
         const client = getClient()
-        const allInSpace = await client.findAll(tracker.class.Issue, { space: target.doc.space })
+        const allInSpace = await client.findAll(
+          tracker.class.Issue,
+          { space: target.doc.space },
+          { projection: dragCommitProjection }
+        )
         const assigned = allInSpace.filter(
           (i) => (i as unknown as { milestone?: string | null }).milestone === target.doc._id
         )
@@ -2056,7 +2083,7 @@
     // also needs to resolve hidden predecessors/successors when counting
     // direct violations, otherwise filter-hidden relations are invisible
     // to the warning banner.
-    const allInSpace = await client.findAll(tracker.class.Issue, { space })
+    const allInSpace = await client.findAll(tracker.class.Issue, { space }, { projection: dragCommitProjection })
     const allByRef = new Map<Ref<Issue>, Issue>()
     for (const i of allInSpace) allByRef.set(i._id, i)
 
@@ -2108,12 +2135,10 @@
     }
 
     // Non-bypass path: permission map (allInSpace already fetched above).
-    const canEditMap = new Map<Ref<Issue>, boolean>()
-    await Promise.all(
-      allInSpace.map(async (i) => {
-        canEditMap.set(i._id, await canEditIssue(i))
-      })
-    )
+    // M-G9: batch the per-issue permission check — for guests this collapses
+    // one Collaborator findOne per issue into a single findAll; for non-guests
+    // it short-circuits to `true` without any query (same result as before).
+    const canEditMap = await canEditIssuesBatch(allInSpace)
 
     const result: SimulateResult = simulateCascade(
       primaryEdits,
@@ -2492,7 +2517,11 @@
     // Parent-drag detection: check full space for children.
     if (state.kind === 'dragging-body' && state.target.kind === 'issue') {
       const parent = state.target.doc
-      const allInSpace = await client.findAll(tracker.class.Issue, { space: parent.space })
+      const allInSpace = await client.findAll(
+        tracker.class.Issue,
+        { space: parent.space },
+        { projection: dragCommitProjection }
+      )
       const isParent = allInSpace.some((i) => i.parents?.[0]?.parentId === parent._id)
       if (isParent) {
         const delta = (state as any).previewStart - (state as any).originStart
@@ -2681,7 +2710,11 @@
     const i = scheduledIssues.find((it) => String(it._id) === focusedIssueId)
     if (i?.startDate == null || i.dueDate == null) return
     if (!editableIssueIds.has(focusedIssueId)) return
-    const allInSpace = await getClient().findAll(tracker.class.Issue, { space: i.space })
+    const allInSpace = await getClient().findAll(
+      tracker.class.Issue,
+      { space: i.space },
+      { projection: dragCommitProjection }
+    )
     // All date arithmetic routes through addScheduleDays so the Phase-2
     // working-calendar swap stays a single integration point (Spec §5.3).
     const primaryEdits: PrimaryEdit[] = [
