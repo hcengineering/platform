@@ -203,7 +203,7 @@
         class="filter-overflow-badge"
         type="button"
         aria-haspopup="dialog"
-        aria-expanded="false"
+        aria-expanded={overflowPopup !== undefined}
         aria-label={`+${hiddenCount} hidden filters`}
         use:tooltip={{ label: view.string.HiddenFilters }}
         on:click={openOverflowPopover}
@@ -294,8 +294,8 @@
       outline-offset: 1px;
     }
   }
-  /* Unused IconClose import wired for the trailing button visual hint;
-     removed if Lint flags as dead. */
+  /* Dims the clear-all ghost button's IconClose so it reads as a secondary
+     affordance next to the active chips. */
   :global(.inline-filter-chips-wrap .button.ghost.small svg) {
     opacity: 0.7;
   }
