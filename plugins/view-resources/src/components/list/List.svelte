@@ -108,9 +108,19 @@
   $: queryNoLookup = noLookup(resultQuery)
   // Re-arm queryReady whenever the underlying query mutates so the result
   // count stops claiming the previous query's outcome (see comment above).
+  //
+  // L-VF2: re-arm only when the query CONTENT changes, not on every new object
+  // identity. `queryNoLookup` is rebuilt as a fresh object on each cycle, but
+  // createQuery() skips the callback for a deep-equal query — so resetting
+  // queryReady on identity alone would strand it at `false` (callback never
+  // re-fires) and the count/SearchEmptyState would stay stale forever.
+  let lastQuerySig: string | undefined
   $: {
-    void queryNoLookup
-    queryReady = false
+    const sig = JSON.stringify(queryNoLookup)
+    if (sig !== lastQuerySig) {
+      lastQuerySig = sig
+      queryReady = false
+    }
   }
 
   let fastQueryIds = new Set<Ref<Doc>>()
