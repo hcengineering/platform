@@ -514,16 +514,14 @@ export function serveAccount (
   })
 
   // ── CSV Export routes ────────────────────────────────────────────────────
-  // NOTE: clients now use fetch + Authorization header + blob download
-  // (no token-in-URL leakage). The ?token= query-string fallback is kept
-  // for one release with a deprecation warning so external scripts that
-  // bookmarked the old URL still work.
+  // NOTE: clients use fetch + Authorization header + blob download
+  // (no token-in-URL leakage). The admin token is accepted ONLY via the
+  // Authorization header; a token in the URL query would leak into proxy/
+  // access logs, browser history and Referrer headers (M-CSV).
 
   router.get('/api/v1/admin/export/accounts.csv', async (ctx) => {
-    const token = (ctx.query.token as string) ?? extractToken(ctx.request.headers) ?? ''
-    if (ctx.query.token != null) {
-      measureCtx.warn('CSV export: deprecated token-in-query usage', {})
-    }
+    // M-CSV: Token NUR aus Authorization-Header (URL-Query leakt in Logs/Referrer).
+    const token = extractToken(ctx.request.headers) ?? ''
     const [db] = await accountsDb
     const childCtx = measureCtx.newChild('csv-export-accounts', {})
     try {
