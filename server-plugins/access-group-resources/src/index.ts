@@ -136,15 +136,30 @@ function touchesMembers (operations: Record<string, any>): boolean {
 export async function OnAccessGroupChanged (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   for (const tx of txes) {
-    if (tx._class !== core.class.TxUpdateDoc) continue
-    const upd = tx as TxUpdateDoc<AccessGroup>
-    if (!control.hierarchy.isDerived(upd.objectClass, core.class.AccessGroup)) continue
-    if (!touchesMembers(upd.operations as Record<string, any>)) continue
+    if (!control.hierarchy.isDerived((tx as any).objectClass, core.class.AccessGroup)) continue
 
-    const members = await groupMembers(control, upd.objectId)
-    const grants = await control.findAll<GroupGrant>(control.ctx, core.class.GroupGrant, { group: upd.objectId })
-    for (const grant of grants) {
-      result.push(...reconcileTxes(control, grant, members, await existingForGrant(control, grant)))
+    if (tx._class === core.class.TxUpdateDoc) {
+      const upd = tx as TxUpdateDoc<AccessGroup>
+      if (!touchesMembers(upd.operations as Record<string, any>)) continue
+      const members = await groupMembers(control, upd.objectId)
+      const grants = await control.findAll<GroupGrant>(control.ctx, core.class.GroupGrant, { group: upd.objectId })
+      for (const grant of grants) {
+        result.push(...reconcileTxes(control, grant, members, await existingForGrant(control, grant)))
+      }
+    } else if (tx._class === core.class.TxRemoveDoc) {
+      // M-02: the group is gone. Tear down every GroupGrant it owns and all the
+      // group-provenance collaborators those grants materialized, so no access
+      // survives an orphaned group. The CollaboratorGuardMiddleware blocks a client
+      // delete while grants live; this covers system / migration deletes that
+      // bypass the guard.
+      const rm = tx as TxRemoveDoc<AccessGroup>
+      const grants = await control.findAll<GroupGrant>(control.ctx, core.class.GroupGrant, { group: rm.objectId })
+      for (const grant of grants) {
+        for (const c of await existingForGrant(control, grant)) {
+          result.push(control.txFactory.createTxRemoveDoc(core.class.Collaborator, c.space, c._id))
+        }
+        result.push(control.txFactory.createTxRemoveDoc(core.class.GroupGrant, grant.space, grant._id))
+      }
     }
   }
   return result

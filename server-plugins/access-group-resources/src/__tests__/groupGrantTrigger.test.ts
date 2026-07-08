@@ -149,7 +149,7 @@ describe('OnGroupGrantChanged', () => {
       collaborators: [collab({ collaborator: 'a', level: 'read' })]
     }
     const control = makeControl(store)
-    const upd = {
+    const upd: any = {
       _class: core.class.TxUpdateDoc,
       objectClass: core.class.GroupGrant,
       objectId: 'grant-1',
@@ -173,7 +173,7 @@ describe('OnGroupGrantChanged', () => {
       ]
     }
     const control = makeControl(store)
-    const rm = {
+    const rm: any = {
       _class: core.class.TxRemoveDoc,
       objectClass: core.class.GroupGrant,
       objectId: 'grant-1',
@@ -195,7 +195,7 @@ describe('OnGroupGrantChanged', () => {
       ]
     }
     const control = makeControl(store)
-    const rm = {
+    const rm: any = {
       _class: core.class.TxRemoveDoc,
       objectClass: core.class.GroupGrant,
       objectId: 'grant-1',
@@ -222,7 +222,7 @@ describe('OnAccessGroupChanged', () => {
       ]
     }
     const control = makeControl(store)
-    const upd = {
+    const upd: any = {
       _class: core.class.TxUpdateDoc,
       objectClass: core.class.AccessGroup,
       objectId: 'group-1',
@@ -247,7 +247,7 @@ describe('OnAccessGroupChanged', () => {
       ]
     }
     const control = makeControl(store)
-    const upd = {
+    const upd: any = {
       _class: core.class.TxUpdateDoc,
       objectClass: core.class.AccessGroup,
       objectId: 'group-1',
@@ -267,7 +267,7 @@ describe('OnAccessGroupChanged', () => {
       collaborators: [collab({ collaborator: 'a', _id: 'g-a' })]
     }
     const control = makeControl(store)
-    const upd = {
+    const upd: any = {
       _class: core.class.TxUpdateDoc,
       objectClass: core.class.AccessGroup,
       objectId: 'group-1',
@@ -276,5 +276,36 @@ describe('OnAccessGroupChanged', () => {
     }
     const res = await OnAccessGroupChanged([upd], control)
     expect(res).toEqual([])
+  })
+
+  it('M-02: AccessGroup remove tears down every GroupGrant and its group-collaborators (no orphans)', async () => {
+    const store: Store = {
+      groups: [], // group already deleted
+      grants: [
+        grant({ _id: 'grant-1', attachedTo: 'issue-1' }),
+        grant({ _id: 'grant-2', attachedTo: 'issue-2' })
+      ],
+      collaborators: [
+        collab({ collaborator: 'a', _id: 'g-a1', grantedByGroup: 'grant-1', attachedTo: 'issue-1' }),
+        collab({ collaborator: 'b', _id: 'g-b1', grantedByGroup: 'grant-1', attachedTo: 'issue-1' }),
+        collab({ collaborator: 'a', _id: 'g-a2', grantedByGroup: 'grant-2', attachedTo: 'issue-2' })
+      ]
+    }
+    const control = makeControl(store)
+    const rm: any = {
+      _class: core.class.TxRemoveDoc,
+      objectClass: core.class.AccessGroup,
+      objectId: 'group-1',
+      objectSpace: 'space-1'
+    }
+    const res = await OnAccessGroupChanged([rm], control)
+    // all three materialized collaborators torn down
+    expect(removedIds(res).sort()).toEqual(['g-a1', 'g-a2', 'g-b1'])
+    // both now-orphan grants removed too
+    const grantRemoves = res
+      .filter((t) => t._class === core.class.TxRemoveDoc && (t as any).objectClass === core.class.GroupGrant)
+      .map((t) => (t as any).objectId)
+      .sort()
+    expect(grantRemoves).toEqual(['grant-1', 'grant-2'])
   })
 })
