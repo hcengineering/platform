@@ -425,16 +425,18 @@ export async function getWorkspaceMembersAdmin (
   }
 
   const members = await db.getWorkspaceMembers(params.workspaceUuid)
-  const accountUuids = members.map((m: any) => m.person)
-  const allAccounts = await db.account.find({})
-  const accountByUuid = new Map(
-    allAccounts.filter((a: any) => accountUuids.includes(a.uuid)).map((a: any) => [a.uuid, a])
-  )
-  const allPersons = await db.person.find({})
-  const personByUuid = new Map(allPersons.map((p: any) => [p.uuid, p]))
-  const allSocials = await db.socialId.find({})
+  const accountUuids = members.map((m: any) => m.person as AccountUuid)
+  // L-FTS: gezielte $in-Query auf die Member-UUIDs statt Full-Table-Scan.
+  // db.account/person/socialId.find({}) lud jeweils die komplette Tabelle ->
+  // Speicher-/DoS-Risiko bei grossen Deployments. Leere Member-Menge -> keine Query.
+  const personUuids = accountUuids as unknown as PersonUuid[]
+  const accounts = accountUuids.length > 0 ? await db.account.find({ uuid: { $in: accountUuids } }) : []
+  const accountByUuid = new Map(accounts.map((a: any) => [a.uuid, a]))
+  const persons = personUuids.length > 0 ? await db.person.find({ uuid: { $in: personUuids } }) : []
+  const personByUuid = new Map(persons.map((p: any) => [p.uuid, p]))
+  const socials = personUuids.length > 0 ? await db.socialId.find({ personUuid: { $in: personUuids } }) : []
   const socialsByPerson = new Map<string, any[]>()
-  for (const s of allSocials) {
+  for (const s of socials) {
     const k = s.personUuid as string
     let personSocials = socialsByPerson.get(k)
     if (personSocials === undefined) {

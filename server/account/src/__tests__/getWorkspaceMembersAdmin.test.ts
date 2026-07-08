@@ -30,9 +30,9 @@ function mockDb (workspace: any, members: any[], accounts: any[], persons: any[]
     workspace: { findOne: async () => wsRow },
     workspaceStatus: { findOne: async () => statusRow },
     getWorkspaceMembers: async () => members,
-    account: { find: async () => accounts },
-    person: { find: async () => persons },
-    socialId: { find: async () => socials }
+    account: { find: jest.fn(async () => accounts) },
+    person: { find: jest.fn(async () => persons) },
+    socialId: { find: jest.fn(async () => socials) }
   }
 }
 
@@ -67,7 +67,8 @@ describe('getWorkspaceMembersAdmin', () => {
       { personUuid: 'acc-1', type: 'email', value: 'a@x' },
       { personUuid: 'acc-2', type: 'email', value: 'b@x' }
     ]
-    const out = await getWorkspaceMembersAdmin(ctx, mockDb(ws, members, accounts, persons, socials), null, 'admin', {
+    const db = mockDb(ws, members, accounts, persons, socials)
+    const out = await getWorkspaceMembersAdmin(ctx, db, null, 'admin', {
       workspaceUuid: WS
     })
     expect(out.workspaceUuid).toBe(WS)
@@ -80,5 +81,19 @@ describe('getWorkspaceMembersAdmin', () => {
       lastActivityAt: 1700000000000
     })
     expect(out.members[1]).toMatchObject({ accountUuid: 'acc-2', status: 'disabled' })
+    // L-FTS: gezielte $in-Query auf die Member-UUIDs statt Full-Table-Scan ({}).
+    expect(db.account.find).toHaveBeenCalledWith({ uuid: { $in: ['acc-1', 'acc-2'] } })
+    expect(db.person.find).toHaveBeenCalledWith({ uuid: { $in: ['acc-1', 'acc-2'] } })
+    expect(db.socialId.find).toHaveBeenCalledWith({ personUuid: { $in: ['acc-1', 'acc-2'] } })
+  })
+
+  it('L-FTS: skips DB queries when workspace has no members', async () => {
+    const ws = { uuid: WS, name: 'team', url: 'team-url', mode: 'active' }
+    const db = mockDb(ws, [], [], [], [])
+    const out = await getWorkspaceMembersAdmin(ctx, db, null, 'admin', { workspaceUuid: WS })
+    expect(out.members).toHaveLength(0)
+    expect(db.account.find).not.toHaveBeenCalled()
+    expect(db.person.find).not.toHaveBeenCalled()
+    expect(db.socialId.find).not.toHaveBeenCalled()
   })
 })
