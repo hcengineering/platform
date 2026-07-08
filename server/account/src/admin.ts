@@ -24,19 +24,30 @@ interface AdminEmailsLogger {
  * - trim() each entry
  * - toLowerCase() each entry
  * - drop empty entries
- * - entries without '@' are kept (backwards compatibility with deployments
- *   that use login-id style ADMIN_EMAILS values, e.g. ADMIN_EMAILS=admin)
- *   but a warning is emitted listing them (Codex Optional: warn-don't-reject).
+ * - L-AUTH-3: entries without '@' are DROPPED by default (a typo like
+ *   ADMIN_EMAILS=admin,michel@… would otherwise mint an unintended admin
+ *   identifier). Deployments that intentionally use login-id style values must
+ *   opt in with ADMIN_EMAILS_ALLOW_LOGIN_ID=true; a warning is always emitted
+ *   listing the affected entries.
  */
 export function parseAdminEmails (envValue: string | undefined, logger?: AdminEmailsLogger): Set<string> {
   if (envValue == null || envValue === '') return new Set()
+  const allowLoginId = process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID === 'true'
   const entries = envValue
     .split(',')
     .map((s) => s.trim().toLowerCase())
     .filter((s) => s.length > 0)
   const invalid: string[] = []
+  const kept: string[] = []
   for (const entry of entries) {
-    if (!entry.includes('@')) invalid.push(entry)
+    if (entry.includes('@')) {
+      kept.push(entry)
+    } else if (allowLoginId) {
+      kept.push(entry)
+      invalid.push(entry) // kept, but still warn for visibility
+    } else {
+      invalid.push(entry) // fail-closed: dropped
+    }
   }
   if (invalid.length > 0) {
     const warn =
@@ -45,9 +56,10 @@ export function parseAdminEmails (envValue: string | undefined, logger?: AdminEm
         // eslint-disable-next-line no-console
         console.warn(msg, attrs)
       })
-    warn('ADMIN_EMAILS contains entries without "@" (kept for backwards compatibility)', { entries: invalid })
+    const action = allowLoginId ? 'kept (ADMIN_EMAILS_ALLOW_LOGIN_ID=true)' : 'DROPPED'
+    warn(`ADMIN_EMAILS contains entries without "@" (${action})`, { entries: invalid })
   }
-  return new Set(entries)
+  return new Set(kept)
 }
 
 const ADMIN_EMAILS = parseAdminEmails(process.env.ADMIN_EMAILS)

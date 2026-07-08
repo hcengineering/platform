@@ -64,38 +64,67 @@ describe('admin.ts — env parsing + lookup normalization', () => {
     expect(isAdminEmail('MICHAEL@URAY.IO')).toBe(true)
   })
 
-  test('4. invalid-shape entries WARN (not reject) — no-@ entries kept for backwards compatibility', () => {
+  test('4. L-AUTH-3: no-@ entries are DROPPED by default (fail-closed) + warn', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const prevFlag = process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID
+    delete process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID
     try {
       const { isAdminEmail } = loadAdmin('foo,bar@@,baz')
-      // All entries kept; warn lists no-@ entries
-      expect(isAdminEmail('foo')).toBe(true)
-      expect(isAdminEmail('baz')).toBe(true)
+      // No-@ entries dropped; only the '@'-bearing entry survives.
+      expect(isAdminEmail('foo')).toBe(false)
+      expect(isAdminEmail('baz')).toBe(false)
       expect(isAdminEmail('bar@@')).toBe(true)
-      expect(warnSpy).toHaveBeenCalledWith(
-        'ADMIN_EMAILS contains entries without "@" (kept for backwards compatibility)',
-        {
-          entries: ['foo', 'baz']
-        }
-      )
+      expect(warnSpy).toHaveBeenCalledWith('ADMIN_EMAILS contains entries without "@" (DROPPED)', {
+        entries: ['foo', 'baz']
+      })
     } finally {
       warnSpy.mockRestore()
+      if (prevFlag === undefined) delete process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID
+      else process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID = prevFlag
     }
   })
 
-  test('4b. invalid-shape WARN via injected logger — all entries kept', () => {
+  test('4b. L-AUTH-3: injected logger sees DROPPED no-@ entries by default', () => {
     // Direct parseAdminEmails call with custom logger — proves the
     // injection point works (admin.ts has no MeasureContext at load time).
-    const { parseAdminEmails } = loadAdmin('')
-    const warn = jest.fn()
-    const set = parseAdminEmails('foo,alice@example.com,baz', { warn })
-    expect(set.has('foo')).toBe(true)
-    expect(set.has('alice@example.com')).toBe(true)
-    expect(set.has('baz')).toBe(true)
-    expect(set.size).toBe(3)
-    expect(warn).toHaveBeenCalledWith('ADMIN_EMAILS contains entries without "@" (kept for backwards compatibility)', {
-      entries: ['foo', 'baz']
-    })
+    const prevFlag = process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID
+    delete process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID
+    try {
+      const { parseAdminEmails } = loadAdmin('')
+      const warn = jest.fn()
+      const set = parseAdminEmails('foo,alice@example.com,baz', { warn })
+      expect(set.has('foo')).toBe(false)
+      expect(set.has('alice@example.com')).toBe(true)
+      expect(set.has('baz')).toBe(false)
+      expect(set.size).toBe(1)
+      expect(warn).toHaveBeenCalledWith('ADMIN_EMAILS contains entries without "@" (DROPPED)', {
+        entries: ['foo', 'baz']
+      })
+    } finally {
+      if (prevFlag === undefined) delete process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID
+      else process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID = prevFlag
+    }
+  })
+
+  test('4c. L-AUTH-3: no-@ entries kept when ADMIN_EMAILS_ALLOW_LOGIN_ID=true (opt-in)', () => {
+    const prevFlag = process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID
+    process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID = 'true'
+    try {
+      const { parseAdminEmails } = loadAdmin('')
+      const warn = jest.fn()
+      const set = parseAdminEmails('foo,alice@example.com,baz', { warn })
+      expect(set.has('foo')).toBe(true)
+      expect(set.has('alice@example.com')).toBe(true)
+      expect(set.has('baz')).toBe(true)
+      expect(set.size).toBe(3)
+      expect(warn).toHaveBeenCalledWith(
+        'ADMIN_EMAILS contains entries without "@" (kept (ADMIN_EMAILS_ALLOW_LOGIN_ID=true))',
+        { entries: ['foo', 'baz'] }
+      )
+    } finally {
+      if (prevFlag === undefined) delete process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID
+      else process.env.ADMIN_EMAILS_ALLOW_LOGIN_ID = prevFlag
+    }
   })
 
   test('5. empty env string — empty set, all lookups return false', () => {
