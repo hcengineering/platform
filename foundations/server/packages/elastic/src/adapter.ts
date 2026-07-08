@@ -328,6 +328,26 @@ class ElasticAdapter implements FullTextAdapter {
     // clause for a field it believes the server recognises; if the two lists
     // drift, a client-routed clause hits a field the adapter does not treat as
     // query_string and silently fails to parse.
+    //
+    // SECURITY (M-VF5): `query_string` lets a raw `field:value` clause target
+    // ANY indexed field (e.g. `space:<id>`, `modifiedBy:<id>`, `attachedTo:<id>`),
+    // not just the `fields` whitelist below (that list only picks the DEFAULT
+    // fields for bare terms). This is intentionally NOT gated here because the
+    // hits this method returns are never authoritative results — they are only a
+    // candidate id-set. The two enclosing guards make field-targeting safe:
+    //   1. `workspaceId` is a hard `bool.must` term (see the request below), so
+    //      no clause can reach another workspace's documents.
+    //   2. Within the workspace, every consumer re-filters by space ACL. The
+    //      only caller is pods/fulltext `/api/v1/search` → FullTextMiddleware,
+    //      which sits BELOW SpaceSecurityMiddleware in the pipeline. That
+    //      middleware runs `provideFindAll({ _id: { $in: <these ids> }, ...q })`
+    //      where `q` still carries the space constraint SpaceSecurityMiddleware
+    //      injected upstream (or, in its >85%-allowed fast path, post-filters
+    //      the result via `clientFilterSpaces`). A forbidden-space doc surfaced
+    //      by a crafted `space:` clause is therefore dropped at the DB findAll /
+    //      result filter and never reaches the client — no content or existence
+    //      oracle. Verified 2026-07-07 against server-pipeline middleware order.
+    //
     const KNOWN_FIELD_RE =
       /(^|\s)(searchTitle|searchShortTitle|identifier|description\.plain|comments\.message|fulltextSummary)\s*:/i
     const usesQueryString = KNOWN_FIELD_RE.test(raw)
