@@ -210,6 +210,11 @@ class ValuesVariables {
 }
 
 abstract class PostgresAdapterBase implements DbAdapter {
+  // Postgres enforces collaborator-grant read security via addSecurity's collab
+  // OR-branch (see getSecurityClause below), so the space-security middleware may
+  // safely drop the space filter for collab-read bypasses on this backend.
+  readonly supportsCollaboratorSecurity = true
+
   protected readonly _helper: DBCollectionHelper
   protected readonly tableFields = new Map<string, string[]>()
 
