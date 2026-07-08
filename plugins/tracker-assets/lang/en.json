@@ -294,7 +294,27 @@
     "ForbidCreateProjectPermission": "Forbid create project",
     "ForbidCreateProjectPermissionDescription": "Forbid users creating new projects",
     "AllowCreatingIssues": "Allow creating issues",
-    "SharedWithYouTooltip": "You have access to specific issues only; you are not a member of this project"
+    "SharedWithYouTooltip": "You have access to specific issues only; you are not a member of this project",
+    "Access": "Access",
+    "AdditionalAccess": "Additional access",
+    "SpaceMembersAccess": "Project members",
+    "NoAdditionalAccess": "No additional access granted",
+    "GrantedViaMention": "via @mention",
+    "GrantedManually": "granted manually",
+    "GrantedViaGroup": "via group",
+    "GrantedByOn": "by {name}",
+    "RevokeAccess": "Revoke access",
+    "GiveUpAccess": "Give up access",
+    "AddPersonAccess": "Add person",
+    "LevelRead": "Read",
+    "LevelWrite": "Write",
+    "LevelAdmin": "Admin",
+    "AccessLevelLabel": "Access level",
+    "GrantAccessTitle": "Grant access",
+    "AccessGrantWarningRead": "{name} will get read and comment access to \"{issue}\", although they are not a member of this project.",
+    "AccessGrantWarningWrite": "{name} will get read, comment and edit access to \"{issue}\", although they are not a member of this project.",
+    "AccessGrantWarningAdmin": "{name} will get read, comment and edit access to \"{issue}\" and may manage this issue's access, although they are not a member of this project.",
+    "GrantAccessConfirm": "Grant access"
   },
   "status": {}
 }
