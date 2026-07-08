@@ -116,10 +116,6 @@
   })
 
   $: queryNoLookup = getCategoryQueryNoLookup(resultQuery)
-  $: {
-    void queryNoLookup
-    queryReady = false
-  }
 
   function toIssue (object: any): WithLookup<Issue> {
     return object as WithLookup<Issue>
@@ -150,11 +146,11 @@
 
   // Plan 2 T8 — feed the shared result-count store so IssuesView can show
   // its SearchEmptyState card when the user's search yields zero hits.
-  // queryReady is re-armed false on every query change so a stale 0 from
-  // a previous query never lingers — otherwise the empty-state card could
-  // stick after a successful search yielded new tasks.
-  let queryReady = false
-  $: if (queryReady) resultIssueCountStore.set(tasks.length)
+  // M-G4: the count is written from the same fast-query callback that sets the
+  // data source (see docsQuery below), not reactively off `tasks` — the old
+  // coupling read `tasks` (fast + lagging slow query) while gating on a flag
+  // set by the fast query alone, so a stale slow-query result could skew the
+  // count right after a search changed.
   onDestroy(() => {
     resultIssueCountStore.set(-1)
   })
@@ -187,7 +183,7 @@
     (res) => {
       fastDocs = res
       fastQueryIds = new Set(res.map((it) => it._id))
-      queryReady = true
+      resultIssueCountStore.set(res.length)
     },
     { ...categoryQueryOptions, limit: 1000 }
   )
