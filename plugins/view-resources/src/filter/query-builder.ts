@@ -100,6 +100,15 @@ export async function makeFilterQuery (
       } else if (key === '$gt') {
         existing[key] = existing[key] > result[key] ? existing[key] : result[key]
         merged = true
+      } else if (key === '$lte') {
+        // L-VF7: date filters emit $lte/$gte (before/after/dateToday). Two
+        // filters on one key must intersect — the tighter upper bound wins.
+        existing[key] = existing[key] < result[key] ? existing[key] : result[key]
+        merged = true
+      } else if (key === '$gte') {
+        // L-VF7: tighter lower bound wins.
+        existing[key] = existing[key] > result[key] ? existing[key] : result[key]
+        merged = true
       }
     }
     if (!merged) Object.assign(existing, result)

@@ -42,6 +42,21 @@ describe('makeFilterQuery', () => {
     expect(out).toEqual({ status: { $in: ['b'] } })
   })
 
+  it('intersects $gte/$lte date bounds across two filters on same key (L-VF7)', async () => {
+    const base: DocumentQuery<Doc> = {}
+    // Each filter emits a { $gte, $lte } range from [gte, lte] — mimics the
+    // real before/after/dateToday date outputs.
+    const rangeResult = async (filter: Filter): Promise<{ $gte: unknown, $lte: unknown }> => ({
+      $gte: filter.value[0],
+      $lte: filter.value[1]
+    })
+    const resolveRange = jest.fn(async () => rangeResult)
+    const filters: Filter[] = [mockFilter('dueDate', [10, 100], 1), mockFilter('dueDate', [20, 80], 2)]
+    const out = await makeFilterQuery(base, filters, async () => mockMode, resolveRange as any)
+    // The tighter bound must win on each side: $gte = max(10, 20), $lte = min(100, 80).
+    expect(out).toEqual({ dueDate: { $gte: 20, $lte: 80 } })
+  })
+
   it('preserves base query fields untouched by the filters', async () => {
     const base: DocumentQuery<Doc> = { space: 'foo' as any, modifiedOn: 123 as any }
     const filters: Filter[] = [mockFilter('status', ['x'])]
