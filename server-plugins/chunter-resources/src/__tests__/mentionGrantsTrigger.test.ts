@@ -4,7 +4,7 @@ import { jsonToMarkup, MarkupNodeType } from '@hcengineering/text-core'
 // Imported AFTER the mocks (jest.mock above is hoisted by ts-jest, so even
 // these top-level ESM imports see the mocked module). Avoid `require()` so
 // the file passes `tsc --noEmit` (the package's tsconfig only ships @types/jest).
-import { ChunterTrigger } from '../index'
+import { ChunterTrigger, OnChatMessageRemoved } from '../index'
 import coreDefault from '@hcengineering/core'
 
 // ------------------------------------------------------------------
@@ -15,16 +15,18 @@ import coreDefault from '@hcengineering/core'
 // undefined during getter evaluation when all properties are accessed
 // eagerly). We work around this by requiring the actual module and only
 // accessing specific known-safe properties instead of spreading.
+//
+// P5: resolveMentionGrantTarget is driven by a globalThis flag so a single
+// test can exercise the notification-only (non-grant-target) path.
 // ------------------------------------------------------------------
 jest.mock('@hcengineering/core', () => {
-  // Load the real module but access only the specific properties we need.
-  // DO NOT spread with {...actual}: that triggers all lazy getters eagerly,
-  // hitting the circular-dep crash in import_component2.
   const actual = jest.requireActual('@hcengineering/core')
 
-  // Build a proxy that delegates unknown property reads to the actual module.
-  // This avoids the eager spread while still giving server-core etc. access
-  // to toFindResult, TxProcessor, etc.
+  const mockGetClassCollaborators = jest.fn(() => ({ provideSecurity: true, mentionsGrantAccess: true }))
+  const mockResolveMentionGrantTarget = jest.fn(async (doc: any) =>
+    (globalThis as any).__noGrantTarget === true ? null : doc
+  )
+
   const proxy = new Proxy(actual, {
     get (target: any, prop: string) {
       if (prop === 'getClassCollaborators') return mockGetClassCollaborators
@@ -32,9 +34,6 @@ jest.mock('@hcengineering/core', () => {
       return target[prop]
     }
   })
-
-  const mockGetClassCollaborators = jest.fn(() => ({ provideSecurity: true, mentionsGrantAccess: true }))
-  const mockResolveMentionGrantTarget = jest.fn(async (doc: any) => doc)
 
   return proxy
 })
@@ -61,12 +60,25 @@ function makeMarkup (...refs: Array<{ id: string, grantsAccess?: 'true' | 'false
 
 const TARGET = { _id: 'issue-1', _class: 'tracker:class:Issue', space: 'space-1' }
 
-function makeControl (): any {
+interface ControlOpts {
+  spaceMembers?: string[]
+  // Existing grantedVia:'mention' records for THIS message (msg-1).
+  mentionRecords?: Array<{ _id: string, collaborator: string, grantedByMessage?: string }>
+  // All collaborators on the grant target (structural / any provenance).
+  targetCollaborators?: Array<{ _id: string, collaborator: string, grantedVia?: string, grantedByMessage?: string }>
+  classCollabProvideSecurity?: boolean
+}
+
+function makeControl (opts: ControlOpts = {}): any {
+  const spaceMembers = opts.spaceMembers ?? ['author-acc']
+  const mentionRecords = opts.mentionRecords ?? []
+  const targetCollaborators = opts.targetCollaborators ?? [
+    { _id: 'col-existing', collaborator: 'existing-acc' } // structural, no provenance
+  ]
+  const classCollabProvideSecurity = opts.classCollabProvideSecurity ?? true
+
   return {
     hierarchy: {
-      // ChunterTrigger dispatches on isDerived(tx.objectClass, ChatMessage)
-      // FIRST (index.ts:360) — without the ChatMessage branch OnChatMessageCreated
-      // never runs. Mentioned refs are Persons; ThreadMessage/Channel stay false.
       isDerived: (cls: string, base: string) =>
         (base === 'chunter:class:ChatMessage' && cls === 'chunter:class:ChatMessage') ||
         (base === 'contact:class:Person' && cls === 'contact:class:Person')
@@ -78,30 +90,51 @@ function makeControl (): any {
         objectClass: _class,
         objectSpace: space,
         attributes
+      }),
+      createTxRemoveDoc: (_class: string, space: string, objectId: string) => ({
+        _class: coreDefault.class.TxRemoveDoc,
+        objectClass: _class,
+        objectSpace: space,
+        objectId
       })
     },
     findAll: jest.fn(async (_ctx: any, _class: string, query: any) => {
       if (_class === coreDefault.class.Collaborator) {
-        // NON-EMPTY -> skip the legacy init branch (index.ts:204) and provide
-        // the grant-target dedup basis (existing-acc already a collaborator).
-        return [{ collaborator: 'existing-acc' }]
+        if (query?.grantedVia === 'mention') {
+          // Message-scoped mention records (revoke + dedup basis).
+          return mentionRecords.map((r) => ({
+            _id: r._id,
+            _class: coreDefault.class.Collaborator,
+            space: 'space-1',
+            collaborator: r.collaborator,
+            grantedVia: 'mention',
+            grantedByMessage: r.grantedByMessage ?? 'msg-1'
+          }))
+        }
+        // Full collaborator list on the target (structural + any provenance).
+        return targetCollaborators.map((c) => ({
+          _id: c._id,
+          _class: coreDefault.class.Collaborator,
+          space: 'space-1',
+          collaborator: c.collaborator,
+          grantedVia: c.grantedVia,
+          grantedByMessage: c.grantedByMessage
+        }))
       }
       if (_class === coreDefault.class.ClassCollaborators) {
-        return [{ provideSecurity: true }]
+        return [{ provideSecurity: classCollabProvideSecurity }]
+      }
+      if (_class === coreDefault.class.Space) {
+        return [{ _id: 'space-1', members: spaceMembers }]
+      }
+      if (typeof _class === 'string' && _class.includes('InboxNotification')) {
+        return []
       }
       if (typeof _class === 'string' && _class.includes('Employee')) {
-        // Query-based: return an Employee for EVERY requested id. If the mock
-        // hardcoded only p1, the test would pass even WITHOUT the grantsAccess
-        // filter (p2 never returned) — a false positive. Returning all requested
-        // ids means a missing filter WOULD grant p2, so the test is red before
-        // Step 3 and green after.
         const ids: string[] = query?._id?.$in ?? []
         return ids.map((id: string) => ({ _id: id, personUuid: `${id}-acc` }))
       }
       if (_class === 'chunter:class:ChatMessage') {
-        // OnChatMessageUpdated loads the current stored message by _id before
-        // applying the update operations. Return a ChatMessage shape with the
-        // OLD (no-mention) body; the update tx supplies the new text.
         return [
           {
             _id: 'msg-1',
@@ -116,7 +149,6 @@ function makeControl (): any {
           }
         ]
       }
-      // targetDoc lookup (message.attachedTo)
       return [TARGET]
     }),
     ctx: {
@@ -154,90 +186,236 @@ function makeUpdateTx (operations: any, modifiedBy = 'social-editor'): any {
   }
 }
 
-function collaboratorGrants (res: Tx[]): string[] {
+function makeRemoveTx (): any {
+  return {
+    _class: coreDefault.class.TxRemoveDoc,
+    objectClass: 'chunter:class:ChatMessage',
+    objectId: 'msg-1',
+    objectSpace: 'space-1'
+  }
+}
+
+// All created Collaborator records (attributes).
+function collaboratorCreates (res: Tx[]): any[] {
   return res
     .filter(
       (t): t is TxCreateDoc<any> =>
         t._class === coreDefault.class.TxCreateDoc && (t as any).objectClass === coreDefault.class.Collaborator
     )
-    .map((t) => (t as any).attributes.collaborator)
+    .map((t) => (t as any).attributes)
 }
 
-describe('ChunterTrigger mention grants — grantsAccess filter', () => {
-  test("a reference with grantsAccess='false' yields no Collaborator tx for that person", async () => {
+// Only mention-provenance grant creates.
+function mentionGrantCreates (res: Tx[]): any[] {
+  return collaboratorCreates(res).filter((a) => a.grantedVia === 'mention')
+}
+
+// Collaborator removals -> the removed record _id.
+function collaboratorRemovals (res: Tx[]): string[] {
+  return res
+    .filter(
+      (t: any) => t._class === coreDefault.class.TxRemoveDoc && t.objectClass === coreDefault.class.Collaborator
+    )
+    .map((t: any) => t.objectId)
+}
+
+afterEach(() => {
+  delete (globalThis as any).__noGrantTarget
+})
+
+// ------------------------------------------------------------------
+// 5.1 — provenance + default level
+// ------------------------------------------------------------------
+describe('P5.1 mention grants carry provenance + default level', () => {
+  test('a consented mention grant carries grantedVia=mention, grantedBy, grantedByMessage, level=read', async () => {
     const control = makeControl()
-    const tx = makeCreateTx(makeMarkup({ id: 'p1' }, { id: 'p2', grantsAccess: 'false' }))
+    const tx = makeCreateTx(makeMarkup({ id: 'p1', grantsAccess: 'true' }))
 
-    const res: Tx[] = await ChunterTrigger([tx], control)
+    const res = await ChunterTrigger([tx], control)
+    const grants = mentionGrantCreates(res)
 
-    const granted = res
-      .filter(
-        (t): t is TxCreateDoc<any> =>
-          t._class === coreDefault.class.TxCreateDoc && (t as any).objectClass === coreDefault.class.Collaborator
-      )
-      .map((t) => (t as any).attributes.collaborator)
+    expect(grants).toHaveLength(1)
+    expect(grants[0]).toMatchObject({
+      collaborator: 'p1-acc',
+      grantedVia: 'mention',
+      grantedBy: 'author-acc',
+      grantedByMessage: 'msg-1',
+      level: 'read'
+    })
+  })
 
-    expect(granted).toContain('p1-acc') // p1 granted (no deny flag)
-    expect(granted).not.toContain('p2-acc') // p2 denied via grantsAccess='false'
+  test('double provenance: a person with a structural record still gets a mention record', async () => {
+    // 'existing-acc' is already a structural collaborator on the target; a
+    // consented mention of that person must still add a mention-read record
+    // (dedup is per (collaborator, mention, message), NOT global).
+    const control = makeControl()
+    const tx = makeCreateTx(makeMarkup({ id: 'existing', grantsAccess: 'true' }))
 
-    // Stronger: the denied person must be filtered BEFORE the Employee query,
-    // so the query's id list must be exactly ['p1'] (not ['p1','p2']).
+    const res = await ChunterTrigger([tx], control)
+    const grants = mentionGrantCreates(res)
+
+    expect(grants.map((g) => g.collaborator)).toContain('existing-acc')
+  })
+})
+
+// ------------------------------------------------------------------
+// 5.2 — fail-closed consent + author gate + notification separation
+// ------------------------------------------------------------------
+describe('P5.2 fail-closed consent', () => {
+  test('a mention WITHOUT grantsAccess grants nothing (fail-closed)', async () => {
+    const control = makeControl()
+    const tx = makeCreateTx(makeMarkup({ id: 'p1' })) // no grantsAccess flag
+
+    const res = await ChunterTrigger([tx], control)
+
+    expect(mentionGrantCreates(res)).toHaveLength(0)
+  })
+
+  test("grantsAccess='false' grants nothing; grantsAccess='true' grants; denied filtered before Employee query", async () => {
+    const control = makeControl()
+    const tx = makeCreateTx(makeMarkup({ id: 'p1', grantsAccess: 'true' }, { id: 'p2', grantsAccess: 'false' }))
+
+    const res = await ChunterTrigger([tx], control)
+    const granted = mentionGrantCreates(res).map((g) => g.collaborator)
+
+    expect(granted).toContain('p1-acc')
+    expect(granted).not.toContain('p2-acc')
+
+    // Employee query is driven by the notify list (!== 'false'); p2 is excluded.
     const employeeCall = control.findAll.mock.calls.find(
       (c: any[]) => typeof c[1] === 'string' && c[1].includes('Employee')
     )
     expect(employeeCall?.[2]?._id?.$in).toEqual(['p1'])
   })
+
+  test('author who is NOT a space member cannot grant (author-membership gate)', async () => {
+    const control = makeControl({ spaceMembers: [] }) // author-acc not a member
+    const tx = makeCreateTx(makeMarkup({ id: 'p1', grantsAccess: 'true' }))
+
+    const res = await ChunterTrigger([tx], control)
+
+    expect(mentionGrantCreates(res)).toHaveLength(0)
+  })
+
+  test('notification fan-out on a NON-grant target still creates collaborators without provenance', async () => {
+    ;(globalThis as any).__noGrantTarget = true
+    const control = makeControl({
+      classCollabProvideSecurity: false,
+      targetCollaborators: [{ _id: 'col-x', collaborator: 'other-acc' }]
+    })
+    const tx = makeCreateTx(makeMarkup({ id: 'p1' })) // no grant flag -> notify only
+
+    const res = await ChunterTrigger([tx], control)
+    const creates = collaboratorCreates(res)
+
+    // p1 (and the author) are added for notification, and NONE carry a grant.
+    expect(creates.map((c) => c.collaborator)).toContain('p1-acc')
+    expect(creates.every((c) => c.grantedVia === undefined)).toBe(true)
+  })
 })
 
-describe('ChunterTrigger mention grants — V3d add-only re-grant on edit', () => {
-  test('a newly-added mention on edit grants the mentioned employee', async () => {
+// ------------------------------------------------------------------
+// 5.3 — reconcile on edit + revoke on delete
+// ------------------------------------------------------------------
+describe('P5.3 reconcile on edit', () => {
+  test('a newly-consented mention on edit grants the mentioned employee', async () => {
+    const control = makeControl()
+    const tx = makeUpdateTx({ message: makeMarkup({ id: 'p3', grantsAccess: 'true' }) })
+
+    const res = await ChunterTrigger([tx], control)
+
+    expect(mentionGrantCreates(res).map((g) => g.collaborator)).toContain('p3-acc')
+  })
+
+  test('an unconsented mention on edit grants nothing (fail-closed)', async () => {
     const control = makeControl()
     const tx = makeUpdateTx({ message: makeMarkup({ id: 'p3' }) })
 
-    const res: Tx[] = await ChunterTrigger([tx], control)
+    const res = await ChunterTrigger([tx], control)
 
-    expect(collaboratorGrants(res)).toContain('p3-acc')
+    expect(mentionGrantCreates(res)).toHaveLength(0)
   })
 
-  test('a denied mention on edit grants nothing (V3c filter still applies)', async () => {
-    const control = makeControl()
-    const tx = makeUpdateTx({ message: makeMarkup({ id: 'p3', grantsAccess: 'false' }) })
+  test('an already-granted mention is deduped — no new create, no remove', async () => {
+    const control = makeControl({
+      mentionRecords: [{ _id: 'col-p3', collaborator: 'p3-acc' }]
+    })
+    const tx = makeUpdateTx({ message: makeMarkup({ id: 'p3', grantsAccess: 'true' }) })
 
-    const res: Tx[] = await ChunterTrigger([tx], control)
+    const res = await ChunterTrigger([tx], control)
 
-    expect(collaboratorGrants(res)).not.toContain('p3-acc')
+    expect(mentionGrantCreates(res)).toHaveLength(0)
+    expect(collaboratorRemovals(res)).toHaveLength(0)
   })
 
-  test('an already-granted collaborator is deduped — add-only no-op', async () => {
-    const control = makeControl()
-    // 'existing' resolves to personUuid 'existing-acc', which the grant target
-    // already lists (findAll Collaborator returns existing-acc) -> no new tx.
-    const tx = makeUpdateTx({ message: makeMarkup({ id: 'existing' }) })
+  test('removing a mention on edit revokes ONLY that message\'s mention record', async () => {
+    // p3 was granted by this message; the edit drops the mention -> its record
+    // is removed. A record from ANOTHER message (col-other) is out of scope.
+    const control = makeControl({
+      mentionRecords: [{ _id: 'col-p3', collaborator: 'p3-acc' }]
+    })
+    const tx = makeUpdateTx({ message: makeMarkup() }) // no mentions left
 
-    const res: Tx[] = await ChunterTrigger([tx], control)
+    const res = await ChunterTrigger([tx], control)
 
-    expect(collaboratorGrants(res)).not.toContain('existing-acc')
-    expect(collaboratorGrants(res)).toHaveLength(0)
+    expect(collaboratorRemovals(res)).toEqual(['col-p3'])
   })
 
-  test('a System-authored edit grants nothing (stale modifiedBy guard — uses edit actor)', async () => {
-    const control = makeControl()
-    // updateDoc2Doc sets message.modifiedBy = tx.modifiedBy = System, so the
-    // applyMentionGrants System guard fires. If the handler used the stored
-    // doc's (non-System) author instead, this would wrongly grant.
-    const tx = makeUpdateTx({ message: makeMarkup({ id: 'p3' }) }, coreDefault.account.System)
+  test('edit keeps one mention, drops another -> only the dropped record is removed', async () => {
+    const control = makeControl({
+      mentionRecords: [
+        { _id: 'col-p3', collaborator: 'p3-acc' },
+        { _id: 'col-p4', collaborator: 'p4-acc' }
+      ]
+    })
+    const tx = makeUpdateTx({ message: makeMarkup({ id: 'p3', grantsAccess: 'true' }) })
 
-    const res: Tx[] = await ChunterTrigger([tx], control)
+    const res = await ChunterTrigger([tx], control)
 
-    expect(collaboratorGrants(res)).toHaveLength(0)
+    expect(mentionGrantCreates(res)).toHaveLength(0) // p3 already granted
+    expect(collaboratorRemovals(res)).toEqual(['col-p4'])
+  })
+
+  test('a System-authored edit reconciles nothing (System guard)', async () => {
+    const control = makeControl({ mentionRecords: [{ _id: 'col-p3', collaborator: 'p3-acc' }] })
+    const tx = makeUpdateTx({ message: makeMarkup() }, coreDefault.account.System)
+
+    const res = await ChunterTrigger([tx], control)
+
+    expect(collaboratorCreates(res)).toHaveLength(0)
+    expect(collaboratorRemovals(res)).toHaveLength(0)
   })
 
   test('a non-message update (no operations.message) is a no-op', async () => {
-    const control = makeControl()
+    const control = makeControl({ mentionRecords: [{ _id: 'col-p3', collaborator: 'p3-acc' }] })
     const tx = makeUpdateTx({ reactions: 1 })
 
-    const res: Tx[] = await ChunterTrigger([tx], control)
+    const res = await ChunterTrigger([tx], control)
 
-    expect(collaboratorGrants(res)).toHaveLength(0)
+    expect(collaboratorCreates(res)).toHaveLength(0)
+    expect(collaboratorRemovals(res)).toHaveLength(0)
+  })
+})
+
+describe('P5.3 revoke on message delete', () => {
+  test('deleting a message revokes exactly its mention grants', async () => {
+    const control = makeControl({ mentionRecords: [{ _id: 'col-p3', collaborator: 'p3-acc' }] })
+
+    const res = await OnChatMessageRemoved([makeRemoveTx()], control)
+
+    expect(collaboratorRemovals(res)).toEqual(['col-p3'])
+    // The Collaborator query is scoped to this message's mention provenance.
+    const collabCall = control.findAll.mock.calls.find(
+      (c: any[]) => c[1] === coreDefault.class.Collaborator && c[2]?.grantedVia === 'mention'
+    )
+    expect(collabCall?.[2]).toMatchObject({ grantedVia: 'mention', grantedByMessage: 'msg-1' })
+  })
+
+  test('deleting a message with no mention grants removes no collaborators', async () => {
+    const control = makeControl({ mentionRecords: [] })
+
+    const res = await OnChatMessageRemoved([makeRemoveTx()], control)
+
+    expect(collaboratorRemovals(res)).toHaveLength(0)
   })
 })

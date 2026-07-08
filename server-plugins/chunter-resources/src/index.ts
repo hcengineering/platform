@@ -29,6 +29,7 @@ import core, {
   notEmpty,
   PersonId,
   Ref,
+  Space,
   Timestamp,
   Tx,
   TxCreateDoc,
@@ -41,6 +42,7 @@ import core, {
   type MeasureContext,
   type Collaborator
 } from '@hcengineering/core'
+import { computeMentionGrantDelta, type ExistingMentionGrant } from './mentionGrantsDelta'
 import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
 import { getAccountBySocialId, getPerson } from '@hcengineering/server-contact'
@@ -187,15 +189,34 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   const account = await getAccountBySocialId(control, message.modifiedBy)
   const node = markupToJSON(message.message)
   const references = extractReferences(node)
-  const mentionedPersons = references
-    .filter(({ objectClass }) => control.hierarchy.isDerived(objectClass, contact.class.Person))
-    .filter(({ grantsAccess }) => grantsAccess !== 'false') // V3c: skip explicitly-denied mentions
+  const personRefs = references.filter(({ objectClass }) =>
+    control.hierarchy.isDerived(objectClass, contact.class.Person)
+  )
+  // Notification fan-out list (Channels/DMs): everyone not explicitly denied.
+  // This is deliberately NOT the grant list — a channel mention must keep
+  // notifying people WITHOUT granting document access (M-G.2 separation).
+  const mentionedForNotify = personRefs
+    .filter(({ grantsAccess }) => grantsAccess !== 'false')
     .map(({ objectId }) => objectId as Ref<Person>)
+  // Grant list (fail-closed, M-G.2): ONLY mentions the author explicitly
+  // consented to via the send-time disclosure (grantsAccess === 'true'). A
+  // missing/unknown flag grants nothing.
+  const mentionedForGrant = new Set(
+    personRefs
+      .filter(({ grantsAccess }) => grantsAccess === 'true')
+      .map(({ objectId }) => objectId as Ref<Person>)
+  )
   const employees =
-    mentionedPersons.length > 0
-      ? await control.findAll(ctx, contact.mixin.Employee, { _id: { $in: mentionedPersons as Ref<Employee>[] } })
+    mentionedForNotify.length > 0
+      ? await control.findAll(ctx, contact.mixin.Employee, { _id: { $in: mentionedForNotify as Ref<Employee>[] } })
       : []
-  const collaboratorsFromMessage = [...employees.map((it) => it.personUuid), account].filter(notEmpty)
+  // Author is added as a structural (provenance-free) subscriber, exactly as
+  // before — participation subscription, never auto-revoked.
+  const notifyAccounts = [...employees.map((it) => it.personUuid), account].filter(notEmpty)
+  const grantAccounts = employees
+    .filter((e) => mentionedForGrant.has(e._id as Ref<Person>))
+    .map((e) => e.personUuid)
+    .filter(notEmpty)
   let currentCollaborators = (
     await control.findAll(ctx, core.class.Collaborator, {
       attachedTo: targetDoc._id
@@ -228,21 +249,49 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   const isProtectedTarget = targetClassCollab?.provideSecurity === true
 
   if (grantTarget != null) {
-    const grantCollabs = (
-      await control.findAll<Collaborator>(control.ctx, core.class.Collaborator, {
-        attachedTo: grantTarget._id
-      })
-    ).map((c) => c.collaborator)
+    const grantTargetCollabs = await control.findAll<Collaborator>(control.ctx, core.class.Collaborator, {
+      attachedTo: grantTarget._id
+    })
+    const allCollabAccounts = new Set(grantTargetCollabs.map((c) => c.collaborator))
 
-    for (const collab of collaboratorsFromMessage) {
-      if (grantCollabs.includes(collab)) {
-        continue
-      }
+    // Author-membership gate (M-G.3): only a member of the grant-target space
+    // may spread access through a mention. A collab-only guest (who was granted
+    // access themselves) must NOT be able to transitively re-grant to others.
+    const grantSpace = (
+      await control.findAll<Space>(control.ctx, core.class.Space, { _id: grantTarget.space }, { limit: 1 })
+    )[0]
+    const authorIsMember = account != null && grantSpace?.members?.includes(account)
+
+    // Dedup basis is now per (collaborator, grantedVia:'mention', grantedByMessage)
+    // — NOT global. A person who is a structural/manual collaborator still gets a
+    // mention-read record so that removing the mention revokes exactly that record.
+    const existingMention: ExistingMentionGrant[] = grantTargetCollabs
+      .filter((c) => c.grantedVia === 'mention' && c.grantedByMessage === message._id)
+      .map((c) => ({ _id: c._id, _class: c._class, space: c.space, collaborator: c.collaborator }))
+    const desired = authorIsMember ? grantAccounts : []
+    const { toCreate } = computeMentionGrantDelta(desired, existingMention)
+    for (const collab of toCreate) {
       res.push(
         control.txFactory.createTxCreateDoc(core.class.Collaborator, grantTarget.space, {
           attachedTo: grantTarget._id,
           attachedToClass: grantTarget._class,
           collaborator: collab,
+          collection: 'collaborators',
+          grantedVia: 'mention',
+          grantedBy: account ?? undefined,
+          grantedByMessage: message._id,
+          level: 'read'
+        })
+      )
+    }
+
+    // Author subscription (structural, provenance-free) — preserves prior behavior.
+    if (account != null && !allCollabAccounts.has(account)) {
+      res.push(
+        control.txFactory.createTxCreateDoc(core.class.Collaborator, grantTarget.space, {
+          attachedTo: grantTarget._id,
+          attachedToClass: grantTarget._class,
+          collaborator: account,
           collection: 'collaborators'
         })
       )
@@ -251,7 +300,7 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
     // Legacy notification-routing path: targetDoc is not provideSecurity,
     // so Collaborator records here are purely for notification fan-out
     // (today's behavior for Channels, DirectMessages, etc.).
-    for (const collab of collaboratorsFromMessage) {
+    for (const collab of notifyAccounts) {
       if (currentCollaborators.includes(collab)) {
         continue
       }
@@ -275,9 +324,18 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   return res
 }
 
-// V3d: self-contained grant helper used ONLY by OnChatMessageUpdated.
-// Do NOT refactor OnChatMessageCreated to call this — the create path is live-tested
-// and must remain provably unchanged. The ~25-line overlap is intentional.
+// P5 (M-G.4a): self-contained mention-grant RECONCILER used ONLY by
+// OnChatMessageUpdated. Do NOT refactor OnChatMessageCreated to call this —
+// the create path is live-tested and follows its own (structural-author +
+// grant) shape. Both paths share only the small pure `computeMentionGrantDelta`
+// helper, which is unit-tested in isolation.
+//
+// Unlike the old add-only V3d version, this diffs the CURRENTLY mentioned +
+// consented people against the mention records THIS message already seeded:
+//   - a mention added on edit  -> new grantedVia:'mention' record
+//   - a mention removed on edit -> TxRemoveDoc of exactly that record
+// Only records with grantedByMessage === message._id are ever touched;
+// structural and other-message/other-provenance records are left untouched.
 async function applyMentionGrants (ctx: MeasureContext, message: ChatMessage, control: TriggerControl): Promise<Tx[]> {
   if (message.modifiedBy === core.account.System) return []
   const mixin = getClassCollaborators(control.modelDb, control.hierarchy, message.attachedToClass)
@@ -286,42 +344,62 @@ async function applyMentionGrants (ctx: MeasureContext, message: ChatMessage, co
   const targetDoc = (await control.findAll(ctx, message.attachedToClass, { _id: message.attachedTo }, { limit: 1 }))[0]
   if (targetDoc === undefined) return []
 
+  const grantTarget = await resolveMentionGrantTarget(targetDoc, (cls, q) => control.findAll(control.ctx, cls, q))
+  if (grantTarget == null) return [] // grants only apply to opted-in (protected) targets
+
+  // Full revocation scope: the mention records THIS message seeded on the target.
+  const existingMention: ExistingMentionGrant[] = (
+    await control.findAll<Collaborator>(control.ctx, core.class.Collaborator, {
+      attachedTo: grantTarget._id,
+      grantedVia: 'mention',
+      grantedByMessage: message._id
+    })
+  ).map((c) => ({ _id: c._id, _class: c._class, space: c.space, collaborator: c.collaborator }))
+
   const node = markupToJSON(message.message)
   const references = extractReferences(node)
-  const mentionedPersons = references
-    .filter(({ objectClass }) => control.hierarchy.isDerived(objectClass, contact.class.Person))
-    .filter(({ grantsAccess }) => grantsAccess !== 'false') // V3c
-    .map(({ objectId }) => objectId as Ref<Person>)
-  // V3d is "a newly-added mention grants access". With no granting mention there
-  // is nothing to do — return early so a plain text edit never re-runs grant
-  // machinery, and the author is NOT re-added as a collaborator on every edit.
-  if (mentionedPersons.length === 0) return []
-  const employees = await control.findAll(ctx, contact.mixin.Employee, {
-    _id: { $in: mentionedPersons as Ref<Employee>[] }
-  })
-  // Update path grants ONLY the mentioned employees (not the author — the
-  // author was already added at create time; the create path is unchanged).
-  const collaboratorsFromMessage = employees.map((it) => it.personUuid).filter(notEmpty)
-  if (collaboratorsFromMessage.length === 0) return []
+  const mentionedForGrant = new Set(
+    references
+      .filter(({ objectClass }) => control.hierarchy.isDerived(objectClass, contact.class.Person))
+      .filter(({ grantsAccess }) => grantsAccess === 'true') // fail-closed consent (M-G.2)
+      .map(({ objectId }) => objectId as Ref<Person>)
+  )
 
-  const grantTarget = await resolveMentionGrantTarget(targetDoc, (cls, q) => control.findAll(control.ctx, cls, q))
-  if (grantTarget == null) return [] // update-grant only applies to opted-in (protected) targets
+  // Author-membership gate (M-G.3), evaluated against the EDIT actor. A
+  // non-member editor cannot spread access (desired stays empty → any prior
+  // mention grants from this message are reconciled away).
+  const account = await getAccountBySocialId(control, message.modifiedBy)
+  const grantSpace = (
+    await control.findAll<Space>(control.ctx, core.class.Space, { _id: grantTarget.space }, { limit: 1 })
+  )[0]
+  const authorIsMember = account != null && grantSpace?.members?.includes(account)
 
-  const grantCollabs = (
-    await control.findAll<Collaborator>(control.ctx, core.class.Collaborator, { attachedTo: grantTarget._id })
-  ).map((c) => c.collaborator)
+  let desired: AccountUuid[] = []
+  if (authorIsMember && mentionedForGrant.size > 0) {
+    const employees = await control.findAll(ctx, contact.mixin.Employee, {
+      _id: { $in: Array.from(mentionedForGrant) as Ref<Employee>[] }
+    })
+    desired = employees.map((it) => it.personUuid).filter(notEmpty)
+  }
 
+  const { toCreate, toRemove } = computeMentionGrantDelta(desired, existingMention)
   const res: Tx[] = []
-  for (const collab of collaboratorsFromMessage) {
-    if (grantCollabs.includes(collab)) continue // add-only: skip existing
+  for (const collab of toCreate) {
     res.push(
       control.txFactory.createTxCreateDoc(core.class.Collaborator, grantTarget.space, {
         attachedTo: grantTarget._id,
         attachedToClass: grantTarget._class,
         collaborator: collab,
-        collection: 'collaborators'
+        collection: 'collaborators',
+        grantedVia: 'mention',
+        grantedBy: account ?? undefined,
+        grantedByMessage: message._id,
+        level: 'read'
       })
     )
+  }
+  for (const record of toRemove) {
+    res.push(control.txFactory.createTxRemoveDoc(record._class, record.space, record._id))
   }
   return res
 }
@@ -339,8 +417,8 @@ async function OnChatMessageUpdated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   // Apply the update to the stored doc so the message text AND the actor
   // (modifiedBy) reflect THIS edit — not the original author. applyMentionGrants
   // guards on message.modifiedBy === System, so it must see the edit actor.
-  // Add-only: we grant for all currently-mentioned people; existing grants dedup
-  // to no-ops, and we never remove (Collaborator has no provenance to remove by).
+  // Reconcile: currently-mentioned+consented people are (re)granted, mentions
+  // removed on this edit have their grantedVia:'mention' record revoked (M-G.4a).
   const message = TxProcessor.updateDoc2Doc({ ...current }, actualTx)
   return await applyMentionGrants(ctx, message, control)
 }
@@ -493,7 +571,7 @@ export async function getChunterNotificationContent (
   }
 }
 
-async function OnChatMessageRemoved (txes: TxCUD<ChatMessage>[], control: TriggerControl): Promise<Tx[]> {
+export async function OnChatMessageRemoved (txes: TxCUD<ChatMessage>[], control: TriggerControl): Promise<Tx[]> {
   const res: Tx[] = []
   for (const tx of txes) {
     if (tx._class !== core.class.TxRemoveDoc) {
@@ -506,6 +584,18 @@ async function OnChatMessageRemoved (txes: TxCUD<ChatMessage>[], control: Trigge
 
     notifications.forEach((notification) => {
       res.push(control.txFactory.createTxRemoveDoc(notification._class, notification.space, notification._id))
+    })
+
+    // M-G.4(b): revoke the mention grants this deleted message seeded. Only
+    // grantedVia:'mention' records with this grantedByMessage are torn down;
+    // structural, manual and group records — and mention grants from OTHER
+    // messages — are left untouched.
+    const staleGrants = await control.findAll<Collaborator>(control.ctx, core.class.Collaborator, {
+      grantedVia: 'mention',
+      grantedByMessage: tx.objectId
+    })
+    staleGrants.forEach((grant) => {
+      res.push(control.txFactory.createTxRemoveDoc(grant._class, grant.space, grant._id))
     })
   }
   return res
