@@ -14,6 +14,26 @@ import { fileInstallationStore, firstBotToken } from './installationStore'
 
 let app: App | undefined
 
+// (channel:ts of source message) -> created task identifier. Prevents the same
+// Slack message from producing duplicate tasks (auto-create + emoji reaction,
+// or two people reacting).
+// ponytail: in-memory, resets on restart — persist alongside the install store
+// if restart-window duplicates ever matter.
+const createdTasks = new Map<string, string>()
+const CREATED_TASKS_MAX = 10000
+
+function dedupKey (channel: string, sourceTs: string): string {
+  return `${channel}:${sourceTs}`
+}
+
+function rememberTask (channel: string, sourceTs: string, identifier: string): void {
+  if (createdTasks.size >= CREATED_TASKS_MAX) {
+    const oldest = createdTasks.keys().next().value
+    if (oldest !== undefined) createdTasks.delete(oldest)
+  }
+  createdTasks.set(dedupKey(channel, sourceTs), identifier)
+}
+
 const SLACK_SCOPES = [
   'app_mentions:read',
   'channels:history',
@@ -38,16 +58,25 @@ async function handleAsTask (
   replyThreadTs: string,
   user: string,
   text: string,
-  files: any[]
+  files: any[],
+  sourceTs?: string
 ): Promise<void> {
+  const ts = replyThreadTs
+  const source = sourceTs ?? reactTs
+
+  // Same source message already has a task -> point at it instead of duplicating.
+  const existing = createdTasks.get(dedupKey(channel, source))
+  if (existing !== undefined) {
+    await client.chat.postMessage({ channel, thread_ts: ts, text: `:information_source: Task *${existing}* already exists for this message.` })
+    return
+  }
+
   // Put the eyes reaction on the message that triggered us.
   try {
     await client.reactions.add({ channel, timestamp: reactTs, name: 'eyes' })
   } catch (err) {
     console.warn('[slack] could not add reaction:', String(err))
   }
-
-  const ts = replyThreadTs
 
   if (!isConnected()) {
     await client.chat.postMessage({ channel, thread_ts: ts, text: ':warning: Not connected to Huly — check the service config.' })
@@ -58,11 +87,20 @@ async function handleAsTask (
 
   try {
     const t = await createTask(title)
+    rememberTask(channel, source, t.identifier)
 
     let attached = 0
+    const failed: string[] = []
+    const maxBytes = config.MaxFileSizeMb * 1024 * 1024
     for (const f of files) {
       const url = f.url_private_download ?? f.url_private
       if (url === undefined) continue
+      const fname: string = f.name ?? 'file'
+      if (typeof f.size === 'number' && f.size > maxBytes) {
+        console.warn(`[slack] skipping ${fname}: ${f.size} bytes exceeds ${config.MaxFileSizeMb}MB limit`)
+        failed.push(`${fname} (over ${config.MaxFileSizeMb}MB)`)
+        continue
+      }
       try {
         const token = (client as any).token as string | undefined
         const resp = await fetch(url, { headers: { Authorization: `Bearer ${token ?? ''}` } })
@@ -70,17 +108,22 @@ async function handleAsTask (
         if (ctype.includes('text/html')) {
           console.warn('[slack] file download returned HTML — bot likely missing the files:read scope')
           await client.chat.postMessage({ channel, thread_ts: ts, text: ":warning: I couldn't read that file — the bot needs the *files:read* scope (add it and reinstall)." })
+          failed.push(fname)
           continue
         }
         const buf = Buffer.from(await resp.arrayBuffer())
-        await attachFile(t, buf, f.name ?? 'file', f.mimetype ?? 'application/octet-stream', f.size ?? buf.length)
+        await attachFile(t, buf, fname, f.mimetype ?? 'application/octet-stream', f.size ?? buf.length)
         attached++
       } catch (e) {
         console.warn('[slack] attachment failed:', String(e))
+        failed.push(fname)
       }
     }
 
-    const suffix = attached > 0 ? ` _(+${attached} attachment${attached > 1 ? 's' : ''})_` : ''
+    let suffix = attached > 0 ? ` _(+${attached} attachment${attached > 1 ? 's' : ''})_` : ''
+    if (failed.length > 0) {
+      suffix += ` :warning: _${failed.length} attachment${failed.length > 1 ? 's' : ''} failed: ${failed.join(', ')}_`
+    }
     await client.chat.postMessage({ channel, thread_ts: ts, text: `:white_check_mark: Created task *${t.identifier}* — _${t.title}_${suffix}` })
 
     if (config.NotifyChannel !== '') {
@@ -201,7 +244,8 @@ export async function startBot (): Promise<App> {
         m.thread_ts, // confirmation posts in the thread
         above.user ?? m.user ?? 'unknown',
         above.text ?? '',
-        above.files ?? []
+        above.files ?? [],
+        above.ts // dedup on the message the task is FOR, not the "huly" comment
       )
     } catch (e) {
       console.warn('[slack] could not fetch thread messages:', String(e))

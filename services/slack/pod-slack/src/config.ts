@@ -25,6 +25,14 @@ export interface Config {
   InstallStorePath: string
   /** Emoji name (no colons) that creates a task for a message when reacted. */
   TaskTriggerEmoji: string
+  /**
+   * Comma-separated Slack team/enterprise IDs allowed to install this app
+   * (e.g. "T0123ABCD"). Empty means ANY workspace may install — only safe if
+   * the app is not distributed. Set this in any real deployment.
+   */
+  AllowedTeams: string[]
+  /** Max size (MB) of a Slack file the bot will download and attach. */
+  MaxFileSizeMb: number
 
   /** Huly instance URL the api-client connects to (front). */
   HulyUrl: string
@@ -53,6 +61,11 @@ const config: Config = (() => {
     NotifyChannel: process.env.SLACK_NOTIFY_CHANNEL ?? '',
     InstallStorePath: process.env.INSTALL_STORE_PATH ?? './installations.json',
     TaskTriggerEmoji: (process.env.TASK_TRIGGER_EMOJI ?? 'ticket').replace(/:/g, ''),
+    AllowedTeams: (process.env.SLACK_ALLOWED_TEAMS ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s !== ''),
+    MaxFileSizeMb: parseNumber(process.env.MAX_FILE_SIZE_MB) ?? 25,
     HulyUrl: process.env.HULY_URL ?? 'http://huly.local:8087',
     HulyEmail: process.env.HULY_EMAIL ?? '',
     HulyPassword: process.env.HULY_PASSWORD ?? '',

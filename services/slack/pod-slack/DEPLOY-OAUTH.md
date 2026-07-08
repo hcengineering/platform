@@ -60,6 +60,8 @@ Do this AFTER the domain is live.
 | `SLACK_CLIENT_SECRET`  | secret — use Secrets Manager                                  |
 | `SLACK_SIGNING_SECRET` | secret                                                       |
 | `SLACK_STATE_SECRET`   | any long random string                                       |
+| `SLACK_ALLOWED_TEAMS`  | comma-separated team IDs allowed to install — **set this**; empty allows any workspace |
+| `MAX_FILE_SIZE_MB`     | max attachment download size in MB, default 25               |
 | `PUBLIC_URL`           | `https://slack.company.com` (no trailing slash)              |
 | `SLACK_NOTIFY_CHANNEL` | channel id `C...` for task notifications (optional)          |
 | `TASK_TRIGGER_EMOJI`   | default `ticket`                                             |

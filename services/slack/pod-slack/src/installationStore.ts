@@ -6,7 +6,7 @@
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
 //
 
-import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, existsSync, renameSync, copyFileSync } from 'fs'
 import type { Installation, InstallationQuery, InstallationStore } from '@slack/bolt'
 import config from './config'
 
@@ -18,18 +18,53 @@ import config from './config'
 type Store = Record<string, Installation>
 
 function load (): Store {
+  // File absent is normal (first run). File present but unreadable is NOT —
+  // treating it as empty would silently drop every workspace's tokens, so
+  // preserve the corrupt file and scream.
+  if (!existsSync(config.InstallStorePath)) return {}
   try {
-    if (existsSync(config.InstallStorePath)) {
-      return JSON.parse(readFileSync(config.InstallStorePath, 'utf-8')) as Store
-    }
+    return JSON.parse(readFileSync(config.InstallStorePath, 'utf-8')) as Store
   } catch (e) {
-    console.warn('[slack] could not read installation store:', String(e))
+    console.error(
+      `[slack] installation store ${config.InstallStorePath} is unreadable — ` +
+      `all workspaces will appear disconnected until it is restored:`,
+      String(e)
+    )
+    try {
+      copyFileSync(config.InstallStorePath, `${config.InstallStorePath}.corrupt`)
+      console.error(`[slack] corrupt store preserved at ${config.InstallStorePath}.corrupt`)
+    } catch {}
+    return {}
   }
-  return {}
 }
 
 function save (store: Store): void {
-  writeFileSync(config.InstallStorePath, JSON.stringify(store, null, 2))
+  // Atomic write: a crash mid-write must not truncate the only copy of every
+  // workspace's OAuth tokens.
+  const tmp = `${config.InstallStorePath}.tmp`
+  writeFileSync(tmp, JSON.stringify(store, null, 2), { mode: 0o600 })
+  renameSync(tmp, config.InstallStorePath)
+}
+
+/** Reject installs from Slack workspaces not on the SLACK_ALLOWED_TEAMS allowlist. */
+function assertTeamAllowed (installation: Installation): void {
+  if (config.AllowedTeams.length === 0) {
+    console.warn(
+      '[slack] SLACK_ALLOWED_TEAMS is not set — ANY Slack workspace can install this app ' +
+      'and create tasks in your Huly workspace. Set it before exposing this service publicly.'
+    )
+    return
+  }
+  const teamId = installation.team?.id
+  const enterpriseId = installation.enterprise?.id
+  if (
+    (teamId !== undefined && config.AllowedTeams.includes(teamId)) ||
+    (enterpriseId !== undefined && config.AllowedTeams.includes(enterpriseId))
+  ) {
+    return
+  }
+  console.warn(`[slack] rejected install from non-allowlisted team ${teamId ?? enterpriseId ?? 'unknown'} (${installation.team?.name ?? 'n/a'})`)
+  throw Error('This Slack workspace is not authorized to install this app.')
 }
 
 function keyFor (input: { isEnterpriseInstall?: boolean, enterpriseId?: string, teamId?: string }): string {
@@ -46,6 +81,7 @@ export function firstBotToken (): string | undefined {
 
 export const fileInstallationStore: InstallationStore = {
   storeInstallation: async (installation: Installation): Promise<void> => {
+    assertTeamAllowed(installation)
     const store = load()
     const key = keyFor({
       isEnterpriseInstall: installation.isEnterpriseInstall,
