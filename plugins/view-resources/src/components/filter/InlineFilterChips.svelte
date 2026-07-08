@@ -34,10 +34,20 @@
 
   let containerWidth = 0
   let chipEls: HTMLElement[] = []
+  let badgeEl: HTMLElement | undefined
   let visibleCount = 0
   let hiddenCount = 0
   const widthByIndex = new Map<number, number>()
-  const BADGE_RESERVE_PX = 64
+  // Fallback reserve until the real "+N" badge has been measured once. The
+  // previous 64px was ~2x the real badge (~32px), so it over-reserved and,
+  // combined with a content-shrinking measurement base, drained chips behind
+  // "+N" and never let them re-expand (H4). We measure the live badge below
+  // and cache it; this constant only seeds the first pass.
+  const BADGE_FALLBACK_PX = 32
+  let badgeWidth = BADGE_FALLBACK_PX
+  // Inter-chip flex gap (`gap: var(--spacing-1)` = 0.25rem = 4px) fed into the
+  // overflow math so the decision matches the real layout (M-VF4).
+  const GAP_PX = 4
 
   // Reset chipEls + per-index width cache whenever the filter SET changes
   // (additions or deletions). Re-keying by filter.index keeps width
@@ -85,11 +95,16 @@
       const w = chipEls[i]?.getBoundingClientRect().width ?? 0
       if (w > 0) widthByIndex.set(filters[i].index, w)
     }
+    // Measure the real "+N" badge once it is in the DOM so we reserve its
+    // actual width instead of the 64px over-estimate that fuelled the
+    // collapse spiral. Falls back to BADGE_FALLBACK_PX until first measured.
+    const bw = badgeEl?.getBoundingClientRect().width ?? 0
+    if (bw > 0) badgeWidth = bw
     // Fall back to a conservative estimate for any filter we haven't
     // measured yet — keeps overflow math monotonic while the missing chip
     // gets a chance to render in the next pass.
     const widths = filters.map((f) => widthByIndex.get(f.index) ?? 120)
-    const r = computeOverflow(widths, containerWidth, BADGE_RESERVE_PX)
+    const r = computeOverflow(widths, containerWidth, badgeWidth, GAP_PX)
     if (r.visibleCount !== visibleCount || r.hiddenCount !== hiddenCount) {
       visibleCount = r.visibleCount
       hiddenCount = r.hiddenCount
@@ -144,6 +159,7 @@
       <!-- Bright accent badge so an active-but-collapsed filter is
            immediately obvious instead of looking like a passive helper. -->
       <button
+        bind:this={badgeEl}
         class="filter-overflow-badge"
         type="button"
         aria-haspopup="dialog"
@@ -180,13 +196,20 @@
     min-width: 0;
     flex: 0 1 auto;
   }
-  /* Hard cap on chip cluster width — beyond this, the +N popover takes
-     over. Only applied in the Gantt toolbar (constrained) where chips would
-     otherwise push the date nav, zoom, undo/redo, hamburger and fullscreen
-     controls off-screen. The below-header/list placement has a full-width
-     row and must render every chip. */
+  /* Fixed cluster width — beyond this, the +N popover takes over. Only
+     applied in the Gantt toolbar (constrained) where chips would otherwise
+     push the date nav, zoom, undo/redo, hamburger and fullscreen controls
+     off-screen. The below-header/list placement has a full-width row and
+     must render every chip.
+
+     H4: use a FIXED width (not max-width) so the overflow measurement base
+     stays constant across collapse cycles. With max-width the wrap was
+     content-sized, so once chips collapsed the measured width shrank, which
+     collapsed more chips — a one-way ratchet that drained everything behind
+     "+N". A fixed reference width lets computeOverflow re-test the full
+     budget and re-expand chips when the filter set shrinks. */
   .inline-filter-chips-wrap.constrained {
-    max-width: 22rem;
+    width: 22rem;
   }
   .inline-filter-chips {
     display: flex;

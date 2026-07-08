@@ -17,4 +17,19 @@ describe('computeOverflow', () => {
   it('does not collapse when only one chip overflows by less than badge width', () => {
     expect(computeOverflow([120, 120, 50], 270, 60)).toEqual({ visibleCount: 1, hiddenCount: 2 })
   })
+
+  // ─── M-VF4: inter-chip flex gaps must count toward overflow ───────────────
+  it('shows all chips when container is wide enough (incl. gaps)', () => {
+    // 3 chips + 2 gaps(8) = 316 <= 500
+    expect(computeOverflow([80, 100, 120], 500, 32, 8)).toEqual({ visibleCount: 3, hiddenCount: 0 })
+  })
+
+  it('accounts for inter-chip gaps when deciding overflow', () => {
+    // widths sum 300 <= 300 but +2 gaps(8)=316 > 300 → must collapse
+    expect(computeOverflow([100, 100, 100], 300, 32, 8).hiddenCount).toBeGreaterThan(0)
+  })
+
+  it('reserves only the real badge width', () => {
+    expect(computeOverflow([120, 120, 120, 120, 120], 300, 32, 8)).toEqual({ visibleCount: 2, hiddenCount: 3 })
+  })
 })
