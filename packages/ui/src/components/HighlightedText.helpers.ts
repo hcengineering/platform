@@ -21,10 +21,23 @@ export interface Segment {
 }
 
 export function splitHighlightSegments (text: string, query: string): Segment[] {
-  const trimmed = query.trim().replace(USER_PREFIX_RE, '').trim()
+  // L-VF3: strip ALL stacked leading prefixes (e.g. "title: id: foo"), not
+  // just the first one.
+  let trimmed = query.trim()
+  let prev = ''
+  while (trimmed !== prev) {
+    prev = trimmed
+    trimmed = trimmed.replace(USER_PREFIX_RE, '').trim()
+  }
   if (trimmed === '') return [{ text, match: false }]
-  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const re = new RegExp(`(${escaped})`, 'gi')
+  // L-VF3: highlight semantics match search semantics — a multi-word query
+  // highlights each term independently (alternation), not the phrase verbatim.
+  const terms = trimmed
+    .split(/\s+/)
+    .filter((t) => t.length > 0)
+    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  if (terms.length === 0) return [{ text, match: false }]
+  const re = new RegExp(`(${terms.join('|')})`, 'gi')
   const parts = text.split(re)
   return parts.map((p, i) => ({ text: p, match: i % 2 === 1 }))
 }

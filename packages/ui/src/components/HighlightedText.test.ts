@@ -41,16 +41,21 @@ describe('splitHighlightSegments', () => {
       { text: '', match: false }
     ])
   })
-  it('multi-prefix query strips only the first prefix (known v1 limitation)', () => {
-    // The helper handles only the leading prefix. A user typing
-    // `title:loader id:HULY-` gets the `title:` stripped, leaving
-    // `loader id:HULY-` as the literal substring to highlight — which
-    // will not match anything in a normal Issue title. Documented as
-    // a v1 limitation; v2 (out of this plan) would parse the query
-    // into a list of (field, term) tuples and highlight each match
-    // separately.
-    expect(splitHighlightSegments('Telescopic loader HULY-51', 'title:loader id:HULY-')).toEqual([
-      { text: 'Telescopic loader HULY-51', match: false }
+  it('strips ALL stacked leading prefixes, not just the first (L-VF3)', () => {
+    // `title: id:loader` → strip `title:` then `id:` → highlight `loader`.
+    expect(splitHighlightSegments('Telescopic loader', 'title: id:loader')).toEqual([
+      { text: 'Telescopic ', match: false },
+      { text: 'loader', match: true },
+      { text: '', match: false }
+    ])
+  })
+  it('highlights each term of a multi-word query independently (L-VF3)', () => {
+    expect(splitHighlightSegments('foo bar baz', 'foo baz')).toEqual([
+      { text: '', match: false },
+      { text: 'foo', match: true },
+      { text: ' bar ', match: false },
+      { text: 'baz', match: true },
+      { text: '', match: false }
     ])
   })
 })
