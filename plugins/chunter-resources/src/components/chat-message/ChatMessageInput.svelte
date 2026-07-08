@@ -35,7 +35,6 @@
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
   import { showPopup, ThrottledCaller, Label } from '@hcengineering/ui'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getSpace, editingMessageStore } from '@hcengineering/activity-resources'
 
   import { getChannelSpace } from '../../utils'
@@ -376,11 +375,7 @@
 
 {#if showGrantWarning}
   <div class="grantHint overflow-label">
-    <Label
-      label={getEmbeddedLabel(
-        'A mention here will grant that person access to this item. You will confirm exactly who before sending.'
-      )}
-    />
+    <Label label={chunter.string.MentionGrantsAccessHint} />
   </div>
 {/if}
 

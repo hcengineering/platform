@@ -1,5 +1,6 @@
 {
   "string": {
+    "MentionGrantsAccessHint": "A mention here will grant that person access to this item. You will confirm exactly who before sending.",
     "ApplicationLabelChunter": "Chat",
     "LeftComment": "left a comment",
     "Channels": "Channels",

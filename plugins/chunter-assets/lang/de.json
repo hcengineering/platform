@@ -1,5 +1,6 @@
 {
   "string": {
+    "MentionGrantsAccessHint": "Eine Erwähnung hier gewährt dieser Person Zugriff auf dieses Element. Vor dem Senden bestätigst du genau, wer.",
     "ApplicationLabelChunter": "Chat",
     "LeftComment": "hat einen Kommentar hinterlassen",
     "Channels": "Kanäle",
