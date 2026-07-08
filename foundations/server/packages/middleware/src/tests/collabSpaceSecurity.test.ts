@@ -101,12 +101,18 @@ function makeMiddleware (opts: {
   backendSupportsCollab?: boolean
   noAdapterManager?: boolean
   provideSecurity?: boolean
+  // M-01: only classes that opt into grantable access widen the collab-read bypass
+  // to regular member roles. Defaults false (models love/QMS: provideSecurity only).
+  mentionsGrantAccess?: boolean
   derivedFromSpace?: boolean
   derivedFromCollaborator?: boolean
 }): { mw: SpaceSecurityMiddleware, captured: Captured } {
   const captured: Captured = {}
 
-  const collabConfig = opts.provideSecurity === true ? [{ attachedTo: ISSUE_CLASS, provideSecurity: true } as any] : []
+  const collabConfig =
+    opts.provideSecurity === true
+      ? [{ attachedTo: ISSUE_CLASS, provideSecurity: true, mentionsGrantAccess: opts.mentionsGrantAccess === true } as any]
+      : []
 
   const hierarchy = {
     getDomain: (_class: Ref<Class<Doc>>): Domain => {
@@ -250,7 +256,7 @@ describe('SpaceSecurityMiddleware - collab-read backend guard (H5)', () => {
   // gated behind the backend-support (H5-A) check so Mongo remains fail-closed.
   describe('P2.2 role-widening of collabReadBypass', () => {
     it('role User with backend support: drops the space filter (grant becomes effective)', async () => {
-      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true })
+      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true, mentionsGrantAccess: true })
       const account = makeAccount(AccountRole.User)
       ;(mw as any).allowedSpaces = { [account.uuid]: [S1] } // member of S1 only
 
@@ -261,7 +267,7 @@ describe('SpaceSecurityMiddleware - collab-read backend guard (H5)', () => {
     })
 
     it('role Maintainer with backend support: drops the space filter', async () => {
-      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true })
+      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true, mentionsGrantAccess: true })
       const account = makeAccount(AccountRole.Maintainer)
       ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
 
@@ -270,8 +276,35 @@ describe('SpaceSecurityMiddleware - collab-read backend guard (H5)', () => {
       expect(captured.query.space).toBeUndefined()
     })
 
+    it('M-01: role User on a provideSecurity class WITHOUT mentionsGrantAccess (love/QMS): KEEPS the space filter', async () => {
+      // love and controlled-documents opt into provideSecurity but not mentionsGrantAccess.
+      // A regular member who is only a structural collaborator there must NOT gain
+      // cross-space read from the P2.2 widening — the widening is grant-classes only.
+      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true, mentionsGrantAccess: false })
+      const account = makeAccount(AccountRole.User)
+      ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
+
+      await mw.findAll(makeCtx(account), ISSUE_CLASS, {})
+
+      expect(captured.query.space).toBeDefined()
+      const admitted = admittedSpaces(captured.query.space)
+      expect(admitted).not.toContain(S2)
+      expect(admitted).toContain(S1)
+    })
+
+    it('M-01: role Guest still gets collab-read on a non-mention provideSecurity class (love/QMS)', async () => {
+      // The original guest-scope bypass is preserved for every provideSecurity class.
+      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true, mentionsGrantAccess: false })
+      const account = makeGuest()
+      ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
+
+      await mw.findAll(makeCtx(account), ISSUE_CLASS, {})
+
+      expect(captured.query.space).toBeUndefined()
+    })
+
     it('role User on Mongo/unknown backend: KEEPS the space filter (no cross-space leak)', async () => {
-      const { mw, captured } = makeMiddleware({ backendSupportsCollab: false, provideSecurity: true })
+      const { mw, captured } = makeMiddleware({ backendSupportsCollab: false, provideSecurity: true, mentionsGrantAccess: true })
       const account = makeAccount(AccountRole.User)
       ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
 

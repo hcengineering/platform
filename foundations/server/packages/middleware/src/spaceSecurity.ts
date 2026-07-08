@@ -673,11 +673,21 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     // is preserved, so widening the roles never re-opens the Mongo cross-space
     // leak (H5-A fail-closed): without an adapter collab-branch the bypass simply
     // does not fire and the normal space filter stays in place.
+    // M-01: the original guest-scope collab-read applies to EVERY provideSecurity
+    // class; the P2.2 widening to regular member roles (User/Maintainer/Owner) is
+    // confined to classes that opt into grantable access (mentionsGrantAccess) —
+    // the same scope as the guestPermissions write-veto. Without this a regular
+    // member who is only a *structural* collaborator (createdBy/assignee) on a
+    // love/QMS doc in a space they are not a member of would newly gain read
+    // visibility (love and controlled-documents set provideSecurity but NOT
+    // mentionsGrantAccess; only tracker opts into grants).
+    const isGuestRole = account.role === AccountRole.Guest || account.role === AccountRole.ReadOnlyGuest
     const collabReadBypass =
       collabBackendSupported &&
       (collabSec?.provideSecurity === true || collabSec?.provideAttachedSecurity === true) &&
       account.role !== AccountRole.Admin &&
-      account.role !== AccountRole.DocGuest
+      account.role !== AccountRole.DocGuest &&
+      (isGuestRole || collabSec?.mentionsGrantAccess === true)
     // Self-Collaborator visibility: let the Postgres adapter's self-collab OR-branch
     // (storage.ts, addSecurity) fire for any non-System caller when reading the
     // Collaborator class itself. Required for queries like the tracker "Subscribed"
