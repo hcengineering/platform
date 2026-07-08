@@ -34,7 +34,8 @@
   import { extractReferences } from '@hcengineering/text-core'
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
-  import { showPopup, ThrottledCaller } from '@hcengineering/ui'
+  import { showPopup, ThrottledCaller, Label } from '@hcengineering/ui'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
   import { getSpace, editingMessageStore } from '@hcengineering/activity-resources'
 
   import { getChannelSpace } from '../../utils'
@@ -139,6 +140,35 @@
     currentMessage.message = message
     currentMessage.attachments = attachments
   }
+
+  // Inline "this mention grants access" indicator (M-G.5). Shown while typing
+  // whenever the target document is a grant target AND the current draft
+  // contains a non-denied person mention. The binding confirmation dialog
+  // (MentionGrantConfirm) remains the authoritative, fail-closed consent step
+  // before send; this is only an early, dezent heads-up.
+  let objectIsGrantTarget = false
+  $: void resolveMentionGrantTarget(object, (cls, q) => client.findAll(cls, q))
+    .then((t) => {
+      objectIsGrantTarget = t != null
+    })
+    .catch(() => {
+      objectIsGrantTarget = false
+    })
+
+  function hasGrantingMention (markup: string | undefined): boolean {
+    if (markup === undefined || markup === '' || isEmptyMarkup(markup)) return false
+    let node
+    try {
+      node = markupToJSON(markup)
+    } catch {
+      return false
+    }
+    return extractReferences(node)
+      .filter(({ objectClass }) => hierarchy.isDerived(objectClass, contact.class.Person))
+      .some(({ grantsAccess }) => grantsAccess !== 'false')
+  }
+
+  $: showGrantWarning = objectIsGrantTarget && hasGrantingMention(inputContent)
 
   /**
    * Disclosure UX for the mention-grants-access flow. Resolves the set of NEW
@@ -344,6 +374,28 @@
   onKeyDown={handleKeyDown}
 />
 
+{#if showGrantWarning}
+  <div class="grantHint overflow-label">
+    <Label
+      label={getEmbeddedLabel(
+        'A mention here will grant that person access to this item. You will confirm exactly who before sending.'
+      )}
+    />
+  </div>
+{/if}
+
 {#if withTypingInfo}
   <ChannelTypingInfo {object} />
 {/if}
+
+<style lang="scss">
+  .grantHint {
+    margin-top: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--theme-warning-color);
+    border-left: 2px solid var(--theme-warning-color);
+    background-color: var(--theme-warning-background, transparent);
+    border-radius: 0.25rem;
+  }
+</style>

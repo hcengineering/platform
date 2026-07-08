@@ -47,4 +47,19 @@ describe('applyMentionGrantChoices', () => {
     const result = applyMentionGrantChoices(markup, new Map())
     expect(grantsOf(result, 'p1')).toEqual([undefined])
   })
+
+  test('fail-closed default (all grantees unchecked) produces no grantsAccess=true refs', () => {
+    // MentionGrantConfirm now defaults every row to `granted: false`; sending
+    // without checking anyone must mark every reference denied — the server
+    // grants only on grantsAccess === 'true', so nothing is granted.
+    const defaultUnchecked = new Map<string, boolean>([
+      ['p1', false],
+      ['p2', false]
+    ])
+    const result = applyMentionGrantChoices(docMarkup(refNode('p1'), refNode('p2')), defaultUnchecked)
+    expect(grantsOf(result, 'p1')).toEqual(['false'])
+    expect(grantsOf(result, 'p2')).toEqual(['false'])
+    const anyTrue = [...grantsOf(result, 'p1'), ...grantsOf(result, 'p2')].some((v) => v === 'true')
+    expect(anyTrue).toBe(false)
+  })
 })

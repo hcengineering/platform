@@ -17,10 +17,12 @@
 
   const dispatch = createEventDispatcher()
 
-  // Default: grant everyone (preserves pre-V3 behaviour). A plain array with
-  // per-row `granted` so `bind:checked` stays reactive (mutating a Map would
-  // not re-render the CheckBox in Svelte 4).
-  const rows = grantees.map((g) => ({ id: g.id, name: g.name, granted: true }))
+  // Fail-closed default (M-G.2/M-G.5): grant NOBODY unless the author actively
+  // checks them. Combined with the server-side `grantsAccess === 'true'` gate,
+  // "nothing checked" means "no access granted". A plain array with per-row
+  // `granted` so `bind:checked` stays reactive (mutating a Map would not
+  // re-render the CheckBox in Svelte 4).
+  const rows = grantees.map((g) => ({ id: g.id, name: g.name, granted: false }))
 
   function onCancel (): void {
     dispatch('close', undefined) // undefined => caller treats as cancel
@@ -39,7 +41,7 @@
   <div class="mb-4">
     <Label
       label={getEmbeddedLabel(
-        `Selected people will get read access to "${targetName}" in "${spaceName}" and the ability to comment. They cannot edit the document's fields. Uncheck anyone you do not want to grant access to.`
+        `Check anyone you want to grant read access to "${targetName}" in "${spaceName}". Checked people can view the item and comment, but cannot edit its fields. Nobody is granted access unless you check them. You can revoke this access anytime from the item's Access panel.`
       )}
     />
   </div>
