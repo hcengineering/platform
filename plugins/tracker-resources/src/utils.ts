@@ -346,9 +346,14 @@ export async function canEditIssuesBatch (issues: Issue[]): Promise<Map<Ref<Issu
 
 /**
  * Mirrors {@link canEditIssue} for Milestones (PR3.2 Gantt edit-parity).
- * Milestones don't have createdBy-as-Person semantics in the same way Issues
- * do — a project-member who can see the milestone can typically also edit it.
- * Guests fall through to the no-edit branch.
+ *
+ * This is deliberately ONLY a guest-role gate: it returns `true` for any
+ * non-guest account. It does NOT re-check space membership or per-doc ACL —
+ * that is already enforced upstream by the space-security layer (a milestone
+ * a user cannot see is never delivered to the client, so it can never reach
+ * this check). The function exists purely to strip edit affordances from the
+ * three guest roles in the Gantt UI; the server remains the authority on the
+ * actual write.
  */
 export async function canEditMilestone (milestone?: Milestone): Promise<boolean> {
   if (milestone === undefined) return false
