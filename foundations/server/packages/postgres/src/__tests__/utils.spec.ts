@@ -1,4 +1,10 @@
-import { type DocumentUpdate, type Ref, type Space, type WorkspaceUuid } from '@hcengineering/core'
+import {
+  DOMAIN_COLLABORATOR,
+  type DocumentUpdate,
+  type Ref,
+  type Space,
+  type WorkspaceUuid
+} from '@hcengineering/core'
 import {
   convertArrayParams,
   convertDoc,
@@ -814,5 +820,27 @@ describe('utils - edge cases and potential bugs', () => {
     expect(escape('   ')).toBe('   ')
     expect(escapeBackticks('   ')).toBe('   ')
     expect(decodeArray('{" "}')).toEqual([' '])
+  })
+})
+
+// P1 Task 1.4: the Collaborator provenance/level fields are NOT columns of the
+// collaborator schema (only attachedTo/attachedToClass/collaborator + base are).
+// They therefore route through the `data` JSONB via isDataField === true, which
+// is what makes findAll(Collaborator, { grantedVia, grantedByMessage, level })
+// queryable (transformKey emits `data#>>'{<field>}'` for data fields). The
+// revocation logic in P5 depends on this being provable without a schema change.
+describe('utils - Collaborator provenance fields route through data JSONB', () => {
+  it('treats grantedVia / grantedBy / grantedByMessage / grantedByGroup / level as data fields', () => {
+    expect(isDataField(DOMAIN_COLLABORATOR, 'grantedVia')).toBe(true)
+    expect(isDataField(DOMAIN_COLLABORATOR, 'grantedBy')).toBe(true)
+    expect(isDataField(DOMAIN_COLLABORATOR, 'grantedByMessage')).toBe(true)
+    expect(isDataField(DOMAIN_COLLABORATOR, 'grantedByGroup')).toBe(true)
+    expect(isDataField(DOMAIN_COLLABORATOR, 'level')).toBe(true)
+  })
+
+  it('keeps attachedTo / attachedToClass / collaborator as indexed columns (not data fields)', () => {
+    expect(isDataField(DOMAIN_COLLABORATOR, 'attachedTo')).toBe(false)
+    expect(isDataField(DOMAIN_COLLABORATOR, 'attachedToClass')).toBe(false)
+    expect(isDataField(DOMAIN_COLLABORATOR, 'collaborator')).toBe(false)
   })
 })
