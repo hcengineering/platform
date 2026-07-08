@@ -384,11 +384,13 @@ export class IssuesPage extends CommonTrackerPage {
     for (let i = 0; i < tabs.length; i++) {
       await tabs[i].click()
       await this.page.waitForTimeout(3000)
-      if (presence === checks[i]) {
-        await expect(this.issueListPanel()).toContainText(issueName)
-      } else {
-        await expect(this.issueListPanel()).not.toContainText(issueName)
-      }
+      // Assert on an actual issue row, not on the whole panel text. The empty
+      // state renders the search echo ("No issues found for <issueName>"), so a
+      // `not.toContainText(issueName)` on the panel matches that echo and fails
+      // spuriously. `linesFromList` targets `.list-container div.row`, which the
+      // echo is not — the same pattern as checkFilteredIssueExist/NotExist.
+      const expectedCount = presence === checks[i] ? 1 : 0
+      await expect(this.linesFromList(issueName)).toHaveCount(expectedCount)
     }
   }
 
