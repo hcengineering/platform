@@ -9,7 +9,9 @@
 
   Mounted by IssuesView when shouldShowEmptyState(searchRaw, count) is
   true. Buttons: clear-all-filters (only when filters are active), and
-  jump to All Issues view with the current search text preserved.
+  jump to the All Issues view (a broader project-wide scope). The search
+  text is NOT carried across — the All Issues view opens unfiltered so the
+  user can re-scope the query there.
 -->
 <script lang="ts">
   import { Button, Label, getCurrentResolvedLocation, navigate } from '@hcengineering/ui'
@@ -35,6 +37,8 @@
     }
     loc.path[3] = 'allIssues'
     loc.path.length = 4
+    // Note: the current search text is intentionally not carried into the
+    // All Issues view — it opens unfiltered so the user re-scopes there.
     navigate(loc)
   }
 </script>
