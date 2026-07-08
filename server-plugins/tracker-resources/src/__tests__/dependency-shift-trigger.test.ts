@@ -153,7 +153,7 @@ describe('OnDependencyShiftRequest (H2)', () => {
     const control = makeControl()
     const res = await OnDependencyShiftRequest([makeReqTx('social-real')], control)
 
-    const notif = res.find(isShiftedNotificationCreate)
+    const notif = res.find(isShiftedNotificationCreate) as any
     expect(notif).toBeDefined()
     // Author comes from the resolved account, never from payload.
     expect(notif.attributes.triggerUserId).toBe(REAL)
