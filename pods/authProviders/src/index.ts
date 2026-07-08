@@ -2,6 +2,7 @@ import Koa from 'koa'
 import passport from 'koa-passport'
 import Router from 'koa-router'
 import session from 'koa-session'
+import { isValidCookieDomain } from './cookieDomain'
 import { registerGithub } from './github'
 import { registerGoogle } from './google'
 import { registerOpenid } from './openid'
@@ -53,10 +54,31 @@ export function registerProviders (
   // session". Setting SESSION_COOKIE_DOMAIN=.example.com makes the cookie
   // span both hosts so the flow completes. Empty / unset preserves prior
   // behaviour.
+  //
+  // Only set SESSION_COOKIE_DOMAIN when (a) all subdomains are equally
+  // trusted and (b) HTTPS is terminated in front of this service: widening
+  // the cookie scope forces secure=true + sameSite=lax below, so the
+  // signed httpOnly session cookie (carrying OIDC state/nonce/PKCE verifier)
+  // is never sent over plain HTTP nor cross-site. An invalid value (e.g.
+  // "com", or anything with whitespace/protocol/port) is ignored — the
+  // option falls back to prior behaviour (cookie scoped to the request host).
   const sessionCookieDomain = process.env.SESSION_COOKIE_DOMAIN?.trim()
   const sessionOpts: Partial<session.opts> = {}
   if (sessionCookieDomain !== undefined && sessionCookieDomain.length > 0) {
-    sessionOpts.domain = sessionCookieDomain
+    // Accept only plausible parent-domain values: must contain a dot and be
+    // free of whitespace/protocol/port. Prevents misconfiguration like "com"
+    // (which would span the cookie across a whole TLD).
+    if (!isValidCookieDomain(sessionCookieDomain)) {
+      ctx.warn('SESSION_COOKIE_DOMAIN ignored: not a valid domain', { value: sessionCookieDomain })
+    } else {
+      sessionOpts.domain = sessionCookieDomain
+      // A cross-subdomain cookie MUST be hardened once its scope reaches
+      // beyond the request host (koa-session defaults: secure=false,
+      // sameSite unset). sameSite='lax' is enough for the top-level GET
+      // OIDC callback.
+      sessionOpts.secure = true
+      sessionOpts.sameSite = 'lax'
+    }
   }
   app.use(session(sessionOpts, app))
   app.use(passport.initialize())
