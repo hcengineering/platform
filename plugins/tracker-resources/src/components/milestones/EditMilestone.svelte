@@ -44,10 +44,23 @@
   }
 
   async function changeStartDate (value: number | null | undefined): Promise<void> {
-    await client.update(object, { startDate: value ?? null })
+    const startDate = value ?? null
+    // L-G6: never persist an inverted range. If the new start is past the
+    // current target, pull the target forward to match (start === target).
+    if (startDate !== null && object.targetDate != null && startDate > object.targetDate) {
+      await client.update(object, { startDate, targetDate: startDate })
+      return
+    }
+    await client.update(object, { startDate })
   }
   async function changeTargetDate (value: number | null | undefined): Promise<void> {
     if (value === null || value === undefined) return
+    // L-G6: keep the range non-inverted — clamp the start back if it now sits
+    // after the target.
+    if (object.startDate != null && value < object.startDate) {
+      await client.update(object, { targetDate: value, startDate: value })
+      return
+    }
     await client.update(object, { targetDate: value })
   }
 
