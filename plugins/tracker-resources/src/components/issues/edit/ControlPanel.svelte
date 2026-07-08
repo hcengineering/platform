@@ -29,6 +29,7 @@
   } from '@hcengineering/view-resources'
 
   import tracker from '../../../plugin'
+  import IssueAccessPanel from './IssueAccessPanel.svelte'
   import ComponentEditor from '../../components/ComponentEditor.svelte'
   import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
@@ -80,9 +81,10 @@
 
   $: _mixins = getDocMixins(issue, showAllMixins)
 
-  $: mixins = _mixins.find((p) => p._id === notification.mixin.Collaborators)
-    ? _mixins
-    : [..._mixins, hierarchy.getClass(notification.mixin.Collaborators)]
+  // Issues render the dedicated per-issue Access panel below instead of the
+  // generic Collaborators mixin (which is a notifications-only editor without
+  // provenance or a server-side grant gate).
+  $: mixins = _mixins.filter((p) => p._id !== notification.mixin.Collaborators)
 
   const allowedCollections = ['collaborators']
 
@@ -231,6 +233,11 @@
     {/each}
   {/if}
 
+  <div class="divider" />
+  <div class="access-panel-slot">
+    <IssueAccessPanel {issue} {readonly} />
+  </div>
+
   {#each mixins as mixin}
     {@const mixinKeys = getMixinKeys(mixin._id)}
     {#if mixinKeys.length}
@@ -249,3 +256,9 @@
     {/if}
   {/each}
 </div>
+
+<style lang="scss">
+  .access-panel-slot {
+    grid-column: 1 / 3;
+  }
+</style>
