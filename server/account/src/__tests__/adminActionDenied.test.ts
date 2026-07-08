@@ -189,6 +189,21 @@ describe('V13 — admin_action_denied audit', () => {
     expect(methods).toEqual(['bulkSetDisabled', 'disableAccount'])
   })
 
+  test('L-AUD: swallowed denial-audit write still throws domain error + emits AUDIT_WRITE_FAILED', async () => {
+    const insertAudit = jest.fn(async () => {
+      throw new Error('audit db down')
+    })
+    const { db } = mockDb({ insertAudit })
+    const error = jest.fn()
+    const errCtx = { newChild: () => errCtx, info: () => {}, warn: () => {}, error } as unknown as MeasureContext
+    const { disableAccount } = await import('../operations')
+    // Self-disable denial: audit-write throws but must not mask the domain error.
+    await expect(
+      disableAccount(errCtx, db, null, deps, ADMIN_TOKEN, { accountUuid: ADMIN as any })
+    ).rejects.toThrow(/cannot_self_disable/)
+    expect(error).toHaveBeenCalledWith('AUDIT_WRITE_FAILED', expect.objectContaining({ marker: 'AUDIT_WRITE_FAILED' }))
+  })
+
   test('pre-auth Forbidden (no admin claim): NO audit row', async () => {
     const { db, auditRows } = mockDb({})
     const { disableAccount } = await import('../operations')

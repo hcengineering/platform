@@ -126,8 +126,11 @@ function toEpochMs (v: number | string | null | undefined): number | null {
  */
 export async function assertAdmin (ctx: MeasureContext, db: AccountDB, token: string): Promise<void> {
   await verifyTokenVersion(ctx, db, token)
-  const { extra } = decodeTokenVerbose(ctx, token)
+  const { account, extra } = decodeTokenVerbose(ctx, token)
   if (extra?.admin !== 'true') {
+    // L-AUD: pre-auth Denial beobachtbar machen (kein Audit-Row, da kein
+    // vertrauenswuerdiger Actor; Security-Log ist die forensische Quelle).
+    ctx.warn?.('admin RPC denied pre-auth', { caller: account, hasAdminClaim: extra?.admin != null })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 }
@@ -865,7 +868,11 @@ export async function performWorkspaceOperation (
         })
       } catch (auditErr) {
         // Audit failure must NOT roll back the workspace operation itself.
-        ctx.warn('performWorkspaceOperation: failed to write audit log entry', {
+        // L-AUD: stabiler Alert-Marker AUDIT_WRITE_FAILED fuer Observability,
+        // damit eine Mutation ohne Audit-Spur alarmierbar bleibt.
+        ctx.error?.('AUDIT_WRITE_FAILED', {
+          marker: 'AUDIT_WRITE_FAILED',
+          action: 'performWorkspaceOperation',
           auditErr,
           workspaceUuid: workspace.uuid,
           event

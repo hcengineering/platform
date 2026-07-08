@@ -30,4 +30,10 @@ describe('assertAdmin', () => {
   it('rejects non-admin token', async () => {
     await expect(assertAdmin(ctx, fakeDb, 'user-token')).rejects.toThrow(PlatformError)
   })
+  it('L-AUD: logs pre-auth denial for non-admin token', async () => {
+    const warn = jest.fn()
+    const warnCtx = { newChild: () => warnCtx, info: () => {}, warn, error: () => {} } as unknown as MeasureContext
+    await expect(assertAdmin(warnCtx, fakeDb, 'user-token')).rejects.toThrow(PlatformError)
+    expect(warn).toHaveBeenCalledWith('admin RPC denied pre-auth', expect.objectContaining({ caller: 'user' }))
+  })
 })

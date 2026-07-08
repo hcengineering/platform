@@ -3347,6 +3347,9 @@ async function requireAdmin (ctx: MeasureContext, db: AccountDB, token: string):
   await verifyTokenVersion(ctx, db, token)
   const { account, extra } = decodeTokenVerbose(ctx, token)
   if (extra?.admin !== 'true') {
+    // L-AUD: pre-auth Denial beobachtbar machen (kein Audit-Row, da kein
+    // vertrauenswuerdiger Actor; Security-Log ist die forensische Quelle).
+    ctx.warn?.('admin RPC denied pre-auth', { caller: account, hasAdminClaim: extra?.admin != null })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
   return account
@@ -3515,6 +3518,10 @@ export async function removeWorkspaceMemberInternal (
 // Key: `${adminUuid}::${reason}::${method}`. Value: last-write epoch ms.
 // Window: 1 hour. Resets on pod restart (acceptable per spec — attacker
 // gets at most one row per pod-restart-cycle).
+// L-AUD: the audit table is NOT the forensic source of truth for repeated
+// denial attempts (it is intentionally throttled/lossy across restarts). The
+// authoritative record of failed attempts is the security/ctx log (ctx.warn
+// pre-auth denial + the throttled row here is only a convenience surface).
 const ADMIN_DENIED_AUDIT_WINDOW_MS = 60 * 60 * 1000
 const adminDeniedAuditLog = new Map<string, number>()
 
@@ -3559,7 +3566,9 @@ export async function auditAdminActionDenied (
       details: { reason, method, target: targetAccount ?? null }
     } as any)
   } catch (err) {
-    ctx.error?.('admin_action_denied audit write failed', { err })
+    // L-AUD: stabiler Alert-Marker, damit ein verschluckter Audit-Write nicht
+    // spurlos bleibt. Mutation-Verhalten unveraendert (Denial-Row ist best-effort).
+    ctx.error?.('AUDIT_WRITE_FAILED', { marker: 'AUDIT_WRITE_FAILED', action: 'admin_action_denied', reason, method, err })
   }
 }
 
