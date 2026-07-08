@@ -9,8 +9,9 @@
  * One instance per `GanttView` mount. The manager keeps two LIFO stacks of
  * `UndoEntry` snapshots; each Gantt-induced mutation pushes an entry after
  * the DB-write commits successfully. `Cmd+Z` / `Ctrl+Z` pops the top entry
- * and applies its inverse via `client.apply(undefined, 'gantt-undo')` so the
- * activity log can later be filtered by that marker.
+ * and applies its inverse via `client.apply('gantt-undo')` — the marker is the
+ * apply *scope* (first arg of TxOperations.apply(scope?, measure?, derived?)),
+ * so the whole undo lands as one atomic apply the activity log can filter by.
  *
  * The "stores" exposed below implement the minimal Svelte subscription
  * contract so callers (`GanttView.svelte`) can use `$canUndo` etc. without
@@ -130,7 +131,9 @@ export interface UndoApplyOps {
 export interface UndoApplyClient {
   findOne: (clazz: unknown, query: { _id: unknown }) => Promise<unknown>
   findAll: (clazz: unknown, query: unknown) => Promise<unknown>
-  apply: (marker?: string) => UndoApplyOps
+  // `scope` is the first arg of the real TxOperations.apply(scope?, measure?,
+  // derived?); the manager passes UNDO_MARKER here so undos group atomically.
+  apply: (scope?: string) => UndoApplyOps
 }
 
 // ---- Tiny store helper -----------------------------------------------------
@@ -188,7 +191,15 @@ export class UndoManager {
   public readonly nextUndoDescription: ReadStore<string | null> = this._nextUndoDescription
   public readonly nextRedoDescription: ReadStore<string | null> = this._nextRedoDescription
 
-  constructor (private readonly client: UndoApplyClient) {}
+  constructor (
+    private readonly client: UndoApplyClient,
+    // L-G2: class refs are injected rather than hardcoded in the module so the
+    // manager never carries a stale copy of the plugin metadata. Production
+    // passes tracker.class.Issue / tracker.class.IssueRelation; unit tests omit
+    // them and fall back to the string defaults their mock client switches on.
+    private readonly issueClass: string = 'tracker:class:Issue',
+    private readonly relationClass: string = 'tracker:class:IssueRelation'
+  ) {}
 
   push (entry: UndoEntry): void {
     this.undoStack.push(entry)
@@ -274,7 +285,7 @@ export class UndoManager {
     const affected: string[] = []
     switch (entry.kind) {
       case 'date-change': {
-        const issue = (await this.client.findOne(getIssueClass(), { _id: entry.issueId })) as Issue | undefined
+        const issue = (await this.client.findOne(this.issueClass, { _id: entry.issueId })) as Issue | undefined
         if (issue === undefined) throw new Error(`Undo: issue ${String(entry.issueId)} not found`)
         await ops.update(issue, { ...entry.before })
         affected.push(String(entry.issueId))
@@ -282,7 +293,7 @@ export class UndoManager {
       }
       case 'date-batch': {
         for (const c of entry.changes) {
-          const i = (await this.client.findOne(getIssueClass(), { _id: c.issueId })) as Issue | undefined
+          const i = (await this.client.findOne(this.issueClass, { _id: c.issueId })) as Issue | undefined
           if (i === undefined) continue // skip missing, continue rest (Spec §6 partial-failure)
           await ops.update(i, { ...c.before })
           affected.push(String(c.issueId))
@@ -322,7 +333,7 @@ export class UndoManager {
         break
       }
       case 'relation-edit': {
-        const rel = (await this.client.findOne(getRelationClass(), { _id: entry.relationId })) as
+        const rel = (await this.client.findOne(this.relationClass, { _id: entry.relationId })) as
           | IssueRelation
           | undefined
         if (rel === undefined) throw new Error('Undo: relation not found')
@@ -331,7 +342,7 @@ export class UndoManager {
         break
       }
       case 'attribute-change': {
-        const target = (await this.client.findOne(getIssueClass(), { _id: entry.issueId })) as Issue | undefined
+        const target = (await this.client.findOne(this.issueClass, { _id: entry.issueId })) as Issue | undefined
         if (target === undefined) throw new Error('Undo: issue not found')
         await ops.update(target, { [entry.attr]: entry.before })
         affected.push(String(entry.issueId))
@@ -348,7 +359,7 @@ export class UndoManager {
     const affected: string[] = []
     switch (entry.kind) {
       case 'date-change': {
-        const issue = (await this.client.findOne(getIssueClass(), { _id: entry.issueId })) as Issue | undefined
+        const issue = (await this.client.findOne(this.issueClass, { _id: entry.issueId })) as Issue | undefined
         if (issue === undefined) throw new Error(`Redo: issue ${String(entry.issueId)} not found`)
         await ops.update(issue, { ...entry.after })
         affected.push(String(entry.issueId))
@@ -356,7 +367,7 @@ export class UndoManager {
       }
       case 'date-batch': {
         for (const c of entry.changes) {
-          const i = (await this.client.findOne(getIssueClass(), { _id: c.issueId })) as Issue | undefined
+          const i = (await this.client.findOne(this.issueClass, { _id: c.issueId })) as Issue | undefined
           if (i === undefined) continue
           await ops.update(i, { ...c.after })
           affected.push(String(c.issueId))
@@ -395,7 +406,7 @@ export class UndoManager {
         break
       }
       case 'relation-edit': {
-        const rel = (await this.client.findOne(getRelationClass(), { _id: entry.relationId })) as
+        const rel = (await this.client.findOne(this.relationClass, { _id: entry.relationId })) as
           | IssueRelation
           | undefined
         if (rel === undefined) throw new Error('Redo: relation not found')
@@ -404,7 +415,7 @@ export class UndoManager {
         break
       }
       case 'attribute-change': {
-        const target = (await this.client.findOne(getIssueClass(), { _id: entry.issueId })) as Issue | undefined
+        const target = (await this.client.findOne(this.issueClass, { _id: entry.issueId })) as Issue | undefined
         if (target === undefined) throw new Error('Redo: issue not found')
         await ops.update(target, { [entry.attr]: entry.after })
         affected.push(String(entry.issueId))
@@ -429,14 +440,14 @@ export class UndoManager {
     switch (entry.kind) {
       case 'date-change': {
         const expected = mode === 'undo' ? entry.after : entry.before
-        const issue = (await this.client.findOne(getIssueClass(), { _id: entry.issueId })) as Issue | undefined
+        const issue = (await this.client.findOne(this.issueClass, { _id: entry.issueId })) as Issue | undefined
         if (issue === undefined) return true
         return !sameDatePair(issue, expected)
       }
       case 'date-batch': {
         for (const c of entry.changes) {
           const expected = mode === 'undo' ? c.after : c.before
-          const i = (await this.client.findOne(getIssueClass(), { _id: c.issueId })) as Issue | undefined
+          const i = (await this.client.findOne(this.issueClass, { _id: c.issueId })) as Issue | undefined
           if (i === undefined) return true
           if (!sameDatePair(i, expected)) return true
         }
@@ -445,7 +456,7 @@ export class UndoManager {
       case 'relation-create': {
         // mode='undo' (we want to remove it): the relation must still exist.
         // mode='redo' (we want to re-create it): it must currently be absent.
-        const existing = (await this.client.findOne(getRelationClass(), { _id: entry.relation._id })) as
+        const existing = (await this.client.findOne(this.relationClass, { _id: entry.relation._id })) as
           | IssueRelation
           | undefined
         if (mode === 'undo') return existing === undefined
@@ -455,12 +466,12 @@ export class UndoManager {
         // mode='undo' (re-create): must be absent, and re-creating must not
         // form a cycle in the current graph.
         // mode='redo' (delete again): must still be present.
-        const existing = (await this.client.findOne(getRelationClass(), { _id: entry.relation._id })) as
+        const existing = (await this.client.findOne(this.relationClass, { _id: entry.relation._id })) as
           | IssueRelation
           | undefined
         if (mode === 'undo') {
           if (existing !== undefined) return true
-          const allRels = (await this.client.findAll(getRelationClass(), {
+          const allRels = (await this.client.findAll(this.relationClass, {
             space: entry.relation.space
           })) as IssueRelation[]
           if (wouldCreateCycle(entry.relation.attachedTo, entry.relation.target, allRels)) return true
@@ -470,7 +481,7 @@ export class UndoManager {
       }
       case 'relation-edit': {
         const expected = mode === 'undo' ? entry.after : entry.before
-        const rel = (await this.client.findOne(getRelationClass(), { _id: entry.relationId })) as
+        const rel = (await this.client.findOne(this.relationClass, { _id: entry.relationId })) as
           | IssueRelation
           | undefined
         if (rel === undefined) return true
@@ -478,7 +489,7 @@ export class UndoManager {
       }
       case 'attribute-change': {
         const expected = mode === 'undo' ? entry.after : entry.before
-        const target = (await this.client.findOne(getIssueClass(), { _id: entry.issueId })) as Issue | undefined
+        const target = (await this.client.findOne(this.issueClass, { _id: entry.issueId })) as Issue | undefined
         if (target === undefined) return true
         return (target as unknown as Record<string, unknown>)[entry.attr] !== expected
       }
@@ -492,17 +503,4 @@ function sameDatePair (issue: Issue, expected: { startDate: Timestamp | null, du
   return (
     (issue.startDate ?? null) === (expected.startDate ?? null) && (issue.dueDate ?? null) === (expected.dueDate ?? null)
   )
-}
-
-/**
- * The manager doesn't import `tracker` plugin metadata directly to keep the
- * file svelte-store-free and easy to unit-test. The class refs are passed as
- * opaque strings; the production client resolves them via the hierarchy. For
- * tests, the mock client switches on the string contents.
- */
-function getIssueClass (): string {
-  return 'tracker:class:Issue'
-}
-function getRelationClass (): string {
-  return 'tracker:class:IssueRelation'
 }

@@ -449,7 +449,14 @@
   // TxOperations & Client has the structural subset UndoApplyClient needs;
   // the cast lives at the construction site so the manager itself stays free
   // of any tracker/core imports beyond pure types.
-  const undoManager = new UndoManager(getClient() as unknown as ConstructorParameters<typeof UndoManager>[0])
+  // L-G2: inject the class refs from the tracker plugin metadata (source of
+  // truth) instead of letting the manager fall back to its hardcoded string
+  // defaults.
+  const undoManager = new UndoManager(
+    getClient() as unknown as ConstructorParameters<typeof UndoManager>[0],
+    tracker.class.Issue,
+    tracker.class.IssueRelation
+  )
   const canUndo = undoManager.canUndo
   const canRedo = undoManager.canRedo
   const nextUndoDescription = undoManager.nextUndoDescription
@@ -914,7 +921,12 @@
   // delivers a new array. The IIFE pattern is required because Svelte's `$:`
   // doesn't await; the Set assignment fires later, which is fine because the
   // reactive renderers re-run again then.
+  let editableGen = 0
   $: void (async () => {
+    // L-G1: guard against out-of-order completion. Two rapid issue/milestone
+    // updates each start an await-chain; without a generation token the older
+    // (slower) run could overwrite editableIssueIds with a stale Set.
+    const gen = ++editableGen
     const next = new Set<string>()
     for (const i of issues) {
       if (await canEditIssue(i)) next.add(i._id as unknown as string)
@@ -926,6 +938,7 @@
     for (const m of milestones) {
       if (await canEditMilestone(m)) next.add(m._id as unknown as string)
     }
+    if (gen !== editableGen) return // a newer run superseded this one
     editableIssueIds = next
   })()
   $: milestoneQuery.query(tracker.class.Milestone, milestoneDocQuery, (res: Milestone[]) => {
@@ -2821,17 +2834,28 @@
     // Only react when focus is inside the Gantt root — otherwise we'd hijack
     // global shortcuts.
     if (!(containerEl?.contains(document.activeElement) ?? false)) return
+    // L-G4: don't hijack navigation keys while a text input inside the Gantt
+    // root owns focus (inline cell edit, CreateIssue in a side panel, …) —
+    // Tab/Arrows/+/- must reach the browser so the user can type and move the
+    // caret normally.
     if (e.key === 'Tab') {
+      if (isTextInputFocused()) return
+      // Only trap Tab when a bar already has keyboard focus (escape-hatch).
+      // With no focused bar we let the browser move focus naturally so
+      // keyboard/AT users are never stuck inside the canvas (A11y).
+      if (focusedIssueId === null) return
       moveFocus(e.shiftKey ? -1 : 1)
       e.preventDefault()
       return
     }
     if (e.key === 'ArrowRight') {
+      if (isTextInputFocused()) return
       void shiftFocused(e.shiftKey ? 7 : 1)
       e.preventDefault()
       return
     }
     if (e.key === 'ArrowLeft') {
+      if (isTextInputFocused()) return
       void shiftFocused(e.shiftKey ? -7 : -1)
       e.preventDefault()
       return
@@ -2869,11 +2893,13 @@
     // PR6: zoom shortcuts. `+` / `=` zoom in, `-` zoom out. The same
     // key positions as the browser's native zoom but scoped to the Gantt.
     if (e.key === '+' || e.key === '=') {
+      if (isTextInputFocused()) return
       cycleZoom(1)
       e.preventDefault()
       return
     }
     if (e.key === '-' || e.key === '_') {
+      if (isTextInputFocused()) return
       cycleZoom(-1)
       e.preventDefault()
       return

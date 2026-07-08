@@ -98,18 +98,25 @@
   /** Bulk-select: set of selected issue id strings for co-drag highlighting. */
   export let multiSelectedIssueIds = new Set<string>()
 
-  /**
-   * Returns true iff any IssueRelation involving this issue is in the
-   * CP module's violatedRelations set. Used by GanttBar to paint a red
-   * dashed border on the bar.
-   */
-  function hasViolation (issueId: Ref<Issue>): boolean {
-    if (violatedRelations.size === 0) return false
-    for (const r of relations) {
-      if ((r.attachedTo === issueId || r.target === issueId) && violatedRelations.has(r._id)) return true
+  // L-G9: derive the set of issue ids touched by a violated relation once per
+  // violatedRelations/relations change, instead of re-scanning every relation
+  // for every rendered row (O(rows·relations)). Reactive `$:` — like the
+  // isEditable pattern below — keeps the template dependency explicit so bars
+  // repaint when the underlying set mutates. Used by GanttBar to paint a red
+  // dashed border on the bar.
+  $: violatedIssueIds = ((): Set<Ref<Issue>> => {
+    const s = new Set<Ref<Issue>>()
+    if (violatedRelations.size > 0) {
+      for (const r of relations) {
+        if (violatedRelations.has(r._id)) {
+          s.add(r.attachedTo)
+          s.add(r.target)
+        }
+      }
     }
-    return false
-  }
+    return s
+  })()
+  $: hasViolation = (issueId: Ref<Issue>): boolean => violatedIssueIds.has(issueId)
 
   function statusCategoryFor (issue: any): string | null {
     if (statusCategoryMap === undefined) return null
