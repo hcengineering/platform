@@ -39,6 +39,7 @@ import {
   TClassicProjectTypeData,
   TComponent,
   TDependencyShiftedNotification,
+  TDependencyShiftRequest,
   TIssue,
   TIssueRelation,
   TIssueStatus,
@@ -485,7 +486,8 @@ export function createModel (builder: Builder): void {
     TTypeEstimation,
     TTypeRemainingTime,
     TProjectTargetPreference,
-    TDependencyShiftedNotification
+    TDependencyShiftedNotification,
+    TDependencyShiftRequest
   )
 
   builder.mixin(tracker.class.Project, core.class.Class, activity.mixin.ActivityDoc, {})

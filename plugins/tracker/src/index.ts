@@ -330,6 +330,66 @@ export interface DependencyShiftedNotification extends CommonInboxNotification {
 }
 
 /**
+ *  — Notification on Dependency-Shift.
+ *
+ * Short-lived signal doc a Gantt client writes into the *project* space it is
+ * already allowed to edit after a cascade commit. A server-side trigger
+ * (`OnDependencyShiftRequest`) reacts to its creation, resolves collaborators
+ * server-side (privileged, ACL-safe) and fans out one
+ * `DependencyShiftedNotification` per recipient — then removes this request.
+ *
+ * The doc intentionally carries NO `triggerUserId`: the trigger derives the
+ * originating account from `tx.modifiedBy` (anti-spoofing) so a client cannot
+ * forge the notification author.
+ * @public
+ */
+export interface DependencyShiftRequest extends Doc {
+  triggerIssueId: Ref<Issue>
+  triggerIssueIdentifier: string
+  triggerIssueTitle: string
+  triggerIssueSpace: Ref<Project>
+  shiftedIssues: ShiftedIssuePayload[]
+  cascadeToken: string
+}
+
+/**
+ *  — Notification on Dependency-Shift.
+ *
+ * Pure aggregation: group `ShiftedIssuePayload`s by recipient given a per-issue
+ * collaborator lookup. The `triggerUserId` is filtered out of every bundle so
+ * the account that initiated the cascade is never pinged about its own action
+ * (self-suppress). Side-effect free and client-free, so both the Gantt client
+ * (payload building) and the server trigger (dispatch) share one source of
+ * truth with no divergence.
+ * @public
+ */
+export function groupShiftsByRecipient (
+  triggerUserId: AccountUuid | undefined,
+  entries: ShiftedIssuePayload[],
+  collaboratorsByIssue: Map<Ref<Issue>, AccountUuid[]>
+): Map<AccountUuid, ShiftedIssuePayload[]> {
+  const result = new Map<AccountUuid, ShiftedIssuePayload[]>()
+
+  for (const entry of entries) {
+    const collaborators = collaboratorsByIssue.get(entry.issueId) ?? []
+    const seenForThisEntry = new Set<AccountUuid>()
+    for (const acc of collaborators) {
+      if (triggerUserId !== undefined && acc === triggerUserId) continue
+      if (seenForThisEntry.has(acc)) continue
+      seenForThisEntry.add(acc)
+      const bucket = result.get(acc)
+      if (bucket === undefined) {
+        result.set(acc, [entry])
+      } else {
+        bucket.push(entry)
+      }
+    }
+  }
+
+  return result
+}
+
+/**
  * @public
  */
 export interface IssueDraft {
@@ -502,7 +562,8 @@ const pluginState = plugin(trackerId, {
     TypeRemainingTime: '' as Ref<Class<Type<number>>>,
     RelatedIssueTarget: '' as Ref<Class<RelatedIssueTarget>>,
     ProjectTargetPreference: '' as Ref<Class<ProjectTargetPreference>>,
-    DependencyShiftedNotification: '' as Ref<Class<DependencyShiftedNotification>>
+    DependencyShiftedNotification: '' as Ref<Class<DependencyShiftedNotification>>,
+    DependencyShiftRequest: '' as Ref<Class<DependencyShiftRequest>>
   },
   mixin: {
     ClassicProjectTypeData: '' as Ref<Mixin<Project>>,

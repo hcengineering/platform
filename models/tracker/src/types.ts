@@ -61,6 +61,7 @@ import {
   type Component,
   type DependencyKind,
   type DependencyShiftedNotification,
+  type DependencyShiftRequest,
   type Issue,
   type IssueChildInfo,
   type IssueParentInfo,
@@ -518,6 +519,37 @@ export class TDependencyShiftedNotification extends TCommonInboxNotification imp
     triggerIssueTitle!: string
 
   triggerUserId!: AccountUuid
+
+  shiftedIssues!: ShiftedIssuePayload[]
+
+  @Prop(TypeString(), tracker.string.DependencyShifted)
+    cascadeToken!: string
+}
+
+/**
+ *  — Notification on Dependency-Shift.
+ *
+ * Short-lived signal doc (DOMAIN_TRACKER) a Gantt client writes into the
+ * project space after a cascade commit. The `OnDependencyShiftRequest` server
+ * trigger consumes it, dispatches notifications privileged, and removes it. It
+ * deliberately carries no `triggerUserId` — the trigger derives the author
+ * from `tx.modifiedBy` (anti-spoofing).
+ *
+ * @public
+ */
+@Model(tracker.class.DependencyShiftRequest, core.class.Doc, DOMAIN_TRACKER)
+export class TDependencyShiftRequest extends TDoc implements DependencyShiftRequest {
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+    triggerIssueId!: Ref<Issue>
+
+  @Prop(TypeString(), tracker.string.Issue)
+    triggerIssueIdentifier!: string
+
+  @Prop(TypeString(), tracker.string.Issue)
+    triggerIssueTitle!: string
+
+  @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
+    triggerIssueSpace!: Ref<Project>
 
   shiftedIssues!: ShiftedIssuePayload[]
 
