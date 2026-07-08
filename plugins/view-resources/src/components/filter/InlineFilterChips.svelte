@@ -14,8 +14,9 @@
 -->
 <script lang="ts">
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
+  import type { PopupResult } from '@hcengineering/ui'
   import { Button, IconClose, Label, eventToHTMLElement, resizeObserver, showPopup, tooltip } from '@hcengineering/ui'
-  import { tick } from 'svelte'
+  import { onDestroy, tick } from 'svelte'
   import { filterStore, removeFilter, setFilters } from '../../filter'
   import view from '../../plugin'
   import FilterSection from './FilterSection.svelte'
@@ -124,9 +125,48 @@
     if (w !== containerWidth) containerWidth = w
   }
 
-  function openOverflowPopover (e: MouseEvent): void {
-    showPopup(InlineFilterChipsOverflow, { hiddenStartIndex: visibleCount, space }, eventToHTMLElement(e))
+  // M-VF3: the popover receives `hiddenStartIndex` as a one-shot snapshot of
+  // visibleCount, but its {#each $filterStore} body is live. If the filter set
+  // (or visibleCount) changes while it is open — e.g. a chip removed from the
+  // main strip or from inside the popover — that snapshot points at the wrong
+  // subset. Close the popover on the first store mutation so the split-point can
+  // never drift out of sync with the live store.
+  let overflowPopup: PopupResult | undefined
+  let unsubOverflow: (() => void) | undefined
+
+  function cleanupOverflow (): void {
+    unsubOverflow?.()
+    unsubOverflow = undefined
+    overflowPopup = undefined
   }
+
+  function openOverflowPopover (e: MouseEvent): void {
+    overflowPopup = showPopup(
+      InlineFilterChipsOverflow,
+      { hiddenStartIndex: visibleCount, space },
+      eventToHTMLElement(e),
+      () => {
+        // User-initiated close (escape / click-outside): drop the subscription.
+        cleanupOverflow()
+      }
+    )
+    // subscribe() fires synchronously once on subscription; skip that seed call
+    // and dismiss on the first real filter-set mutation.
+    let seeded = false
+    unsubOverflow = filterStore.subscribe(() => {
+      if (!seeded) {
+        seeded = true
+        return
+      }
+      overflowPopup?.close()
+      cleanupOverflow()
+    })
+  }
+
+  onDestroy(() => {
+    overflowPopup?.close()
+    cleanupOverflow()
+  })
 
   // Reference _class to keep the prop usable for future affordances (chip-add
   // popovers reuse it). The current component does not need it because the
