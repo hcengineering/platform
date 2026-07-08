@@ -33,6 +33,7 @@ import core, {
   type AccountUuid,
   type Class,
   type Collaborator,
+  type AccessGroup,
   type Doc,
   type GroupGrant,
   type MeasureContext,
@@ -117,8 +118,13 @@ function makeSpace (members: AccountUuid[], owners: AccountUuid[] = []): Space {
   return { _id: ISSUE_SPACE, members, owners } as any
 }
 
-/** findAll that serves an optional space and optional collaborators / group grants. */
-function serve (opts: { space?: Space, collaborators?: Collaborator[], groupGrants?: GroupGrant[] }): FindAllFn {
+/** findAll that serves an optional space and optional collaborators / group grants / access groups. */
+function serve (opts: {
+  space?: Space
+  collaborators?: Collaborator[]
+  groupGrants?: GroupGrant[]
+  accessGroups?: AccessGroup[]
+}): FindAllFn {
   return async (_ctx, _class, query) => {
     if (_class === core.class.Space) {
       return opts.space !== undefined && query?._id === opts.space._id ? [opts.space] : []
@@ -132,6 +138,12 @@ function serve (opts: { space?: Space, collaborators?: Collaborator[], groupGran
     }
     if (_class === core.class.GroupGrant) {
       let list = opts.groupGrants ?? []
+      if (query?._id !== undefined) list = list.filter((g) => g._id === query._id)
+      if (query?.group !== undefined) list = list.filter((g) => (g as any).group === query.group)
+      return list as any
+    }
+    if (_class === core.class.AccessGroup) {
+      let list = opts.accessGroups ?? []
       if (query?._id !== undefined) list = list.filter((g) => g._id === query._id)
       return list as any
     }
@@ -193,6 +205,37 @@ function groupGrantRecord (over: Partial<GroupGrant>): GroupGrant {
     modifiedBy: 'test' as PersonId,
     group: generateId() as any,
     grantedBy: uuid(),
+    ...over
+  } as any
+}
+
+const GROUP_ID = 'test:doc:Group1' as Ref<AccessGroup>
+
+function makeAccessGroupCreateTx (account: Account, attrs: Partial<AccessGroup>): Tx {
+  const factory = new TxFactory(account.primarySocialId)
+  return factory.createTxCreateDoc<AccessGroup>(core.class.AccessGroup, ISSUE_SPACE, attrs as any)
+}
+
+function makeAccessGroupUpdateTx (account: Account, id: Ref<AccessGroup>, operations: Record<string, any>): Tx {
+  const factory = new TxFactory(account.primarySocialId)
+  return factory.createTxUpdateDoc(core.class.AccessGroup, ISSUE_SPACE, id, operations as any)
+}
+
+function makeAccessGroupRemoveTx (account: Account, id: Ref<AccessGroup>): Tx {
+  const factory = new TxFactory(account.primarySocialId)
+  return factory.createTxRemoveDoc(core.class.AccessGroup, ISSUE_SPACE, id)
+}
+
+function accessGroupRecord (over: Partial<AccessGroup>): AccessGroup {
+  return {
+    _id: (over._id ?? GROUP_ID) as Ref<AccessGroup>,
+    _class: core.class.AccessGroup,
+    space: ISSUE_SPACE,
+    modifiedOn: Date.now(),
+    modifiedBy: 'test' as PersonId,
+    name: 'G',
+    members: [],
+    owners: [],
     ...over
   } as any
 }
@@ -531,5 +574,66 @@ describe('CollaboratorGuardMiddleware', () => {
       'test:doc:Channel1' as Ref<Doc>
     )
     await expect(mw.tx(makeCtx(owner), [tx])).rejects.toThrow()
+  })
+
+  // ─── AccessGroup CUD (P4.1/4.3) ────────────────────────────────────────────
+  it('allows AccessGroup create when creator lists itself as owner', async () => {
+    const actor = makeAccount(AccountRole.User)
+    let nextCalled = false
+    const mw = makeMw(serve({}), async () => {
+      nextCalled = true
+      return {}
+    })
+    await mw.tx(makeCtx(actor), [makeAccessGroupCreateTx(actor, { name: 'G', members: [], owners: [actor.uuid] })])
+    expect(nextCalled).toBe(true)
+  })
+
+  it('rejects AccessGroup create when creator is not among owners (no orphan groups)', async () => {
+    const actor = makeAccount(AccountRole.User)
+    const mw = makeMw(serve({}))
+    await expect(
+      mw.tx(makeCtx(actor), [makeAccessGroupCreateTx(actor, { name: 'G', members: [], owners: [uuid()] })])
+    ).rejects.toThrow()
+  })
+
+  it('allows AccessGroup membership update by an owner', async () => {
+    const owner = makeAccount(AccountRole.User)
+    let nextCalled = false
+    const g = accessGroupRecord({ owners: [owner.uuid] })
+    const mw = makeMw(serve({ accessGroups: [g] }), async () => {
+      nextCalled = true
+      return {}
+    })
+    await mw.tx(makeCtx(owner), [makeAccessGroupUpdateTx(owner, g._id, { $push: { members: uuid() } })])
+    expect(nextCalled).toBe(true)
+  })
+
+  it('rejects AccessGroup membership update by a non-owner (escalation guard)', async () => {
+    const stranger = makeAccount(AccountRole.User)
+    const g = accessGroupRecord({ owners: [uuid()] })
+    const mw = makeMw(serve({ accessGroups: [g] }))
+    await expect(
+      mw.tx(makeCtx(stranger), [makeAccessGroupUpdateTx(stranger, g._id, { $push: { members: stranger.uuid } })])
+    ).rejects.toThrow()
+  })
+
+  it('rejects AccessGroup delete while a GroupGrant still references it', async () => {
+    const owner = makeAccount(AccountRole.User)
+    const g = accessGroupRecord({ owners: [owner.uuid] })
+    const grant = groupGrantRecord({ group: g._id })
+    const mw = makeMw(serve({ accessGroups: [g], groupGrants: [grant] }))
+    await expect(mw.tx(makeCtx(owner), [makeAccessGroupRemoveTx(owner, g._id)])).rejects.toThrow()
+  })
+
+  it('allows AccessGroup delete by owner when no GroupGrant references it', async () => {
+    const owner = makeAccount(AccountRole.User)
+    let nextCalled = false
+    const g = accessGroupRecord({ owners: [owner.uuid] })
+    const mw = makeMw(serve({ accessGroups: [g], groupGrants: [] }), async () => {
+      nextCalled = true
+      return {}
+    })
+    await mw.tx(makeCtx(owner), [makeAccessGroupRemoveTx(owner, g._id)])
+    expect(nextCalled).toBe(true)
   })
 })

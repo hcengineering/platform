@@ -20,6 +20,7 @@ import {
   type TxMiddlewareResult
 } from '@hcengineering/server-core'
 import core, {
+  type AccessGroup,
   type Account,
   AccountRole,
   type AccessLevel,
@@ -80,6 +81,9 @@ function forbidden (): PlatformError<Record<string, any>> {
  *    space-owners / workspace-Maintainer+ / an admin-level grantee of the doc.
  *    A GroupGrant `level` update is allowed (it is the one mutable field — the
  *    reconcile trigger propagates it); every other GroupGrant update is rejected.
+ *  - AccessGroup CUD is gated (P4.1/4.3): membership is security-relevant, so
+ *    edits are restricted to the group's owners / Maintainer+, and a group with
+ *    live GroupGrants cannot be deleted.
  *
  * Collaborators of non-secured classes (channels etc.) are untouched.
  *
@@ -117,6 +121,10 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
     const cud = tx as TxCUD<Doc>
     if (this.context.hierarchy.isDerived(cud.objectClass, core.class.GroupGrant)) {
       await this.checkGroupGrantTx(ctx, cud, account)
+      return
+    }
+    if (this.context.hierarchy.isDerived(cud.objectClass, core.class.AccessGroup)) {
+      await this.checkAccessGroupTx(ctx, cud, account)
       return
     }
     if (!this.context.hierarchy.isDerived(cud.objectClass, core.class.Collaborator)) return
@@ -261,6 +269,53 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
     }
     // TxMixin (or anything else) on a GroupGrant: reject.
     throw forbidden()
+  }
+
+  /**
+   * AccessGroup CUD gate (design 2.8 `owners` semantics / P4.1+4.3). An
+   * AccessGroup's membership is security-relevant: adding oneself to a group that
+   * already holds grants would escalate access. So editing is restricted to the
+   * group's `owners` (or workspace-Maintainer+). Fail-closed throughout.
+   *
+   *  - Create: allowed for a real account (≥ User) that lists itself in `owners`
+   *    (no orphan/unowned groups), or any Maintainer+.
+   *  - Update: only an owner of the existing group, or Maintainer+.
+   *  - Remove: only an owner / Maintainer+, AND only when no GroupGrant still
+   *    references the group (a live grant must be revoked first).
+   */
+  private async checkAccessGroupTx (
+    ctx: MeasureContext<SessionData>,
+    cud: TxCUD<Doc>,
+    account: Account
+  ): Promise<void> {
+    if (cud._class === core.class.TxCreateDoc) {
+      if (hasAccountRole(account, AccountRole.Maintainer)) return
+      const attrs = (cud as TxCreateDoc<AccessGroup>).attributes as Partial<AccessGroup>
+      // ≥ User and self-owned: the creator must be able to manage what they make.
+      if (hasAccountRole(account, AccountRole.User) && attrs.owners?.includes(account.uuid) === true) return
+      throw forbidden()
+    }
+
+    const existing = (
+      await this.findAll<AccessGroup>(ctx, core.class.AccessGroup, { _id: cud.objectId as Ref<AccessGroup> }, { limit: 1 })
+    )[0]
+    // fail-closed: cannot resolve the group we are asked to mutate → reject.
+    if (existing === undefined) throw forbidden()
+    const isOwner = existing.owners?.includes(account.uuid) === true || hasAccountRole(account, AccountRole.Maintainer)
+    if (!isOwner) throw forbidden()
+
+    if (cud._class === core.class.TxRemoveDoc) {
+      // A group with live grants may not be deleted (grants materialize access).
+      const grants = await this.findAll<GroupGrant>(
+        ctx,
+        core.class.GroupGrant,
+        { group: existing._id },
+        { limit: 1 }
+      )
+      if (grants.length > 0) throw forbidden()
+      return
+    }
+    // TxUpdateDoc / TxMixin by an owner: allowed.
   }
 
   /**

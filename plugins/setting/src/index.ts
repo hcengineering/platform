@@ -246,7 +246,8 @@ export default plugin(settingId, {
     AddEmailSocialId: '' as AnyComponent,
     OfficeSettings: '' as AnyComponent,
     UserRoleSelect: '' as AnyComponent,
-    TwoFactorSettings: '' as AnyComponent
+    TwoFactorSettings: '' as AnyComponent,
+    AccessGroups: '' as AnyComponent
   },
   string: {
     Settings: '' as IntlString,
@@ -361,7 +362,17 @@ export default plugin(settingId, {
     Disconnected: '' as IntlString,
     Available: '' as IntlString,
     NotConnectedIntegration: '' as IntlString,
-    IntegrationIsUnstable: '' as IntlString
+    IntegrationIsUnstable: '' as IntlString,
+    AccessGroups: '' as IntlString,
+    AccessGroupsHint: '' as IntlString,
+    NewAccessGroup: '' as IntlString,
+    AccessGroupName: '' as IntlString,
+    AccessGroupDescription: '' as IntlString,
+    DeleteAccessGroup: '' as IntlString,
+    AccessGroupInUse: '' as IntlString,
+    NoAccessGroups: '' as IntlString,
+    GroupOwners: '' as IntlString,
+    GroupMembers: '' as IntlString
   },
   icon: {
     AccountSettings: '' as Asset,
