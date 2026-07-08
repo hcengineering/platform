@@ -180,4 +180,42 @@ describe('encodeSearch', () => {
     // Regression: orphan token with mid-hyphen passes through untouched.
     expect(encodeSearch('title:meeting bug-fix', 'all')).toBe('searchTitle:meeting bug-fix')
   })
+
+  // ─── H3: whitespace after the field colon ────────────────────────────────
+  // `title: foo` (space after the colon) previously collapsed to an empty
+  // value; the bare `title:` token then had its colon escaped → 0 hits. The
+  // tokenizer now skips whitespace after the colon and routes the clause.
+  it('routes field-clauses with a space after the colon', () => {
+    expect(encodeSearch('title: foo', 'all')).toBe('searchTitle:foo')
+    expect(encodeSearch('title :  foo', 'all')).toBe('searchTitle:foo')
+    expect(encodeSearch('id: HULY-1', 'all')).toBe('identifier:HULY-1')
+  })
+
+  // ─── M-VF1: mixed-case ES-native + user prefixes ─────────────────────────
+  // A field prefix typed in any casing must canonicalise to the exact ES
+  // field name; otherwise the case-sensitive tokenizer/adapter miss it and
+  // the colon gets escaped → 0 hits.
+  it('canonicalises mixed-case field prefixes', () => {
+    expect(encodeSearch('Identifier:HULY-1', 'all')).toBe('identifier:HULY-1')
+    expect(encodeSearch('SearchTitle:foo', 'all')).toBe('searchTitle:foo')
+    expect(encodeSearch('TITLE:foo', 'all')).toBe('searchTitle:foo')
+  })
+
+  // ─── M-VF2: Lucene boolean-operator + comparison chars ───────────────────
+  // `&& || < > =` open boolean/range parsing in ES query_string; when we wrap
+  // a bare term into a scope clause they must be escaped so the value stays a
+  // literal and never throws query_string_parsing_exception.
+  it('escapes && || < > = inside scope-wrapped bare terms', () => {
+    expect(encodeSearch('a && b', 'title')).toBe('searchTitle:(a \\&\\& b)')
+    expect(encodeSearch('a || b', 'title')).toBe('searchTitle:(a \\|\\| b)')
+    expect(encodeSearch('x <= y', 'title')).toBe('searchTitle:(x \\<\\= y)')
+  })
+  it('neutralises a dangling boolean operator at clause end', () => {
+    // Non-prefix scope-wrap: `foo AND` is grouped verbatim (AND is a bare word
+    // here, not routed through the strict tokenizer path).
+    expect(encodeSearch('foo AND', 'title')).toBe('searchTitle:(foo AND)')
+    // Prefix path: a trailing operator with no operand would throw, so the
+    // tokenizer escapes it into a literal term.
+    expect(encodeSearch('title:foo NOT', 'all')).toBe('searchTitle:foo \\NOT')
+  })
 })

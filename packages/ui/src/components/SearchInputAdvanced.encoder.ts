@@ -37,7 +37,14 @@ const PREFIX_ALIAS: Record<string, string> = {
   comments: 'comments.message'
 }
 
-/** Allowed ES-native fields users may type directly. */
+/**
+ * Allowed ES-native fields users may type directly.
+ *
+ * KEEP IN SYNC with elastic/src/adapter.ts KNOWN_FIELD_RE (and vice versa).
+ * Both sides must carry the identical field set so the client only routes a
+ * `field:value` clause to query_string when the server-side adapter also
+ * recognises that field; otherwise the clause silently fails to parse.
+ */
 const ES_NATIVE_FIELDS = new Set([
   'searchTitle',
   'searchShortTitle',
@@ -46,6 +53,8 @@ const ES_NATIVE_FIELDS = new Set([
   'comments.message',
   'fulltextSummary'
 ])
+/** Lowercase → canonical lookup so mixed-case ES-native prefixes normalise. */
+const ES_NATIVE_CANON = new Map([...ES_NATIVE_FIELDS].map((f) => [f.toLowerCase(), f]))
 const USER_PREFIX_KEYS = new Set(Object.keys(PREFIX_ALIAS))
 
 /**
@@ -68,7 +77,11 @@ function aliasPrefixes (input: string): string {
   KNOWN_PREFIX_RE.lastIndex = 0
   return input.replace(KNOWN_PREFIX_RE, (_m, lead: string, field: string) => {
     const lower = field.toLowerCase()
-    const aliased = PREFIX_ALIAS[lower] ?? field
+    // M-VF1: canonicalise both user-shorthands (title → searchTitle) AND
+    // mixed-case ES-native fields (Identifier → identifier, SearchTitle →
+    // searchTitle) so the downstream tokenizer's field match — and the ES
+    // adapter's KNOWN_FIELD_RE — see the exact canonical field name.
+    const aliased = PREFIX_ALIAS[lower] ?? ES_NATIVE_CANON.get(lower) ?? field
     return `${lead}${aliased}:`
   })
 }
@@ -87,7 +100,11 @@ function hasKnownPrefix (input: string): boolean {
  * added by the caller, not by user input, so they stay un-escaped here.
  */
 function escapeForQueryString (s: string): string {
-  return s.replace(/[+\-!(){}[\]^"~*?:\\/]/g, '\\$&')
+  // M-VF2: `& | < > =` join the reserved set. `&&`/`||` are the Lucene
+  // boolean operators and `< > =` open range comparisons — all three throw a
+  // query_string_parsing_exception when they appear un-escaped inside a
+  // wrapped field value. Escaping each char keeps the value a literal token.
+  return s.replace(/[+\-!(){}[\]^"~*?:\\/&|<>=]/g, '\\$&')
 }
 
 /**
@@ -110,7 +127,7 @@ function escapeForQueryString (s: string): string {
  * query_string would re-parse the inner `:` as another field-targeted
  * clause, blowing up the entire query.
  */
-const PREFIX_VALUE_RESERVED_RE = /[+!(){}[\]^"~\\/:]/
+const PREFIX_VALUE_RESERVED_RE = /[+!(){}[\]^"~\\/:&|<>=]/
 
 /**
  * Single-pass tokenizer for the prefix-routed encode path.
@@ -187,9 +204,15 @@ function tokenize (input: string): Token[] {
     let matched = false
     for (const field of fields) {
       if (i + field.length + 1 > input.length) continue
-      if (input.slice(i, i + field.length) !== field) continue
+      // M-VF1: match the field name case-insensitively; we always emit the
+      // canonical `field` (never the typed casing) further down.
+      if (input.slice(i, i + field.length).toLowerCase() !== field.toLowerCase()) continue
       if (input[i + field.length] !== ':') continue
-      const valueStart = i + field.length + 1
+      // H3: skip whitespace after the colon so `title: foo` / `title :  foo`
+      // route to a field-clause instead of collapsing to an empty value (which
+      // would leave the bare `field:` token to have its colon escaped → 0 hits).
+      let valueStart = i + field.length + 1
+      while (valueStart < input.length && /\s/.test(input[valueStart])) valueStart++
 
       // paren-wrapped value
       if (input[valueStart] === '(') {
@@ -311,16 +334,30 @@ function renderToken (tok: Token): string {
       // even though mid-token '-' is tolerant. Escape the leading minus
       // explicitly so the orphan token stays a literal term.
       if (tok.raw.startsWith('-')) {
-        return '\\-' + tok.raw.slice(1).replace(/[+!(){}[\]^"~\\/:]/g, '\\$&')
+        return '\\-' + tok.raw.slice(1).replace(/[+!(){}[\]^"~\\/:&|<>=]/g, '\\$&')
       }
       if (!PREFIX_VALUE_RESERVED_RE.test(tok.raw)) return tok.raw
-      return tok.raw.replace(/[+!(){}[\]^"~\\/:]/g, '\\$&')
+      return tok.raw.replace(/[+!(){}[\]^"~\\/:&|<>=]/g, '\\$&')
     }
   }
 }
 
 function escapePrefixValues (aliased: string): string {
-  return tokenize(aliased).map(renderToken).join('')
+  const tokens = tokenize(aliased)
+  // M-VF2: a trailing boolean operator (`foo AND`, `title:foo NOT`) has no
+  // right-hand operand, so ES query_string throws a parse exception. Find the
+  // last non-whitespace token; if it is a bool-op it is dangling → escape it
+  // into a literal term instead of emitting it as an operator.
+  let lastNonWs = -1
+  for (let k = tokens.length - 1; k >= 0; k--) {
+    if (tokens[k].kind !== 'ws') {
+      lastNonWs = k
+      break
+    }
+  }
+  return tokens
+    .map((tok, idx) => (tok.kind === 'bool-op' && idx === lastNonWs ? `\\${tok.raw}` : renderToken(tok)))
+    .join('')
 }
 
 export function encodeSearch (raw: string, scope: SearchScope): string {

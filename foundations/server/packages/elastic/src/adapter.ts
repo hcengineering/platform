@@ -323,6 +323,11 @@ class ElasticAdapter implements FullTextAdapter {
     // `query_string` (which would throw a parsing exception and surface as
     // zero hits). Anything else falls back to `simple_query_string` for full
     // backwards compatibility.
+    // KEEP IN SYNC with packages/ui SearchInputAdvanced.encoder.ts
+    // ES_NATIVE_FIELDS (and vice versa). The client only emits a `field:value`
+    // clause for a field it believes the server recognises; if the two lists
+    // drift, a client-routed clause hits a field the adapter does not treat as
+    // query_string and silently fails to parse.
     const KNOWN_FIELD_RE =
       /(^|\s)(searchTitle|searchShortTitle|identifier|description\.plain|comments\.message|fulltextSummary)\s*:/i
     const usesQueryString = KNOWN_FIELD_RE.test(raw)
