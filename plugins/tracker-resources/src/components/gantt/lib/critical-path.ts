@@ -150,6 +150,12 @@ export function computeCriticalPath (
   const scheduled: ScheduledIssue[] = issues.filter(isScheduled)
   if (scheduled.length === 0) return EMPTY_RESULT
 
+  // Single O(1) lookup index over scheduled issues, reused by every pass below.
+  // Replaces the previous per-relation `scheduled.find(...)` linear scans
+  // (forward-clamp, backward, critical-relation) which made the passes O(V·E).
+  const byRef = new Map<Ref<Issue>, ScheduledIssue>()
+  for (const i of scheduled) byRef.set(i._id, i)
+
   // Filter relations to only those whose both endpoints are scheduled.
   const scheduledSet = new Set<Ref<Issue>>(scheduled.map((i) => i._id))
   const activeRels = relations.filter((r) => scheduledSet.has(r.attachedTo) && scheduledSet.has(r.target))
@@ -191,7 +197,7 @@ export function computeCriticalPath (
     let newES = i.startDate
     let newEF = i.dueDate
     for (const r of incRels) {
-      const pred = scheduled.find((p) => p._id === r.attachedTo)
+      const pred = byRef.get(r.attachedTo)
       if (pred === undefined) continue
       const predES = es.get(pred._id) ?? pred.startDate
       const predEF = ef.get(pred._id) ?? pred.dueDate
@@ -212,7 +218,7 @@ export function computeCriticalPath (
     // us LATER than what the user pinned, record it as violated.
     if (newES > i.startDate) {
       for (const r of incRels) {
-        const pred = scheduled.find((p) => p._id === r.attachedTo)
+        const pred = byRef.get(r.attachedTo)
         if (pred === undefined) continue
         const b = forwardBound(r, es.get(pred._id) ?? pred.startDate, ef.get(pred._id) ?? pred.dueDate, cfg)
         if ((b.field === 'ES' && b.value > i.startDate) || (b.field === 'EF' && b.value > i.dueDate)) {
@@ -252,7 +258,7 @@ export function computeCriticalPath (
     let newLF = outRels.length === 0 ? projectFinish : Infinity
     let newLS = newLF - dur
     for (const r of outRels) {
-      const succ = scheduled.find((s) => s._id === r.target)
+      const succ = byRef.get(r.target)
       if (succ === undefined) continue
       const succLS = ls.get(succ._id) ?? succ.startDate
       const succLF = lf.get(succ._id) ?? succ.dueDate
@@ -288,8 +294,8 @@ export function computeCriticalPath (
   const criticalRelations = new Set<Ref<IssueRelation>>()
   for (const r of activeRels) {
     if (!critical.has(r.attachedTo) || !critical.has(r.target)) continue
-    const pred = scheduled.find((p) => p._id === r.attachedTo)
-    const succ = scheduled.find((s) => s._id === r.target)
+    const pred = byRef.get(r.attachedTo)
+    const succ = byRef.get(r.target)
     if (pred === undefined || succ === undefined) continue
     const b = forwardBound(r, es.get(pred._id) ?? pred.startDate, ef.get(pred._id) ?? pred.dueDate, cfg)
     const succAnchor = b.field === 'ES' ? (es.get(succ._id) ?? succ.startDate) : (ef.get(succ._id) ?? succ.dueDate)
