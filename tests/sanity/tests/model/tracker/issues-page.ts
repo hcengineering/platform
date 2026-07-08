@@ -385,7 +385,20 @@ export class IssuesPage extends CommonTrackerPage {
       await tabs[i].click()
       await this.page.waitForTimeout(3000)
       if (presence === checks[i]) {
-        await expect(this.issueListPanel()).toContainText(issueName)
+        // A just-created issue can lag the $search fulltext index, and the
+        // list query does not live-update from the fulltext service — so a
+        // one-shot search after creation may return before the index has the
+        // issue. Re-submit the search and re-assert under a poll: the issue
+        // must still appear (no assertion weakened), we only tolerate the
+        // indexing lag by retrying the query until the index catches up.
+        await expect(async () => {
+          if (!(await this.inputSearch().isVisible())) {
+            await this.inputSearchIcon().click()
+          }
+          await this.inputSearch().fill(issueName)
+          await this.inputSearch().press('Enter')
+          await expect(this.issueListPanel()).toContainText(issueName, { timeout: 5000 })
+        }).toPass(retryOptions)
       } else {
         await expect(this.issueListPanel()).not.toContainText(issueName)
       }
