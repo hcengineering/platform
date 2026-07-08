@@ -27,7 +27,7 @@
   export let row: { y: number, height: number }
   export let timeScale: TimeScale
   export let isSummary: boolean = false
-  export let summaryRange: { startDate: number | null; dueDate: number | null } | null = null
+  export let summaryRange: { startDate: number | null, dueDate: number | null } | null = null
   // Status category drives bar fill: backlog grey, todo blue, in-progress
   // amber, completed green, cancelled muted. null = no status info.
   export let statusCategory: string | null = null
@@ -76,9 +76,7 @@
   export let barLabelRight: BarLabelSlot = 'none'
 
   const DAY_MS_FOR_SLACK = 86_400_000
-  $: slackPx = showSlackGlyph && slackMs > 0
-    ? Math.max(2, (slackMs / DAY_MS_FOR_SLACK) * timeScale.pxPerDay)
-    : 0
+  $: slackPx = showSlackGlyph && slackMs > 0 ? Math.max(2, (slackMs / DAY_MS_FOR_SLACK) * timeScale.pxPerDay) : 0
 
   const dispatch = createEventDispatcher<{
     barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
@@ -166,7 +164,7 @@
       if (!editable || dragTarget === undefined) return
       if (evt.button !== 0) return
       const action: 'drag' | 'resize' = edge === 'body' ? 'drag' : 'resize'
-      const decision = classifyPointer(layoutMode, evt.pointerType as PointerKind, action)
+      const decision = classifyPointer(layoutMode, evt.pointerType, action)
       if (decision === 'block') return
       const modifiers = { metaKey: evt.metaKey, ctrlKey: evt.ctrlKey, shiftKey: evt.shiftKey }
       if (decision === 'allow') {
@@ -276,8 +274,8 @@
     triple.paletteIndex !== undefined ? getPlatformColor(triple.paletteIndex, $themeStore.dark) : triple.border
   $: resolvedText = triple.text
 
-  $: effectiveStart = isSummary ? summaryRange?.startDate ?? issue.startDate : issue.startDate
-  $: effectiveDue = isSummary ? summaryRange?.dueDate ?? issue.dueDate : issue.dueDate
+  $: effectiveStart = isSummary ? (summaryRange?.startDate ?? issue.startDate) : issue.startDate
+  $: effectiveDue = isSummary ? (summaryRange?.dueDate ?? issue.dueDate) : issue.dueDate
 
   // PR 3 edit-mode: while THIS bar is the active drag target, swap the bar
   // geometry over to the reducer's preview values so the bar visually tracks
@@ -286,9 +284,7 @@
   $: dragState = $activeDrag
   // PR3.3: DragState carries `target: { kind, doc }` (Issue or Milestone)
   // since the refactor. Read doc._id for the active-bar match.
-  $: isThisBarActive =
-    issueRef !== undefined &&
-    activeDragTargetId(dragState) === issueRef
+  $: isThisBarActive = issueRef !== undefined && activeDragTargetId(dragState) === issueRef
   $: isThisConnectorActive =
     issueRef !== undefined &&
     (dragState.kind === 'connector-drawing' || dragState.kind === 'connector-target-hover') &&
@@ -327,8 +323,8 @@
   })()
 
   $: visible = previewStart !== null && previewDue !== null
-  $: rawStart = (previewStart ?? 0) as number
-  $: rawDue = (previewDue ?? 0) as number
+  $: rawStart = previewStart ?? 0
+  $: rawDue = previewDue ?? 0
   // Normalise reversed ranges (start > due): render the bar across [min, max]
   // rather than collapsing to a 2px sliver at the start. Tooltip mirrors the
   // visual order so the user sees the same range that's drawn.
@@ -363,27 +359,27 @@
   // Manual-pin glyph takes 14 px of leading room; subtract that from the
   // label budget so the title doesn't overlap the glyph.
   $: maxChars = Math.floor((w - 12 - (manualPinVisible ? 14 : 0)) / CHAR_PX)
-  $: barLabel = maxChars >= 4
-    ? (issue.title.length > maxChars ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…' : issue.title)
-    : ''
   // For Issues we pass the full doc; for synthetic milestone/summary rows
   // GanttBar gets a bare {title, startDate, dueDate} via the `issue` prop,
   // so we have to skip label resolution and fall back to title-only.
   $: hasFullIssue = dragTarget !== undefined && dragTarget.kind === 'issue'
-  $: leftLabel = hasFullIssue ? resolveBarLabel((dragTarget as any)!.doc as Issue, barLabelLeft) : ''
-  $: insideLabelRaw = hasFullIssue ? resolveBarLabel((dragTarget as any)!.doc as Issue, barLabelInside) : ''
+  $: leftLabel = hasFullIssue ? resolveBarLabel((dragTarget as any).doc as Issue, barLabelLeft) : ''
+  $: insideLabelRaw = hasFullIssue ? resolveBarLabel((dragTarget as any).doc as Issue, barLabelInside) : ''
   $: insideLabel = (() => {
     if (insideLabelRaw === '') return ''
     if (maxChars < 4) return ''
     if (insideLabelRaw.length > maxChars) return insideLabelRaw.slice(0, Math.max(1, maxChars - 1)) + '…'
     return insideLabelRaw
   })()
-  $: rightLabel = hasFullIssue ? resolveBarLabel((dragTarget as any)!.doc as Issue, barLabelRight) : ''
+  $: rightLabel = hasFullIssue ? resolveBarLabel((dragTarget as any).doc as Issue, barLabelRight) : ''
   // Summary (milestone/parent) bars keep the old title-truncation behaviour
   // since we don't have a full Issue doc to resolve labels from.
-  $: summaryLabel = maxChars >= 4
-    ? (issue.title.length > maxChars ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…' : issue.title)
-    : ''
+  $: summaryLabel =
+    maxChars >= 4
+      ? issue.title.length > maxChars
+        ? issue.title.slice(0, Math.max(1, maxChars - 1)) + '…'
+        : issue.title
+      : ''
 </script>
 
 {#if visible}
@@ -407,7 +403,7 @@
       -->
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect
-        x={x}
+        {x}
         y={barY}
         width={w}
         height={barH}
@@ -454,12 +450,9 @@
       pointer-events="none"
     />
     {#if summaryLabel !== ''}
-      <text
-        x={x + 10}
-        y={barY + barH / 2 - 4}
-        class="bar-label summary-label"
-        fill="var(--theme-content-color)"
-      >{summaryLabel}</text>
+      <text x={x + 10} y={barY + barH / 2 - 4} class="bar-label summary-label" fill="var(--theme-content-color)"
+        >{summaryLabel}</text
+      >
     {/if}
     <title>{tooltipText}</title>
   {:else}
@@ -478,7 +471,7 @@
     -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <rect
-      x={x}
+      {x}
       y={barY}
       width={w}
       height={barH}
@@ -557,7 +550,7 @@
            status fill. pointer-events: none so drag/click stays routed
            to the underlying bar rect. -->
       <rect
-        x={x}
+        {x}
         y={barY}
         width={w}
         height={barH}
@@ -633,7 +626,7 @@
         pointer-events="none">{leftLabel}</text
       >
     {/if}
-    {#if barLabel !== ''}
+    {#if insideLabel !== ''}
       <text
         x={x + 6 + (manualPinVisible ? 14 : 0)}
         y={barY + barH / 2 + 4}
@@ -650,8 +643,8 @@
         text-anchor="start"
         dominant-baseline="middle"
         fill="var(--theme-content-trans-color)"
-        pointer-events="none"
-      >{rightLabel}</text>
+        pointer-events="none">{rightLabel}</text
+      >
     {/if}
     <title>{tooltipText}</title>
   {/if}
@@ -728,7 +721,7 @@
   .bar.focused {
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 1px;
-    stroke-dasharray: 2,2;
+    stroke-dasharray: 2, 2;
   }
   /*
    * Click-to-select state: thick solid blue outline + glow. Made deliberately
@@ -759,6 +752,6 @@
     fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 18%, transparent);
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 1.5px;
-    stroke-dasharray: 4,2;
+    stroke-dasharray: 4, 2;
   }
 </style>
