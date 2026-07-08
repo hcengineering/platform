@@ -17,7 +17,6 @@ import core, {
   type AccessGroup,
   type AccountUuid,
   type Collaborator,
-  type Doc,
   type GroupGrant,
   type Ref,
   type Tx,
