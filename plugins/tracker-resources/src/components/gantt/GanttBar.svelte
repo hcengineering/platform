@@ -622,6 +622,17 @@
         />
       </g>
     {/if}
+    {#if leftLabel !== ''}
+      <text
+        x={x - 6}
+        y={barY + barH / 2}
+        class="bar-label-left"
+        text-anchor="end"
+        dominant-baseline="middle"
+        fill="var(--theme-content-trans-color)"
+        pointer-events="none">{leftLabel}</text
+      >
+    {/if}
     {#if barLabel !== ''}
       <text
         x={x + 6 + (manualPinVisible ? 14 : 0)}
