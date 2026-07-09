@@ -1152,7 +1152,7 @@ export class WorkspaceImporter {
       template.metaId
     )
 
-    if (success !== true) {
+    if (!success) {
       throw new Error('Failed to create document template: ' + template.title)
     }
 
@@ -1268,7 +1268,7 @@ export class WorkspaceImporter {
       doc.metaId
     )
 
-    if (result.success !== true) {
+    if (!result.success) {
       throw new Error('Failed to create controlled document: ' + doc.title)
     }
 
