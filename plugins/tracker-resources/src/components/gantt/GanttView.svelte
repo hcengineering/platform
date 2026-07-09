@@ -37,7 +37,10 @@
   import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from './lib/working-days'
   import { computeCriticalPath } from './lib/critical-path'
   import type {
-    CriticalPathResult, PrimaryEdit, SimulateResult, CascadeShift,
+    CriticalPathResult,
+    PrimaryEdit,
+    SimulateResult,
+    CascadeShift,
     DragState,
     DragTarget,
     LayoutRow,
@@ -49,11 +52,15 @@
   import GanttHelpPopup from './GanttHelpPopup.svelte'
   import GanttQuickInfoPopup from './GanttQuickInfoPopup.svelte'
   import { type BarLabelSlot } from './lib/bar-labels'
-    import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
+  import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
   import DependencyEditor from '../DependencyEditor.svelte'
   import EditMilestone from '../milestones/EditMilestone.svelte'
   import {
-    Loading, addNotification, NotificationSeverity, themeStore, getCurrentResolvedLocation,
+    Loading,
+    addNotification,
+    NotificationSeverity,
+    themeStore,
+    getCurrentResolvedLocation,
     DropdownLabelsIntl,
     EditBox,
     Icon,
@@ -65,15 +72,15 @@
     eventToHTMLElement,
     showPanel,
     showPopup,
-    tooltip
-    , getEventPositionElement
+    tooltip,
+    getEventPositionElement
   } from '@hcengineering/ui'
   import { translate, translateCB, type IntlString } from '@hcengineering/platform'
   import { type FilteredView, type Viewlet, type ViewOptions } from '@hcengineering/view'
   import view from '@hcengineering/view'
   import { resultIssueCountStore, selectedFilterStore, showMenu, statusStore } from '@hcengineering/view-resources'
   import core from '@hcengineering/core'
-    import { onDestroy, onMount, tick } from 'svelte'
+  import { onDestroy, onMount, tick } from 'svelte'
   import { writable } from 'svelte/store'
   import tracker from '../../plugin'
   import { canEditIssue, canEditMilestone } from '../../utils'
@@ -108,7 +115,7 @@
   import { reduce } from './lib/drag-controller'
   import { buildLayout } from './lib/layout'
   import { shouldPromoteCanvasPan, shouldStartCanvasPan } from './lib/pan-target'
-    import { createTimeScale } from './lib/time-scale'
+  import { createTimeScale } from './lib/time-scale'
   import { applyWheelZoom, cursorAnchoredScrollLeft, pxPerDayToTickZoom, ZOOM_PX_PER_DAY, MIN_PPD } from './lib/zoom'
   import {
     dropdownSelectionForPxPerDay,
@@ -121,10 +128,10 @@
   // Mobile-Friendly Gantt.
   import { detectLayoutMode, type LayoutMode } from './lib/breakpoint'
   import { initial as pinchInitial, reducePinch, computePxPerDayFromRatio, type PinchState } from './lib/pinch-zoom'
-    import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
-    import type { DropdownIntlItem, SelectPopupValueType } from '@hcengineering/ui'
+  import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
+  import type { DropdownIntlItem, SelectPopupValueType } from '@hcengineering/ui'
   import CreateIssue from '../CreateIssue.svelte'
-      import { ganttExtraActions } from './lib/menu-actions'
+  import { ganttExtraActions } from './lib/menu-actions'
   import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
   import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
   import NavPrev from '@hcengineering/ui/src/components/icons/NavPrev.svelte'
@@ -225,7 +232,9 @@
   $: if (!loadingIssues && !loadingMilestones) {
     resultIssueCountStore.set(issues.length + milestones.length)
   }
-  onDestroy(() => { resultIssueCountStore.set(-1) })
+  onDestroy(() => {
+    resultIssueCountStore.set(-1)
+  })
 
   // PR 3 edit-mode state: a single source of truth for explicit drag/resize
   // interactions. Normal bar-body mouse drags are no longer issue moves; they
@@ -395,7 +404,9 @@
   const nextUndoDescription = undoManager.nextUndoDescription
   const nextRedoDescription = undoManager.nextRedoDescription
   const undoFlashStore = createFlashStore()
-  onDestroy(() => { undoManager.clear() })
+  onDestroy(() => {
+    undoManager.clear()
+  })
   /**
    * When the user picks a new group-by mode, drop the collapsed-state — it
    * was indexed by keys from the previous mode and would either be a no-op
@@ -1172,7 +1183,7 @@
         continue
       }
       if (row.issue === null) continue
-      const id = (row.issue)._id as unknown as string
+      const id = row.issue._id as unknown as string
       const kids = childrenOf.get(id) ?? []
       const starts = kids.map((k) => k.startDate).filter((v): v is number => v !== null && v !== undefined)
       const dues = kids.map((k) => k.dueDate).filter((v): v is number => v !== null && v !== undefined)
@@ -1471,7 +1482,7 @@
   // produced double mousedown handling. Keep this handler the only one.
 
   function handleBarHover (e: CustomEvent<{ issue: Issue | null }>): void {
-    hoveredIssue = (e.detail.issue?._id ?? null)
+    hoveredIssue = e.detail.issue?._id ?? null
   }
 
   function handleHoverEdge (e: CustomEvent<{ source: Ref<Issue>, target: Ref<Issue> } | null>): void {
@@ -1757,7 +1768,9 @@
       state.kind !== 'dragging-unscheduled' &&
       state.kind !== 'resizing-left' &&
       state.kind !== 'resizing-right'
-    ) { return false }
+    ) {
+      return false
+    }
     const newStart = state.kind === 'resizing-right' ? state.originStart : state.previewStart
     const newDue = state.kind === 'resizing-left' ? state.originEnd : state.previewEnd
     const kind: 'move' | 'resize' =
@@ -2232,7 +2245,9 @@
       state.kind !== 'dragging-unscheduled' &&
       state.kind !== 'resizing-left' &&
       state.kind !== 'resizing-right'
-    ) { return }
+    ) {
+      return
+    }
     // Guard: an unscheduled-drag that never reached the canvas (e.g. the user
     // clicked the drag-grip and released without moving) must NOT silently
     // schedule the issue to "today".
@@ -3211,7 +3226,9 @@
   onMount(() => {
     syncViewport()
     if (typeof ResizeObserver !== 'undefined') {
-      resizeObs = new ResizeObserver(() => { syncViewport() })
+      resizeObs = new ResizeObserver(() => {
+        syncViewport()
+      })
       if (scrollerEl != null) resizeObs.observe(scrollerEl)
       if (hScrollEl != null) resizeObs.observe(hScrollEl)
     }
@@ -3330,9 +3347,13 @@
       datePickerValue = v
     },
     jumpToStart,
-    pageScrollPrev: () => { pageScroll(-1) },
+    pageScrollPrev: () => {
+      pageScroll(-1)
+    },
     jumpToToday,
-    pageScrollNext: () => { pageScroll(1) },
+    pageScrollNext: () => {
+      pageScroll(1)
+    },
     jumpToEnd,
     jumpToDate,
     zoomDropdownItems,
@@ -3364,7 +3385,9 @@
     openMoreActionsMenu,
     ariaLabels
   })
-  onDestroy(() => { ganttToolbarSnapshot.set(null) })
+  onDestroy(() => {
+    ganttToolbarSnapshot.set(null)
+  })
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-click-events-have-key-events a11y-no-static-element-interactions -->
