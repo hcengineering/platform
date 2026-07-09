@@ -16,8 +16,8 @@ export type ZoomLevel = 'day' | 'week' | 'month' | 'quarter'
 
 /** A single tick on the time-axis header (vertical gridline + label). */
 export interface Tick {
-  date: number             // UTC ms
-  label: string            // pre-formatted, locale-aware (primary row)
+  date: number // UTC ms
+  label: string // pre-formatted, locale-aware (primary row)
   level: 'major' | 'minor' // major ticks render thicker + with text label
   /**
    * Optional supra-label rendered on a second header row above `label` when

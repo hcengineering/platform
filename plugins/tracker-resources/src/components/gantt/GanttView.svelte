@@ -61,7 +61,6 @@
   import { computeAdaptivePxPerDay, computeCanvasRenderWidth, computeCanvasViewportWidth } from './lib/viewport'
   import CreateIssue from '../CreateIssue.svelte'
   import { showMenu, statusStore } from '@hcengineering/view-resources'
-  import { getEventPositionElement } from '@hcengineering/ui'
   import { ganttExtraActions } from './lib/menu-actions'
   import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
   import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
@@ -88,7 +87,10 @@
 
   let hoveredRowId: string | null = null
   let tooltipState: { visible: boolean, x: number, y: number, row: LayoutRow | null } = {
-    visible: false, x: 0, y: 0, row: null
+    visible: false,
+    x: 0,
+    y: 0,
+    row: null
   }
   function onRowHover (e: CustomEvent<{ id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }>): void {
     hoveredRowId = e.detail.id
@@ -196,9 +198,9 @@
   const milestoneQuery = createQuery()
   const relationQuery = createQuery()
 
-  $: issueDocQuery = (space !== undefined
-    ? { space, ...(query as DocumentQuery<Issue>) }
-    : { ...(query as DocumentQuery<Issue>) }) as DocumentQuery<Issue>
+  $: issueDocQuery = (
+    space !== undefined ? { space, ...(query as DocumentQuery<Issue>) } : { ...(query as DocumentQuery<Issue>) }
+  ) as DocumentQuery<Issue>
   $: milestoneDocQuery = (space !== undefined ? { space } : {}) as DocumentQuery<Milestone>
   $: issueQuery.query(
     tracker.class.Issue,
@@ -231,14 +233,10 @@
     }
     editableIssueIds = next
   })()
-  $: milestoneQuery.query(
-    tracker.class.Milestone,
-    milestoneDocQuery,
-    (res: Milestone[]) => {
-      milestones = res
-      loadingMilestones = false
-    }
-  )
+  $: milestoneQuery.query(tracker.class.Milestone, milestoneDocQuery, (res: Milestone[]) => {
+    milestones = res
+    loadingMilestones = false
+  })
 
   $: relationDocQuery = (space !== undefined ? { space } : {}) as DocumentQuery<IssueRelation>
   // The Huly/CockroachDB adapter doesn't translate `$or` at the top level
@@ -265,19 +263,20 @@
 
   function paddingDays (z: ZoomLevel): number {
     switch (z) {
-      case 'day': return 1
-      case 'week': return 7
-      case 'month': return 30
-      case 'quarter': return 90
-      default: return 7
+      case 'day':
+        return 1
+      case 'week':
+        return 7
+      case 'month':
+        return 30
+      case 'quarter':
+        return 90
+      default:
+        return 7
     }
   }
 
-  function computeDateRange (
-    iss: Issue[],
-    ms: Milestone[],
-    z: ZoomLevel
-  ): { from: number, to: number } {
+  function computeDateRange (iss: Issue[], ms: Milestone[], z: ZoomLevel): { from: number, to: number } {
     const all: number[] = []
     for (const i of iss) {
       if (i.startDate !== null && i.startDate !== undefined) all.push(i.startDate)
@@ -311,7 +310,7 @@
     targetDate: m.targetDate
   }))
 
-  let collapsedIds: Set<string> = new Set()
+  let collapsedIds = new Set<string>()
   function onToggle (e: CustomEvent<{ id: string }>): void {
     const next = new Set(collapsedIds)
     if (next.has(e.detail.id)) next.delete(e.detail.id)
@@ -330,10 +329,7 @@
     return out
   }
 
-  function computeSummaryRanges (
-    layoutRows: LayoutRow[],
-    allIssues: Issue[]
-  ): Map<string, SummaryRange> {
+  function computeSummaryRanges (layoutRows: LayoutRow[], allIssues: Issue[]): Map<string, SummaryRange> {
     const result = new Map<string, SummaryRange>()
     const childrenOf = new Map<string, Issue[]>()
     const issuesByMilestone = new Map<string, Issue[]>()
@@ -357,8 +353,8 @@
       if (row.kind === 'milestone' && row.milestone !== null) {
         const msId = row.milestone._id as unknown as string
         const kids = issuesByMilestone.get(msId) ?? []
-        const starts = kids.map(k => k.startDate).filter((v): v is number => v !== null && v !== undefined)
-        const dues = kids.map(k => k.dueDate).filter((v): v is number => v !== null && v !== undefined)
+        const starts = kids.map((k) => k.startDate).filter((v): v is number => v !== null && v !== undefined)
+        const dues = kids.map((k) => k.dueDate).filter((v): v is number => v !== null && v !== undefined)
         result.set(row.id, {
           startDate: starts.length > 0 ? Math.min(...starts) : null,
           dueDate: dues.length > 0 ? Math.max(...dues) : null
@@ -366,10 +362,10 @@
         continue
       }
       if (row.issue === null) continue
-      const id = (row.issue as Issue)._id as unknown as string
+      const id = row.issue._id as unknown as string
       const kids = childrenOf.get(id) ?? []
-      const starts = kids.map(k => k.startDate).filter((v): v is number => v !== null && v !== undefined)
-      const dues = kids.map(k => k.dueDate).filter((v): v is number => v !== null && v !== undefined)
+      const starts = kids.map((k) => k.startDate).filter((v): v is number => v !== null && v !== undefined)
+      const dues = kids.map((k) => k.dueDate).filter((v): v is number => v !== null && v !== undefined)
       result.set(id, {
         startDate: starts.length > 0 ? Math.min(...starts) : null,
         dueDate: dues.length > 0 ? Math.max(...dues) : null
@@ -1332,7 +1328,7 @@
   async function shiftFocused (days: number): Promise<void> {
     if (focusedIssueId === null) return
     const i = scheduledIssues.find((it) => String(it._id) === focusedIssueId)
-    if (i === undefined || i.startDate == null || i.dueDate == null) return
+    if (i?.startDate == null || i.dueDate == null) return
     if (!editableIssueIds.has(focusedIssueId)) return
     const allInSpace = await getClient().findAll(tracker.class.Issue, { space: i.space })
     // All date arithmetic routes through addScheduleDays so the Phase-2
@@ -1473,9 +1469,7 @@
 
   // Custom horizontal scrollbar thumb geometry (proxy for hScrollEl).
   $: hTrackWidth = canvasViewportWidth > 0 ? canvasViewportWidth : 1
-  $: hThumbWidth = totalCanvasWidth > 0
-    ? Math.max(40, (hTrackWidth * hTrackWidth) / totalCanvasWidth)
-    : hTrackWidth
+  $: hThumbWidth = totalCanvasWidth > 0 ? Math.max(40, (hTrackWidth * hTrackWidth) / totalCanvasWidth) : hTrackWidth
   $: hThumbMax = Math.max(0, hTrackWidth - hThumbWidth)
   $: hScrollMax = Math.max(1, totalCanvasWidth - hTrackWidth)
   $: hThumbLeft = canvasViewportLeft <= 0 ? 0 : (canvasViewportLeft / hScrollMax) * hThumbMax
@@ -1486,9 +1480,7 @@
   // so we render our own in DOM and let the native bar drive scrollTop).
   $: vTrackHeight = viewportHeight > 0 ? viewportHeight : 1
   $: vTotalHeight = ROW_HEIGHT * rows.length + HEADER_HEIGHT
-  $: vThumbHeight = vTotalHeight > 0
-    ? Math.max(40, (vTrackHeight * vTrackHeight) / vTotalHeight)
-    : vTrackHeight
+  $: vThumbHeight = vTotalHeight > 0 ? Math.max(40, (vTrackHeight * vTrackHeight) / vTotalHeight) : vTrackHeight
   $: vThumbMax = Math.max(0, vTrackHeight - vThumbHeight)
   $: vScrollMax = Math.max(1, vTotalHeight - vTrackHeight)
   $: vThumbTop = scrollTop <= 0 ? 0 : (scrollTop / vScrollMax) * vThumbMax
@@ -1682,7 +1674,7 @@
   })
 
   $: viewport = { left: canvasViewportLeft, right: canvasViewportLeft + canvasViewportWidth }
-  $: sidebarWidthPx = (showIssueCode || showTitle || showStatus) ? userSidebarWidth : 60
+  $: sidebarWidthPx = showIssueCode || showTitle || showStatus ? userSidebarWidth : 60
 
   $: loading = loadingIssues || loadingMilestones
 </script>
@@ -1694,19 +1686,43 @@
   {:else}
     <div class="gantt-toolbar" style="height: {TOOLBAR_HEIGHT}px;">
       <div class="toolbar-left">
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToStart }} on:click={jumpToStart}>
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttJumpToStart }}
+          on:click={jumpToStart}
+        >
           <Icon icon={ArrowLeft} size="small" />
         </button>
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttPreviousPeriod }} on:click={() => pageScroll(-1)}>
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
+          on:click={() => {
+            pageScroll(-1)
+          }}
+        >
           <Icon icon={NavPrev} size="small" />
         </button>
         <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>
           <Label label={tracker.string.GanttToday} />
         </button>
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttNextPeriod }} on:click={() => pageScroll(1)}>
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttNextPeriod }}
+          on:click={() => {
+            pageScroll(1)
+          }}
+        >
           <Icon icon={NavNext} size="small" />
         </button>
-        <button class="nav-btn icon-btn" type="button" use:tooltip={{ label: tracker.string.GanttJumpToEnd }} on:click={jumpToEnd}>
+        <button
+          class="nav-btn icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttJumpToEnd }}
+          on:click={jumpToEnd}
+        >
           <Icon icon={ArrowRight} size="small" />
         </button>
         <label class="date-input-wrap" use:tooltip={{ label: tracker.string.GanttJumpToDate }}>
@@ -1715,7 +1731,9 @@
             type="date"
             class="date-input"
             bind:value={datePickerValue}
-            on:change={() => jumpToDate(datePickerValue)}
+            on:change={() => {
+              jumpToDate(datePickerValue)
+            }}
           />
         </label>
       </div>
@@ -1725,8 +1743,10 @@
             type="button"
             class="zoom-btn"
             class:active={zoom === z}
-            on:click={() => setZoom(z)}
-          >{z[0].toUpperCase() + z.slice(1)}</button>
+            on:click={() => {
+              setZoom(z)
+            }}>{z[0].toUpperCase() + z.slice(1)}</button
+          >
         {/each}
       </div>
       <div class="toolbar-right" />
@@ -1763,15 +1783,33 @@
             <span class="col-jump" />
           </div>
           <div class="corner-range">
-            <button class="range-nav" type="button"
+            <button
+              class="range-nav"
+              type="button"
               use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
-              on:click={() => pageScroll(-1)}>«</button>
-            <span class="range-text" on:click={jumpToToday} on:keydown={(e) => { if (e.key === 'Enter') jumpToToday() }} role="button" tabindex="0">
+              on:click={() => {
+                pageScroll(-1)
+              }}>«</button
+            >
+            <span
+              class="range-text"
+              on:click={jumpToToday}
+              on:keydown={(e) => {
+                if (e.key === 'Enter') jumpToToday()
+              }}
+              role="button"
+              tabindex="0"
+            >
               {formatRange(dateRange.from)} – {formatRange(dateRange.to)}
             </span>
-            <button class="range-nav" type="button"
+            <button
+              class="range-nav"
+              type="button"
               use:tooltip={{ label: tracker.string.GanttNextPeriod }}
-              on:click={() => pageScroll(1)}>»</button>
+              on:click={() => {
+                pageScroll(1)
+              }}>»</button
+            >
           </div>
         </div>
         <div class="cell resize-corner" style="height: {HEADER_HEIGHT}px;" />
@@ -1827,7 +1865,10 @@
           on:pointercancel={onResizeEnd}
         />
         <div class="cell canvas-cell">
-          <div class="hscroll-inner" style="width: {totalCanvasWidth}px; transform: translateX(-{canvasViewportLeft}px);">
+          <div
+            class="hscroll-inner"
+            style="width: {totalCanvasWidth}px; transform: translateX(-{canvasViewportLeft}px);"
+          >
             <GanttCanvas
               {rows}
               milestones={milestoneMarkers}
@@ -1874,8 +1915,7 @@
          bar doesn't deny the user a visible scroll affordance. -->
     {#if vHasOverflow}
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="gantt-vscrollbar"
-        style="top: {TOOLBAR_HEIGHT}px; bottom: 11px;">
+      <div class="gantt-vscrollbar" style="top: {TOOLBAR_HEIGHT}px; bottom: 11px;">
         <div
           class="vscroll-thumb"
           style="top: {vThumbTop}px; height: {vThumbHeight}px;"
@@ -1894,10 +1934,7 @@
          track.scrollLeft. -->
     {#if hHasOverflow}
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="gantt-hscrollbar"
-        style="padding-left: {sidebarWidthPx + 5}px;"
-      >
+      <div class="gantt-hscrollbar" style="padding-left: {sidebarWidthPx + 5}px;">
         <div class="hscroll-shell">
           <div
             class="hscroll-track-custom"
@@ -1923,29 +1960,37 @@
       {@const row = tooltipState.row}
       {@const issue = row.issue}
       {@const ms = row.milestone}
-      <div
-        class="hover-tooltip"
-        style="left: {tooltipState.x + 14}px; top: {tooltipState.y + 14}px;"
-      >
+      <div class="hover-tooltip" style="left: {tooltipState.x + 14}px; top: {tooltipState.y + 14}px;">
         {#if row.kind === 'milestone' && ms !== null}
           <div class="tt-head">◆ <Label label={tracker.string.Milestone} /></div>
           <div class="tt-title">{ms.label}</div>
           {#if ms.startDate !== null}
-            <div class="tt-line"><Label label={tracker.string.StartDate} />: {new Date(ms.startDate).toISOString().slice(0, 10)}</div>
+            <div class="tt-line">
+              <Label label={tracker.string.StartDate} />: {new Date(ms.startDate).toISOString().slice(0, 10)}
+            </div>
           {/if}
-          <div class="tt-line"><Label label={tracker.string.TargetDate} />: {new Date(ms.targetDate).toISOString().slice(0, 10)}</div>
+          <div class="tt-line">
+            <Label label={tracker.string.TargetDate} />: {new Date(ms.targetDate).toISOString().slice(0, 10)}
+          </div>
         {:else if issue !== null}
           {@const code = issueCode(issue)}
           <div class="tt-head">{code}</div>
           <div class="tt-title">{issue.title}</div>
           {#if issue.startDate !== null}
-            <div class="tt-line"><Label label={tracker.string.StartDate} />: {new Date(issue.startDate).toISOString().slice(0, 10)}</div>
+            <div class="tt-line">
+              <Label label={tracker.string.StartDate} />: {new Date(issue.startDate).toISOString().slice(0, 10)}
+            </div>
           {/if}
           {#if issue.dueDate !== null}
-            <div class="tt-line"><Label label={tracker.string.DueDate} />: {new Date(issue.dueDate).toISOString().slice(0, 10)}</div>
+            <div class="tt-line">
+              <Label label={tracker.string.DueDate} />: {new Date(issue.dueDate).toISOString().slice(0, 10)}
+            </div>
           {/if}
           {#if issue.startDate !== null && issue.dueDate !== null}
-            {@const days = Math.round((Math.max(issue.dueDate, issue.startDate) - Math.min(issue.dueDate, issue.startDate)) / 86_400_000) + 1}
+            {@const days =
+              Math.round(
+                (Math.max(issue.dueDate, issue.startDate) - Math.min(issue.dueDate, issue.startDate)) / 86_400_000
+              ) + 1}
             <div class="tt-line"><Label label={tracker.string.GanttDurationTooltip} params={{ days }} /></div>
           {/if}
         {/if}
@@ -1973,9 +2018,21 @@
     border-bottom: 1px solid var(--theme-divider-color);
     background: var(--theme-comp-header-color);
   }
-  .toolbar-left { display: flex; gap: 4px; }
-  .toolbar-center { display: flex; gap: 2px; justify-self: center; }
-  .toolbar-right { display: flex; gap: 4px; justify-self: end; position: relative; }
+  .toolbar-left {
+    display: flex;
+    gap: 4px;
+  }
+  .toolbar-center {
+    display: flex;
+    gap: 2px;
+    justify-self: center;
+  }
+  .toolbar-right {
+    display: flex;
+    gap: 4px;
+    justify-self: end;
+    position: relative;
+  }
   .nav-btn {
     height: 26px;
     min-width: 28px;
@@ -2031,10 +2088,18 @@
     font-size: 12px;
     cursor: pointer;
   }
-  .zoom-btn:first-child { border-radius: 4px 0 0 4px; }
-  .zoom-btn:last-child  { border-radius: 0 4px 4px 0; }
-  .zoom-btn:not(:first-child) { border-left: none; }
-  .zoom-btn:hover { background: var(--theme-button-hovered); }
+  .zoom-btn:first-child {
+    border-radius: 4px 0 0 4px;
+  }
+  .zoom-btn:last-child {
+    border-radius: 0 4px 4px 0;
+  }
+  .zoom-btn:not(:first-child) {
+    border-left: none;
+  }
+  .zoom-btn:hover {
+    background: var(--theme-button-hovered);
+  }
   .zoom-btn.active {
     background: var(--theme-button-pressed);
     font-weight: 600;
@@ -2102,10 +2167,14 @@
     height: 100%;
     overflow-x: scroll;
     overflow-y: hidden;
-    scrollbar-width: none;            /* Firefox: hide native */
+    scrollbar-width: none; /* Firefox: hide native */
   }
-  .hscroll-track-custom::-webkit-scrollbar { display: none; } /* WebKit: hide */
-  .hscroll-spacer { height: 1px; }
+  .hscroll-track-custom::-webkit-scrollbar {
+    display: none;
+  } /* WebKit: hide */
+  .hscroll-spacer {
+    height: 1px;
+  }
   .hscroll-thumb {
     position: absolute;
     top: 1px;
@@ -2115,10 +2184,19 @@
     border-radius: 4px;
     cursor: grab;
     pointer-events: auto;
-    transition: opacity 100ms ease, background 100ms ease;
+    transition:
+      opacity 100ms ease,
+      background 100ms ease;
   }
-  .hscroll-thumb:hover { opacity: 0.85; background: var(--theme-state-info-color, #6366f1); }
-  .hscroll-thumb:active { cursor: grabbing; opacity: 1; background: var(--theme-state-info-color, #6366f1); }
+  .hscroll-thumb:hover {
+    opacity: 0.85;
+    background: var(--theme-state-info-color, #6366f1);
+  }
+  .hscroll-thumb:active {
+    cursor: grabbing;
+    opacity: 1;
+    background: var(--theme-state-info-color, #6366f1);
+  }
   /* Vertical scrollbar — same DOM-thumb pattern, anchored at the right
      edge of gantt-root between the toolbar and the horizontal bar. */
   .gantt-vscrollbar {
@@ -2139,10 +2217,19 @@
     border-radius: 4px;
     cursor: grab;
     pointer-events: auto;
-    transition: opacity 100ms ease, background 100ms ease;
+    transition:
+      opacity 100ms ease,
+      background 100ms ease;
   }
-  .vscroll-thumb:hover { opacity: 0.85; background: var(--theme-state-info-color, #6366f1); }
-  .vscroll-thumb:active { cursor: grabbing; opacity: 1; background: var(--theme-state-info-color, #6366f1); }
+  .vscroll-thumb:hover {
+    opacity: 0.85;
+    background: var(--theme-state-info-color, #6366f1);
+  }
+  .vscroll-thumb:active {
+    cursor: grabbing;
+    opacity: 1;
+    background: var(--theme-state-info-color, #6366f1);
+  }
   .cell {
     box-sizing: border-box;
   }
@@ -2190,18 +2277,33 @@
     cursor: pointer;
     font-size: 14px;
   }
-  .range-nav:hover { background: var(--theme-button-hovered); }
+  .range-nav:hover {
+    background: var(--theme-button-hovered);
+  }
   .range-text {
     cursor: pointer;
     user-select: none;
     font-weight: 500;
   }
-  .range-text:hover { color: var(--theme-state-info-color, #6366f1); text-decoration: underline; }
-  .corner .col-toggle { flex: 0 0 18px; }
-  .corner .col-status { flex: 0 0 22px; }
-  .corner .col-id { flex: 0 0 80px; }
-  .corner .col-title { flex: 1 1 auto; }
-  .corner .col-jump { flex: 0 0 28px; }
+  .range-text:hover {
+    color: var(--theme-state-info-color, #6366f1);
+    text-decoration: underline;
+  }
+  .corner .col-toggle {
+    flex: 0 0 18px;
+  }
+  .corner .col-status {
+    flex: 0 0 22px;
+  }
+  .corner .col-id {
+    flex: 0 0 80px;
+  }
+  .corner .col-title {
+    flex: 1 1 auto;
+  }
+  .corner .col-jump {
+    flex: 0 0 28px;
+  }
   .resize-corner {
     position: sticky;
     top: 0;
@@ -2233,7 +2335,8 @@
     user-select: none;
     touch-action: none;
   }
-  .resize-cell:hover, .resize-cell.active {
+  .resize-cell:hover,
+  .resize-cell.active {
     background: var(--theme-state-info-color, #6366f1);
   }
   .canvas-cell {
