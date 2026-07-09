@@ -3,11 +3,19 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { DependencyKind } from '@hcengineering/tracker'
-import { anchorOf, endpointPx, type BarRect } from '../dependency-router'
-import { bezierPath, pathMidpoint, arrowheadPoints } from '../dependency-router'
-import { connectedIssueIds, classifyArrowVisibility, clippedEndpointPx, type YBounds } from '../dependency-router'
-import type { Issue, IssueRelation } from '@hcengineering/tracker'
+import type { DependencyKind, Issue, IssueRelation } from '@hcengineering/tracker'
+import {
+  anchorOf,
+  endpointPx,
+  bezierPath,
+  pathMidpoint,
+  arrowheadPoints,
+  connectedIssueIds,
+  classifyArrowVisibility,
+  clippedEndpointPx,
+  type BarRect,
+  type YBounds
+} from '../dependency-router'
 import type { Ref } from '@hcengineering/core'
 
 describe('anchorOf', () => {
@@ -98,7 +106,6 @@ function mkRel (from: string, to: string): IssueRelation {
 describe('connectedIssueIds', () => {
   const A = 'A' as Ref<Issue>
   const B = 'B' as Ref<Issue>
-  const C = 'C' as Ref<Issue>
   const D = 'D' as Ref<Issue>
 
   it('returns empty set when nothing is hovered', () => {
