@@ -251,7 +251,7 @@
        user adds a filter; the visual row hides when $filterStore is
        empty (via [data-empty='true']). -->
   <div class="below-header-filters" data-empty={$filterStore.length === 0}>
-    <InlineFilterChips _class={tracker.class.Issue} {space} />
+    <InlineFilterChips _class={tracker.class.Issue} {space} fill />
   </div>
 {/if}
 <!-- Viewlet stays mounted regardless of the empty-state card. Unmounting

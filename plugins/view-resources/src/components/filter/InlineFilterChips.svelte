@@ -24,6 +24,14 @@
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined
+  // `fill` = the consumer mounts this in a full-width row (e.g. Tracker's
+  // below-header strip in List/Kanban) rather than the width-constrained
+  // Gantt toolbar. In that context the chip cluster should span the row and
+  // never collapse a still-fitting filter into the "+N" badge — the 22rem
+  // toolbar cap + flex-basis:0 measurement otherwise mis-reads the container
+  // as near-zero and hides active chips (breaking both UX and E2E selectors
+  // that target `div.filter-section`). Gantt keeps the default capped mode.
+  export let fill: boolean = false
 
   let containerWidth = 0
   let chipEls: HTMLElement[] = []
@@ -104,15 +112,16 @@
   $: void _class
 </script>
 
-<div class="inline-filter-chips-wrap">
+<div class="inline-filter-chips-wrap" class:fill>
   <!-- Inner container is the scroll/measurement viewport. The wrap layer
        above caps the width so the chip cluster cannot push the rest of
        the toolbar off-screen. computeOverflow uses the inner container
        width via ResizeObserver; once chips overflow it collapses them
-       into the +N popover. -->
+       into the +N popover. In `fill` mode the row is full-width, so every
+       chip renders and the container scrolls instead of collapsing. -->
   <div class="inline-filter-chips" use:resizeObserver={onContainerResize}>
     {#each $filterStore as filter, i (filter.index)}
-      {#if i < visibleCount}
+      {#if fill || i < visibleCount}
         <span bind:this={chipEls[i]} class="chip-slot">
           <FilterSection
             {space}
@@ -124,7 +133,7 @@
         </span>
       {/if}
     {/each}
-    {#if hiddenCount > 0}
+    {#if !fill && hiddenCount > 0}
       <!-- Bright accent badge so an active-but-collapsed filter is
            immediately obvious instead of looking like a passive helper. -->
       <button
@@ -176,6 +185,17 @@
     overflow: hidden;
     min-width: 0;
     flex: 1 1 0;
+  }
+  /* Full-width row mode (below-header List/Kanban strip): span the row and
+     let the chip container size to its content so every filter stays
+     visible; scroll horizontally in the rare case the row overflows. */
+  .inline-filter-chips-wrap.fill {
+    max-width: none;
+    flex: 1 1 auto;
+  }
+  .inline-filter-chips-wrap.fill .inline-filter-chips {
+    flex: 1 1 auto;
+    overflow-x: auto;
   }
   .chip-slot {
     flex-shrink: 0;

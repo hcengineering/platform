@@ -15,10 +15,10 @@
 <script lang="ts">
   import { Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { getClient, reduceCalls } from '@hcengineering/presentation'
-  import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, IconClose, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
   import { Filter, FilterMode, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { filterStore, removeFilter, selectedFilterStore, updateFilter } from '../../filter'
+  import { filterStore, removeFilter, selectedFilterStore, setFilters, updateFilter } from '../../filter'
   import { makeFilterQuery } from '../../filter/query-builder'
   import view from '../../plugin'
   import { activeViewlet, getActiveViewletId, makeViewletKey } from '../../utils'
@@ -143,6 +143,24 @@
       {/each}
       <div class="add-filter">
         <Button size={'small'} icon={IconAdd} kind={'ghost'} on:click={add} />
+      </div>
+      <!-- Clear-all affordance. The redesign switched the shared FilterButton
+           to an always-add action (Tracker moved its clear-all into
+           InlineFilterChips), which removed the only "Clear filters" control
+           from every non-Tracker consumer of this legacy chip row (Chat,
+           Contacts, Documents, Drive, Lead, Recruit, Task, …). Restore it
+           here so those views keep a way to drop all filters at once. -->
+      <div class="add-filter">
+        <Button
+          size={'small'}
+          icon={IconClose}
+          kind={'ghost'}
+          label={view.string.ClearFilters}
+          showTooltip={{ label: view.string.ClearFilters }}
+          on:click={() => {
+            setFilters([])
+          }}
+        />
       </div>
     </div>
 
