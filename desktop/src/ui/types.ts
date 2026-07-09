@@ -90,6 +90,7 @@ export interface Branding {
   languages?: string
   lastNameFirst?: string
   defaultLanguage?: string
+  disabledFeatures?: string
   defaultApplication?: string
   defaultSpace?: string
   defaultSpecial?: string
