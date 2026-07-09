@@ -69,7 +69,7 @@ import {
   type VersionableClass
 } from '@hcengineering/core'
 import {
-  ArrOf,
+  ArrOf as ArrOfProp,
   Hidden,
   Index,
   Mixin as MMixin,
@@ -467,10 +467,10 @@ export class TAccessGroup extends TDoc implements AccessGroup {
   @Prop(TypeString(), core.string.Description)
     description?: string
 
-  @Prop(ArrOf(TypeAccountUuid()), core.string.Members)
+  @Prop(ArrOfProp(TypeAccountUuid()), core.string.Members)
     members!: AccountUuid[]
 
-  @Prop(ArrOf(TypeAccountUuid()), core.string.Owners)
+  @Prop(ArrOfProp(TypeAccountUuid()), core.string.Owners)
     owners!: AccountUuid[]
 }
 
