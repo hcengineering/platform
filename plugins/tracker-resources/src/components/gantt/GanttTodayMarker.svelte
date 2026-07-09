@@ -14,7 +14,7 @@
 
   $: today = Date.now()
   $: x = timeScale.toX(today)
-  $: dateLabel = new Date(today).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+  $: dateLabel = new Date(today).toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' })
 </script>
 
 <line

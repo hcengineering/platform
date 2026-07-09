@@ -8,7 +8,11 @@
   import GanttBar from './GanttBar.svelte'
   import GanttTodayMarker from './GanttTodayMarker.svelte'
   import { type TimeScale } from './lib/time-scale'
+  import { ThrottledCaller } from '@hcengineering/ui'
 
+  // Coalesce hover updates to roughly one per frame so a fast pointer does not
+  // re-trigger GanttView reactivity on every mousemove pixel (leading-edge).
+  const hoverThrottle = new ThrottledCaller(16)
   const dispatch = createEventDispatcher<{
     openIssue: { issue: { _id: string, _class: string } }
     hoverRow: { id: string | null, row?: LayoutRow, mouseX?: number, mouseY?: number }
@@ -101,7 +105,7 @@
       <g
         class="row-hit"
         on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
-        on:mousemove={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
+        on:mousemove={(e) => { hoverThrottle.call(() => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })) }}
         on:mouseleave={() => dispatch('hoverRow', { id: null })}
       >
         <!-- transparent hit-area covering the row width to capture hover -->

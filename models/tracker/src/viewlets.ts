@@ -213,9 +213,9 @@ export function issueConfig (
 }
 
 export function ganttViewOptions (): ViewOptionsModel {
-  // PR 2 ships a minimal read-only Gantt. Group-by + Show-colors are
-  // intentionally NOT advertised — the canvas does not honour them yet.
-  // The two sidebar-column toggles below ARE wired up to GanttSidebar.
+  // This read-only Gantt viewlet intentionally does not advertise group-by or
+  // show-colors — the canvas does not honour them yet. The two sidebar-column
+  // toggles below ARE wired up to GanttSidebar.
   return {
     groupBy: [],
     orderBy: [

@@ -2,10 +2,30 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { type Class, type Doc, type DocumentQuery, type Ref, type Space, SortingOrder } from '@hcengineering/core'
+  import {
+    type Class,
+    type Doc,
+    type DocumentQuery,
+    type Ref,
+    type Space,
+    SortingOrder,
+    type SortingQuery
+  } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { type Issue, type Milestone } from '@hcengineering/tracker'
-  import { Loading, Icon, Label, showPanel, showPopup, tooltip } from '@hcengineering/ui'
+  import {
+    Loading,
+    Icon,
+    IconArrowLeft,
+    IconArrowRight,
+    IconNavPrev,
+    IconNavNext,
+    IconCalendar,
+    Label,
+    showPanel,
+    showPopup,
+    tooltip
+  } from '@hcengineering/ui'
   import { type Viewlet, type ViewOptions } from '@hcengineering/view'
   import { onDestroy, onMount } from 'svelte'
   import tracker from '../../plugin'
@@ -17,11 +37,6 @@
   import { type LayoutRow, type MilestoneMarker, type SummaryRange, type ZoomLevel } from './lib/types'
   import CreateIssue from '../CreateIssue.svelte'
   import { statusStore } from '@hcengineering/view-resources'
-  import ArrowLeft from '@hcengineering/ui/src/components/icons/ArrowLeft.svelte'
-  import ArrowRight from '@hcengineering/ui/src/components/icons/ArrowRight.svelte'
-  import NavPrev from '@hcengineering/ui/src/components/icons/NavPrev.svelte'
-  import NavNext from '@hcengineering/ui/src/components/icons/NavNext.svelte'
-  import Calendar from '@hcengineering/ui/src/components/icons/Calendar.svelte'
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export let _class: Ref<Class<Doc>>
@@ -97,6 +112,12 @@
     space !== undefined ? { space, ...(query as DocumentQuery<Issue>) } : { ...(query as DocumentQuery<Issue>) }
   ) as DocumentQuery<Issue>
   $: milestoneDocQuery = (space !== undefined ? { space } : {}) as DocumentQuery<Milestone>
+  // Honour the sort selected in the view options (startDate / rank / dueDate),
+  // keeping rank as a stable tiebreaker; fall back to startDate when unset.
+  $: sortOrder = (viewOptions.orderBy ?? ['startDate', SortingOrder.Ascending]) as [string, SortingOrder]
+  $: issueSort = (
+    sortOrder[0] === 'rank' ? { rank: sortOrder[1] } : { [sortOrder[0]]: sortOrder[1], rank: SortingOrder.Ascending }
+  ) as SortingQuery<Issue>
   $: issueQuery.query(
     tracker.class.Issue,
     issueDocQuery,
@@ -105,7 +126,7 @@
       loadingIssues = false
     },
     {
-      sort: { startDate: SortingOrder.Ascending, rank: SortingOrder.Ascending }
+      sort: issueSort
     }
   )
   $: milestoneQuery.query(tracker.class.Milestone, milestoneDocQuery, (res: Milestone[]) => {
@@ -475,7 +496,7 @@
           use:tooltip={{ label: tracker.string.GanttJumpToStart }}
           on:click={jumpToStart}
         >
-          <Icon icon={ArrowLeft} size="small" />
+          <Icon icon={IconArrowLeft} size="small" />
         </button>
         <button
           class="nav-btn icon-btn"
@@ -485,7 +506,7 @@
             pageScroll(-1)
           }}
         >
-          <Icon icon={NavPrev} size="small" />
+          <Icon icon={IconNavPrev} size="small" />
         </button>
         <button class="nav-btn today-btn" type="button" on:click={jumpToToday}>
           <Label label={tracker.string.GanttToday} />
@@ -498,7 +519,7 @@
             pageScroll(1)
           }}
         >
-          <Icon icon={NavNext} size="small" />
+          <Icon icon={IconNavNext} size="small" />
         </button>
         <button
           class="nav-btn icon-btn"
@@ -506,10 +527,10 @@
           use:tooltip={{ label: tracker.string.GanttJumpToEnd }}
           on:click={jumpToEnd}
         >
-          <Icon icon={ArrowRight} size="small" />
+          <Icon icon={IconArrowRight} size="small" />
         </button>
         <label class="date-input-wrap" use:tooltip={{ label: tracker.string.GanttJumpToDate }}>
-          <Icon icon={Calendar} size="small" />
+          <Icon icon={IconCalendar} size="small" />
           <input
             type="date"
             class="date-input"
