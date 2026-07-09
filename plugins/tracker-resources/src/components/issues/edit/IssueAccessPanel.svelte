@@ -96,8 +96,11 @@
     expandedGroups = expandedGroups
   }
 
-  // Non-structural (explicitly granted) records; structural ones (grantedVia == null)
-  // stem from createdBy/assignee and are shown in the read-only members section.
+  // Managed "additional access" = explicitly granted records (mention / manual / group).
+  // Structural records (grantedVia == null) stem from createdBy/assignee: they remain
+  // access-relevant (enforced by CollaboratorGuardMiddleware) but are intentionally NOT
+  // rendered here as managed grants. The read-only members section below shows
+  // project members (Space.members) per the access-management design.
   $: grants = collaborators.filter((c) => c.grantedVia != null)
   $: memberAccounts = space?.members ?? []
 
@@ -284,13 +287,13 @@
   let membersExpanded = false
 </script>
 
-<div class="issue-access">
+<div class="issue-access" id="issue-access-panel">
   <div class="section-header">
     <Label label={tracker.string.Access} />
   </div>
 
   <!-- Read-only project members -->
-  <div class="subsection">
+  <div class="subsection" id="issue-access-members">
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="subsection-title clickable" on:click={() => (membersExpanded = !membersExpanded)}>
@@ -310,7 +313,7 @@
   </div>
 
   <!-- Additional (granted) access -->
-  <div class="subsection">
+  <div class="subsection" id="issue-access-additional">
     <div class="subsection-title">
       <Label label={tracker.string.AdditionalAccess} />
     </div>
