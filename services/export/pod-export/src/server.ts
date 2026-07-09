@@ -254,6 +254,16 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   handleRequest(fn, req, res, next)
 }
 
+// Only formats actually supported by WorkspaceExporter
+const supportedExportFormats: readonly ExportFormat[] = [ExportFormat.JSON, ExportFormat.CSV]
+
+function parseExportFormat (rawFormat: unknown): ExportFormat {
+  if (typeof rawFormat !== 'string' || !supportedExportFormats.includes(rawFormat as ExportFormat)) {
+    throw new ApiError(400, `Invalid format. Supported formats: ${supportedExportFormats.join(', ')}`)
+  }
+  return rawFormat as ExportFormat
+}
+
 export function createServer (
   storageConfig: StorageConfiguration,
   dbUrl: string,
@@ -269,13 +279,7 @@ export function createServer (
   app.post(
     '/exportAsync',
     wrapRequest(async (req, res, wsIds, token, socialId) => {
-      const rawFormat = req.query.format
-      const formatValue = typeof rawFormat === 'string' ? rawFormat : undefined
-      const allowedFormats = Object.values(ExportFormat) as string[]
-      if (formatValue == null || !allowedFormats.includes(formatValue)) {
-        throw new ApiError(400, 'Invalid format')
-      }
-      const format = formatValue as ExportFormat
+      const format = parseExportFormat(req.query.format)
 
       const {
         _class,
@@ -374,7 +378,7 @@ export function createServer (
   app.post(
     '/exportSync',
     wrapRequest(async (req, res, wsIds, token, socialId) => {
-      const format = req.query.format as ExportFormat
+      const format = parseExportFormat(req.query.format)
       const {
         _class,
         query,
@@ -387,7 +391,7 @@ export function createServer (
         config?: TransformConfig
       } = req.body
 
-      if (_class == null || format == null) {
+      if (_class == null) {
         throw new ApiError(400, 'Missing required parameters')
       }
 
