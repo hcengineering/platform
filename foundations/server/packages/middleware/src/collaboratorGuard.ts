@@ -194,11 +194,7 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
     if (!authorized) throw forbidden()
   }
 
-  private async checkRemove (
-    ctx: MeasureContext<SessionData>,
-    record: Collaborator,
-    account: Account
-  ): Promise<void> {
+  private async checkRemove (ctx: MeasureContext<SessionData>, record: Collaborator, account: Account): Promise<void> {
     // Grantee self-decline: only for actual grant records (grantedVia set),
     // never for structural collaborators (assignee/createdBy).
     if (record.grantedVia != null && record.collaborator === account.uuid) return
@@ -230,11 +226,7 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
    * `level` (with a valid value). Any other field update, or a TxMixin, is
    * rejected.
    */
-  private async checkGroupGrantTx (
-    ctx: MeasureContext<SessionData>,
-    cud: TxCUD<Doc>,
-    account: Account
-  ): Promise<void> {
+  private async checkGroupGrantTx (ctx: MeasureContext<SessionData>, cud: TxCUD<Doc>, account: Account): Promise<void> {
     if (cud._class === core.class.TxCreateDoc) {
       const createTx = cud as TxCreateDoc<GroupGrant>
       const attrs = createTx.attributes as Partial<GroupGrant>
@@ -253,12 +245,7 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
 
     // Remove / update / mixin: resolve the existing grant.
     const existing = (
-      await this.findAll<GroupGrant>(
-        ctx,
-        core.class.GroupGrant,
-        { _id: cud.objectId as Ref<GroupGrant> },
-        { limit: 1 }
-      )
+      await this.findAll<GroupGrant>(ctx, core.class.GroupGrant, { _id: cud.objectId as Ref<GroupGrant> }, { limit: 1 })
     )[0]
     // fail-closed: cannot resolve the grant we are asked to mutate → reject.
     if (existing === undefined) throw forbidden()
@@ -294,11 +281,7 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
    *  - Remove: only an owner / Maintainer+, AND only when no GroupGrant still
    *    references the group (a live grant must be revoked first).
    */
-  private async checkAccessGroupTx (
-    ctx: MeasureContext<SessionData>,
-    cud: TxCUD<Doc>,
-    account: Account
-  ): Promise<void> {
+  private async checkAccessGroupTx (ctx: MeasureContext<SessionData>, cud: TxCUD<Doc>, account: Account): Promise<void> {
     if (cud._class === core.class.TxCreateDoc) {
       if (hasAccountRole(account, AccountRole.Maintainer)) return
       const attrs = (cud as TxCreateDoc<AccessGroup>).attributes as Partial<AccessGroup>
@@ -308,23 +291,22 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
     }
 
     const existing = (
-      await this.findAll<AccessGroup>(ctx, core.class.AccessGroup, { _id: cud.objectId as Ref<AccessGroup> }, { limit: 1 })
+      await this.findAll<AccessGroup>(
+        ctx,
+        core.class.AccessGroup,
+        { _id: cud.objectId as Ref<AccessGroup> },
+        { limit: 1 }
+      )
     )[0]
     // fail-closed: cannot resolve the group we are asked to mutate → reject.
     if (existing === undefined) throw forbidden()
-    const isOwner = existing.owners?.includes(account.uuid) === true || hasAccountRole(account, AccountRole.Maintainer)
+    const isOwner = existing.owners?.includes(account.uuid) || hasAccountRole(account, AccountRole.Maintainer)
     if (!isOwner) throw forbidden()
 
     if (cud._class === core.class.TxRemoveDoc) {
       // A group with live grants may not be deleted (grants materialize access).
-      const grants = await this.findAll<GroupGrant>(
-        ctx,
-        core.class.GroupGrant,
-        { group: existing._id },
-        { limit: 1 }
-      )
+      const grants = await this.findAll<GroupGrant>(ctx, core.class.GroupGrant, { group: existing._id }, { limit: 1 })
       if (grants.length > 0) throw forbidden()
-      return
     }
     // TxUpdateDoc / TxMixin by an owner: allowed.
   }
@@ -368,7 +350,7 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
     const spaceDoc = await this.loadSpace(ctx, space)
     if (spaceDoc === undefined) return false
     if (spaceDoc.owners?.includes(account.uuid) === true) return true
-    if (hasAccountRole(account, AccountRole.User) && spaceDoc.members?.includes(account.uuid) === true) return true
+    if (hasAccountRole(account, AccountRole.User) && spaceDoc.members?.includes(account.uuid)) return true
 
     return await this.hasAdminGrant(ctx, attachedTo, account)
   }

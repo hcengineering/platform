@@ -13,12 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, {
-    getCurrentAccount,
-    type AccessGroup,
-    type AccountUuid,
-    type Ref
-  } from '@hcengineering/core'
+  import core, { getCurrentAccount, type AccessGroup, type AccountUuid, type Ref } from '@hcengineering/core'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
   import { setPlatformStatus, unknownError } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -131,7 +126,7 @@
           <div class="group-row">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <div class="group-name clickable" on:click={() => toggle(group._id)}>
+            <div class="group-name clickable" on:click={() => { toggle(group._id) }}>
               <EditBox
                 bind:value={group.name}
                 placeholder={setting.string.AccessGroupName}

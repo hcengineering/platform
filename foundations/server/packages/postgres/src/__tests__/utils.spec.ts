@@ -1,10 +1,4 @@
-import {
-  DOMAIN_COLLABORATOR,
-  type DocumentUpdate,
-  type Ref,
-  type Space,
-  type WorkspaceUuid
-} from '@hcengineering/core'
+import { DOMAIN_COLLABORATOR, type DocumentUpdate, type Ref, type Space, type WorkspaceUuid } from '@hcengineering/core'
 import {
   convertArrayParams,
   convertDoc,

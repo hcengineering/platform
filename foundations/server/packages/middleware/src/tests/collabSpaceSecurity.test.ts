@@ -111,7 +111,13 @@ function makeMiddleware (opts: {
 
   const collabConfig =
     opts.provideSecurity === true
-      ? [{ attachedTo: ISSUE_CLASS, provideSecurity: true, mentionsGrantAccess: opts.mentionsGrantAccess === true } as any]
+      ? [
+          {
+            attachedTo: ISSUE_CLASS,
+            provideSecurity: true,
+            mentionsGrantAccess: opts.mentionsGrantAccess === true
+          } as any
+        ]
       : []
 
   const hierarchy = {
@@ -256,7 +262,11 @@ describe('SpaceSecurityMiddleware - collab-read backend guard (H5)', () => {
   // gated behind the backend-support (H5-A) check so Mongo remains fail-closed.
   describe('P2.2 role-widening of collabReadBypass', () => {
     it('role User with backend support: drops the space filter (grant becomes effective)', async () => {
-      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true, mentionsGrantAccess: true })
+      const { mw, captured } = makeMiddleware({
+        backendSupportsCollab: true,
+        provideSecurity: true,
+        mentionsGrantAccess: true
+      })
       const account = makeAccount(AccountRole.User)
       ;(mw as any).allowedSpaces = { [account.uuid]: [S1] } // member of S1 only
 
@@ -267,7 +277,11 @@ describe('SpaceSecurityMiddleware - collab-read backend guard (H5)', () => {
     })
 
     it('role Maintainer with backend support: drops the space filter', async () => {
-      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true, mentionsGrantAccess: true })
+      const { mw, captured } = makeMiddleware({
+        backendSupportsCollab: true,
+        provideSecurity: true,
+        mentionsGrantAccess: true
+      })
       const account = makeAccount(AccountRole.Maintainer)
       ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
 
@@ -280,7 +294,11 @@ describe('SpaceSecurityMiddleware - collab-read backend guard (H5)', () => {
       // love and controlled-documents opt into provideSecurity but not mentionsGrantAccess.
       // A regular member who is only a structural collaborator there must NOT gain
       // cross-space read from the P2.2 widening — the widening is grant-classes only.
-      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true, mentionsGrantAccess: false })
+      const { mw, captured } = makeMiddleware({
+        backendSupportsCollab: true,
+        provideSecurity: true,
+        mentionsGrantAccess: false
+      })
       const account = makeAccount(AccountRole.User)
       ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
 
@@ -294,7 +312,11 @@ describe('SpaceSecurityMiddleware - collab-read backend guard (H5)', () => {
 
     it('M-01: role Guest still gets collab-read on a non-mention provideSecurity class (love/QMS)', async () => {
       // The original guest-scope bypass is preserved for every provideSecurity class.
-      const { mw, captured } = makeMiddleware({ backendSupportsCollab: true, provideSecurity: true, mentionsGrantAccess: false })
+      const { mw, captured } = makeMiddleware({
+        backendSupportsCollab: true,
+        provideSecurity: true,
+        mentionsGrantAccess: false
+      })
       const account = makeGuest()
       ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
 
@@ -304,7 +326,11 @@ describe('SpaceSecurityMiddleware - collab-read backend guard (H5)', () => {
     })
 
     it('role User on Mongo/unknown backend: KEEPS the space filter (no cross-space leak)', async () => {
-      const { mw, captured } = makeMiddleware({ backendSupportsCollab: false, provideSecurity: true, mentionsGrantAccess: true })
+      const { mw, captured } = makeMiddleware({
+        backendSupportsCollab: false,
+        provideSecurity: true,
+        mentionsGrantAccess: true
+      })
       const account = makeAccount(AccountRole.User)
       ;(mw as any).allowedSpaces = { [account.uuid]: [S1] }
 

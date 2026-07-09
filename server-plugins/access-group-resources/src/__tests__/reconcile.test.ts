@@ -45,7 +45,7 @@ function applyPlan (
 describe('reconcileGrant (pure)', () => {
   it('materializes one record per member at the grant level (empty start)', () => {
     const plan = reconcileGrant([acc('a'), acc('b')], 'write', [])
-    expect(plan.toCreate.sort()).toEqual([acc('a'), acc('b')])
+    expect(plan.toCreate.sort((a, b) => (a > b ? 1 : a < b ? -1 : 0))).toEqual([acc('a'), acc('b')])
     expect(plan.toRemove).toEqual([])
   })
 
@@ -97,7 +97,9 @@ describe('reconcileGrant (pure)', () => {
     const existing = [rec('a', 'read'), rec('b', 'write')]
     const plan = teardownGrant(existing)
     expect(plan.toCreate).toEqual([])
-    expect(plan.toRemove.sort()).toEqual(existing.map((r) => r._id).sort())
+    expect(plan.toRemove.sort((a, b) => (a > b ? 1 : a < b ? -1 : 0))).toEqual(
+      existing.map((r) => r._id).sort((a, b) => (a > b ? 1 : a < b ? -1 : 0))
+    )
   })
 
   // ── idempotency: apply once, re-run must be a no-op for varied scenarios ──

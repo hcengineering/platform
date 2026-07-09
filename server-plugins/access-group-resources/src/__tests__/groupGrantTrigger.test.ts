@@ -180,7 +180,7 @@ describe('OnGroupGrantChanged', () => {
       objectSpace: 'space-1'
     }
     const res = await OnGroupGrantChanged([rm], control)
-    expect(removedIds(res).sort()).toEqual(['collab-a', 'collab-b'])
+    expect(removedIds(res).sort((a, b) => (a > b ? 1 : a < b ? -1 : 0))).toEqual(['collab-a', 'collab-b'])
     expect(removedIds(res)).not.toContain('collab-c')
   })
 
@@ -211,10 +211,7 @@ describe('OnAccessGroupChanged', () => {
   it('adding a member to the group adds collaborators on every granted doc', async () => {
     const store: Store = {
       groups: [{ _id: 'group-1', members: ['a', 'b'] }],
-      grants: [
-        grant({ _id: 'grant-1', attachedTo: 'issue-1' }),
-        grant({ _id: 'grant-2', attachedTo: 'issue-2' })
-      ],
+      grants: [grant({ _id: 'grant-1', attachedTo: 'issue-1' }), grant({ _id: 'grant-2', attachedTo: 'issue-2' })],
       // only 'a' materialized so far on both docs
       collaborators: [
         collab({ collaborator: 'a', _id: 'c1', grantedByGroup: 'grant-1', attachedTo: 'issue-1' }),
@@ -281,10 +278,7 @@ describe('OnAccessGroupChanged', () => {
   it('M-02: AccessGroup remove tears down every GroupGrant and its group-collaborators (no orphans)', async () => {
     const store: Store = {
       groups: [], // group already deleted
-      grants: [
-        grant({ _id: 'grant-1', attachedTo: 'issue-1' }),
-        grant({ _id: 'grant-2', attachedTo: 'issue-2' })
-      ],
+      grants: [grant({ _id: 'grant-1', attachedTo: 'issue-1' }), grant({ _id: 'grant-2', attachedTo: 'issue-2' })],
       collaborators: [
         collab({ collaborator: 'a', _id: 'g-a1', grantedByGroup: 'grant-1', attachedTo: 'issue-1' }),
         collab({ collaborator: 'b', _id: 'g-b1', grantedByGroup: 'grant-1', attachedTo: 'issue-1' }),
@@ -300,12 +294,12 @@ describe('OnAccessGroupChanged', () => {
     }
     const res = await OnAccessGroupChanged([rm], control)
     // all three materialized collaborators torn down
-    expect(removedIds(res).sort()).toEqual(['g-a1', 'g-a2', 'g-b1'])
+    expect(removedIds(res).sort((a, b) => (a > b ? 1 : a < b ? -1 : 0))).toEqual(['g-a1', 'g-a2', 'g-b1'])
     // both now-orphan grants removed too
     const grantRemoves = res
       .filter((t) => t._class === core.class.TxRemoveDoc && (t as any).objectClass === core.class.GroupGrant)
       .map((t) => (t as any).objectId)
-      .sort()
+      .sort((a: string, b: string) => (a > b ? 1 : a < b ? -1 : 0))
     expect(grantRemoves).toEqual(['grant-1', 'grant-2'])
   })
 })

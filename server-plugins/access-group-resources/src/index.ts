@@ -46,8 +46,17 @@ async function existingForGrant (control: TriggerControl, grant: GroupGrant): Pr
  * create/remove transactions. All derived collaborators live on the grant's doc
  * and share its space.
  */
-function reconcileTxes (control: TriggerControl, grant: GroupGrant, members: AccountUuid[], existing: Collaborator[]): Tx[] {
-  const minimal: GroupCollabRecord[] = existing.map((c) => ({ _id: c._id, collaborator: c.collaborator, level: c.level }))
+function reconcileTxes (
+  control: TriggerControl,
+  grant: GroupGrant,
+  members: AccountUuid[],
+  existing: Collaborator[]
+): Tx[] {
+  const minimal: GroupCollabRecord[] = existing.map((c) => ({
+    _id: c._id,
+    collaborator: c.collaborator,
+    level: c.level
+  }))
   const spaceById = new Map<Ref<Collaborator>, Collaborator['space']>(existing.map((c) => [c._id, c.space]))
   const plan = reconcileGrant(members, normalizeLevel(grant.level), minimal)
   const res: Tx[] = []

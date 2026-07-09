@@ -702,10 +702,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     // project nav tree can surface a private space that a regular member only
     // reaches through a per-doc collaborator grant. Still backend-gated.
     const spaceCollabBypass =
-      collabBackendSupported &&
-      isSpace &&
-      account.role !== AccountRole.Admin &&
-      account.role !== AccountRole.DocGuest
+      collabBackendSupported && isSpace && account.role !== AccountRole.Admin && account.role !== AccountRole.DocGuest
 
     if (
       !isSystem(account, ctx) &&

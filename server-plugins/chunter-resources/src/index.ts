@@ -202,9 +202,7 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   // consented to via the send-time disclosure (grantsAccess === 'true'). A
   // missing/unknown flag grants nothing.
   const mentionedForGrant = new Set(
-    personRefs
-      .filter(({ grantsAccess }) => grantsAccess === 'true')
-      .map(({ objectId }) => objectId as Ref<Person>)
+    personRefs.filter(({ grantsAccess }) => grantsAccess === 'true').map(({ objectId }) => objectId as Ref<Person>)
   )
   const employees =
     mentionedForNotify.length > 0

@@ -218,7 +218,7 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
       // A regular User is only collab-only on a PRIVATE space; on a public space
       // they participate through normal visibility (no grant) → unchanged pass.
       // Fail-closed: treat anything other than an explicit public flag as private.
-      if (space.private === false) return false
+      if (!space.private) return false
     }
 
     // Collab-only caller. Field updates require level >= write; removes stay

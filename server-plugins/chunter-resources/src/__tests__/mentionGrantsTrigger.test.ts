@@ -213,9 +213,7 @@ function mentionGrantCreates (res: Tx[]): any[] {
 // Collaborator removals -> the removed record _id.
 function collaboratorRemovals (res: Tx[]): string[] {
   return res
-    .filter(
-      (t: any) => t._class === coreDefault.class.TxRemoveDoc && t.objectClass === coreDefault.class.Collaborator
-    )
+    .filter((t: any) => t._class === coreDefault.class.TxRemoveDoc && t.objectClass === coreDefault.class.Collaborator)
     .map((t: any) => t.objectId)
 }
 
@@ -348,7 +346,7 @@ describe('P5.3 reconcile on edit', () => {
     expect(collaboratorRemovals(res)).toHaveLength(0)
   })
 
-  test('removing a mention on edit revokes ONLY that message\'s mention record', async () => {
+  test("removing a mention on edit revokes ONLY that message's mention record", async () => {
     // p3 was granted by this message; the edit drops the mention -> its record
     // is removed. A record from ANOTHER message (col-other) is out of scope.
     const control = makeControl({

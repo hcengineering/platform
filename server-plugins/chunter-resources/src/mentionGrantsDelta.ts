@@ -58,10 +58,7 @@ export interface MentionGrantDelta {
  *
  * @public
  */
-export function computeMentionGrantDelta (
-  desired: AccountUuid[],
-  existing: ExistingMentionGrant[]
-): MentionGrantDelta {
+export function computeMentionGrantDelta (desired: AccountUuid[], existing: ExistingMentionGrant[]): MentionGrantDelta {
   const existingAccounts = new Set(existing.map((r) => r.collaborator))
   const desiredSet = new Set(desired)
   const toCreate = Array.from(desiredSet).filter((a) => !existingAccounts.has(a))

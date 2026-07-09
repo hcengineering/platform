@@ -106,9 +106,9 @@ function makeMw (
   const next = nextFn !== undefined ? { tx: nextFn } : { tx: async (_c: MeasureContext, _t: Tx[]) => ({}) }
   const mw = new (CollaboratorGuardMiddleware as any)(context, next)
   mw.findAll = findAll
-  ;(mw as any).context.hierarchy.isDerived = (a: any, b: any) => a === b
-  ;(mw as any).context.hierarchy.getAncestors = (id: any) => [id]
-  ;(mw as any).context.modelDb = {
+  ;(mw).context.hierarchy.isDerived = (a: any, b: any) => a === b
+  ;(mw).context.hierarchy.getAncestors = (id: any) => [id]
+  ;(mw).context.modelDb = {
     findAllSync: (_class: any, _q: any) => [{ attachedTo: SECURED_CLASS, provideSecurity: true }]
   }
   return mw
@@ -136,7 +136,7 @@ function serve (opts: {
       // The target doc the grant attaches to. Default lives in ISSUE_SPACE so the
       // grant record's objectSpace (ISSUE_SPACE) mirrors it (the non-exploit case).
       const doc = opts.targetDoc ?? ({ _id: ISSUE_ID, _class: SECURED_CLASS, space: ISSUE_SPACE } as any)
-      return query?._id === doc._id ? [doc as any] : []
+      return query?._id === doc._id ? [doc] : []
     }
     if (_class === core.class.Collaborator) {
       let list = opts.collaborators ?? []
@@ -204,7 +204,7 @@ function makeGroupUpdateTx (account: Account, grantId: Ref<GroupGrant>, operatio
 
 function groupGrantRecord (over: Partial<GroupGrant>): GroupGrant {
   return {
-    _id: (over._id ?? generateId()) as Ref<GroupGrant>,
+    _id: (over._id ?? generateId()),
     _class: core.class.GroupGrant,
     space: ISSUE_SPACE,
     attachedTo: ISSUE_ID,
@@ -237,7 +237,7 @@ function makeAccessGroupRemoveTx (account: Account, id: Ref<AccessGroup>): Tx {
 
 function accessGroupRecord (over: Partial<AccessGroup>): AccessGroup {
   return {
-    _id: (over._id ?? GROUP_ID) as Ref<AccessGroup>,
+    _id: (over._id ?? GROUP_ID),
     _class: core.class.AccessGroup,
     space: ISSUE_SPACE,
     modifiedOn: Date.now(),
@@ -251,7 +251,7 @@ function accessGroupRecord (over: Partial<AccessGroup>): AccessGroup {
 
 function collabRecord (over: Partial<Collaborator>): Collaborator {
   return {
-    _id: (over._id ?? generateId()) as Ref<Collaborator>,
+    _id: (over._id ?? generateId()),
     _class: core.class.Collaborator,
     space: ISSUE_SPACE,
     attachedTo: ISSUE_ID,
@@ -323,7 +323,12 @@ describe('CollaboratorGuardMiddleware', () => {
       nextCalled = true
       return {}
     })
-    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'write' })
+    const tx = makeCreateTx(actor, {
+      collaborator: uuid(),
+      grantedVia: 'manual',
+      grantedBy: actor.uuid,
+      level: 'write'
+    })
     await mw.tx(makeCtx(actor), [tx])
     expect(nextCalled).toBe(true)
   })
@@ -356,7 +361,12 @@ describe('CollaboratorGuardMiddleware', () => {
       nextCalled = true
       return {}
     })
-    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'admin' })
+    const tx = makeCreateTx(actor, {
+      collaborator: uuid(),
+      grantedVia: 'manual',
+      grantedBy: actor.uuid,
+      level: 'admin'
+    })
     await mw.tx(makeCtx(actor), [tx])
     expect(nextCalled).toBe(true)
   })
@@ -372,7 +382,12 @@ describe('CollaboratorGuardMiddleware', () => {
     // actor OWNS ISSUE_SPACE (= tx objectSpace) but the target issue lives in a foreign space.
     const foreignDoc = { _id: ISSUE_ID, _class: SECURED_CLASS, space: 'test:space:Foreign' as Ref<Space> } as any
     const mw = makeMw(serve({ space: makeSpace([], [actor.uuid]), targetDoc: foreignDoc }))
-    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'admin' })
+    const tx = makeCreateTx(actor, {
+      collaborator: uuid(),
+      grantedVia: 'manual',
+      grantedBy: actor.uuid,
+      level: 'admin'
+    })
     await expect(mw.tx(makeCtx(actor), [tx])).rejects.toThrow()
   })
 
@@ -387,7 +402,12 @@ describe('CollaboratorGuardMiddleware', () => {
   it('C-01 fail-closed: rejects manual grant when the target doc cannot be resolved', async () => {
     const actor = makeAccount(AccountRole.User)
     // Owner of the space, but the attachedTo doc does not exist → cannot prove its space.
-    const mw = makeMw(serve({ space: makeSpace([], [actor.uuid]), targetDoc: { _id: 'test:doc:Absent' as Ref<Doc>, _class: SECURED_CLASS, space: ISSUE_SPACE } as any }))
+    const mw = makeMw(
+      serve({
+        space: makeSpace([], [actor.uuid]),
+        targetDoc: { _id: 'test:doc:Absent' as Ref<Doc>, _class: SECURED_CLASS, space: ISSUE_SPACE } as any
+      })
+    )
     const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'read' })
     await expect(mw.tx(makeCtx(actor), [tx])).rejects.toThrow()
   })
@@ -404,7 +424,7 @@ describe('CollaboratorGuardMiddleware', () => {
     const tx = makeCreateTx(sys, {
       collaborator: uuid(),
       grantedVia: 'group',
-      grantedByGroup: generateId() as Ref<GroupGrant>
+      grantedByGroup: generateId()
     })
     await mw.tx(makeCtx(sys), [tx])
     expect(nextCalled).toBe(true)
@@ -465,7 +485,7 @@ describe('CollaboratorGuardMiddleware', () => {
   it('fail-closed: reject remove when the record cannot be resolved', async () => {
     const actor = makeAccount(AccountRole.User)
     const mw = makeMw(serve({ space: makeSpace([]), collaborators: [] }))
-    await expect(mw.tx(makeCtx(actor), [makeRemoveTx(actor, generateId() as Ref<Collaborator>)])).rejects.toThrow()
+    await expect(mw.tx(makeCtx(actor), [makeRemoveTx(actor, generateId())])).rejects.toThrow()
   })
 
   // ─── update / immutability ────────────────────────────────────────────────────
@@ -485,12 +505,7 @@ describe('CollaboratorGuardMiddleware', () => {
       nextCalled = true
       return {}
     })
-    const tx = makeCreateTx(
-      actor,
-      { collaborator: uuid() },
-      CHANNEL_CLASS,
-      'test:doc:Channel1' as Ref<Doc>
-    )
+    const tx = makeCreateTx(actor, { collaborator: uuid() }, CHANNEL_CLASS, 'test:doc:Channel1' as Ref<Doc>)
     await mw.tx(makeCtx(actor), [tx])
     expect(nextCalled).toBe(true)
   })
@@ -572,9 +587,7 @@ describe('CollaboratorGuardMiddleware', () => {
     const owner = makeAccount(AccountRole.Maintainer)
     const rec = groupGrantRecord({ level: 'read' })
     const mw = makeMw(serve({ space: makeSpace([], [owner.uuid]), groupGrants: [rec] }))
-    await expect(
-      mw.tx(makeCtx(owner), [makeGroupUpdateTx(owner, rec._id, { level: 'root' })])
-    ).rejects.toThrow()
+    await expect(mw.tx(makeCtx(owner), [makeGroupUpdateTx(owner, rec._id, { level: 'root' })])).rejects.toThrow()
   })
 
   it('allows GroupGrant remove by workspace Maintainer', async () => {
@@ -599,9 +612,7 @@ describe('CollaboratorGuardMiddleware', () => {
   it('fail-closed: reject GroupGrant remove when the grant cannot be resolved', async () => {
     const owner = makeAccount(AccountRole.Maintainer)
     const mw = makeMw(serve({ space: makeSpace([]), groupGrants: [] }))
-    await expect(
-      mw.tx(makeCtx(owner), [makeGroupRemoveTx(owner, generateId() as Ref<GroupGrant>)])
-    ).rejects.toThrow()
+    await expect(mw.tx(makeCtx(owner), [makeGroupRemoveTx(owner, generateId())])).rejects.toThrow()
   })
 
   it('rejects GroupGrant create on a non-secured class (fail-closed)', async () => {
