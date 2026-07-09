@@ -51,7 +51,7 @@
   export let summaryRanges: Map<string, SummaryRange>
   export let scrollTop: number = 0
   export let viewportHeight: number = 600
-  export let viewport: { left: number; right: number }
+  export let viewport: { left: number, right: number }
   export let totalWidth: number
   export let dataWidth: number = totalWidth
   export let milestoneStripHeight: number = 0
@@ -64,24 +64,24 @@
   // stringified _ids (PR3.3 2026-05-11) so a single Set serves both.
   // milestonesById is a lookup of full Milestone docs (keyed by _id) used
   // to build the DragTarget payload when a milestone bar is clicked.
-  export let editableIssueIds: Set<string> = new Set()
+  export let editableIssueIds = new Set<string>()
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
   export let focusedIssueId: string | null = null
   export let selectedIssueId: string | null = null
-  export let milestonesById: Map<string, Milestone> = new Map()
+  export let milestonesById = new Map<string, Milestone>()
 
   // PR4a dependency-layer props — defaulted so existing call-sites don't break.
   export let relations: IssueRelation[] = []
-  export let connectedIds: Set<Ref<Issue>> = new Set()
+  export let connectedIds = new Set<Ref<Issue>>()
   export let hoveredIssue: Ref<Issue> | null = null
   export let hoveredEdge: { source: Ref<Issue>, target: Ref<Issue> } | null = null
   // PR5 critical-path overlay state (forwarded down to GanttBar +
   // GanttDependencyLayer). showCriticalPath gates rendering so the
   // base view doesn't gain visual weight when the toggle is off.
-  export let criticalSet: Set<Ref<Issue>> = new Set()
-  export let criticalRelations: Set<Ref<IssueRelation>> = new Set()
-  export let violatedRelations: Set<Ref<IssueRelation>> = new Set()
-  export let cpSlack: Map<Ref<Issue>, number> = new Map()
+  export let criticalSet = new Set<Ref<Issue>>()
+  export let criticalRelations = new Set<Ref<IssueRelation>>()
+  export let violatedRelations = new Set<Ref<IssueRelation>>()
+  export let cpSlack = new Map<Ref<Issue>, number>()
   export let showCriticalPath: boolean = false
   // Phase 1: configurable bar-label slots. Defaults: left=none, inside=title, right=none.
   export let barLabelLeft: BarLabelSlot = 'none'
@@ -273,13 +273,7 @@
         on:mouseleave={() => dispatch('hoverRow', { id: null })}
       >
         <!-- transparent hit-area covering the row width to capture hover -->
-        <rect
-          x={0}
-          y={row.y}
-          width={totalWidth}
-          height={row.height}
-          fill="transparent"
-        />
+        <rect x={0} y={row.y} width={totalWidth} height={row.height} fill="transparent" />
         {#if row.kind === 'milestone' && row.milestone !== null}
           {@const ms = row.milestone}
           {@const fullMs = milestonesById.get(String(ms._id))}
@@ -401,7 +395,7 @@
 
   <GanttDependencyLayer
     {relations}
-    barRects={barRects}
+    {barRects}
     {activeDrag}
     {connectedIds}
     {hoveredIssue}
@@ -429,47 +423,46 @@
   -->
   <g class="connector-overlay" transform="translate(0, {milestoneStripHeight})">
     {#each visibleRows as row (rowKey(row))}
-      {#if row.kind === 'issue' && row.issue !== null && row.issue.startDate != null && row.issue.dueDate != null && isEditable(row.issue._id)}
-        {@const rowIssueId = String(row.issue._id)}
-        {@const dragKind = dragState.kind}
-        {@const dragSourceId = dragKind === 'connector-drawing' || dragKind === 'connector-target-hover'
-          ? String(dragState.source._id)
-          : null}
-        {@const dragTargetIssueId = dragKind === 'connector-target-hover'
-          ? String(dragState.target._id)
-          : null}
-        {@const xOv = timeScale.toX(row.issue.startDate)}
-        {@const x2Ov = timeScale.toX(row.issue.dueDate)}
-        {@const wOv = Math.max(2, x2Ov - xOv + timeScale.pxPerDay)}
-        {@const barYOv = row.y + 6}
-        {@const barHOv = row.height - 12}
-        {@const isSource = dragSourceId !== null && dragSourceId === rowIssueId}
-        {@const isCurrentTarget = dragTargetIssueId === rowIssueId}
-        {@const showSourceDot = wOv >= 18 && (isSelected(rowIssueId) || isSource)}
-        {@const showTargetDot = wOv >= 18 &&
-          (dragKind === 'connector-drawing' || dragKind === 'connector-target-hover') &&
-          !isSource}
-        {#if showSourceDot}
-          <GanttConnectorDot
-            cx={xOv + wOv + 12}
-            cy={barYOv + barHOv - 2}
-            sourceId={rowIssueId}
-            sourceSpace={String(row.issue.space)}
-            hitR={10}
-            on:connectorDown={(e) => {
-              if (row.issue === null) return
-              const rect = barRects.get(rowIssueId)
-              if (rect === undefined) return
-              void e
-              dispatch('connectorDown', {
-                source: row.issue,
-                originPx: { x: rect.right + 12, y: rect.bottom - 2 }
-              })
-            }}
-          />
-        {/if}
-        {#if showTargetDot}
-          <!-- Drop-here indicator at the FS target anchor (left edge of bar).
+      {#if row.kind === 'issue' && row.issue !== null}
+        {#if row.issue.startDate != null && row.issue.dueDate != null && isEditable(row.issue._id)}
+          {@const rowIssueId = String(row.issue._id)}
+          {@const dragKind = dragState.kind}
+          {@const dragSourceId =
+            dragKind === 'connector-drawing' || dragKind === 'connector-target-hover'
+              ? String(dragState.source._id)
+              : null}
+          {@const dragTargetIssueId = dragKind === 'connector-target-hover' ? String(dragState.target._id) : null}
+          {@const xOv = timeScale.toX(row.issue.startDate)}
+          {@const x2Ov = timeScale.toX(row.issue.dueDate)}
+          {@const wOv = Math.max(2, x2Ov - xOv + timeScale.pxPerDay)}
+          {@const barYOv = row.y + 6}
+          {@const barHOv = row.height - 12}
+          {@const isSource = dragSourceId !== null && dragSourceId === rowIssueId}
+          {@const isCurrentTarget = dragTargetIssueId === rowIssueId}
+          {@const showSourceDot = wOv >= 18 && (isSelected(rowIssueId) || isSource)}
+          {@const showTargetDot =
+            wOv >= 18 && (dragKind === 'connector-drawing' || dragKind === 'connector-target-hover') && !isSource}
+          {#if showSourceDot}
+            <GanttConnectorDot
+              cx={xOv + wOv + 12}
+              cy={barYOv + barHOv - 2}
+              sourceId={rowIssueId}
+              sourceSpace={String(row.issue.space)}
+              hitR={10}
+              on:connectorDown={(e) => {
+                if (row.issue === null) return
+                const rect = barRects.get(rowIssueId)
+                if (rect === undefined) return
+                void e
+                dispatch('connectorDown', {
+                  source: row.issue,
+                  originPx: { x: rect.right + 12, y: rect.bottom - 2 }
+                })
+              }}
+            />
+          {/if}
+          {#if showTargetDot}
+            <!-- Drop-here indicator at the FS target anchor (left edge of bar).
                Static state: small grey dot, signals "you can drop here".
                Hovered state: bigger indigo dot matching the source-dot palette,
                signals "release now to create the dependency". -->
@@ -497,15 +490,8 @@
   <g class="milestones">
     {#each milestones as ms (ms._id)}
       {@const x = timeScale.toX(ms.targetDate)}
-      <line
-        x1={x} x2={x} y1={0} y2={14}
-        stroke="var(--theme-state-info-color, #6366f1)"
-        stroke-width={1.5}
-      />
-      <polygon
-        points="{x - 5},2 {x + 5},2 {x},10"
-        fill="var(--theme-state-info-color, #6366f1)"
-      >
+      <line x1={x} x2={x} y1={0} y2={14} stroke="var(--theme-state-info-color, #6366f1)" stroke-width={1.5} />
+      <polygon points="{x - 5},2 {x + 5},2 {x},10" fill="var(--theme-state-info-color, #6366f1)">
         <title>{ms.label}</title>
       </polygon>
     {/each}

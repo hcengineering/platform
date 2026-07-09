@@ -225,5 +225,5 @@ export function filterVisibleRows (
 ): LayoutRow[] {
   const min = viewportTop - overscan
   const max = viewportTop + viewportHeight + overscan
-  return rows.filter(r => r.y + r.height >= min && r.y <= max)
+  return rows.filter((r) => r.y + r.height >= min && r.y <= max)
 }

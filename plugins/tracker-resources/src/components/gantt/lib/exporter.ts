@@ -354,7 +354,7 @@ function inlineStyles (source: Element, clone: Element): void {
     }
   }
   if (cssText.length > 0) {
-    (clone as HTMLElement).setAttribute('style', cssText.join(';'))
+    ;(clone as HTMLElement).setAttribute('style', cssText.join(';'))
   }
   for (let i = 0; i < source.children.length; i++) {
     if (clone.children[i] !== undefined) {
@@ -370,10 +370,7 @@ function inlineStyles (source: Element, clone: Element): void {
  *             sidebar row labels — the resulting image is rarely useful.
  *             Use `exportElementToPng(containerEl)` instead.
  */
-export async function exportGanttSvgToPng (
-  svg: SVGSVGElement,
-  options: ExportOptions = {}
-): Promise<Blob> {
+export async function exportGanttSvgToPng (svg: SVGSVGElement, options: ExportOptions = {}): Promise<Blob> {
   const scale = options.scale ?? Math.max(1, window.devicePixelRatio ?? 1)
   const background = options.background ?? '#ffffff'
 
@@ -386,8 +383,12 @@ export async function exportGanttSvgToPng (
 
   const img = new Image()
   await new Promise<void>((resolve, reject) => {
-    img.onload = () => { resolve() }
-    img.onerror = (e) => { reject(new Error(`SVG image load failed: ${String(e)}`)) }
+    img.onload = () => {
+      resolve()
+    }
+    img.onerror = (e) => {
+      reject(new Error(`SVG image load failed: ${String(e)}`))
+    }
     img.src = dataUrl
   })
 

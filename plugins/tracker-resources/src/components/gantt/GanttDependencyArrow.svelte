@@ -163,17 +163,20 @@
 </script>
 
 {#if path !== null && head !== null && mid !== null}
-  <g
-    class="gantt-dep-arrow"
-    class:dimmed
-    on:mouseenter={onEnter}
-    on:mouseleave={onLeave}
-  >
+  <g class="gantt-dep-arrow" class:dimmed on:mouseenter={onEnter} on:mouseleave={onLeave}>
     <!-- Invisible wider stroke for an easier click target -->
     <path d={path} stroke="transparent" stroke-width={12} fill="none" on:click={onOpen} />
-    <path d={path} class="curve" class:critical={isCritical} class:violated={isViolated}
-      stroke={arrowStroke} stroke-width={arrowStrokeWidth} stroke-dasharray={arrowDash}
-      fill="none" pointer-events="none" />
+    <path
+      d={path}
+      class="curve"
+      class:critical={isCritical}
+      class:violated={isViolated}
+      stroke={arrowStroke}
+      stroke-width={arrowStrokeWidth}
+      stroke-dasharray={arrowDash}
+      fill="none"
+      pointer-events="none"
+    />
     <polygon
       points={`${head[0].x},${head[0].y} ${head[1].x},${head[1].y} ${head[2].x},${head[2].y}`}
       class="arrowhead"

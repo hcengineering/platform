@@ -97,14 +97,14 @@ function topoSort (issues: ScheduledIssue[], relations: IssueRelation[]): Schedu
       inDegree.set(r.target, (inDegree.get(r.target) ?? 0) + 1)
     }
   }
-  const out = new Map<Ref<Issue>, Ref<Issue>[]>()
+  const out = new Map<Ref<Issue>, Array<Ref<Issue>>>()
   for (const r of relations) {
     if (!byRef.has(r.attachedTo) || !byRef.has(r.target)) continue
     const bucket = out.get(r.attachedTo)
     if (bucket === undefined) out.set(r.attachedTo, [r.target])
     else bucket.push(r.target)
   }
-  const queue: Ref<Issue>[] = []
+  const queue: Array<Ref<Issue>> = []
   for (const [ref, deg] of inDegree) if (deg === 0) queue.push(ref)
   const order: ScheduledIssue[] = []
   while (queue.length > 0) {
@@ -187,7 +187,7 @@ export function computeCriticalPath (
   for (const i of order) {
     const incRels = incoming.get(i._id) ?? []
     if (incRels.length === 0) continue
-    const dur = i.dueDate - i.startDate  // inclusive: EF - ES in ms
+    const dur = i.dueDate - i.startDate // inclusive: EF - ES in ms
     let newES = i.startDate
     let newEF = i.dueDate
     for (const r of incRels) {
@@ -197,9 +197,15 @@ export function computeCriticalPath (
       const predEF = ef.get(pred._id) ?? pred.dueDate
       const b = forwardBound(r, predES, predEF, cfg)
       if (b.field === 'ES') {
-        if (b.value > newES) { newES = b.value; newEF = newES + dur }
+        if (b.value > newES) {
+          newES = b.value
+          newEF = newES + dur
+        }
       } else {
-        if (b.value > newEF) { newEF = b.value; newES = newEF - dur }
+        if (b.value > newEF) {
+          newEF = b.value
+          newES = newEF - dur
+        }
       }
     }
     // Clamp back to user-stored dates — if a relation would have shifted
@@ -252,9 +258,15 @@ export function computeCriticalPath (
       const succLF = lf.get(succ._id) ?? succ.dueDate
       const b = backwardBound(r, succLS, succLF, cfg)
       if (b.field === 'EF') {
-        if (b.value < newLF) { newLF = b.value; newLS = newLF - dur }
+        if (b.value < newLF) {
+          newLF = b.value
+          newLS = newLF - dur
+        }
       } else {
-        if (b.value < newLS) { newLS = b.value; newLF = newLS + dur }
+        if (b.value < newLS) {
+          newLS = b.value
+          newLF = newLS + dur
+        }
       }
     }
     ls.set(i._id, newLS)

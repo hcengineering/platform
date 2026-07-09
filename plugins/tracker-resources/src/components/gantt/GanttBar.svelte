@@ -18,11 +18,11 @@
 
   // Bar is rendered for both Issues and synthetic milestone summaries; the
   // structural subset below is all the bar geometry needs.
-  export let issue: { title: string; startDate: number | null; dueDate: number | null }
-  export let row: { y: number; height: number }
+  export let issue: { title: string, startDate: number | null, dueDate: number | null }
+  export let row: { y: number, height: number }
   export let timeScale: TimeScale
   export let isSummary: boolean = false
-  export let summaryRange: { startDate: number | null; dueDate: number | null } | null = null
+  export let summaryRange: { startDate: number | null, dueDate: number | null } | null = null
   // Status category drives bar fill: backlog grey, todo blue, in-progress
   // amber, completed green, cancelled muted. null = no status info.
   export let statusCategory: string | null = null
@@ -71,9 +71,7 @@
   export let barLabelRight: BarLabelSlot = 'none'
 
   const DAY_MS_FOR_SLACK = 86_400_000
-  $: slackPx = showSlackGlyph && slackMs > 0
-    ? Math.max(2, (slackMs / DAY_MS_FOR_SLACK) * timeScale.pxPerDay)
-    : 0
+  $: slackPx = showSlackGlyph && slackMs > 0 ? Math.max(2, (slackMs / DAY_MS_FOR_SLACK) * timeScale.pxPerDay) : 0
 
   const dispatch = createEventDispatcher<{
     barMouseDown: { target: DragTarget, edge: 'left' | 'right' | 'body', cursorX: number }
@@ -221,7 +219,11 @@
     switch (cat) {
       case 'task:statusCategory:UnStarted':
       case 'tracker:statusCategory:Backlog':
-        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)', text: 'var(--theme-content-color)' }
+        return {
+          fill: 'var(--theme-button-default)',
+          border: 'var(--theme-button-border)',
+          text: 'var(--theme-content-color)'
+        }
       case 'task:statusCategory:ToDo':
         return {
           fill: 'var(--theme-state-primary-background-color)',
@@ -247,12 +249,16 @@
           text: 'var(--theme-content-color)'
         }
       default:
-        return { fill: 'var(--theme-button-default)', border: 'var(--theme-button-border)', text: 'var(--theme-content-color)' }
+        return {
+          fill: 'var(--theme-button-default)',
+          border: 'var(--theme-button-border)',
+          text: 'var(--theme-content-color)'
+        }
     }
   }
 
-  $: effectiveStart = isSummary ? summaryRange?.startDate ?? issue.startDate : issue.startDate
-  $: effectiveDue = isSummary ? summaryRange?.dueDate ?? issue.dueDate : issue.dueDate
+  $: effectiveStart = isSummary ? (summaryRange?.startDate ?? issue.startDate) : issue.startDate
+  $: effectiveDue = isSummary ? (summaryRange?.dueDate ?? issue.dueDate) : issue.dueDate
 
   // PR 3 edit-mode: while THIS bar is the active drag target, swap the bar
   // geometry over to the reducer's preview values so the bar visually tracks
@@ -261,9 +267,7 @@
   $: dragState = $activeDrag
   // PR3.3: DragState carries `target: { kind, doc }` (Issue or Milestone)
   // since the refactor. Read doc._id for the active-bar match.
-  $: isThisBarActive =
-    issueRef !== undefined &&
-    activeDragTargetId(dragState) === issueRef
+  $: isThisBarActive = issueRef !== undefined && activeDragTargetId(dragState) === issueRef
   $: isThisConnectorActive =
     issueRef !== undefined &&
     (dragState.kind === 'connector-drawing' || dragState.kind === 'connector-target-hover') &&
@@ -302,8 +306,8 @@
   })()
 
   $: visible = previewStart !== null && previewDue !== null
-  $: rawStart = (previewStart ?? 0) as number
-  $: rawDue = (previewDue ?? 0) as number
+  $: rawStart = previewStart ?? 0
+  $: rawDue = previewDue ?? 0
   // Normalise reversed ranges (start > due): render the bar across [min, max]
   // rather than collapsing to a 2px sliver at the start. Tooltip mirrors the
   // visual order so the user sees the same range that's drawn.
@@ -388,7 +392,7 @@
       -->
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <rect
-        x={x}
+        {x}
         y={barY}
         width={w}
         height={barH}
@@ -456,7 +460,7 @@
     -->
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <rect
-      x={x}
+      {x}
       y={barY}
       width={w}
       height={barH}
@@ -496,7 +500,7 @@
            status fill. pointer-events: none so drag/click stays routed
            to the underlying bar rect. -->
       <rect
-        x={x}
+        {x}
         y={barY}
         width={w}
         height={barH}
@@ -649,7 +653,7 @@
   .bar.focused {
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 1px;
-    stroke-dasharray: 2,2;
+    stroke-dasharray: 2, 2;
   }
   /*
    * Click-to-select state: thick solid blue outline + glow. Made deliberately
@@ -680,6 +684,6 @@
     fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 18%, transparent);
     stroke: var(--theme-state-info-color, #6366f1);
     stroke-width: 1.5px;
-    stroke-dasharray: 4,2;
+    stroke-dasharray: 4, 2;
   }
 </style>

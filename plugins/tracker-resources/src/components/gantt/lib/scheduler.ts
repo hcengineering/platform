@@ -82,15 +82,11 @@ export function descendantsWithDates (issue: Issue, allIssues: Issue[]): Issue[]
  *
  * Spec §4 / brainstorm decision A (block + toast on cycle attempt).
  */
-export function wouldCreateCycle (
-  source: Ref<Issue>,
-  target: Ref<Issue>,
-  relations: IssueRelation[]
-): boolean {
+export function wouldCreateCycle (source: Ref<Issue>, target: Ref<Issue>, relations: IssueRelation[]): boolean {
   if (source === target) return true
 
   // Adjacency: predecessor → successors.
-  const out = new Map<Ref<Issue>, Ref<Issue>[]>()
+  const out = new Map<Ref<Issue>, Array<Ref<Issue>>>()
   for (const r of relations) {
     const bucket = out.get(r.attachedTo)
     if (bucket === undefined) {
@@ -102,7 +98,7 @@ export function wouldCreateCycle (
 
   // BFS forward from target; if we hit source, source→target would loop.
   const visited = new Set<Ref<Issue>>([target])
-  const queue: Ref<Issue>[] = [target]
+  const queue: Array<Ref<Issue>> = [target]
   while (queue.length > 0) {
     const cur = queue.shift() as Ref<Issue>
     const succs = out.get(cur)
@@ -128,8 +124,8 @@ export function wouldCreateCycle (
  * but if cascade is ever applied to enterprise graphs > 10k linear
  * chains, refactor to an explicit work-stack.
  */
-export function detectCycle (relations: IssueRelation[]): Ref<Issue>[] | null {
-  const out = new Map<Ref<Issue>, Ref<Issue>[]>()
+export function detectCycle (relations: IssueRelation[]): Array<Ref<Issue>> | null {
+  const out = new Map<Ref<Issue>, Array<Ref<Issue>>>()
   const nodes = new Set<Ref<Issue>>()
   for (const r of relations) {
     nodes.add(r.attachedTo)
@@ -148,8 +144,8 @@ export function detectCycle (relations: IssueRelation[]): Ref<Issue>[] | null {
   const color = new Map<Ref<Issue>, number>()
   for (const n of nodes) color.set(n, WHITE)
 
-  const stack: Ref<Issue>[] = []
-  let cycle: Ref<Issue>[] | null = null
+  const stack: Array<Ref<Issue>> = []
+  let cycle: Array<Ref<Issue>> | null = null
 
   function visit (n: Ref<Issue>): boolean {
     color.set(n, GREY)
@@ -224,7 +220,7 @@ export function simulateCascade (
   }
 
   const shifts = new Map<Ref<Issue>, CascadeShift>()
-  const queue: Ref<Issue>[] = primary.map((p) => p.issue._id)
+  const queue: Array<Ref<Issue>> = primary.map((p) => p.issue._id)
   const skippedRefs = new Set<Ref<Issue>>()
   const maxIter = options?.maxIterations ?? DEFAULT_MAX_ITERATIONS
 
@@ -301,9 +297,7 @@ export function simulateCascade (
         // side, so gap preservation isn't a clean concept there — pure
         // snap is the spec semantics.
         const snap = requiredAnchor
-        const newAnchor = r.kind === 'finish-to-start'
-          ? Math.max(snap, targetAnchor + curStartDelta)
-          : snap
+        const newAnchor = r.kind === 'finish-to-start' ? Math.max(snap, targetAnchor + curStartDelta) : snap
         const delta = newAnchor - targetAnchor
         const newStart = targetAnchorIsStart ? newAnchor : targetDates.start + delta
         const newDue = targetAnchorIsStart ? targetDates.due + delta : newAnchor
