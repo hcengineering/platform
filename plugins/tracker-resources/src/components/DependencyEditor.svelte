@@ -37,7 +37,7 @@
    */
   export let undoManager: import('./gantt/lib/undo-manager').UndoManager | undefined = undefined
 
-  const dispatch = createEventDispatcher<{ close: void }>()
+  const dispatch = createEventDispatcher<{ close: undefined }>()
   const client = getClient()
 
   let kindCodeValue: DiagramKindCode = kindCode(relation.kind)
@@ -125,7 +125,7 @@
     const ops = client.apply(undefined, 'gantt-dependency-edit')
     await ops.update(relation, after)
     const result = await ops.commit()
-    if (result.result !== false && undoManager !== undefined) {
+    if (result.result && undoManager !== undefined) {
       undoManager.push({
         kind: 'relation-edit',
         relationId: relation._id,
@@ -147,7 +147,7 @@
     const ops = client.apply(undefined, 'gantt-dependency-delete')
     await ops.remove(relation)
     const result = await ops.commit()
-    if (result.result !== false && undoManager !== undefined) {
+    if (result.result && undoManager !== undefined) {
       undoManager.push({
         kind: 'relation-delete',
         relation: snapshot,
@@ -226,13 +226,26 @@
     <div class="confirm">
       <Label label={tracker.string.DependencyDeleteConfirm} />
       <div class="confirm-buttons">
-        <Button kind="regular" label={view.string.Cancel} on:click={() => { confirmingDelete = false }} />
+        <Button
+          kind="regular"
+          label={view.string.Cancel}
+          on:click={() => {
+            confirmingDelete = false
+          }}
+        />
         <Button kind="dangerous" label={tracker.string.DependencyDelete} on:click={doDelete} />
       </div>
     </div>
   {:else}
     <div class="footer">
-      <Button kind="dangerous" label={tracker.string.DependencyDelete} disabled={!canEdit} on:click={() => { confirmingDelete = true }} />
+      <Button
+        kind="dangerous"
+        label={tracker.string.DependencyDelete}
+        disabled={!canEdit}
+        on:click={() => {
+          confirmingDelete = true
+        }}
+      />
       <span class="spacer" />
       <Button kind="regular" label={view.string.Cancel} on:click={cancel} />
       <Button kind="primary" label={view.string.Save} disabled={!canEdit || !dirty} on:click={save} />
@@ -344,5 +357,7 @@
     gap: 8px;
     margin-top: 4px;
   }
-  .footer .spacer { flex: 1; }
+  .footer .spacer {
+    flex: 1;
+  }
 </style>
