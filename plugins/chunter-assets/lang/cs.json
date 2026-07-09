@@ -132,6 +132,7 @@
     "ViewingArchivedChannel": "Prohlížíte archivovaný kanál",
     "OpenChatInSidebar": "Otevřít chat v postranním panelu",
     "NoThreadsYet": "Zatím nejsou žádné vlákna.",
-    "SummarizeMessages": "Shrnout diskuzi"
+    "SummarizeMessages": "Shrnout diskuzi",
+    "MentionGrantsAccessHint": "A mention here will grant that person access to this item. You will confirm exactly who before sending."
   }
 }

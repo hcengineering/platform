@@ -249,6 +249,16 @@
         "ShowQRCode": "QR 코드 표시",
         "EnterVerificationCode": "인증 코드 입력",
         "OverrideAttribute": "속성 재정의",
-        "Required": "필수"
+        "Required": "필수",
+        "AccessGroups": "Access groups",
+        "AccessGroupsHint": "Named groups of people. Grant a group access to an issue and every member gains access; future members inherit it automatically.",
+        "NewAccessGroup": "New group",
+        "AccessGroupName": "Group name",
+        "AccessGroupDescription": "Description",
+        "DeleteAccessGroup": "Delete group",
+        "AccessGroupInUse": "This group still grants access to issues. Remove those grants before deleting it.",
+        "NoAccessGroups": "No access groups yet.",
+        "GroupOwners": "Owners",
+        "GroupMembers": "Members"
     }
 }

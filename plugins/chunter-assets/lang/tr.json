@@ -133,6 +133,7 @@
     "OpenChatInSidebar": "Sohbeti kenar çubuğunda aç",
     "ResolveThread": "Çöz",
     "NoThreadsYet": "Henüz başlık yok.",
-    "SummarizeMessages": "Tartışmayı özetle"
+    "SummarizeMessages": "Tartışmayı özetle",
+    "MentionGrantsAccessHint": "A mention here will grant that person access to this item. You will confirm exactly who before sending."
   }
 }

@@ -133,6 +133,7 @@
     "OpenChatInSidebar": "Otwórz czat w panelu bocznym",
     "ResolveThread": "Rozwiąż dyskusję",
     "NoThreadsYet": "Nie ma jeszcze wątków.",
-    "SummarizeMessages": "Podsumuj dyskusję"
+    "SummarizeMessages": "Podsumuj dyskusję",
+    "MentionGrantsAccessHint": "A mention here will grant that person access to this item. You will confirm exactly who before sending."
   }
 }

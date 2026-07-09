@@ -133,6 +133,7 @@
     "OpenChatInSidebar": "サイドバーでチャットを開く",
     "ResolveThread": "解決",
     "NoThreadsYet": "まだスレッドはありません。",
-    "SummarizeMessages": "内容を要約"
+    "SummarizeMessages": "内容を要約",
+    "MentionGrantsAccessHint": "A mention here will grant that person access to this item. You will confirm exactly who before sending."
   }
 }
