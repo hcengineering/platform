@@ -202,7 +202,10 @@
     {/if}
   </svelte:fragment>
 
-  <svelte:fragment slot="extra" />
+  <svelte:fragment slot="extra">
+    <!-- Default extra slot is empty: ModeSelector is rendered by SpaceHeader
+         from `modeSelectorProps`; trailing icons go into extra-trailing. -->
+  </svelte:fragment>
 
   <svelte:fragment slot="label_selector">
     <slot name="label_selector" />
