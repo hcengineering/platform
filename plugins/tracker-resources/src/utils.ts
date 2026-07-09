@@ -277,8 +277,21 @@ export async function moveIssuesToAnotherMilestone (
   }
 }
 
-export async function canEditIssue (issue?: Issue | WithLookup<Issue>): Promise<boolean> {
-  const client = getClient()
+/**
+ * True when the current user may edit Issue fields (title, description,
+ * status, dates, labels, assignee, dependencies, etc).
+ *
+ * Guest-tier accounts are blocked unconditionally — even when listed as
+ * Collaborator on the issue. Their Collaborator status grants read +
+ * comment via {@link canCommentOnIssue}, but not field-edit. This matches
+ * the server-side veto in the GuestPermissions middleware so the UI
+ * doesnt show editors that would fail on submit.
+ *
+ * Project-member guests (e.g. a guest who is a member of their own
+ * project) are also blocked here; if you need to allow them to
+ * edit issues they own, promote them to AccountRole.User+.
+ */
+export async function canEditIssueFields (issue?: Issue | WithLookup<Issue>): Promise<boolean> {
   if (issue === undefined) return false
 
   const account = getCurrentAccount()
@@ -286,20 +299,49 @@ export async function canEditIssue (issue?: Issue | WithLookup<Issue>): Promise<
     account.role === AccountRole.Guest ||
     account.role === AccountRole.DocGuest ||
     account.role === AccountRole.ReadOnlyGuest
+  return !isGuest
+}
 
+/**
+ * True when the current user may post comments on the Issue.
+ *
+ * - User+ accounts always pass.
+ * - ReadOnlyGuest is always blocked.
+ * - Other guests pass if they are the Issues creator OR they are listed
+ *   as Collaborator on the issue (auto-added via @-mention by the
+ *   chunter trigger when mentionsGrantAccess is set on the class, or
+ *   added manually via the Collaborators editor in the panel).
+ */
+export async function canCommentOnIssue (issue?: Issue | WithLookup<Issue>): Promise<boolean> {
+  if (issue === undefined) return false
+
+  const account = getCurrentAccount()
+  if (account.role === AccountRole.ReadOnlyGuest) return false
+
+  const isGuest =
+    account.role === AccountRole.Guest ||
+    account.role === AccountRole.DocGuest
   if (!isGuest) return true
 
   const isCreator =
     issue.createdBy !== undefined && Array.isArray(account.socialIds) && account.socialIds.includes(issue.createdBy)
-
   if (isCreator) return true
 
+  const client = getClient()
   const collaborator = await client.findOne(core.class.Collaborator, {
     attachedTo: issue._id,
     collaborator: account.uuid
   })
   return collaborator !== undefined
 }
+
+/**
+ * Backwards-compat alias for callers that have not yet migrated to
+ * {@link canEditIssueFields}. New code should use the explicit split.
+ * Tag for removal in a follow-up sweep across tracker-resources.
+ */
+export const canEditIssue = canEditIssueFields
+
 
 export function getTimeReportDate (type: TimeReportDayType): number {
   const date = new Date(Date.now())
