@@ -81,7 +81,7 @@ describe('getWorkspaceMembersAdmin', () => {
       lastActivityAt: 1700000000000
     })
     expect(out.members[1]).toMatchObject({ accountUuid: 'acc-2', status: 'disabled' })
-    // L-FTS: gezielte $in-Query auf die Member-UUIDs statt Full-Table-Scan ({}).
+    // L-FTS: targeted $in query on the member UUIDs instead of a full-table scan ({}).
     expect(db.account.find).toHaveBeenCalledWith({ uuid: { $in: ['acc-1', 'acc-2'] } })
     expect(db.person.find).toHaveBeenCalledWith({ uuid: { $in: ['acc-1', 'acc-2'] } })
     expect(db.socialId.find).toHaveBeenCalledWith({ personUuid: { $in: ['acc-1', 'acc-2'] } })

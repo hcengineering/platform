@@ -128,8 +128,8 @@ export async function assertAdmin (ctx: MeasureContext, db: AccountDB, token: st
   await verifyTokenVersion(ctx, db, token)
   const { account, extra } = decodeTokenVerbose(ctx, token)
   if (extra?.admin !== 'true') {
-    // L-AUD: pre-auth Denial beobachtbar machen (kein Audit-Row, da kein
-    // vertrauenswuerdiger Actor; Security-Log ist die forensische Quelle).
+    // L-AUD: make pre-auth denials observable (no audit row, since there is no
+    // trusted actor yet; the security log is the forensic source).
     ctx.warn?.('admin RPC denied pre-auth', { caller: account, hasAdminClaim: extra?.admin != null })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
@@ -429,9 +429,9 @@ export async function getWorkspaceMembersAdmin (
 
   const members = await db.getWorkspaceMembers(params.workspaceUuid)
   const accountUuids = members.map((m: any) => m.person as AccountUuid)
-  // L-FTS: gezielte $in-Query auf die Member-UUIDs statt Full-Table-Scan.
-  // db.account/person/socialId.find({}) lud jeweils die komplette Tabelle ->
-  // Speicher-/DoS-Risiko bei grossen Deployments. Leere Member-Menge -> keine Query.
+  // L-FTS: targeted $in query on the member UUIDs instead of a full-table scan.
+  // db.account/person/socialId.find({}) used to load each entire table ->
+  // memory/DoS risk on large deployments. Empty member set -> no query at all.
   const personUuids = accountUuids as unknown as PersonUuid[]
   const accounts = accountUuids.length > 0 ? await db.account.find({ uuid: { $in: accountUuids } }) : []
   const accountByUuid = new Map(accounts.map((a: any) => [a.uuid, a]))

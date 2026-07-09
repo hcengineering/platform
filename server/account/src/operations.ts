@@ -3347,8 +3347,8 @@ async function requireAdmin (ctx: MeasureContext, db: AccountDB, token: string):
   await verifyTokenVersion(ctx, db, token)
   const { account, extra } = decodeTokenVerbose(ctx, token)
   if (extra?.admin !== 'true') {
-    // L-AUD: pre-auth Denial beobachtbar machen (kein Audit-Row, da kein
-    // vertrauenswuerdiger Actor; Security-Log ist die forensische Quelle).
+    // L-AUD: make pre-auth denials observable (no audit row, since there is no
+    // trusted actor yet; the security log is the forensic source).
     ctx.warn?.('admin RPC denied pre-auth', { caller: account, hasAdminClaim: extra?.admin != null })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }

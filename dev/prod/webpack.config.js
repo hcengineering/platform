@@ -492,10 +492,10 @@ module.exports = [
         logging: 'info',
         overlay: false,
         progress: false,
-        // Wenn der dev-server hinter einem Reverse-Proxy auf 443 läuft
-        // (z.B. dev.huly.uray.io → huly-dev-nginx → :8080), zeigt der
-        // Default-Client auf den internen 8080-Port → HMR-WebSocket bricht.
-        // HULY_DEV_PUBLIC_HOST=dev.huly.uray.io setzt die wss://-URL korrekt.
+        // When the dev server runs behind a reverse proxy terminating TLS on 443
+        // (e.g. dev.example.com -> nginx -> :8080), the default client points
+        // at the internal 8080 port and the HMR WebSocket breaks.
+        // Set HULY_DEV_PUBLIC_HOST=<public-host> to point the wss:// URL at the proxy.
         ...(process.env.HULY_DEV_PUBLIC_HOST != null
           ? {
               webSocketURL: {
