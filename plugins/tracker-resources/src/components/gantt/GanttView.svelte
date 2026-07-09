@@ -38,12 +38,12 @@
   import { computeCriticalPath } from './lib/critical-path'
   import type {
     CriticalPathResult, PrimaryEdit, SimulateResult, CascadeShift,
-    type DragState,
-    type DragTarget,
-    type LayoutRow,
-    type MilestoneMarker,
-    type SummaryRange,
-    type ZoomLevel
+    DragState,
+    DragTarget,
+    LayoutRow,
+    MilestoneMarker,
+    SummaryRange,
+    ZoomLevel
   } from './lib/types'
   import { exportGanttDataToPdf, exportGanttDataToPng } from './lib/exporter'
   import GanttHelpPopup from './GanttHelpPopup.svelte'
