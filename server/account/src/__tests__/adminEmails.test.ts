@@ -9,7 +9,7 @@
 //
 // Coverage for admin.ts hardening: both env-set (parseAdminEmails) AND
 // lookup (isAdminEmail) must trim+lowercase. Today ADMIN_EMAILS is clean,
-// but a future env value like " Michael@Uray.io " would silently break
+// but a future env value like " Admin@Example.com " would silently break
 // admin detection without normalization on the env-side. Mongo backend
 // already has this hardening (collections/mongo.ts:1141-1147); this test
 // covers the equivalent for the shared helper.
@@ -50,18 +50,18 @@ describe('admin.ts — env parsing + lookup normalization', () => {
   })
 
   test('1. whitespace tolerance — env entry with leading/trailing spaces', () => {
-    const { isAdminEmail } = loadAdmin(' Michael@Uray.io ')
-    expect(isAdminEmail('michael@uray.io')).toBe(true)
+    const { isAdminEmail } = loadAdmin(' Admin@Example.com ')
+    expect(isAdminEmail('admin@example.com')).toBe(true)
   })
 
   test('2. case-insensitive env — uppercase env entry matches lowercase lookup', () => {
-    const { isAdminEmail } = loadAdmin('MICHAEL@URAY.IO')
-    expect(isAdminEmail('michael@uray.io')).toBe(true)
+    const { isAdminEmail } = loadAdmin('ADMIN@EXAMPLE.COM')
+    expect(isAdminEmail('admin@example.com')).toBe(true)
   })
 
   test('3. case-insensitive lookup — lowercase env matches uppercase lookup input', () => {
-    const { isAdminEmail } = loadAdmin('michael@uray.io')
-    expect(isAdminEmail('MICHAEL@URAY.IO')).toBe(true)
+    const { isAdminEmail } = loadAdmin('admin@example.com')
+    expect(isAdminEmail('ADMIN@EXAMPLE.COM')).toBe(true)
   })
 
   test('4. L-AUTH-3: no-@ entries are DROPPED by default (fail-closed) + warn', () => {
@@ -129,13 +129,13 @@ describe('admin.ts — env parsing + lookup normalization', () => {
 
   test('5. empty env string — empty set, all lookups return false', () => {
     const { isAdminEmail } = loadAdmin('')
-    expect(isAdminEmail('michael@uray.io')).toBe(false)
+    expect(isAdminEmail('admin@example.com')).toBe(false)
     expect(isAdminEmail('')).toBe(false)
   })
 
   test('6. unset env — empty set, all lookups return false', () => {
     const { isAdminEmail } = loadAdmin(undefined)
-    expect(isAdminEmail('michael@uray.io')).toBe(false)
+    expect(isAdminEmail('admin@example.com')).toBe(false)
   })
 
   test('7. multiple entries with mixed whitespace + case all normalized', () => {
