@@ -105,7 +105,9 @@
       <g
         class="row-hit"
         on:mouseenter={(e) => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })}
-        on:mousemove={(e) => { hoverThrottle.call(() => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY })) }}
+        on:mousemove={(e) => {
+          hoverThrottle.call(() => dispatch('hoverRow', { id: row.id, row, mouseX: e.clientX, mouseY: e.clientY }))
+        }}
         on:mouseleave={() => dispatch('hoverRow', { id: null })}
       >
         <!-- transparent hit-area covering the row width to capture hover -->
