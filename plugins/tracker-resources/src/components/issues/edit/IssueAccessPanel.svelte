@@ -371,7 +371,12 @@
         <div class="grant-person">
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div class="group-head clickable" on:click={() => { toggleGroup(grant._id) }}>
+          <div
+            class="group-head clickable"
+            on:click={() => {
+              toggleGroup(grant._id)
+            }}
+          >
             <span class="overflow-label group-name">{group?.name ?? grant.group}</span>
             <span class="count">
               <Label label={tracker.string.GroupMembersCount} params={{ count: group?.members?.length ?? 0 }} />

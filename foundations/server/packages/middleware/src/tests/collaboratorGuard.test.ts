@@ -106,9 +106,9 @@ function makeMw (
   const next = nextFn !== undefined ? { tx: nextFn } : { tx: async (_c: MeasureContext, _t: Tx[]) => ({}) }
   const mw = new (CollaboratorGuardMiddleware as any)(context, next)
   mw.findAll = findAll
-  ;(mw).context.hierarchy.isDerived = (a: any, b: any) => a === b
-  ;(mw).context.hierarchy.getAncestors = (id: any) => [id]
-  ;(mw).context.modelDb = {
+  mw.context.hierarchy.isDerived = (a: any, b: any) => a === b
+  mw.context.hierarchy.getAncestors = (id: any) => [id]
+  mw.context.modelDb = {
     findAllSync: (_class: any, _q: any) => [{ attachedTo: SECURED_CLASS, provideSecurity: true }]
   }
   return mw
@@ -204,7 +204,7 @@ function makeGroupUpdateTx (account: Account, grantId: Ref<GroupGrant>, operatio
 
 function groupGrantRecord (over: Partial<GroupGrant>): GroupGrant {
   return {
-    _id: (over._id ?? generateId()),
+    _id: over._id ?? generateId(),
     _class: core.class.GroupGrant,
     space: ISSUE_SPACE,
     attachedTo: ISSUE_ID,
@@ -237,7 +237,7 @@ function makeAccessGroupRemoveTx (account: Account, id: Ref<AccessGroup>): Tx {
 
 function accessGroupRecord (over: Partial<AccessGroup>): AccessGroup {
   return {
-    _id: (over._id ?? GROUP_ID),
+    _id: over._id ?? GROUP_ID,
     _class: core.class.AccessGroup,
     space: ISSUE_SPACE,
     modifiedOn: Date.now(),
@@ -251,7 +251,7 @@ function accessGroupRecord (over: Partial<AccessGroup>): AccessGroup {
 
 function collabRecord (over: Partial<Collaborator>): Collaborator {
   return {
-    _id: (over._id ?? generateId()),
+    _id: over._id ?? generateId(),
     _class: core.class.Collaborator,
     space: ISSUE_SPACE,
     attachedTo: ISSUE_ID,

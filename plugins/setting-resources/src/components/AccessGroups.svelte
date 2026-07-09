@@ -126,7 +126,12 @@
           <div class="group-row">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
             <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <div class="group-name clickable" on:click={() => { toggle(group._id) }}>
+            <div
+              class="group-name clickable"
+              on:click={() => {
+                toggle(group._id)
+              }}
+            >
               <EditBox
                 bind:value={group.name}
                 placeholder={setting.string.AccessGroupName}

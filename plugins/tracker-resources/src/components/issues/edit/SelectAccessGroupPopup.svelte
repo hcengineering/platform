@@ -47,7 +47,12 @@
     {#each groups as group (group._id)}
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div class="row" on:click={() => { select(group) }}>
+      <div
+        class="row"
+        on:click={() => {
+          select(group)
+        }}
+      >
         <span class="overflow-label name">{group.name}</span>
         <span class="count">
           <Label label={tracker.string.GroupMembersCount} params={{ count: group.members?.length ?? 0 }} />
