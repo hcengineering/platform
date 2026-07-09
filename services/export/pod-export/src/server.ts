@@ -269,7 +269,13 @@ export function createServer (
   app.post(
     '/exportAsync',
     wrapRequest(async (req, res, wsIds, token, socialId) => {
-      const format = req.query.format as ExportFormat
+      const rawFormat = req.query.format
+      const formatValue = typeof rawFormat === 'string' ? rawFormat : undefined
+      const allowedFormats = Object.values(ExportFormat) as string[]
+      if (formatValue == null || !allowedFormats.includes(formatValue)) {
+        throw new ApiError(400, 'Invalid format')
+      }
+      const format = formatValue as ExportFormat
 
       const {
         _class,
@@ -281,7 +287,7 @@ export function createServer (
         attributesOnly: boolean
       } = req.body
 
-      if (_class == null || format == null) {
+      if (_class == null) {
         throw new ApiError(400, 'Missing required parameters')
       }
 
