@@ -66,6 +66,55 @@ export const withAuthorization = (req: RequestWithAuth, res: Response, next: Nex
   }
 }
 
+/**
+ * Attaches the token when present. In secure mode a valid token is required.
+ */
+export const withOptionalAuth = (secure: boolean): RequestHandler => {
+  return secure
+    ? withAuthorization
+    : (req: RequestWithAuth, res: Response, next: NextFunction) => {
+        req.token = extractToken(req.headers)
+        next()
+      }
+}
+
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+const isUuid = (value: string): boolean => uuidRegex.test(value)
+
+/**
+ * Validates blob route params and ensures the caller's token grants access to
+ * the workspace taken from the URL. Mirrors the Datalake `withBlob` middleware.
+ */
+export const withBlob = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
+  try {
+    const workspace = req.params.workspace
+    const name = req.params.name
+
+    if (workspace === undefined || workspace === '' || !isUuid(workspace)) {
+      throw new HttpError(400, 'Missing workspace')
+    }
+    if (name === undefined || name === '') {
+      throw new HttpError(400, 'Missing blob name')
+    }
+
+    // If authorization is not enforced allow any workspace
+    if (req.token != null) {
+      const hasWorkspaceAccess =
+        (req.token.workspace as string) === workspace ||
+        req.token.account === systemAccountUuid ||
+        req.token.extra?.admin === 'true'
+      if (!hasWorkspaceAccess) {
+        throw new HttpError(401, 'Unauthorized')
+      }
+    }
+
+    next()
+  } catch (err: any) {
+    next(err)
+  }
+}
+
 export interface ErrorHandlerOptions {
   ctx: MeasureContext
 }

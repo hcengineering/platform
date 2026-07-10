@@ -27,6 +27,7 @@ export interface Config {
   Port: number
   Secret: string
   ServiceID: string
+  Secure: boolean
   Cache: CacheConfig
 }
 
@@ -35,6 +36,7 @@ const config: Config = (() => {
     Port: parseInt(process.env.PORT ?? '4040'),
     Secret: process.env.SECRET,
     ServiceID: process.env.SERVICE_ID ?? 'preview',
+    Secure: process.env.SECURE === 'true',
     Cache: {
       enabled: process.env.CACHE_ENABLED !== 'false',
       cachePath: process.env.CACHE_PATH,
