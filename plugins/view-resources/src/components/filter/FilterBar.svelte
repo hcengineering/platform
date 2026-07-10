@@ -133,6 +133,7 @@
     visible &&
     hasFilters &&
     !hideSaveButtons &&
+    canSaveFilteredView &&
     (hideChips || selectedFilterChanged($selectedFilterStore, $filterStore, $activeViewlet, $viewOptionStore))
   $: showChipRow = visible && hasFilters && !hideChips
 </script>
