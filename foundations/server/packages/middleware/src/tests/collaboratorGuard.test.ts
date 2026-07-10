@@ -357,7 +357,12 @@ describe('CollaboratorGuardMiddleware', () => {
   it('rejects admin-level self-mint by a plain space member (H-NEW-01)', async () => {
     const actor = makeAccount(AccountRole.User)
     const mw = makeMw(serve({ space: makeSpace([actor.uuid]) }))
-    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'admin' })
+    const tx = makeCreateTx(actor, {
+      collaborator: uuid(),
+      grantedVia: 'manual',
+      grantedBy: actor.uuid,
+      level: 'admin'
+    })
     await expect(mw.tx(makeCtx(actor), [tx])).rejects.toThrow()
   })
 
@@ -368,7 +373,12 @@ describe('CollaboratorGuardMiddleware', () => {
       nextCalled = true
       return {}
     })
-    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'admin' })
+    const tx = makeCreateTx(actor, {
+      collaborator: uuid(),
+      grantedVia: 'manual',
+      grantedBy: actor.uuid,
+      level: 'admin'
+    })
     await mw.tx(makeCtx(actor), [tx])
     expect(nextCalled).toBe(true)
   })
@@ -381,7 +391,12 @@ describe('CollaboratorGuardMiddleware', () => {
       nextCalled = true
       return {}
     })
-    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'admin' })
+    const tx = makeCreateTx(actor, {
+      collaborator: uuid(),
+      grantedVia: 'manual',
+      grantedBy: actor.uuid,
+      level: 'admin'
+    })
     await mw.tx(makeCtx(actor), [tx])
     expect(nextCalled).toBe(true)
   })
