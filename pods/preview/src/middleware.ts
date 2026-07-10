@@ -93,9 +93,7 @@ export const withBlob = (req: RequestWithAuth, res: Response, next: NextFunction
     }
 
     const hasWorkspaceAccess =
-      (token.workspace as string) === workspace ||
-      token.account === systemAccountUuid ||
-      token.extra?.admin === 'true'
+      (token.workspace as string) === workspace || token.account === systemAccountUuid || token.extra?.admin === 'true'
     if (!hasWorkspaceAccess) {
       throw new HttpError(401, 'Unauthorized')
     }
