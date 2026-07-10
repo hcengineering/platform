@@ -19,7 +19,7 @@ import { type Token } from '@hcengineering/server-token'
 import { type NextFunction, type Response } from 'express'
 
 import { HttpError } from '../error'
-import { type RequestWithAuth, withBlob, withOptionalAuth } from '../middleware'
+import { type RequestWithAuth, withAuthorization, withBlob } from '../middleware'
 
 jest.mock('@hcengineering/server-client', () => ({
   extractToken: jest.fn()
@@ -42,51 +42,40 @@ function makeRequest (workspace: string, name: string, token?: Token): RequestWi
 
 const res = {} as unknown as Response
 
-describe('withOptionalAuth', () => {
+describe('withAuthorization', () => {
   beforeEach(() => {
     extractTokenMock.mockReset()
   })
 
-  it('rejects requests without a token in secure mode', () => {
+  it('rejects requests without a token', () => {
     extractTokenMock.mockReturnValue(undefined)
     const next = jest.fn() as unknown as NextFunction
 
-    withOptionalAuth(true)(makeRequest(workspaceA, 'blob'), res, next)
+    withAuthorization(makeRequest(workspaceA, 'blob'), res, next)
 
     expect(next).toHaveBeenCalledWith(expect.objectContaining({ code: 401 }))
   })
 
-  it('rejects guest and readonly tokens in secure mode', () => {
+  it('rejects guest and readonly tokens', () => {
     for (const extra of [{ guest: 'true' }, { readonly: 'true' }]) {
       extractTokenMock.mockReturnValue(makeToken({ extra }))
       const next = jest.fn() as unknown as NextFunction
 
-      withOptionalAuth(true)(makeRequest(workspaceA, 'blob'), res, next)
+      withAuthorization(makeRequest(workspaceA, 'blob'), res, next)
 
       expect(next).toHaveBeenCalledWith(expect.objectContaining({ code: 401 }))
     }
   })
 
-  it('attaches the token in secure mode', () => {
+  it('attaches a valid token to the request', () => {
     const token = makeToken({})
     extractTokenMock.mockReturnValue(token)
     const req = makeRequest(workspaceA, 'blob')
     const next = jest.fn() as unknown as NextFunction
 
-    withOptionalAuth(true)(req, res, next)
+    withAuthorization(req, res, next)
 
     expect(req.token).toBe(token)
-    expect(next).toHaveBeenCalledWith()
-  })
-
-  it('attaches the token in insecure mode without requiring it', () => {
-    extractTokenMock.mockReturnValue(undefined)
-    const req = makeRequest(workspaceA, 'blob')
-    const next = jest.fn() as unknown as NextFunction
-
-    withOptionalAuth(false)(req, res, next)
-
-    expect(req.token).toBeUndefined()
     expect(next).toHaveBeenCalledWith()
   })
 })
@@ -134,11 +123,11 @@ describe('withBlob', () => {
     }
   })
 
-  it('allows any workspace when no token is attached', () => {
+  it('rejects requests with no token attached', () => {
     const next = jest.fn() as unknown as NextFunction
 
-    withBlob(makeRequest(workspaceB, 'blob'), res, next)
+    withBlob(makeRequest(workspaceA, 'blob'), res, next)
 
-    expect(next).toHaveBeenCalledWith()
+    expect(next).toHaveBeenCalledWith(expect.objectContaining({ code: 401 }))
   })
 })

@@ -29,7 +29,7 @@ import { pipeline } from 'stream/promises'
 
 import { createCache } from './cache'
 import { type Config } from './config'
-import { type RequestWithAuth, errorHandler, keepAlive, withBlob, withOptionalAuth } from './middleware'
+import { type RequestWithAuth, errorHandler, keepAlive, withAuthorization, withBlob } from './middleware'
 import { createPreviewService, ThumbnailParams } from './service'
 import { TemporaryDir } from './tempdir'
 
@@ -174,7 +174,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
 
   app.get(
     '/metadata/:workspace/:name',
-    withOptionalAuth(config.Secure),
+    withAuthorization,
     withBlob,
     wrapRequest(ctx, 'getMetadata', async (ctx, req, res) => {
       const workspace = req.params.workspace as WorkspaceUuid
@@ -187,7 +187,7 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
 
   app.get(
     '/image/:transform/:workspace/:name',
-    withOptionalAuth(config.Secure),
+    withAuthorization,
     withBlob,
     wrapRequest(ctx, 'getThumbnail', async (ctx, req, res) => {
       const workspace = req.params.workspace as WorkspaceUuid
