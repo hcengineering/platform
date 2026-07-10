@@ -192,6 +192,15 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
     if (targetSpace === undefined) throw forbidden()
     const authorized = await this.canGrant(ctx, targetSpace, attachedTo, account)
     if (!authorized) throw forbidden()
+
+    // H-NEW-01: cap the granted level against the granter's own authority. A plain
+    // member (authorized above via the ≥User member path of canGrant) must NOT be able
+    // to self-mint an 'admin' grant — that would make hasAdminGrant() true and unlock
+    // canGrantGroup() and foreign-revoke, powers reserved for owners / maintainers /
+    // admin-grantees. Only an already-privileged caller may grant 'admin'.
+    if (attrs.level === 'admin' && !(await this.canGrantAdminLevel(ctx, targetSpace, attachedTo, account))) {
+      throw forbidden()
+    }
   }
 
   private async checkRemove (ctx: MeasureContext<SessionData>, record: Collaborator, account: Account): Promise<void> {
@@ -352,6 +361,27 @@ export class CollaboratorGuardMiddleware extends BaseMiddleware implements Middl
     if (spaceDoc.owners?.includes(account.uuid) === true) return true
     if (hasAccountRole(account, AccountRole.User) && spaceDoc.members?.includes(account.uuid)) return true
 
+    return await this.hasAdminGrant(ctx, attachedTo, account)
+  }
+
+  /**
+   * H-NEW-01: authority to grant an 'admin'-level Collaborator. This is canGrant()
+   * WITHOUT the plain ≥User member path: an admin grant confers authority
+   * (hasAdminGrant → canGrantGroup + foreign-revoke), so it must only be mintable by a
+   * caller who already holds admin-equivalent authority (maintainer / space owner /
+   * pre-existing admin-grantee). The new record is not yet persisted, so hasAdminGrant()
+   * below reflects only pre-existing grants — no self-reference.
+   */
+  private async canGrantAdminLevel (
+    ctx: MeasureContext<SessionData>,
+    space: Ref<Space>,
+    attachedTo: Ref<Doc> | undefined,
+    account: Account
+  ): Promise<boolean> {
+    if (hasAccountRole(account, AccountRole.Maintainer)) return true
+    const spaceDoc = await this.loadSpace(ctx, space)
+    if (spaceDoc === undefined) return false
+    if (spaceDoc.owners?.includes(account.uuid) === true) return true
     return await this.hasAdminGrant(ctx, attachedTo, account)
   }
 

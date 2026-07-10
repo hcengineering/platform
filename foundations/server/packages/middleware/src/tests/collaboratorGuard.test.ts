@@ -354,6 +354,38 @@ describe('CollaboratorGuardMiddleware', () => {
     await expect(mw.tx(makeCtx(actor), [tx])).rejects.toThrow()
   })
 
+  it('rejects admin-level self-mint by a plain space member (H-NEW-01)', async () => {
+    const actor = makeAccount(AccountRole.User)
+    const mw = makeMw(serve({ space: makeSpace([actor.uuid]) }))
+    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'admin' })
+    await expect(mw.tx(makeCtx(actor), [tx])).rejects.toThrow()
+  })
+
+  it('allows admin-level grant by a space owner', async () => {
+    const actor = makeAccount(AccountRole.User)
+    let nextCalled = false
+    const mw = makeMw(serve({ space: makeSpace([actor.uuid], [actor.uuid]) }), async () => {
+      nextCalled = true
+      return {}
+    })
+    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'admin' })
+    await mw.tx(makeCtx(actor), [tx])
+    expect(nextCalled).toBe(true)
+  })
+
+  it('allows admin-level grant by a pre-existing admin-grantee', async () => {
+    const actor = makeAccount(AccountRole.User)
+    let nextCalled = false
+    const adminGrant = collabRecord({ collaborator: actor.uuid, grantedVia: 'manual', level: 'admin' })
+    const mw = makeMw(serve({ space: makeSpace([]), collaborators: [adminGrant] }), async () => {
+      nextCalled = true
+      return {}
+    })
+    const tx = makeCreateTx(actor, { collaborator: uuid(), grantedVia: 'manual', grantedBy: actor.uuid, level: 'admin' })
+    await mw.tx(makeCtx(actor), [tx])
+    expect(nextCalled).toBe(true)
+  })
+
   it('allows workspace Maintainer to grant even without space membership', async () => {
     const actor = makeAccount(AccountRole.Maintainer)
     let nextCalled = false
