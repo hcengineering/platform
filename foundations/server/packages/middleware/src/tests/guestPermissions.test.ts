@@ -624,6 +624,27 @@ describe('GuestPermissionsMiddleware', () => {
       expect(forbidden).toBe(true)
     })
 
+    // ─── C-02: the veto must actually fire in the tx() pipeline for role >= User,
+    //     not only when the private method is called directly (the P2.3 tests above
+    //     bypassed tx() and so missed the >= User early-return that skipped the veto). ──
+    it('C-02: collab-only User with READ grant is blocked at tx() (pipeline-level)', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]), [grant('read')])
+      await expect(mw.tx(makeCtx(user), [updateTx()])).rejects.toThrow()
+    })
+
+    it('C-02: collab-only User with WRITE grant passes tx()', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]), [grant('write')])
+      await expect(mw.tx(makeCtx(user), [updateTx()])).resolves.toBeDefined()
+    })
+
+    it('C-02: space member passes tx() field update (a member is never vetoed)', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([user.uuid]), [grant('read')])
+      await expect(mw.tx(makeCtx(user), [updateTx()])).resolves.toBeDefined()
+    })
+
     it('P2.3: collab-only Guest with READ grant still cannot update (regression)', async () => {
       const guest = makeAccount(AccountRole.Guest)
       const mw = makeCollabMw(makeSpace([]), [grant('read')])

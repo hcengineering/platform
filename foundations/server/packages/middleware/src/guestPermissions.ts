@@ -124,6 +124,15 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
 
   async tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     const account = ctx.contextData.account
+
+    // C-02: the collab-only field-update / remove veto is level-aware and role-agnostic
+    // by construction — it passes space members and Maintainer+, and only vetoes a
+    // non-member who reaches the doc through a read-level grant on a PRIVATE space. It
+    // MUST run for every account, not just guests: it previously lived inside processTx,
+    // which the >= User early-return below skips, so the grant level went unenforced for
+    // regular users (a read-grant holder could edit fields).
+    await this.checkCollabOnlyGrantVeto(ctx, txes, account)
+
     if (hasAccountRole(account, AccountRole.User)) {
       this.invalidateCacheIfNeeded(txes)
       return await this.provideTx(ctx, txes)
@@ -160,7 +169,39 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
       } else if (cudTx.space !== core.space.DerivedTx && (await this.isForbiddenTx(ctx, cudTx, account))) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
-      if (await this.isForbiddenCollabOnlyGuestFieldUpdate(ctx, cudTx, account)) {
+      // C-02: the collab-only field-update / remove veto moved to checkCollabOnlyGrantVeto,
+      // which runs for ALL roles at the top of tx(); it no longer lives in this guest-only
+      // path (the >= User early-return used to skip it).
+    }
+  }
+
+  /**
+   * C-02: run the collab-only field-update / remove veto for EVERY account, not just the
+   * guest path. Recurses into TxApplyIf so a grant cannot be smuggled inside a batch.
+   */
+  private async checkCollabOnlyGrantVeto (
+    ctx: MeasureContext<SessionData>,
+    txes: Tx[],
+    account: Account
+  ): Promise<void> {
+    for (const tx of txes) {
+      await this.checkCollabOnlyGrantVetoForTx(ctx, tx, account)
+    }
+  }
+
+  private async checkCollabOnlyGrantVetoForTx (
+    ctx: MeasureContext<SessionData>,
+    tx: Tx,
+    account: Account
+  ): Promise<void> {
+    if (tx._class === core.class.TxApplyIf) {
+      for (const t of (tx as TxApplyIf).txes) {
+        await this.checkCollabOnlyGrantVetoForTx(ctx, t, account)
+      }
+      return
+    }
+    if (TxProcessor.isExtendsCUD(tx._class)) {
+      if (await this.isForbiddenCollabOnlyGuestFieldUpdate(ctx, tx as TxCUD<Doc>, account)) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
     }
