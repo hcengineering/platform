@@ -165,7 +165,7 @@
       .map(({ objectId }) => objectId as Ref<Person>)
     if (mentionedPersonIds.length === 0) return new Map()
 
-    const grantTarget = await resolveMentionGrantTarget(object, (cls, q) => client.findAll(cls, q))
+    const grantTarget = await resolveMentionGrantTarget(object, (cls, q, o) => client.findAll(cls, q, o))
     if (grantTarget == null) return new Map()
 
     const space = (await client.findAll<Space>(core.class.Space, { _id: grantTarget.space }))[0]

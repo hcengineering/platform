@@ -13,7 +13,17 @@
 // limitations under the License.
 //
 
-import core, { AttachedDoc, Class, ClassCollaborators, Doc, DocumentQuery, Hierarchy, ModelDb, Ref } from '.'
+import core, {
+  AttachedDoc,
+  Class,
+  ClassCollaborators,
+  Doc,
+  DocumentQuery,
+  FindOptions,
+  Hierarchy,
+  ModelDb,
+  Ref
+} from '.'
 
 export function getClassCollaborators<T extends Doc> (
   model: ModelDb,
@@ -45,8 +55,8 @@ export function getClassCollaborators<T extends Doc> (
  * Used by both the chunter mention-trigger (server) and the warning popup
  * (client) so the disclosure UX matches the actual server-side grant. The
  * helper is isomorphic via the findAll dependency injection — server passes
- * `(cls, q) => control.findAll(control.ctx, cls, q)`, client passes
- * `(cls, q) => getClient().findAll(cls, q)`.
+ * `(cls, q, o) => control.findAll(control.ctx, cls, q, o)`, client passes
+ * `(cls, q, o) => getClient().findAll(cls, q, o)`.
  *
  * The ClassCollaborators lookup is exact-class (not inherited via ancestors)
  * — adequate for tracker.class.Issue and avoids surprising matches on
@@ -60,14 +70,14 @@ export function getClassCollaborators<T extends Doc> (
  */
 export async function resolveMentionGrantTarget (
   start: Doc,
-  findAll: <T extends Doc>(cls: Ref<Class<T>>, q: DocumentQuery<T>) => Promise<T[]>
+  findAll: <T extends Doc>(cls: Ref<Class<T>>, q: DocumentQuery<T>, options?: FindOptions<T>) => Promise<T[]>
 ): Promise<Doc | null> {
   let cur: Doc | undefined = start
   for (let i = 0; i < 8 && cur != null; i++) {
     const ccQuery: DocumentQuery<ClassCollaborators<Doc>> = {
       attachedTo: cur._class
     }
-    const cc = (await findAll(core.class.ClassCollaborators, ccQuery))[0]
+    const cc = (await findAll(core.class.ClassCollaborators, ccQuery, { limit: 1 }))[0]
     if (cc?.provideSecurity === true && cc.mentionsGrantAccess === true) {
       return cur
     }
@@ -78,7 +88,7 @@ export async function resolveMentionGrantTarget (
     const parentQuery: DocumentQuery<Doc> = {
       _id: attached.attachedTo
     }
-    const parent = (await findAll(attached.attachedToClass, parentQuery))[0]
+    const parent = (await findAll(attached.attachedToClass, parentQuery, { limit: 1 }))[0]
     cur = parent
   }
   return null
