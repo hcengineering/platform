@@ -5,7 +5,8 @@ import { jsonToMarkup, MarkupNodeType } from '@hcengineering/text-core'
 // these top-level ESM imports see the mocked module). Avoid `require()` so
 // the file passes `tsc --noEmit` (the package's tsconfig only ships @types/jest).
 import { ChunterTrigger } from '../index'
-import coreDefault from '@hcengineering/core'
+import coreDefault, { resolveMentionGrantTarget } from '@hcengineering/core'
+import { getDocCollaborators } from '@hcengineering/server-notification-resources'
 
 // ------------------------------------------------------------------
 // jest.mock for @hcengineering/core
@@ -44,6 +45,42 @@ jest.mock('@hcengineering/server-contact', () => ({
   getPerson: jest.fn(async () => undefined)
 }))
 
+// ------------------------------------------------------------------
+// jest.mock for @hcengineering/server-notification-resources (F3 infra).
+//
+// Needed by the in-flight-dedup tests (B/C) which drive the seed path
+// (currentCollaborators empty). getAddCollaboratTxes is implemented to
+// attach Collaborator records to TARGET._id ('issue-1') — this SIMULATES a
+// future world where the seed lands on the Issue itself (today it attaches
+// to the message via tx.objectId). The real class ids are pulled from the
+// actual core module so the emitted txes match coreDefault.class.* used by
+// the assertions. Existing tests never hit the seed branch (their
+// Collaborator findAll is non-empty), so these mocks are inert for them.
+// ------------------------------------------------------------------
+jest.mock('@hcengineering/server-notification-resources', () => {
+  const actualCore = jest.requireActual('@hcengineering/core')
+  const txCreateDocId = actualCore.default.class.TxCreateDoc
+  const collaboratorId = actualCore.default.class.Collaborator
+  return {
+    getDocCollaborators: jest.fn(async () => [] as string[]),
+    createCollaboratorNotifications: jest.fn(async () => []),
+    getAddCollaboratTxes: jest.fn(
+      (_objectId: any, _objectClass: any, _objectSpace: any, _control: any, collaborators: string[]) =>
+        collaborators.map((c) => ({
+          _class: txCreateDocId,
+          objectClass: collaboratorId,
+          objectSpace: 'space-1',
+          attributes: {
+            attachedTo: 'issue-1',
+            attachedToClass: 'tracker:class:Issue',
+            collaborator: c,
+            collection: 'collaborators'
+          }
+        }))
+    )
+  }
+})
+
 function makeMarkup (...refs: Array<{ id: string, grantsAccess?: 'true' | 'false' }>): string {
   return jsonToMarkup({
     type: MarkupNodeType.doc,
@@ -61,7 +98,7 @@ function makeMarkup (...refs: Array<{ id: string, grantsAccess?: 'true' | 'false
 
 const TARGET = { _id: 'issue-1', _class: 'tracker:class:Issue', space: 'space-1' }
 
-function makeControl (): any {
+function makeControl (opts: { collab?: (query: any) => any[] } = {}): any {
   return {
     hierarchy: {
       // ChunterTrigger dispatches on isDerived(tx.objectClass, ChatMessage)
@@ -82,9 +119,11 @@ function makeControl (): any {
     },
     findAll: jest.fn(async (_ctx: any, _class: string, query: any) => {
       if (_class === coreDefault.class.Collaborator) {
-        // NON-EMPTY -> skip the legacy init branch (index.ts:204) and provide
-        // the grant-target dedup basis (existing-acc already a collaborator).
-        return [{ collaborator: 'existing-acc' }]
+        // NON-EMPTY (default) -> skip the legacy init branch (index.ts:204) and
+        // provide the grant-target dedup basis (existing-acc already a collab).
+        // Tests that need the seed path (empty issue) pass an `opts.collab`
+        // override, query-aware on `query.attachedTo`.
+        return opts.collab != null ? opts.collab(query) : [{ collaborator: 'existing-acc' }]
       }
       if (_class === coreDefault.class.ClassCollaborators) {
         return [{ provideSecurity: true }]
@@ -239,5 +278,68 @@ describe('ChunterTrigger mention grants — V3d add-only re-grant on edit', () =
     const res: Tx[] = await ChunterTrigger([tx], control)
 
     expect(collaboratorGrants(res)).toHaveLength(0)
+  })
+})
+
+describe('ChunterTrigger mention grants — in-flight & self-mention dedup', () => {
+  test('Test A: self-mention yields exactly ONE Collaborator tx for the author', async () => {
+    // real duplicate on today's code: the author @-mentions themselves, so the
+    // author's uuid appears TWICE in collaboratorsFromMessage — once as the
+    // resolved Employee (id 'author' -> personUuid 'author-acc') and once as the
+    // `account` (getAccountBySocialId -> 'author-acc'). Before the in-loop dedup
+    // fix the grant branch pushes TWO identical TxCreateDoc<Collaborator>.
+    const control = makeControl()
+    const tx = makeCreateTx(makeMarkup({ id: 'author' }))
+
+    const res: Tx[] = await ChunterTrigger([tx], control)
+
+    const authorGrants = collaboratorGrants(res).filter((c) => c === 'author-acc')
+    expect(authorGrants).toHaveLength(1) // before fix: 2
+  })
+
+  test('Test B: in-flight seed tx dedups the grant on the same target (future-fixed seed path)', async () => {
+    // FUTURE regression guard — this simulates a world where the seed lands on
+    // the Issue itself (getAddCollaboratTxes mock attaches to TARGET._id). It
+    // does NOT reflect today's runtime (today the seed attaches to the message).
+    // Empty issue + mention of an auto-collaborator: the seed creates a
+    // Collaborator(p5-acc, attachedTo issue-1) AND the grant loop would create a
+    // second Collaborator(p5-acc, attachedTo issue-1). The fix folds the
+    // in-flight seed tx into the dedup basis -> exactly one record survives.
+    ;(getDocCollaborators as jest.Mock).mockResolvedValueOnce(['p5-acc'])
+    // query-aware: empty for issue-1 (trigger seed + empty grant basis).
+    const control = makeControl({ collab: () => [] })
+    const tx = makeCreateTx(makeMarkup({ id: 'p5' }))
+
+    const res: Tx[] = await ChunterTrigger([tx], control)
+
+    const p5Records = collaboratorGrants(res).filter((c) => c === 'p5-acc')
+    expect(p5Records).toHaveLength(1) // before fix: 2 (seed + grant)
+  })
+
+  test('Test C: seed tx on the child target does NOT dedup the grant on the ancestor', async () => {
+    // Thread delimitation — protects against the naive fix (dedup against ALL
+    // in-flight collaborator txes regardless of attachedTo). resolveMentionGrantTarget
+    // returns an ANCESTOR (epic-1) != targetDoc (issue-1). The seed attaches
+    // Collaborator(p9-acc) to the child issue-1; the grant must still be written
+    // for p9-acc on the ancestor epic-1 because the dedup basis is SCOPED to
+    // grantTarget._id.
+    const ANCESTOR = { _id: 'epic-1', _class: 'tracker:class:Issue', space: 'space-1' }
+    ;(resolveMentionGrantTarget as jest.Mock).mockImplementationOnce(async () => ANCESTOR)
+    ;(getDocCollaborators as jest.Mock).mockResolvedValueOnce(['p9-acc'])
+    const control = makeControl({ collab: () => [] })
+    const tx = makeCreateTx(makeMarkup({ id: 'p9' }))
+
+    const res: Tx[] = await ChunterTrigger([tx], control)
+
+    // Grant for p9-acc must exist on the ancestor epic-1 (not swallowed by the
+    // seed tx which is scoped to the child issue-1).
+    const grantOnAncestor = res.filter(
+      (t: any) =>
+        t._class === coreDefault.class.TxCreateDoc &&
+        t.objectClass === coreDefault.class.Collaborator &&
+        t.attributes.attachedTo === 'epic-1' &&
+        t.attributes.collaborator === 'p9-acc'
+    )
+    expect(grantOnAncestor).toHaveLength(1)
   })
 })

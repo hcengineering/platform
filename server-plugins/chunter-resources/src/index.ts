@@ -234,10 +234,28 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
       })
     ).map((c) => c.collaborator)
 
+    // Dedup basis = committed collaborators on grantTarget UNION Collaborator
+    // TxCreateDoc already queued in `res` for this same grantTarget (e.g. the
+    // seed block above, or a prior loop iteration). Scoped to grantTarget._id so
+    // seed txes attached to a child doc (ThreadMessage/message) never suppress a
+    // grant on the resolved ancestor. The in-loop `granted.add` also collapses
+    // the real self-mention duplicate — collaboratorsFromMessage carries the
+    // author uuid twice (once as Employee, once as `account`).
+    const granted = new Set<AccountUuid>(grantCollabs)
+    for (const t of res) {
+      if (t._class === core.class.TxCreateDoc && (t as TxCUD<Doc>).objectClass === core.class.Collaborator) {
+        const attrs = (t as TxCreateDoc<Collaborator>).attributes
+        if (attrs.attachedTo === grantTarget._id) {
+          granted.add(attrs.collaborator)
+        }
+      }
+    }
+
     for (const collab of collaboratorsFromMessage) {
-      if (grantCollabs.includes(collab)) {
+      if (granted.has(collab)) {
         continue
       }
+      granted.add(collab)
       res.push(
         control.txFactory.createTxCreateDoc(core.class.Collaborator, grantTarget.space, {
           attachedTo: grantTarget._id,
@@ -311,9 +329,16 @@ async function applyMentionGrants (ctx: MeasureContext, message: ChatMessage, co
     await control.findAll<Collaborator>(control.ctx, core.class.Collaborator, { attachedTo: grantTarget._id })
   ).map((c) => c.collaborator)
 
+  // Same dedup discipline as the create path: a Set seeded from the committed
+  // collaborators, updated in-loop so a person mentioned more than once within one
+  // edit (two refs resolving to the same account) can never emit two identical
+  // Collaborator txes. Unlike the create path, the author is not appended here, so a
+  // self-mention alone is not a duplicate source in this path.
+  const granted = new Set<AccountUuid>(grantCollabs)
   const res: Tx[] = []
   for (const collab of collaboratorsFromMessage) {
-    if (grantCollabs.includes(collab)) continue // add-only: skip existing
+    if (granted.has(collab)) continue // add-only: skip existing
+    granted.add(collab)
     res.push(
       control.txFactory.createTxCreateDoc(core.class.Collaborator, grantTarget.space, {
         attachedTo: grantTarget._id,
