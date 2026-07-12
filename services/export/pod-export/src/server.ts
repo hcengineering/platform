@@ -67,7 +67,7 @@ import archiver from 'archiver'
 import { sendExportCompletionNotification } from './notifications'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
-import { createWriteStream } from 'fs'
+import { createReadStream, createWriteStream } from 'fs'
 import fs from 'fs/promises'
 import { IncomingHttpHeaders, type Server } from 'http'
 import { tmpdir } from 'os'
@@ -254,6 +254,16 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   handleRequest(fn, req, res, next)
 }
 
+// Only formats actually supported by WorkspaceExporter
+const supportedExportFormats: readonly ExportFormat[] = [ExportFormat.JSON, ExportFormat.CSV]
+
+function parseExportFormat (rawFormat: unknown): ExportFormat {
+  if (typeof rawFormat !== 'string' || !supportedExportFormats.includes(rawFormat as ExportFormat)) {
+    throw new ApiError(400, `Invalid format. Supported formats: ${supportedExportFormats.join(', ')}`)
+  }
+  return rawFormat as ExportFormat
+}
+
 export function createServer (
   storageConfig: StorageConfiguration,
   dbUrl: string,
@@ -269,7 +279,7 @@ export function createServer (
   app.post(
     '/exportAsync',
     wrapRequest(async (req, res, wsIds, token, socialId) => {
-      const format = req.query.format as ExportFormat
+      const format = parseExportFormat(req.query.format)
 
       const {
         _class,
@@ -281,7 +291,7 @@ export function createServer (
         attributesOnly: boolean
       } = req.body
 
-      if (_class == null || format == null) {
+      if (_class == null) {
         throw new ApiError(400, 'Missing required parameters')
       }
 
@@ -343,9 +353,23 @@ export function createServer (
           await sendSuccessNotification(txOperations, account, exportDrive, archiveName)
         } catch (err: any) {
           measureCtx.error('Export failed:', err)
-          await sendFailureNotification(txOperations, account, err.message ?? 'Unknown error when exporting')
+          try {
+            // Attach the failure notification to the export drive, otherwise
+            // the user is never notified that the export has failed
+            const exportDrive = await ensureExportDrive(txOperations, account)
+            await sendFailureNotification(
+              txOperations,
+              account,
+              err.message ?? 'Unknown error when exporting',
+              drive.class.Drive,
+              exportDrive,
+              core.space.Space
+            )
+          } catch (notifyErr: any) {
+            measureCtx.error('Failed to send export failure notification:', notifyErr)
+          }
         } finally {
-          await fs.rmdir(exportDir, { recursive: true })
+          await fs.rm(exportDir, { recursive: true, force: true })
         }
       })()
     })
@@ -354,7 +378,7 @@ export function createServer (
   app.post(
     '/exportSync',
     wrapRequest(async (req, res, wsIds, token, socialId) => {
-      const format = req.query.format as ExportFormat
+      const format = parseExportFormat(req.query.format)
       const {
         _class,
         query,
@@ -367,7 +391,7 @@ export function createServer (
         config?: TransformConfig
       } = req.body
 
-      if (_class == null || format == null) {
+      if (_class == null) {
         throw new ApiError(400, 'Missing required parameters')
       }
 
@@ -394,7 +418,7 @@ export function createServer (
         measureCtx.error('Export failed:', err)
         throw err
       } finally {
-        void fs.rmdir(exportDir, { recursive: true })
+        void fs.rm(exportDir, { recursive: true, force: true })
       }
     })
   )
@@ -655,14 +679,16 @@ async function saveToDrive (
 ): Promise<Ref<Drive>> {
   const exportDrive = await ensureExportDrive(client, account)
 
-  const fileContent = await fs.readFile(archivePath)
+  // Stream the archive instead of reading it into memory:
+  // fs.readFile fails with ERR_FS_FILE_TOO_LARGE for archives larger than 2 GiB
+  const { size } = await fs.stat(archivePath)
   const blobId = uuid() as Ref<Blob>
-  await storage.put(ctx, wsIds, blobId, fileContent, 'application/zip', fileContent.length)
+  await storage.put(ctx, wsIds, blobId, createReadStream(archivePath), 'application/zip', size)
 
   await createFile(client, exportDrive, drive.ids.Root, {
     title: basename(archivePath),
     file: blobId,
-    size: fileContent.length,
+    size,
     type: 'application/zip',
     lastModified: Date.now()
   })
