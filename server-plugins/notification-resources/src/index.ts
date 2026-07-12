@@ -1538,7 +1538,9 @@ export async function getCollaborators (
   } else {
     const collaborators = await getDocCollaborators(ctx, doc, mixin, control)
 
-    res.push(...getAddCollaboratTxes(tx.objectId, tx.objectClass, tx.objectSpace, control, collaborators))
+    // The defaults were resolved for `doc`; seed that document rather than
+    // the originating transaction for its attached child.
+    res.push(...getAddCollaboratTxes(doc._id, doc._class, doc.space, control, collaborators))
     return collaborators
   }
 }
