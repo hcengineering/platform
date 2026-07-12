@@ -1,4 +1,5 @@
 import { encodeSearch } from './SearchInputAdvanced.encoder'
+import { propSyncValue } from './SearchInputAdvanced.sync'
 
 describe('encodeSearch', () => {
   // ─── No prefix: bare-term scope expansion ───────────────────────────────
@@ -179,5 +180,34 @@ describe('encodeSearch', () => {
     expect(encodeSearch('id:HULY-51', 'all')).toBe('identifier:HULY-51')
     // Regression: orphan token with mid-hyphen passes through untouched.
     expect(encodeSearch('title:meeting bug-fix', 'all')).toBe('searchTitle:meeting bug-fix')
+  })
+})
+
+// The re-sync decision is extracted so it can be unit-tested here (the .svelte
+// component itself cannot be mounted — ts-jest has no Svelte compiler). The
+// behavioural proof of the whole flow lives in the tracker create→search→open
+// E2E cluster.
+describe('propSyncValue (search input re-sync)', () => {
+  it('syncs the new value when the parent prop changed', () => {
+    expect(propSyncValue('bar', 'foo')).toBe('bar')
+    expect(propSyncValue('x', undefined)).toBe('x')
+  })
+
+  it('returns undefined (no sync) when the parent prop is unchanged', () => {
+    expect(propSyncValue('foo', 'foo')).toBeUndefined()
+    expect(propSyncValue('', '')).toBeUndefined()
+  })
+
+  it('returns undefined when the parent prop is undefined', () => {
+    expect(propSyncValue(undefined, 'foo')).toBeUndefined()
+  })
+
+  // The anti-clobber invariant: while the debounced parent prop still lags at
+  // its previous value, the local input must not be re-synced — otherwise a
+  // just-typed value is erased, which broke tracker create→search→open
+  // (Playwright fill() then read == empty, so the search was never submitted).
+  it('never re-syncs an unchanged (debounce-lagged) prop', () => {
+    // parent prop still '' from before; user has typed into the input — no sync
+    expect(propSyncValue('', '')).toBeUndefined()
   })
 })

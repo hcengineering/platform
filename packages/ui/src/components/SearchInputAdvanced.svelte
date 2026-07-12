@@ -22,6 +22,7 @@
   import IconSearch from './icons/Search.svelte'
   import plugin from '../plugin'
   import { encodeSearch, type SearchScope } from './SearchInputAdvanced.encoder'
+  import { propSyncValue } from './SearchInputAdvanced.sync'
 
   /**
    * `value` is the RAW user input. NEVER write the encoded wire-string
@@ -50,9 +51,17 @@
   $: translateCB(placeholder, placeholderParam ?? {}, $themeStore.language, (res) => {
     phTranslate = res
   })
-  // Only re-sync from the parent prop when it actually changes — never
-  // overwrite `_search` mid-typing (would clobber the cursor + value).
-  $: if (value !== _search && value !== undefined) _search = value
+  // Re-sync from the parent prop ONLY when the prop itself changes — the
+  // decision lives in `propSyncValue` (see its doc). This block must never read
+  // `_search`, or Svelte would re-run it on every local edit and clobber the
+  // just-typed value back to the debounce-lagged prop, erasing input mid-typing
+  // (broke tracker create→search→open).
+  let lastValue: string | undefined = value
+  $: {
+    const synced = propSyncValue(value, lastValue)
+    lastValue = value
+    if (synced !== undefined) _search = synced
+  }
 
   // Re-emit when the scope prop changes so a Customize-View toggle from
   // e.g. `all` to `title` immediately re-encodes the current input —
