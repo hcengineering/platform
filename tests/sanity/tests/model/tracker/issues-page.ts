@@ -388,10 +388,14 @@ export class IssuesPage extends CommonTrackerPage {
     for (let i = 0; i < tabs.length; i++) {
       await tabs[i].click()
       await this.page.waitForTimeout(3000)
+      // Scope to the actual result link, not the whole panel: on a zero-hit
+      // tab the SearchEmptyState card legitimately echoes the search term
+      // ("No issues found for <name>"), which a panel-wide text assertion would
+      // wrongly match.
       if (presence === checks[i]) {
-        await expect(this.issueListPanel()).toContainText(issueName)
+        await expect(this.issueAnchorByName(issueName)).toBeVisible()
       } else {
-        await expect(this.issueListPanel()).not.toContainText(issueName)
+        await expect(this.issueAnchorByName(issueName)).toHaveCount(0)
       }
     }
   }
