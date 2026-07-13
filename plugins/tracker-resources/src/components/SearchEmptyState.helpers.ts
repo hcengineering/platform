@@ -13,3 +13,19 @@
 export function shouldShowEmptyState (searchText: string, resultCount: number): boolean {
   return searchText.trim() !== '' && resultCount === 0
 }
+
+/**
+ * Pure policy: should the SearchEmptyState card REPLACE the viewlet?
+ *
+ * On a zero-hit search the card normally replaces the viewlet. The explicit
+ * "show empty groups" view option (`shouldShowAll`) takes precedence, though:
+ * when it is on, the empty groups / Kanban columns stay visible and the card
+ * is suppressed. This keeps the user's explicit choice authoritative.
+ */
+export function shouldReplaceViewletWithEmptyState (
+  searchText: string,
+  resultCount: number,
+  shouldShowAll: boolean | undefined
+): boolean {
+  return shouldShowEmptyState(searchText, resultCount) && shouldShowAll !== true
+}

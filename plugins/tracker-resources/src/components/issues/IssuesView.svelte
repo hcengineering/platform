@@ -32,7 +32,7 @@
   import CreateIssue from '../CreateIssue.svelte'
   import GanttToolbarBar from '../gantt/GanttToolbarBar.svelte'
   import SearchEmptyState from '../SearchEmptyState.svelte'
-  import { shouldShowEmptyState } from '../SearchEmptyState.helpers'
+  import { shouldReplaceViewletWithEmptyState } from '../SearchEmptyState.helpers'
 
   function newIssue (): void {
     showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
@@ -127,7 +127,14 @@
   // (List.svelte / KanbanView.svelte / GanttView.svelte) the store stays
   // at -1, so the "no hits" card cannot flash during initial load before
   // the first query response.
-  $: showEmptyState = shouldShowEmptyState($rawSearchTextStore, $resultIssueCountStore)
+  // The card REPLACES the viewlet on a zero-hit search — unless the user turned
+  // on "show empty groups" (shouldShowAll), which keeps the empty groups/columns
+  // visible and suppresses the card (its explicit choice wins).
+  $: replaceWithEmptyState = shouldReplaceViewletWithEmptyState(
+    $rawSearchTextStore,
+    $resultIssueCountStore,
+    viewOptions?.shouldShowAll as boolean | undefined
+  )
 </script>
 
 <SpaceHeader
@@ -261,11 +268,13 @@
 
      Use `display: contents` on the wrapper so ViewletContentView remains a
      direct flex child of the page-level layout — that's the chain Gantt's
-     `height: 100%` depends on. When showEmptyState is true, the wrapper
+     `height: 100%` depends on. When replaceWithEmptyState is true, the wrapper
      becomes `display: none` instead: the Svelte components keep running
      (createQuery callbacks still fire because they're independent of DOM
-     rendering) while the empty-state card visually replaces the area. -->
-<div class="viewlet-wrap" class:viewlet-hidden={showEmptyState}>
+     rendering) while the empty-state card visually replaces the area. With
+     "show empty groups" (shouldShowAll) on, replaceWithEmptyState is false, so
+     the empty groups/columns stay visible and the card is suppressed. -->
+<div class="viewlet-wrap" class:viewlet-hidden={replaceWithEmptyState}>
   {#if viewlet && viewOptions}
     <ViewletContentView
       _class={tracker.class.Issue}
@@ -280,7 +289,7 @@
     />
   {/if}
 </div>
-{#if showEmptyState}
+{#if replaceWithEmptyState}
   <SearchEmptyState searchText={$rawSearchTextStore} activeFilters={$filterStore.map((f) => f.key.key)} />
 {/if}
 
