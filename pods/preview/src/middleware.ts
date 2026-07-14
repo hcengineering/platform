@@ -66,10 +66,6 @@ export const withAuthorization = (req: RequestWithAuth, res: Response, next: Nex
   }
 }
 
-const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-const isUuid = (value: string): boolean => uuidRegex.test(value)
-
 /**
  * Validates blob route params and ensures the caller's token grants access to
  * the workspace taken from the URL. Must run after `withAuthorization`, which
@@ -80,7 +76,7 @@ export const withBlob = (req: RequestWithAuth, res: Response, next: NextFunction
     const workspace = req.params.workspace
     const name = req.params.name
 
-    if (workspace === undefined || workspace === '' || !isUuid(workspace)) {
+    if (workspace === undefined || workspace === '') {
       throw new HttpError(400, 'Missing workspace')
     }
     if (name === undefined || name === '') {

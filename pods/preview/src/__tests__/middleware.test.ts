@@ -81,12 +81,19 @@ describe('withAuthorization', () => {
 })
 
 describe('withBlob', () => {
-  it('rejects a missing or malformed workspace', () => {
-    for (const workspace of ['', 'not-a-uuid', '../../etc']) {
-      const next = jest.fn() as unknown as NextFunction
-      withBlob(makeRequest(workspace, 'blob'), res, next)
-      expect(next).toHaveBeenCalledWith(expect.objectContaining({ code: 400 }))
-    }
+  it('rejects a missing workspace', () => {
+    const next = jest.fn() as unknown as NextFunction
+    withBlob(makeRequest('', 'blob'), res, next)
+    expect(next).toHaveBeenCalledWith(expect.objectContaining({ code: 400 }))
+  })
+
+  it('accepts a non-uuid workspace id when the token matches it', () => {
+    const workspace = 'not-a-uuid'
+    const next = jest.fn() as unknown as NextFunction
+
+    withBlob(makeRequest(workspace, 'blob', makeToken({ workspace: workspace as WorkspaceUuid })), res, next)
+
+    expect(next).toHaveBeenCalledWith()
   })
 
   it('rejects a missing blob name', () => {
