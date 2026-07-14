@@ -14,7 +14,8 @@
 -->
 <script lang="ts">
   import { getName } from '@hcengineering/contact'
-  import contact, { Avatar } from '@hcengineering/contact-resources'
+  import { Avatar } from '@hcengineering/contact-resources'
+  import contact from '@hcengineering/contact-resources/src/plugin'
   import hr, { Department, Staff } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
   import { Label } from '@hcengineering/ui'

@@ -77,7 +77,8 @@
 
   $: dragPersonId = dragPerson?._id
 
-  $: values = allEmployees.filter((it) => it.department === value._id && it._id !== dragPersonId)
+  $: members = new Set<Ref<Staff>>(value.members as Ref<Staff>[])
+  $: values = allEmployees.filter((it) => members.has(it._id) && it._id !== dragPersonId)
 
   $: dragging = value._id === dragOver?._id && dragPersonId !== undefined
 

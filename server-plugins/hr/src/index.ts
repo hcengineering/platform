@@ -31,6 +31,7 @@ export default plugin(serverHrId, {
     OnEmployee: '' as Resource<TriggerFunc>,
     OnEmployeeDeactivate: '' as Resource<TriggerFunc>,
     OnDepartmentStaff: '' as Resource<TriggerFunc>,
+    OnDepartmentUpdate: '' as Resource<TriggerFunc>,
     OnDepartmentRemove: '' as Resource<TriggerFunc>,
     OnRequestCreate: '' as Resource<TriggerFunc>,
     OnRequestUpdate: '' as Resource<TriggerFunc>,

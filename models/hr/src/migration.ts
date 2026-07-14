@@ -22,7 +22,8 @@ import {
   DOMAIN_MODEL_TX,
   type TxCUD
 } from '@hcengineering/core'
-import { type Department } from '@hcengineering/hr'
+import contact, { type Employee, type Person } from '@hcengineering/contact'
+import { type Department, type Staff } from '@hcengineering/hr'
 import {
   migrateSpace,
   tryMigrate,
@@ -32,6 +33,7 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import core, { DOMAIN_SPACE, getAccountsFromTxes } from '@hcengineering/model-core'
+import { DOMAIN_CONTACT } from '@hcengineering/model-contact'
 
 import hr, { DOMAIN_HR, hrId } from './index'
 
@@ -103,6 +105,52 @@ async function migrateDepartmentMembersToEmployee (client: MigrationClient): Pro
   }
 }
 
+async function rebuildDepartmentMembersFromStaff (client: MigrationClient): Promise<void> {
+  const departments = await client.find<Department>(DOMAIN_HR, { _class: hr.class.Department })
+  const departmentById = new Map(departments.map((department) => [department._id, department]))
+  const membersByDepartment = new Map<Ref<Department>, Set<Ref<Employee>>>(
+    departments.map((department) => [department._id, new Set<Ref<Employee>>()])
+  )
+
+  const getHierarchy = (department: Ref<Department>): Ref<Department>[] => {
+    const result: Ref<Department>[] = []
+    let current: Ref<Department> | undefined = department
+
+    while (current !== undefined) {
+      if (result.includes(current)) {
+        break
+      }
+
+      const currentDepartment = departmentById.get(current)
+      if (currentDepartment === undefined) {
+        break
+      }
+
+      result.push(currentDepartment._id)
+      current = currentDepartment.parent ?? (currentDepartment._id !== hr.ids.Head ? hr.ids.Head : undefined)
+    }
+
+    return result
+  }
+
+  const persons = await client.find<Person>(DOMAIN_CONTACT, { _class: contact.class.Person })
+  for (const person of persons) {
+    const staff = client.hierarchy.asIf<Person, Staff>(person, hr.mixin.Staff)
+    if (staff?.department === undefined || !staff.active) {
+      continue
+    }
+
+    for (const department of getHierarchy(staff.department)) {
+      membersByDepartment.get(department)?.add(person._id as Ref<Employee>)
+    }
+  }
+
+  for (const department of departments) {
+    const members = Array.from(membersByDepartment.get(department._id) ?? [])
+    await client.update(DOMAIN_HR, { _id: department._id }, { members })
+  }
+}
+
 export const hrOperation: MigrateOperation = {
   async migrate (client: MigrationClient, mode): Promise<void> {
     await tryMigrate(mode, client, hrId, [
@@ -120,6 +168,10 @@ export const hrOperation: MigrateOperation = {
       {
         state: 'migrateDepartmentMembersToEmployee',
         func: migrateDepartmentMembersToEmployee
+      },
+      {
+        state: 'rebuildDepartmentMembersFromStaff',
+        func: rebuildDepartmentMembersFromStaff
       }
     ])
   },

@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
+  import contact, { Employee } from '@hcengineering/contact'
   import { UsersPopup } from '@hcengineering/contact-resources'
   import { Ref, WithLookup } from '@hcengineering/core'
-  import { Department, Staff } from '@hcengineering/hr'
+  import { Department } from '@hcengineering/hr'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Scroller, Section, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
@@ -42,7 +42,7 @@
       }
     )
 
-  function add (e: MouseEvent) {
+  function add (e: MouseEvent): void {
     showPopup(
       UsersPopup,
       {
@@ -50,19 +50,15 @@
         docQuery: {
           active: true
         },
-        ignoreUsers: memberItems.map((it) => it._id)
+        ignoreUsers: members
       },
       eventToHTMLElement(e),
       (res) => addMember(client, res, value)
     )
   }
 
-  let memberItems: Staff[] = []
-
-  const membersQuery = createQuery()
-  $: membersQuery.query(hr.mixin.Staff, { department: objectId }, (result) => {
-    memberItems = result
-  })
+  let members: Array<Ref<Employee>> = []
+  $: members = value?.members ?? []
 
   let preference: ViewletPreference | undefined
   let loading = false
@@ -85,14 +81,14 @@
   </svelte:fragment>
 
   <svelte:fragment slot="content">
-    {#if (value?.members.length ?? 0) > 0}
+    {#if members.length > 0}
       <Scroller>
         <Table
           _class={hr.mixin.Staff}
           config={preference?.config ?? viewlet?.config ?? []}
           options={viewlet?.options}
-          query={{ department: objectId }}
-          loadingProps={{ length: value?.members.length ?? 0 }}
+          query={{ _id: { $in: members } }}
+          loadingProps={{ length: members.length }}
         />
       </Scroller>
     {:else}
