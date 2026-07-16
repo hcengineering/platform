@@ -1,51 +1,28 @@
-# Huly Platform
+# HH Shade
 
-[![X (formerly Twitter) Follow](https://img.shields.io/twitter/follow/huly_io?style=for-the-badge)](https://x.com/huly_io)
-![GitHub License](https://img.shields.io/github/license/hcengineering/platform?style=for-the-badge)
+**HH Shade** is the Hardscape House deployment of **4C Shade** — a repurposed **Huly platform** fork. See [`docs/4c-shade/`](docs/4c-shade/) for product docs and [`CLAUDE.md`](CLAUDE.md) for agent guidance.
 
-⭐️ Your star shines on us. Star us on GitHub!
-
-> [!IMPORTANT]
-> **Hosted Huly is shutting down — please migrate your data.**
->
-> The hosted Huly service is being discontinued because its hosting is no longer being funded. If you keep important data on the hosted platform, export and back it up, and migrate as soon as possible — we can help you move to either a [self-hosted setup](https://github.com/hcengineering/huly-selfhost) or a hosted option.
->
-> Not sure how? Follow the [backup & restore guide](docs/guides/backup-restore.en.md) for step-by-step instructions on downloading your backup and restoring it elsewhere.
->
-> The service shutdown is expected on **July 20**. Please make sure to export and migrate your data before then rather than wait until the last day.
->
-> Have questions or want updates? Join the [Huly community](https://link.huly.io/slack) to discuss migration and stay informed, or email us at [artem@hardcoreeng.com](mailto:artem@hardcoreeng.com) with any questions. This affects only the hosted **Huly** service — self-hosted deployments are not affected.
+This repository is a fork of the open-source [Huly Platform](https://github.com/hcengineering/platform) by Hardcore Engineering, being adapted into the Shade backbone. Under the hood it remains the Huly codebase, so the upstream build, setup, and test workflows below still apply to this fork.
 
 ## About
 
-The Huly Platform is a robust framework designed to accelerate the development of business applications, such as CRM systems.
-This repository includes several applications, such as Chat, Project Management, CRM, HRM, and ATS.
-Various teams are building products on top of the Platform, including [Huly](https://huly.io) and [TraceX](https://tracex.co).
-
-![Huly](https://repository-images.githubusercontent.com/392073243/6d27d5cc-38cd-4d88-affe-bb88b393180c)
+The platform is a TypeScript/Svelte framework designed to accelerate the development of business applications (Project Management, CRM, Chat, HRM, ATS, QMS, and more). HH Shade rebrands this framework for the Hardscape House deployment; curating the visible app set down to the Shade spine (tracker, documents, controlled documents, test management, and their supporting framework) is planned but not yet applied — all upstream plugins remain compiled, so nothing is removed. See [`docs/4c-shade/VISION-BRIEF.md`](docs/4c-shade/VISION-BRIEF.md) for what 4C Shade is and [`docs/4c-shade/FORK-CLEANUP-NOTES.md`](docs/4c-shade/FORK-CLEANUP-NOTES.md) for what was changed relative to the upstream fork and what remains deferred.
 
 ## Self-Hosting
 
-If you're primarily interested in self-hosting Huly without the intention to modify or contribute to its development, please use [huly-selfhost](https://github.com/hcengineering/huly-selfhost).
-This project offers a convenient method to host Huly using `docker`, designed for ease of use and quick setup. Explore this option to effortlessly enjoy Huly on your own server.
-
-## Activity
-
-![Alt](https://repobeats.axiom.co/api/embed/c42c99e21691fa60ea61b5cdf11c2e0647621534.svg 'Repobeats analytics image')
+This fork is intended to be self-hosted. The upstream project also publishes [huly-selfhost](https://github.com/hcengineering/huly-selfhost), a convenient `docker`-based method to host the vanilla Huly Platform, which is a useful reference for production deployment topology.
 
 ## API Client
 
-If you want to interact with Huly programmatically, check out our [API Client](https://github.com/hcengineering/huly.core/tree/main/packages/api-client) documentation. The API client provides a typed interface for all Huly operations and can be used to build integrations and custom applications.
-
-You can find API usage examples in the [Huly examples](https://github.com/hcengineering/huly-examples) repository.
+To interact with the platform programmatically, the upstream [API Client](https://github.com/hcengineering/huly.core/tree/main/packages/api-client) provides a typed interface for platform operations and can be used to build integrations and custom applications. Usage examples live in the upstream [examples](https://github.com/hcengineering/huly-examples) repository.
 
 ## Changelog
 
-For detailed information about changes, improvements, and bug fixes in each version, see our [Changelog](./changelog.md).
+For detailed information about upstream changes, improvements, and bug fixes in each version, see the [Changelog](./changelog.md).
 
 ## Versions
 
-The Huly Platform uses two types of version tags to distinguish between production-ready and development releases:
+The upstream platform uses two types of version tags to distinguish between production-ready and development releases:
 
 - **Production Versions (`v*`)** - Stable releases for end users
   - Example: `v0.7.310`, `v0.7.307`, `v0.6.501`
@@ -61,14 +38,13 @@ The Huly Platform uses two types of version tags to distinguish between producti
 
 ## Architecture
 
-For detailed information about the platform architecture, services, and their interactions, see our [Architecture Overview](./ARCHITECTURE_OVERVIEW.md).
+For detailed information about the platform architecture, services, and their interactions, see the [Architecture Overview](./ARCHITECTURE_OVERVIEW.md).
 
 ## Table of Contents
 
-- [Huly Platform](#huly-platform)
+- [HH Shade](#hh-shade)
   - [About](#about)
   - [Self-Hosting](#self-hosting)
-  - [Activity](#activity)
   - [API Client](#api-client)
   - [Changelog](#changelog)
   - [Versions](#versions)
@@ -118,6 +94,8 @@ docker compose version
 
 ## Branches & Contributing
 
+This fork develops on feature branches based off `develop` (see [`CLAUDE.md`](CLAUDE.md) for the active branch). The upstream release-flow branches are:
+
 - The `main` branch is the default branch used for production deployments.
   Changes to this branch are made from the `staging` branch once a version is ready for community use.
 
@@ -126,7 +104,7 @@ docker compose version
 
 - The `develop` branch is used for development and is the default branch for contributions.
 
-We periodically merge `develop` into `staging` to perform testing builds. Once we are satisfied with the build quality in our pre-release deployment, we merge changes into `main` and release a new version to the community.
+Upstream periodically merges `develop` into `staging` to perform testing builds. Once satisfied with the build quality in pre-release deployment, changes are merged into `main` and a new version is released to the community.
 
 ## Setup dev environment
 
@@ -395,4 +373,4 @@ When starting the application (`rush docker:up`), some network ports in Windows 
 1. Find what's using that port
 2. Update the new address in the corresponding service configuration
 
-<sub><sup>&copy; 2025 <a href="https://hardcoreeng.com">Hardcore Engineering Inc</a>.</sup></sub>
+<sub><sup>HH Shade / 4C Shade is a fork of the Huly Platform. Upstream platform &copy; 2025 <a href="https://hardcoreeng.com">Hardcore Engineering Inc</a>.</sup></sub>

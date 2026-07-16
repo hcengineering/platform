@@ -1,6 +1,6 @@
 {
   "huly.local:8080": {
-    "title": "Huly",
+    "title": "HH Shade",
     "languages": "en,ru,pl,pt,pt-br,es,zh,fr,de,ja,ko,tr",
     "defaultLanguage": "en",
     "defaultApplication": "tracker",
@@ -29,7 +29,7 @@
     ]
   },
   "huly.local:8087": {
-    "title": "Huly",
+    "title": "HH Shade",
     "languages": "en,ru,pl,pt,pt-br,es,zh,fr,de,ja,ko,tr",
     "defaultLanguage": "en",
     "defaultApplication": "tracker",
@@ -58,7 +58,7 @@
     ]
   },
   "huly.local:8081": {
-    "title": "TraceX",
+    "title": "HH Shade",
     "languages": "en",
     "defaultLanguage": "en",
     "defaultApplication": "documents",
@@ -98,7 +98,7 @@
     ]
   },
   "huly.local:8088": {
-    "title": "TraceX",
+    "title": "HH Shade",
     "languages": "en",
     "defaultLanguage": "en",
     "defaultApplication": "documents",
