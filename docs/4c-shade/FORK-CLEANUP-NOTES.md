@@ -48,30 +48,30 @@ Because the `DISABLED_FEATURES=…,recruit,lead,inventory,calendar,telegram,gith
 
 *(Doc bugs noted for later: `docs/disableFeatures.md` lists `integration` but the settings category uses `integrations`; `cards` vs plugin id `card`; `training` vs feature `trainings`. Singular/plural mismatches mean those documented tokens silently match nothing.)*
 
-## 3. Which HIDE-list apps are actually launcher tiles
+## 3. Which HIDE-list apps are actually visible tiles (source-verified)
 
-Only **6** of the handoff's HIDE list register a top-level `workbench.class.Application` with `hidden: false` (i.e. are shown-by-default tiles):
+A tile shows in the launcher only if it **both** registers a `workbench.class.Application` with `hidden: false` **and** its `PluginConfiguration.enabled` is `true` in `models/all/src/index.ts` (an `enabled: false` plugin has its `Application` create-tx pruned by `pluginFilterTx`, since `defaultFilter` includes `workbench.class.Application`). Against both conditions, only **3** HIDE-list apps are actually shown by default:
 
-| App | Registration | Shown by default |
-|---|---|---|
-| `recruit` | `models/recruit/src/index.ts` | yes |
-| `hr` | `models/hr/src/index.ts` | yes |
-| `lead` | `models/lead/src/index.ts` | yes |
-| `inventory` | `models/inventory/src/index.ts` | yes |
-| `board` | `models/board/src/index.ts` | yes |
-| `love` (Office) | `models/love/src/index.ts` | yes |
+| App | `Application.hidden` | `PluginConfiguration.enabled` | Shown by default? |
+|---|---|---|---|
+| `recruit` | false (`models/recruit/src/index.ts:129`) | true (`models/all/src/index.ts:234`) | **yes — needs hiding** |
+| `hr` | false (`models/hr/src/index.ts:192`) | true (`models/all/src/index.ts:304`) | **yes — needs hiding** |
+| `love` (Office) | false (`models/love/src/index.ts:255`) | true (`models/all/src/index.ts:395`) | **yes — needs hiding** |
+| `lead` | false | **false** (`models/all/src/index.ts:259`) | no — already pruned |
+| `inventory` | false | **false** (`models/all/src/index.ts:283`) | no — already pruned |
+| `board` | false / `hidden:true` cfg | **false** (`models/all/src/index.ts:340`) | no — already pruned |
 
-The rest of the HIDE list register **no launcher Application** and therefore need no hiding: `calendar` (the tile users see is Time/Planner + Team), `telegram`, `github` (injects a "Pull Requests" special *inside* Tracker), `gmail`, `mail`, `huly-mail`, `billing`, `payment`, `achievement`, `rating`, `support`, `recorder`, `bitrix`, `ai-assistant`, `ai-bot`, `openai`, `analytics-collector`.
+The remaining HIDE-list apps register **no launcher Application** and need no hiding: `calendar` (the tile users see is Time/Planner + Team), `telegram`, `github` (injects a "Pull Requests" special *inside* Tracker), `gmail`, `mail`, `huly-mail`, `billing`, `payment`, `achievement`, `rating`, `support`, `recorder`, `bitrix`, `ai-assistant`, `ai-bot`, `openai`, `analytics-collector`.
 
-So the real runtime-hide scope is just those **6 tiles**.
+**So the real app-hide scope is just 3 tiles — `recruit`, `hr`, `love`.** Most of the handoff's HIDE list is already handled by upstream defaults (`enabled:false`) or was never a launcher app. (Note: this corrects an earlier draft of this doc that listed 6 "shown by default" tiles — `lead`/`inventory`/`board` register apps but are already off.)
 
-## 4. Recommended next pass — how to actually hide the 6 tiles (choose one)
+## 4. Recommended next pass — how to actually hide the 3 tiles (choose one)
 
 **Option A — `ExcludedApplications` config plumbing (reversible, all-users, small code add).**
-`Workbench.svelte` already excludes `workbench.metadata.ExcludedApplications`, but **nothing sets it** — only `ExcludedApplicationsForAnonymous` is wired to config (`EXCLUDED_APPLICATIONS_FOR_ANONYMOUS` in `dev/prod/src/platform.ts` + `pods/front/src/__start.ts`). Mirror that wiring: add an `EXCLUDED_APPLICATIONS` config key that `setMetadata(workbench.metadata.ExcludedApplications, [...])` with the Refs of the 6 apps. ~3 small edits (platform.ts, front `__start.ts`, desktop), fully reversible via config, hides tiles for all logged-in users. *Slightly beyond "config-only" (adds plumbing), but no model/migration change.*
+`Workbench.svelte` already excludes `workbench.metadata.ExcludedApplications`, but **nothing sets it** — only `ExcludedApplicationsForAnonymous` is wired to config (`EXCLUDED_APPLICATIONS_FOR_ANONYMOUS` in `dev/prod/src/platform.ts` + `pods/front/src/__start.ts`). Mirror that wiring: add an `EXCLUDED_APPLICATIONS` config key that `setMetadata(workbench.metadata.ExcludedApplications, [...])` with the Refs of the 3 apps (`recruit.app.Recruit`, `hr.app.HR`, `love.app.Love`). ~3 small edits (platform.ts, front `__start.ts`, desktop), fully reversible via config, hides tiles for all logged-in users. *Slightly beyond "config-only" (adds plumbing), but no model/migration change.*
 
 **Option B — `PluginConfiguration.enabled=false` (the handoff's deferred build-time path).**
-Set `enabled: false` for the 6 plugins in `models/all/src/index.ts` (+ handle `migration.ts`). This is the upstream-intended way to remove apps and also drops their model txs. It's a model/build-time change → matches the handoff's "Defer: build-time stripping until the app set is validated running."
+Flip `enabled: false` for just `recruit`/`hr`/`love` in `models/all/src/index.ts` (lines 234/304/395) — the same one-word change upstream already applies to `lead`/`inventory`/`board`. This is the upstream-intended way and also drops their model txs; a model/build-time change → matches the handoff's "Defer: build-time stripping until the app set is validated running." Lowest-footprint option and consistent with how the codebase already gates optional apps.
 
 **Not recommended:** per-user `HiddenApplication` (not global); `branding.json` (cannot hide apps).
 
