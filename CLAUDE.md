@@ -2,6 +2,8 @@
 
 Guidance for Claude Code sessions working in this repository.
 
+> **▶ CURRENT WORK — start here:** [`docs/4c-shade/HANDOFF.md`](docs/4c-shade/HANDOFF.md). Two active tracks: (A, primary) map + prototype the **4C Shade console UI/UX** (design-first, via Stitch/Miro/local HTML); (B, parallel) **Huly fork cleanup** (baseline + branding + runtime-hide). Read the handoff before starting.
+
 ## What this repo is
 
 This is **HH Shade** — the **Hardscape House** deployment of **4C Shade**, an owned, self-hosted, QMS-gated, agent-native software-delivery platform built by **4C Digital**. The repo currently holds an upstream **Huly platform fork** being repurposed into the Shade backbone (alpha).
