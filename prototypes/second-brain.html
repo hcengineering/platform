@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Second Brain · Intake — 4C Shade</title>
+<style>
+:root{
+  --bg:#0A0D13;--surface-1:#0F131B;--surface-2:#151A24;--surface-3:#1C2230;--surface-4:#232B3B;
+  --border:#242C3A;--border-2:#313B4D;--overlay:rgba(5,7,11,.62);
+  --ink-1:#EAEEF6;--ink-2:#AEB8CC;--ink-3:#727E93;--ink-4:#4B5567;
+  --accent:#37CFBD;--accent-hover:#4ADED0;--accent-press:#28B4A3;--accent-fg:#04120F;
+  --accent-weak:rgba(55,207,189,.14);--accent-line:rgba(55,207,189,.38);
+  --spectral:linear-gradient(90deg,#8B7CF0 0%,#4EC5E0 52%,#37CFBD 100%);
+  --prism:#8B7CF0;--prism-weak:rgba(139,124,240,.16);
+  --claude:#E0785B;--claude-weak:rgba(224,120,91,.16);
+  --gemini:#5B9DF9;--gemini-weak:rgba(91,157,249,.16);
+  --human:#AEB8CC;--human-weak:rgba(174,184,204,.12);
+  --ok:#46C98A;--ok-weak:rgba(70,201,138,.14);
+  --warn:#E7B54B;--warn-weak:rgba(231,181,75,.14);
+  --risk:#E8894A;--risk-weak:rgba(232,137,74,.14);
+  --crit:#E86A6A;--crit-weak:rgba(232,106,106,.14);
+  --info:#5B9DF9;--info-weak:rgba(91,157,249,.14);
+  --r-1:6px;--r-2:10px;--r-3:14px;--r-pill:999px;
+  --shadow-1:0 1px 2px rgba(0,0,0,.4);
+  --font-sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI Variable Display","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--bg);color:var(--ink-1);font-family:var(--font-sans);font-size:13.5px;line-height:20px;-webkit-font-smoothing:antialiased}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent);border-radius:var(--r-1)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--surface-4);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+
+.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:48px;flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:0 14px;background:var(--surface-1);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:600}
+.brand .mark{width:20px;height:20px;border-radius:5px;background:var(--spectral);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
+.ws{display:flex;align-items:center;gap:7px;padding:5px 9px;background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-1);font-size:12.5px;color:var(--ink-2)}
+.ws b{color:var(--ink-1);font-weight:600}
+.crumb{color:var(--ink-3);font-size:12.5px}.crumb b{color:var(--ink-2);font-weight:500}
+.spacer{flex:1}
+.search{display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-1);color:var(--ink-3);font-size:12.5px;width:200px}
+.search kbd{margin-left:auto;font-family:var(--font-mono);font-size:10px;background:var(--surface-1);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+.avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;border:1px solid var(--border-2)}
+
+.body{flex:1;display:flex;min-height:0}
+.rail{width:216px;flex:0 0 auto;background:var(--surface-1);border-right:1px solid var(--border);padding:12px 10px;overflow:auto;display:flex;flex-direction:column;gap:3px}
+.rail .grp{margin:10px 8px 4px}
+.nav{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--r-1);color:var(--ink-2);font-size:13px;font-weight:500;text-decoration:none;cursor:pointer}
+.nav:hover{background:var(--surface-3);color:var(--ink-1)}
+.nav.on{background:var(--accent-weak);color:var(--ink-1);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.nav .ic{width:16px;text-align:center;color:var(--ink-3)}.nav.on .ic{color:var(--accent)}
+.nav .ct{margin-left:auto;font-size:11px;color:var(--ink-3);font-family:var(--font-mono)}
+.rail hr{border:none;border-top:1px solid var(--border);margin:10px 4px}
+.hint{color:var(--ink-4);font-size:11px;padding:6px 4px;text-align:center}
+
+.main{flex:1;min-width:0;display:grid;grid-template-columns:1fr 392px;min-height:0}
+
+/* conversation pane */
+.convo{overflow:auto;border-right:1px solid var(--border);padding:0}
+.cvh{padding:16px 22px 12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:2}
+.cvh h1{font-size:18px;font-weight:600;margin:0 0 3px}
+.cvh .meta{font-size:12px;color:var(--ink-3);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.cvh .src{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-pill);padding:3px 9px;font-size:11px;color:var(--ink-2)}
+.transcript{padding:8px 22px 40px;max-width:720px}
+.turn{display:flex;gap:11px;padding:11px 0}
+.turn .sav{width:28px;height:28px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700;font-family:var(--font-mono);margin-top:1px}
+.turn .body .who{font-size:12px;font-weight:600;color:var(--ink-1)}
+.turn .body .who .t{color:var(--ink-4);font-weight:500;font-family:var(--font-mono);margin-left:7px;font-size:11px}
+.turn .body p{margin:3px 0 0;color:var(--ink-2);line-height:22px;font-size:13.5px}
+mark.cited{background:var(--accent-weak);color:var(--ink-1);border-bottom:1.5px solid var(--accent-line);border-radius:3px;padding:1px 2px;cursor:pointer;transition:background .1s}
+mark.cited:hover{background:rgba(55,207,189,.22)}
+mark.cited.active{background:rgba(55,207,189,.30);box-shadow:0 0 0 1px var(--accent-line)}
+mark.cited.risk{background:var(--risk-weak);border-bottom-color:rgba(232,137,74,.4)}
+mark.cited.risk.active{background:rgba(232,137,74,.28)}
+mark.cited.low{background:var(--warn-weak);border-bottom-color:rgba(231,181,75,.4)}
+mark.cited.low.active{background:rgba(231,181,75,.26)}
+
+/* extracted pane */
+.xpane{overflow:auto;background:var(--surface-1);display:flex;flex-direction:column}
+.xph{padding:14px 16px 10px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface-1);z-index:2}
+.xph .t{display:flex;align-items:center;gap:8px}
+.xph h2{font-size:14px;font-weight:600;margin:0}
+.filters{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.filters button{border:1px solid var(--border);background:var(--surface-2);color:var(--ink-2);font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:var(--r-pill)}
+.filters button.on{background:var(--accent-weak);color:var(--ink-1);border-color:var(--accent-line)}
+.xlist{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+
+.xitem{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-2);padding:12px 13px;cursor:pointer;transition:box-shadow .1s,background .1s}
+.xitem:hover{background:var(--surface-3)}
+.xitem.sel{box-shadow:0 0 0 1px var(--accent-line);background:var(--surface-3)}
+.xitem .xh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tbadge{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:var(--r-1)}
+.tb-req{background:var(--accent-weak);color:var(--accent)}
+.tb-wi{background:var(--info-weak);color:var(--info)}
+.tb-spec{background:var(--prism-weak);color:var(--prism)}
+.tb-risk{background:var(--risk-weak);color:var(--risk)}
+.xitem .xid{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);margin-left:auto}
+.xitem .xstmt{font-size:13px;color:var(--ink-1);line-height:19px}
+.conf{display:flex;align-items:center;gap:8px;margin-top:9px}
+.conf .bar{flex:1;height:5px;border-radius:99px;background:var(--surface-4);overflow:hidden}
+.conf .bar i{display:block;height:100%;background:var(--accent)}
+.conf .pc{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-3)}
+.grounding{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.gchip{font-size:10.5px;color:var(--ink-2);background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-pill);padding:2px 8px}
+.gchip::before{content:"◍ ";color:var(--prism)}
+
+.prov{margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);display:none}
+.xitem.sel .prov{display:block}
+.prov .pt{font-size:11px;color:var(--ink-3);display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.trail{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:10.5px}
+.trail .tstep{background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-1);padding:3px 8px;font-family:var(--font-mono);color:var(--ink-2)}
+.trail .tstep.origin{border-color:var(--accent-line);color:var(--ink-1)}
+.trail .arr{color:var(--ink-4)}
+.acts{display:flex;gap:7px;margin-top:11px}
+.acts button{flex:1;border:1px solid var(--border-2);background:var(--surface-1);color:var(--ink-1);font-size:12px;font-weight:600;padding:7px;border-radius:var(--r-1)}
+.acts .accept{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+.acts .accept:hover{background:var(--accent-hover)}
+.acts .reject{color:var(--ink-3)}
+.promoted{display:flex;align-items:center;gap:7px;margin-top:11px;font-size:11.5px;color:var(--ok);background:var(--ok-weak);border-radius:var(--r-1);padding:7px 9px}
+.needclar{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;color:var(--warn);background:var(--warn-weak);border-radius:var(--r-pill);padding:2px 8px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand"><span class="mark"></span> Shade</div>
+    <div class="ws"><b>Acme</b> Shade ▾</div>
+    <div class="crumb"><b>Console</b> / Second Brain · Intake</div>
+    <div class="spacer"></div>
+    <div class="search">⌕ Search objects… <kbd>⌘K</kbd></div>
+    <div class="avatar" style="background:var(--human-weak);color:var(--ink-1)">CT</div>
+  </div>
+
+  <div class="body">
+    <nav class="rail">
+      <div class="grp label">Console</div>
+      <a class="nav" href="agent-fleet.html"><span class="ic">◈</span> Fleet <span class="ct">14</span></a>
+      <a class="nav" href="gate-traceability.html"><span class="ic">⛨</span> Gates <span class="ct">3</span></a>
+      <a class="nav on"><span class="ic">◍</span> Second Brain</a>
+      <a class="nav"><span class="ic">≋</span> Activity</a>
+      <hr/>
+      <div class="grp label">Backbone <span style="color:var(--ink-4);font-weight:500;text-transform:none;letter-spacing:0">· Huly + overlay</span></div>
+      <a class="nav"><span class="ic">◧</span> Tracker</a>
+      <a class="nav"><span class="ic">▤</span> Documents</a>
+      <a class="nav"><span class="ic">▦</span> Specs · QMS</a>
+      <a class="nav"><span class="ic">◫</span> Test Mgmt</a>
+      <div style="flex:1"></div>
+      <div class="hint">Prism · intake engine idle</div>
+    </nav>
+
+    <main class="main">
+      <!-- conversation transcript -->
+      <section class="convo">
+        <div class="cvh">
+          <h1>Discovery call — Checkout &amp; billing scope</h1>
+          <div class="meta">
+            <span class="src">▶ Call transcript</span>
+            <span class="src">◫ ingested via Google Drive MCP</span>
+            <span>2026-06-12 · 41 min · 2 participants</span>
+            <span style="margin-left:auto"><span class="mono" style="color:var(--accent)">6</span> items extracted by Prism</span>
+          </div>
+        </div>
+        <div class="transcript" id="transcript">
+          <div class="turn">
+            <span class="sav" style="background:var(--accent-weak);color:var(--accent)">DO</span>
+            <div class="body"><div class="who">Dana · ops lead (client) <span class="t">14:21:40</span></div>
+            <p>So the biggest thing for us on checkout — <mark class="cited" data-item="REQ-014">the order total has to be exact to the cent. No rounding surprises when the customer gets to the till.</mark> We've been burned by that before with floating-point math.</p></div>
+          </div>
+          <div class="turn">
+            <span class="sav" style="background:var(--human-weak);color:var(--ink-1)">SA</span>
+            <div class="body"><div class="who">Sam · delivery analyst <span class="t">14:22:10</span></div>
+            <p>Understood — we'll model money as integer cents end-to-end. What about payment retries?</p></div>
+          </div>
+          <div class="turn">
+            <span class="sav" style="background:var(--accent-weak);color:var(--accent)">DO</span>
+            <div class="body"><div class="who">Dana · ops lead (client) <span class="t">14:23:02</span></div>
+            <p>Right — <mark class="cited" data-item="REQ-030">a payment must be safe to retry. If the network hiccups and the request goes twice, the customer must never be double-charged.</mark> That's non-negotiable.</p></div>
+          </div>
+          <div class="turn">
+            <span class="sav" style="background:var(--accent-weak);color:var(--accent)">DO</span>
+            <div class="body"><div class="who">Dana · ops lead (client) <span class="t">14:25:30</span></div>
+            <p>Also the current flow is three separate pages and people drop off. <mark class="cited" data-item="WI-88">Ideally checkout collapses into one page you can review before paying.</mark></p></div>
+          </div>
+          <div class="turn">
+            <span class="sav" style="background:var(--human-weak);color:var(--ink-1)">SA</span>
+            <div class="body"><div class="who">Sam · delivery analyst <span class="t">14:27:05</span></div>
+            <p>Good. On the finance side — anything the invoice must show?</p></div>
+          </div>
+          <div class="turn">
+            <span class="sav" style="background:var(--accent-weak);color:var(--accent)">DO</span>
+            <div class="body"><div class="who">Dana · ops lead (client) <span class="t">14:27:48</span></div>
+            <p>Yes — <mark class="cited" data-item="SPEC-12">every invoice needs the tax broken out as its own line and it has to reference the purchase-order number.</mark> Finance reconciles against the PO.</p></div>
+          </div>
+          <div class="turn">
+            <span class="sav" style="background:var(--accent-weak);color:var(--accent)">DO</span>
+            <div class="body"><div class="who">Dana · ops lead (client) <span class="t">14:33:12</span></div>
+            <p>Oh — and one warning. <mark class="cited risk" data-item="RISK-05">Last quarter our public search endpoint got hammered by a bot and it took the whole portal down. There's no rate limit on it today.</mark> Whatever you build, don't repeat that.</p></div>
+          </div>
+          <div class="turn">
+            <span class="sav" style="background:var(--accent-weak);color:var(--accent)">DO</span>
+            <div class="body"><div class="who">Dana · ops lead (client) <span class="t">14:38:55</span></div>
+            <p>Down the road <mark class="cited low" data-item="REQ-047">we might want to export everything to our accounting system</mark>, but honestly that's a maybe — don't hold up phase one for it.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- extracted items -->
+      <section class="xpane">
+        <div class="xph">
+          <div class="t"><h2>Extracted items</h2><span class="mono" style="margin-left:auto;color:var(--ink-3);font-size:11px">6 cited</span></div>
+          <div class="filters">
+            <button class="on" data-f="all">All</button>
+            <button data-f="req">Requirements</button>
+            <button data-f="wi">Work-items</button>
+            <button data-f="spec">Specs</button>
+            <button data-f="risk">Risks</button>
+          </div>
+        </div>
+        <div class="xlist" id="xlist"></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+const ITEMS=[
+  {id:'REQ-014',type:'req',tb:'Requirement',stmt:'Order totals must be exact to the cent — no rounding error at any step.',conf:96,who:'Dana · ops lead',ts:'14:21:40',ground:['money → integer cents','rounding policy'],dest:'Tracker · REQ-014'},
+  {id:'REQ-030',type:'req',tb:'Requirement',stmt:'Payments must be idempotent — a retried request never double-charges.',conf:94,who:'Dana · ops lead',ts:'14:23:02',ground:['payments API','idempotency keys'],dest:'Tracker · REQ-030'},
+  {id:'WI-88',type:'wi',tb:'Work-item',stmt:'Collapse the 3-step checkout into a single reviewable page.',conf:78,who:'Dana · ops lead',ts:'14:25:30',ground:['checkout flow','conversion'],dest:'Tracker · WI-88'},
+  {id:'SPEC-12',type:'spec',tb:'Spec',stmt:'Invoices must itemise tax on its own line and reference the PO number.',conf:88,who:'Dana · ops lead',ts:'14:27:48',ground:['invoice template','tax rules','PO matching'],dest:'Specs · SPEC-12 (draft)'},
+  {id:'RISK-05',type:'risk',tb:'Risk',stmt:'Public search endpoint has no rate limit — prior outage under bot load.',conf:91,who:'Dana · ops lead',ts:'14:33:12',ground:['search endpoint','rate limiting','incident'],dest:'Tracker · RISK-05'},
+  {id:'REQ-047',type:'req',tb:'Requirement',stmt:'Possible future: export data to the accounting system (out of phase 1).',conf:44,who:'Dana · ops lead',ts:'14:38:55',ground:['accounting export'],dest:null,clar:true}
+];
+const list=document.getElementById('xlist');
+let sel=null;
+
+function confColor(c){return c>=80?'var(--accent)':(c>=60?'var(--warn)':'var(--risk)');}
+
+function render(filter='all'){
+  list.innerHTML='';
+  ITEMS.filter(it=>filter==='all'||it.type===filter).forEach(it=>{
+    const el=document.createElement('div');el.className='xitem'+(sel===it.id?' sel':'');el.dataset.id=it.id;
+    el.innerHTML=`
+      <div class="xh"><span class="tbadge tb-${it.type}">${it.tb}</span><span class="xid">${it.id}</span></div>
+      <div class="xstmt">${it.stmt}</div>
+      ${it.clar?'<span class="needclar">⚑ needs clarification · low confidence</span>':''}
+      <div class="conf"><span class="bar"><i style="width:${it.conf}%;background:${confColor(it.conf)}"></i></span><span class="pc">${it.conf}% confidence</span></div>
+      <div class="grounding">${it.ground.map(g=>`<span class="gchip">${g}</span>`).join('')}</div>
+      <div class="prov">
+        <div class="pt">◍ Provenance — cited from <b style="color:var(--ink-2)">${it.who}</b> · <span class="mono">${it.ts}</span> · Discovery call</div>
+        <div class="trail">
+          <span class="tstep origin">call span</span><span class="arr">→</span>
+          <span class="tstep">${it.id}</span><span class="arr">→</span>
+          <span class="tstep" id="dest-${it.id}">${it.dest?it.dest:'(not promoted)'}</span>
+        </div>
+        <div class="acts" id="acts-${it.id}">
+          <button class="accept" onclick="promote(event,'${it.id}')">Accept &amp; promote</button>
+          <button onclick="event.stopPropagation()">Edit</button>
+          <button class="reject" onclick="reject(event,'${it.id}')">Reject</button>
+        </div>
+      </div>`;
+    el.addEventListener('click',()=>select(it.id));
+    list.appendChild(el);
+  });
+  // restore promoted visual state
+  ITEMS.forEach(it=>{ if(it._done) markPromoted(it.id,it._done); });
+}
+function select(id){
+  sel=id;render(curFilter);
+  document.querySelectorAll('mark.cited').forEach(m=>m.classList.remove('active'));
+  const m=document.querySelector(`mark.cited[data-item="${id}"]`);
+  if(m){m.classList.add('active');m.scrollIntoView({behavior:'smooth',block:'center'});}
+  // scroll the selected card into view within its pane
+  const card=document.querySelector(`.xitem[data-id="${id}"]`);
+  if(card)card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function promote(e,id){
+  e.stopPropagation();const it=ITEMS.find(x=>x.id===id);
+  it._done='accept';markPromoted(id,'accept');
+}
+function reject(e,id){
+  e.stopPropagation();const it=ITEMS.find(x=>x.id===id);
+  it._done='reject';markPromoted(id,'reject');
+}
+function markPromoted(id,kind){
+  const acts=document.getElementById('acts-'+id);const dest=document.getElementById('dest-'+id);
+  const it=ITEMS.find(x=>x.id===id);
+  if(!acts)return;
+  if(kind==='accept'){
+    acts.outerHTML=`<div class="promoted">✓ Promoted to <b style="color:var(--ink-1);margin-left:3px">${it.dest||'Tracker'}</b> · conversation→requirement link created</div>`;
+    if(dest)dest.style.color='var(--ok)';
+  }else{
+    acts.outerHTML=`<div class="promoted" style="color:var(--ink-3);background:var(--surface-4)">✕ Rejected · logged with reason to audit trail</div>`;
+  }
+}
+// clicking a highlighted span selects its card
+document.querySelectorAll('mark.cited').forEach(m=>{
+  m.addEventListener('click',()=>select(m.dataset.item));
+});
+// filters
+let curFilter='all';
+document.querySelectorAll('.filters button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.filters button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    curFilter=b.dataset.f;render(curFilter);
+  });
+});
+render();
+select('REQ-014');
+</script>
+</body>
+</html>

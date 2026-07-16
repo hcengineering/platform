@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gates · Traceability Cockpit — 4C Shade</title>
+<style>
+:root{
+  --bg:#0A0D13;--surface-1:#0F131B;--surface-2:#151A24;--surface-3:#1C2230;--surface-4:#232B3B;
+  --border:#242C3A;--border-2:#313B4D;--overlay:rgba(5,7,11,.62);
+  --ink-1:#EAEEF6;--ink-2:#AEB8CC;--ink-3:#727E93;--ink-4:#4B5567;
+  --accent:#37CFBD;--accent-hover:#4ADED0;--accent-press:#28B4A3;--accent-fg:#04120F;
+  --accent-weak:rgba(55,207,189,.14);--accent-line:rgba(55,207,189,.38);
+  --spectral:linear-gradient(90deg,#8B7CF0 0%,#4EC5E0 52%,#37CFBD 100%);
+  --prism:#8B7CF0;--prism-weak:rgba(139,124,240,.16);
+  --claude:#E0785B;--claude-weak:rgba(224,120,91,.16);
+  --gemini:#5B9DF9;--gemini-weak:rgba(91,157,249,.16);
+  --human:#AEB8CC;--human-weak:rgba(174,184,204,.12);
+  --ok:#46C98A;--ok-weak:rgba(70,201,138,.14);
+  --warn:#E7B54B;--warn-weak:rgba(231,181,75,.14);
+  --risk:#E8894A;--risk-weak:rgba(232,137,74,.14);
+  --crit:#E86A6A;--crit-weak:rgba(232,106,106,.14);
+  --info:#5B9DF9;--info-weak:rgba(91,157,249,.14);
+  --r-1:6px;--r-2:10px;--r-3:14px;--r-pill:999px;
+  --shadow-1:0 1px 2px rgba(0,0,0,.4);--shadow-2:0 8px 28px -10px rgba(0,0,0,.62);
+  --font-sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI Variable Display","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--bg);color:var(--ink-1);font-family:var(--font-sans);font-size:13.5px;line-height:20px;-webkit-font-smoothing:antialiased}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent);border-radius:var(--r-1)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--surface-4);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+
+.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:48px;flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:0 14px;background:var(--surface-1);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:600}
+.brand .mark{width:20px;height:20px;border-radius:5px;background:var(--spectral);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
+.ws{display:flex;align-items:center;gap:7px;padding:5px 9px;background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-1);font-size:12.5px;color:var(--ink-2)}
+.ws b{color:var(--ink-1);font-weight:600}
+.crumb{color:var(--ink-3);font-size:12.5px}.crumb b{color:var(--ink-2);font-weight:500}
+.spacer{flex:1}
+.search{display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-1);color:var(--ink-3);font-size:12.5px;width:200px}
+.search kbd{margin-left:auto;font-family:var(--font-mono);font-size:10px;background:var(--surface-1);border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+.avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;border:1px solid var(--border-2)}
+
+.body{flex:1;display:flex;min-height:0}
+.rail{width:216px;flex:0 0 auto;background:var(--surface-1);border-right:1px solid var(--border);padding:12px 10px;overflow:auto;display:flex;flex-direction:column;gap:3px}
+.rail .grp{margin:10px 8px 4px}
+.nav{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--r-1);color:var(--ink-2);font-size:13px;font-weight:500;text-decoration:none;cursor:pointer}
+.nav:hover{background:var(--surface-3);color:var(--ink-1)}
+.nav.on{background:var(--accent-weak);color:var(--ink-1);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.nav .ic{width:16px;text-align:center;color:var(--ink-3)}.nav.on .ic{color:var(--accent)}
+.nav .ct{margin-left:auto;font-size:11px;color:var(--ink-3);font-family:var(--font-mono)}
+.rail hr{border:none;border-top:1px solid var(--border);margin:10px 4px}
+.hint{color:var(--ink-4);font-size:11px;padding:6px 4px;text-align:center}
+
+.main{flex:1;min-width:0;overflow:auto;display:flex;flex-direction:column;padding:16px 18px}
+.h1{font-size:20px;font-weight:600;letter-spacing:-.005em;margin:0 0 2px}
+.sub{color:var(--ink-3);font-size:12.5px;margin-bottom:14px}
+
+/* gate board */
+.gateboard{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px}
+.gate{flex:0 0 208px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-2);padding:13px;cursor:pointer;position:relative;transition:background .1s,box-shadow .1s}
+.gate:hover{background:var(--surface-3)}
+.gate.sel{box-shadow:0 0 0 1px var(--accent-line);background:var(--surface-3)}
+.gate .gid{font-family:var(--font-mono);font-size:12px;color:var(--ink-1);font-weight:600}
+.gate .gname{font-size:11.5px;color:var(--ink-3);margin:3px 0 10px;min-height:30px}
+.gate .meter{height:5px;border-radius:99px;background:var(--surface-4);overflow:hidden;margin-bottom:8px}
+.gate .meter i{display:block;height:100%}
+.gate .grow{display:flex;align-items:center;gap:7px}
+.gate .avs{display:flex;margin-left:auto}
+.gate .avs span{width:19px;height:19px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:700;border:1.5px solid var(--surface-2);margin-left:-5px;font-family:var(--font-mono)}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:var(--r-pill);padding:2px 9px;font-size:11px;font-weight:600;line-height:16px;white-space:nowrap}
+.st-ok{background:var(--ok-weak);color:var(--ok)}.st-warn{background:var(--warn-weak);color:var(--warn)}
+.st-crit{background:var(--crit-weak);color:var(--crit)}.st-run{background:var(--accent-weak);color:var(--accent)}
+.st-lock{background:var(--surface-4);color:var(--ink-3)}
+
+/* work area split */
+.split{display:grid;grid-template-columns:270px 1fr 320px;gap:14px;margin-top:16px;flex:1;min-height:0}
+.pane{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-2);overflow:auto}
+.pane .ph{padding:11px 13px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface-2);display:flex;align-items:center;gap:8px}
+.pane .pb{padding:12px 13px}
+
+/* queue */
+.qitem{border:1px solid var(--border);border-radius:var(--r-1);padding:10px 11px;margin-bottom:9px;cursor:pointer}
+.qitem:hover{background:var(--surface-3)}
+.qitem.sel{box-shadow:inset 0 0 0 1px var(--accent-line);background:var(--surface-3)}
+.qitem .wid{font-family:var(--font-mono);font-size:11px;color:var(--ink-3)}
+.qitem .wt{font-size:13px;font-weight:600;margin:2px 0 6px;line-height:18px}
+.qitem .qm{display:flex;gap:6px;flex-wrap:wrap}
+
+/* traceability spine */
+.spinehead{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.trace{display:flex;align-items:stretch;overflow-x:auto;padding:14px 2px 8px}
+.tnode{flex:0 0 auto;display:flex;flex-direction:column;gap:4px;align-items:flex-start;border:1px solid var(--accent-line);background:var(--surface-1);border-radius:var(--r-1);padding:9px 12px;min-width:118px;cursor:pointer;transition:box-shadow .1s}
+.tnode:hover{box-shadow:0 0 0 1px var(--accent-line)}
+.tnode.pending{border-style:dashed;border-color:var(--border-2);opacity:.72;cursor:default}
+.tnode.stale{border-style:dashed;border-color:var(--risk)}
+.tnode.sel{box-shadow:0 0 0 1px var(--accent)}
+.tnode .s{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700;display:flex;gap:5px;align-items:center}
+.tnode .id{font-family:var(--font-mono);font-size:12px;color:var(--ink-1)}
+.tnode .meta{font-size:10px;color:var(--ink-4)}
+.tedge{flex:0 0 26px;align-self:center;height:2px;background:var(--spectral)}
+.tedge.off{background:var(--border-2)}
+.tedge.stale{background:repeating-linear-gradient(90deg,var(--risk) 0 5px,transparent 5px 9px)}
+
+.evidence{border:1px solid var(--border);border-radius:var(--r-1);padding:12px 13px;margin-top:6px;background:var(--surface-1)}
+.evidence .et{font-size:12.5px;font-weight:600;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.evidence .ex{font-size:12.5px;color:var(--ink-2);border-left:2px solid var(--accent-line);padding:4px 0 4px 10px;margin:8px 0}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:4px 10px;font-size:12px}
+.kv dt{color:var(--ink-3)}.kv dd{margin:0;color:var(--ink-1);font-family:var(--font-mono);font-size:11.5px}
+.mono-av{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;font-size:9px;font-weight:700;font-family:var(--font-mono)}
+
+/* ledger */
+.ledger{border:1px solid var(--border);border-radius:var(--r-1);overflow:hidden;margin-top:14px}
+.ledger .lh{display:grid;grid-template-columns:120px 90px 1fr 96px;gap:10px;padding:8px 12px;background:var(--surface-3);border-bottom:1px solid var(--border);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.lr{display:grid;grid-template-columns:120px 90px 1fr 96px;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:11px;align-items:center}
+.lr:last-child{border-bottom:none}
+.lr .ts{color:var(--ink-3)}
+.lr .who{color:var(--ink-1);font-weight:600;display:flex;align-items:center;gap:6px}
+.lr .act{color:var(--ink-2)}
+.lr .act .v-ok{color:var(--ok)}.lr .act .v-warn{color:var(--warn)}.lr .act .v-crit{color:var(--crit)}
+.lr .hash{color:var(--ink-4)}
+.lr.new{animation:flash 1.4s ease}
+@keyframes flash{0%{background:var(--accent-weak)}100%{background:transparent}}
+
+/* sign-off inspector */
+.approver{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--border)}
+.approver:last-of-type{border-bottom:none}
+.approver .nm{font-size:12.5px}.approver .rl{font-size:11px;color:var(--ink-3)}
+.approver .st{margin-left:auto;font-size:11px;font-weight:600}
+textarea{width:100%;background:var(--surface-1);border:1px solid var(--border);border-radius:var(--r-1);color:var(--ink-1);font-family:inherit;font-size:12.5px;padding:9px;resize:vertical;min-height:64px;margin:8px 0 12px}
+textarea:focus{outline:none;border-color:var(--accent-line)}
+.btn{border:1px solid var(--border-2);background:var(--surface-3);color:var(--ink-1);font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:var(--r-1);width:100%}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.primary:disabled{background:var(--surface-4);color:var(--ink-4);cursor:not-allowed}
+.btn.danger{color:var(--crit);border-color:var(--border);margin-top:8px}
+.note{font-size:11px;color:var(--ink-4);margin-top:10px;line-height:16px}
+.callout{display:flex;gap:9px;background:var(--warn-weak);border:1px solid rgba(231,181,75,.28);border-radius:var(--r-1);padding:10px 11px;font-size:12px;color:var(--ink-2);margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand"><span class="mark"></span> Shade</div>
+    <div class="ws"><b>Acme</b> Shade ▾</div>
+    <div class="crumb"><b>Console</b> / Gates · Traceability Cockpit</div>
+    <div class="spacer"></div>
+    <div class="search">⌕ Search objects… <kbd>⌘K</kbd></div>
+    <div class="avatar" style="background:var(--human-weak);color:var(--ink-1)">CT</div>
+  </div>
+
+  <div class="body">
+    <nav class="rail">
+      <div class="grp label">Console</div>
+      <a class="nav" href="agent-fleet.html"><span class="ic">◈</span> Fleet <span class="ct">14</span></a>
+      <a class="nav on"><span class="ic">⛨</span> Gates <span class="ct">3</span></a>
+      <a class="nav" href="second-brain.html"><span class="ic">◍</span> Second Brain</a>
+      <a class="nav"><span class="ic">≋</span> Activity</a>
+      <hr/>
+      <div class="grp label">Backbone <span style="color:var(--ink-4);font-weight:500;text-transform:none;letter-spacing:0">· Huly + overlay</span></div>
+      <a class="nav"><span class="ic">◧</span> Tracker</a>
+      <a class="nav"><span class="ic">▤</span> Documents</a>
+      <a class="nav"><span class="ic">▦</span> Specs · QMS</a>
+      <a class="nav"><span class="ic">◫</span> Test Mgmt</a>
+      <div style="flex:1"></div>
+      <div class="hint">Prism coordinator · online</div>
+    </nav>
+
+    <main class="main">
+      <h1 class="h1">Gates &amp; Traceability</h1>
+      <div class="sub">The 5 delivery gates as first-class objects · requirement → spec → code → test → deploy · immutable audit ledger.</div>
+
+      <div class="gateboard" id="gateboard"></div>
+
+      <div class="split">
+        <!-- queue -->
+        <section class="pane">
+          <div class="ph"><span class="label" id="qh">Awaiting G-DESIGN</span><span class="chip st-warn" id="qc" style="margin-left:auto">3 items</span></div>
+          <div class="pb" id="queue"></div>
+        </section>
+
+        <!-- item detail: spine + evidence + ledger -->
+        <section class="pane">
+          <div class="ph">
+            <span class="mono" id="dwid" style="color:var(--ink-3);font-size:11px">WI-88</span>
+            <span id="dwt" style="font-weight:600;font-size:13.5px">—</span>
+            <span class="chip st-run" style="margin-left:auto">◆ In G-DESIGN</span>
+          </div>
+          <div class="pb">
+            <div class="spinehead"><span class="label">Traceability spine</span><span style="font-size:11px;color:var(--ink-3)" id="coverage">coverage 2 / 5</span></div>
+            <div class="trace" id="trace"></div>
+            <div id="evidence"></div>
+
+            <div class="label" style="margin:18px 0 2px">Audit ledger <span style="color:var(--ink-4);font-weight:500;text-transform:none;letter-spacing:0">· append-only, hash-chained</span></div>
+            <div class="ledger">
+              <div class="lh"><div>timestamp</div><div>actor</div><div>action · object</div><div>hash</div></div>
+              <div id="ledger"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- domain-expert sign-off -->
+        <aside class="pane">
+          <div class="ph"><span class="label">Domain-expert sign-off</span></div>
+          <div class="pb">
+            <div class="callout">⚑ Gates never auto-pass. Sign-off records <b>who · what-hash · when</b> to the ledger and is scoped to your role.</div>
+            <div class="label" style="margin-bottom:2px">Required approvers</div>
+            <div id="approvers"></div>
+
+            <div class="label" style="margin:16px 0 0">Your role</div>
+            <div style="font-size:12.5px;color:var(--ink-2);margin:4px 0 2px">Domain expert — hardscape supply ops</div>
+            <textarea id="notes" placeholder="Optional: note what you verified (spec is domain-correct, UOM handling, tax rule…)"></textarea>
+            <button class="btn primary" id="signbtn" onclick="signOff()">Sign off G-DESIGN · WI-88</button>
+            <button class="btn danger" onclick="reqChanges()">Request changes</button>
+            <div class="note">Signing verifies the spec is <b>domain-correct</b> — not the code. Engineering review is a separate approver slot.</div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+const AG={
+  prism:{av:'PR',bg:'var(--prism-weak)',fg:'var(--prism)'},
+  claude:{av:'CL',bg:'var(--claude-weak)',fg:'var(--claude)'},
+  gemini:{av:'GM',bg:'var(--gemini-weak)',fg:'var(--gemini)'},
+  human:{av:'HU',bg:'var(--human-weak)',fg:'var(--ink-1)'}
+};
+const GATES=[
+  {id:'G-DESIGN',name:'UI/UX approved before build',state:['◆ In review','st-run'],pct:75,fill:'var(--accent)',avs:[['GM','gemini'],['HU','human'],['CT','human']],sel:true},
+  {id:'G-LOCK',name:'Spec set Effective (frozen)',state:['◐ Awaiting','st-warn'],pct:40,fill:'var(--warn)',avs:[['HU','human'],['CT','human']]},
+  {id:'G-PUSH',name:'Push / deploy approved',state:['○ Locked','st-lock'],pct:0,fill:'var(--ink-4)',avs:[['CT','human']]},
+  {id:'G-CLIENT',name:'Client-visible release',state:['○ Locked','st-lock'],pct:0,fill:'var(--ink-4)',avs:[['CT','human']]},
+  {id:'G-MONEY',name:'Hours · invoice · payment',state:['○ Locked','st-lock'],pct:0,fill:'var(--ink-4)',avs:[['CT','human']]}
+];
+const ITEMS=[
+  {wid:'WI-88',wt:'Checkout redesign',gate:'G-DESIGN',coverage:'2 / 5',
+   chain:[
+     {s:'Requirement',id:'REQ-014',cls:'',by:'human',ev:{title:'From client call · 12 Jun',quote:'"The total has to be exact to the cent — no rounding surprises at the till."',dt:'author Dibbits ops lead · via Second Brain',ts:'2026-06-12T14:22:03Z',hash:'req-2af19c'}},
+     {s:'Spec',id:'SPEC-07',cls:'',by:'gemini',ev:{title:'Design spec · Checkout redesign',quote:'Single-page checkout; order-summary block bound to integer-cents money type; inline validation.',dt:'author Gemini (MCP) · reviewed by design lead',ts:'2026-07-14T13:20:00Z',hash:'spec-9f0c4d'}},
+     {s:'Code',id:'pending',cls:'pending',by:null,ev:null},
+     {s:'Test',id:'pending',cls:'pending',by:null,ev:null},
+     {s:'Deploy',id:'—',cls:'pending',by:null,ev:null}
+   ],
+   ledger:[
+     ['2026-06-12 14:22','human','captured requirement','v-ok','REQ-014','req-2af19c'],
+     ['2026-07-14 13:20','gemini','drafted spec','','SPEC-07','spec-9f0c4d'],
+     ['2026-07-15 09:41','human','design lead approved','v-ok','SPEC-07','7c2e0b1'],
+     ['2026-07-15 10:03','human','eng review approved','v-ok','SPEC-07','3d1f9aa']
+   ],
+   approvers:[
+     {nm:'A. Rivera',rl:'Design lead',by:'gemini',st:['✓ Signed','var(--ok)']},
+     {nm:'M. Osei',rl:'Senior engineer',by:'human',st:['✓ Signed','var(--ok)']},
+     {nm:'You',rl:'Domain expert',by:'human',st:['◐ Open','var(--warn)']}
+   ]},
+  {wid:'WI-91',wt:'Invoicing epic — decomposition',gate:'G-DESIGN',coverage:'2 / 5',
+   chain:[
+     {s:'Requirement',id:'REQ-041',cls:'',by:'human',ev:{title:'From onboarding workshop',quote:'"Invoices must show HST split and reference the PO."',dt:'author finance lead · via Second Brain',ts:'2026-07-02T10:10:00Z',hash:'req-51ab77'}},
+     {s:'Spec',id:'SPEC-12',cls:'',by:'prism',ev:{title:'Decomposition spec',quote:'8 work-items with acceptance criteria, each cited to REQ-041.',dt:'author Prism (coordinator)',ts:'2026-07-15T16:40:00Z',hash:'spec-c12aa0'}},
+     {s:'Code',id:'pending',cls:'pending',by:null,ev:null},
+     {s:'Test',id:'pending',cls:'pending',by:null,ev:null},
+     {s:'Deploy',id:'—',cls:'pending',by:null,ev:null}
+   ],
+   ledger:[
+     ['2026-07-02 10:10','human','captured requirement','v-ok','REQ-041','req-51ab77'],
+     ['2026-07-15 16:40','prism','decomposed epic','','SPEC-12','spec-c12aa0']
+   ],
+   approvers:[
+     {nm:'A. Rivera',rl:'Design lead',by:'gemini',st:['◐ Open','var(--warn)']},
+     {nm:'M. Osei',rl:'Senior engineer',by:'human',st:['✓ Signed','var(--ok)']},
+     {nm:'You',rl:'Domain expert',by:'human',st:['◐ Open','var(--warn)']}
+   ]},
+  {wid:'WI-73',wt:'Public search rate-limit',gate:'G-DESIGN',coverage:'1 / 5',
+   chain:[
+     {s:'Requirement',id:'REQ-044',cls:'',by:'human',ev:{title:'From incident review',quote:'"Search got hammered and took down the portal — needs a limiter."',dt:'author platform owner · via Second Brain',ts:'2026-07-10T08:55:00Z',hash:'req-77c0e1'}},
+     {s:'Spec',id:'missing',cls:'stale',by:null,ev:{title:'Spec not yet linked',quote:'No controlled spec drafted — requirement has no design artifact. G-DESIGN cannot pass.',dt:'—',ts:'—',hash:'—'}},
+     {s:'Code',id:'pending',cls:'pending',by:null,ev:null},
+     {s:'Test',id:'pending',cls:'pending',by:null,ev:null},
+     {s:'Deploy',id:'—',cls:'pending',by:null,ev:null}
+   ],
+   ledger:[
+     ['2026-07-10 08:55','human','captured requirement','v-ok','REQ-044','req-77c0e1']
+   ],
+   approvers:[
+     {nm:'A. Rivera',rl:'Design lead',by:'gemini',st:['⊘ Blocked','var(--crit)']},
+     {nm:'M. Osei',rl:'Senior engineer',by:'human',st:['◐ Open','var(--warn)']},
+     {nm:'You',rl:'Domain expert',by:'human',st:['◐ Open','var(--warn)']}
+   ]}
+];
+
+// render gate board
+const gb=document.getElementById('gateboard');
+GATES.forEach(g=>{
+  const el=document.createElement('div');el.className='gate'+(g.sel?' sel':'');
+  el.innerHTML=`<div class="gid">${g.id}</div><div class="gname">${g.name}</div>
+    <div class="meter"><i style="width:${g.pct}%;background:${g.fill}"></i></div>
+    <div class="grow"><span class="chip ${g.state[1]}">${g.state[0]}</span>
+    <span class="avs">${g.avs.map(a=>`<span style="background:${AG[a[1]].bg};color:${AG[a[1]].fg}">${a[0]}</span>`).join('')}</span></div>`;
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.gate').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');
+    const items=ITEMS.filter(i=>i.gate===g.id);
+    document.getElementById('qh').textContent='Awaiting '+g.id;
+    document.getElementById('qc').textContent=items.length+' items';
+    renderQueue(g.id);
+    if(items.length) selectItem(items[0].wid); else clearDetail(g.id);
+  });
+  gb.appendChild(el);
+});
+
+function renderQueue(gate){
+  const q=document.getElementById('queue');q.innerHTML='';
+  const items=ITEMS.filter(i=>i.gate===gate);
+  if(!items.length){q.innerHTML='<div class="hint">No items awaiting this gate.</div>';return;}
+  items.forEach(it=>{
+    const el=document.createElement('div');el.className='qitem'+(it.wid===cur?' sel':'');
+    el.innerHTML=`<div class="wid">${it.wid} · ${it.chain[0].id}</div><div class="wt">${it.wt}</div>
+      <div class="qm"><span class="chip st-run">◆ ${gate}</span><span class="chip st-lock">cov ${it.coverage}</span></div>`;
+    el.addEventListener('click',()=>selectItem(it.wid));
+    q.appendChild(el);
+  });
+}
+function clearDetail(gate){
+  document.getElementById('dwid').textContent='';
+  document.getElementById('dwt').textContent=gate+' — no items awaiting';
+  document.getElementById('trace').innerHTML='<div class="hint" style="padding:20px">Nothing queued for this gate right now.</div>';
+  document.getElementById('evidence').innerHTML='';document.getElementById('ledger').innerHTML='';
+  document.getElementById('approvers').innerHTML='<div class="hint">—</div>';
+}
+
+let cur='WI-88';
+function selectItem(wid){
+  cur=wid;const it=ITEMS.find(i=>i.wid===wid);
+  document.querySelectorAll('.qitem').forEach(q=>q.classList.toggle('sel',q.querySelector('.wid').textContent.startsWith(wid)));
+  document.getElementById('dwid').textContent=it.wid;
+  document.getElementById('dwt').textContent=it.wt;
+  document.getElementById('coverage').textContent='coverage '+it.coverage;
+  // spine
+  const t=document.getElementById('trace');t.innerHTML='';
+  it.chain.forEach((n,i)=>{
+    const node=document.createElement('div');node.className='tnode '+n.cls;
+    const glyph=n.cls==='pending'?'○':(n.cls==='stale'?'▲':'●');
+    node.innerHTML=`<div class="s">${glyph} ${n.s}</div><div class="id">${n.id}</div>${n.by?`<div class="meta">by ${n.by}</div>`:''}`;
+    if(n.ev){node.addEventListener('click',()=>showEvidence(wid,i,node));}
+    t.appendChild(node);
+    if(i<it.chain.length-1){
+      const e=document.createElement('div');
+      const nextPending=it.chain[i+1].cls==='pending';const thisStale=it.chain[i+1].cls==='stale'||n.cls==='stale';
+      e.className='tedge'+(thisStale?' stale':(nextPending?' off':''));
+      t.appendChild(e);
+    }
+  });
+  document.getElementById('evidence').innerHTML='';
+  renderLedger(it.ledger);
+  renderApprovers(it);
+  updateSignBtn(it);
+}
+function showEvidence(wid,idx,node){
+  document.querySelectorAll('.tnode').forEach(n=>n.classList.remove('sel'));node.classList.add('sel');
+  const it=ITEMS.find(i=>i.wid===wid);const n=it.chain[idx];const ev=n.ev;
+  const box=document.getElementById('evidence');
+  const byAv=n.by?`<span class="mono-av" style="background:${AG[n.by].bg};color:${AG[n.by].fg}">${AG[n.by].av}</span>`:'';
+  box.innerHTML=`<div class="evidence">
+    <div class="et">${byAv} ${n.s} · <span class="mono" style="color:var(--ink-2)">${n.id}</span></div>
+    <div style="font-size:12px;color:var(--ink-3)">${ev.title}</div>
+    <div class="ex">${ev.quote}</div>
+    <dl class="kv"><dt>author</dt><dd>${ev.dt}</dd><dt>timestamp</dt><dd>${ev.ts}</dd><dt>content hash</dt><dd>${ev.hash}</dd></dl>
+  </div>`;
+}
+function renderLedger(rows){
+  const l=document.getElementById('ledger');l.innerHTML='';
+  rows.forEach((r,i)=>{
+    const av=AG[r[1]]||AG.human;
+    const el=document.createElement('div');el.className='lr';
+    el.innerHTML=`<div class="ts">${r[0]}</div>
+      <div class="who"><span class="mono-av" style="background:${av.bg};color:${av.fg}">${av.av}</span>${r[1]}</div>
+      <div class="act"><span class="${r[3]}">${r[2]}</span> · ${r[4]}</div>
+      <div class="hash">${i>0?'←':''}${r[5]}</div>`;
+    l.appendChild(el);
+  });
+}
+function renderApprovers(it){
+  const a=document.getElementById('approvers');a.innerHTML='';
+  it.approvers.forEach(p=>{
+    const av=AG[p.by]||AG.human;
+    const el=document.createElement('div');el.className='approver';
+    el.innerHTML=`<span class="mono-av" style="width:24px;height:24px;background:${av.bg};color:${av.fg}">${av.av}</span>
+      <div><div class="nm">${p.nm}</div><div class="rl">${p.rl}</div></div>
+      <div class="st" style="color:${p.st[1]}">${p.st[0]}</div>`;
+    a.appendChild(el);
+  });
+}
+function updateSignBtn(it){
+  const btn=document.getElementById('signbtn');
+  const you=it.approvers.find(p=>p.nm==='You');
+  const blocked=it.chain.some(c=>c.cls==='stale');
+  if(blocked){btn.disabled=true;btn.textContent='Blocked — link a spec first';}
+  else if(you && you.st[0].startsWith('✓')){btn.disabled=true;btn.textContent='You have signed ✓';}
+  else{btn.disabled=false;btn.textContent='Sign off '+it.gate+' · '+it.wid;}
+}
+function signOff(){
+  const it=ITEMS.find(i=>i.wid===cur);
+  const you=it.approvers.find(p=>p.nm==='You');if(!you)return;
+  you.st=['✓ Signed','var(--ok)'];you.by='human';
+  const note=document.getElementById('notes').value.trim();
+  const now=new Date();const ts=now.toISOString().slice(0,16).replace('T',' ');
+  const hash='sig-'+Math.random().toString(16).slice(2,8);
+  it.ledger.push([ts,'human','domain-expert signed'+(note?' ("'+note.slice(0,28)+(note.length>28?'…':'')+'")':''),'v-ok',it.gate+'·'+it.wid,hash]);
+  // if all signed, pass the gate
+  const allSigned=it.approvers.every(p=>p.st[0].startsWith('✓'));
+  renderApprovers(it);renderLedger(it.ledger);updateSignBtn(it);
+  document.getElementById('notes').value='';
+  // flash newest ledger row
+  const rows=document.querySelectorAll('#ledger .lr');if(rows.length)rows[rows.length-1].classList.add('new');
+  if(allSigned){
+    const g=GATES.find(x=>x.id===it.gate);
+    document.querySelectorAll('.gate').forEach(el=>{
+      if(el.querySelector('.gid').textContent===it.gate){
+        el.querySelector('.chip').outerHTML='<span class="chip st-ok">● Passed</span>';
+        el.querySelector('.meter i').style.width='100%';el.querySelector('.meter i').style.background='var(--ok)';
+      }
+    });
+  }
+}
+function reqChanges(){
+  const it=ITEMS.find(i=>i.wid===cur);
+  const now=new Date();const ts=now.toISOString().slice(0,16).replace('T',' ');
+  it.ledger.push([ts,'human','changes requested','v-crit',it.gate+'·'+it.wid,'chg-'+Math.random().toString(16).slice(2,8)]);
+  renderLedger(it.ledger);
+  const rows=document.querySelectorAll('#ledger .lr');if(rows.length)rows[rows.length-1].classList.add('new');
+}
+
+// init
+renderQueue('G-DESIGN');
+selectItem('WI-88');
+showEvidence('WI-88',0,document.querySelectorAll('#trace .tnode')[0]);
+</script>
+</body>
+</html>

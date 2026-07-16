@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fleet · Mission Control — 4C Shade</title>
+<style>
+:root{
+  --bg:#0A0D13;--surface-1:#0F131B;--surface-2:#151A24;--surface-3:#1C2230;--surface-4:#232B3B;
+  --border:#242C3A;--border-2:#313B4D;--overlay:rgba(5,7,11,.62);
+  --ink-1:#EAEEF6;--ink-2:#AEB8CC;--ink-3:#727E93;--ink-4:#4B5567;
+  --accent:#37CFBD;--accent-hover:#4ADED0;--accent-press:#28B4A3;--accent-fg:#04120F;
+  --accent-weak:rgba(55,207,189,.14);--accent-line:rgba(55,207,189,.38);
+  --spectral:linear-gradient(90deg,#8B7CF0 0%,#4EC5E0 52%,#37CFBD 100%);
+  --prism:#8B7CF0;--prism-weak:rgba(139,124,240,.16);
+  --claude:#E0785B;--claude-weak:rgba(224,120,91,.16);
+  --gemini:#5B9DF9;--gemini-weak:rgba(91,157,249,.16);
+  --human:#AEB8CC;--human-weak:rgba(174,184,204,.12);
+  --ok:#46C98A;--ok-weak:rgba(70,201,138,.14);
+  --warn:#E7B54B;--warn-weak:rgba(231,181,75,.14);
+  --risk:#E8894A;--risk-weak:rgba(232,137,74,.14);
+  --crit:#E86A6A;--crit-weak:rgba(232,106,106,.14);
+  --info:#5B9DF9;--info-weak:rgba(91,157,249,.14);
+  --r-1:6px;--r-2:10px;--r-3:14px;--r-pill:999px;
+  --shadow-1:0 1px 2px rgba(0,0,0,.4);--shadow-2:0 8px 28px -10px rgba(0,0,0,.62);--shadow-pop:0 16px 48px -14px rgba(0,0,0,.72);
+  --font-sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI Variable Display","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--bg);color:var(--ink-1);font-family:var(--font-sans);font-size:13.5px;line-height:20px;-webkit-font-smoothing:antialiased}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent);border-radius:var(--r-1)}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--surface-4);border-radius:99px;border:2px solid transparent;background-clip:padding-box}
+
+/* shell */
+.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:48px;flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:0 14px;background:var(--surface-1);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:600}
+.brand .mark{width:20px;height:20px;border-radius:5px;background:var(--spectral);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
+.ws{display:flex;align-items:center;gap:7px;padding:5px 9px;background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-1);font-size:12.5px;color:var(--ink-2)}
+.ws b{color:var(--ink-1);font-weight:600}
+.crumb{color:var(--ink-3);font-size:12.5px}.crumb b{color:var(--ink-2);font-weight:500}
+.spacer{flex:1}
+.ribbon{display:flex;align-items:center;gap:5px}
+.gdot{display:flex;align-items:center;gap:5px;padding:3px 8px;border-radius:var(--r-pill);font-size:10.5px;font-weight:600;letter-spacing:.04em;font-family:var(--font-mono);border:1px solid var(--border)}
+.gdot i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.search{display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-1);color:var(--ink-3);font-size:12.5px;width:200px}
+.search kbd{margin-left:auto;font-family:var(--font-mono);font-size:10px;background:var(--surface-1);border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--ink-3)}
+.avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;border:1px solid var(--border-2)}
+
+.body{flex:1;display:flex;min-height:0}
+.rail{width:216px;flex:0 0 auto;background:var(--surface-1);border-right:1px solid var(--border);padding:12px 10px;overflow:auto;display:flex;flex-direction:column;gap:3px}
+.rail .grp{margin:10px 8px 4px}
+.nav{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--r-1);color:var(--ink-2);font-size:13px;font-weight:500;text-decoration:none;cursor:pointer}
+.nav:hover{background:var(--surface-3);color:var(--ink-1)}
+.nav.on{background:var(--accent-weak);color:var(--ink-1);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.nav .ic{width:16px;text-align:center;color:var(--ink-3)}
+.nav.on .ic{color:var(--accent)}
+.nav .ct{margin-left:auto;font-size:11px;color:var(--ink-3);font-family:var(--font-mono)}
+.rail hr{border:none;border-top:1px solid var(--border);margin:10px 4px}
+
+.main{flex:1;min-width:0;overflow:auto;display:flex;flex-direction:column}
+.inspector{width:396px;flex:0 0 auto;background:var(--surface-1);border-left:1px solid var(--border);overflow:auto;display:none}
+.inspector.open{display:block}
+
+/* summary strip */
+.strip{display:flex;gap:12px;padding:16px 18px 4px;flex-wrap:wrap}
+.tile{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-2);padding:12px 14px;min-width:150px;flex:1}
+.tile .k{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.tile .v{font-size:26px;font-weight:600;font-family:var(--font-mono);font-variant-numeric:tabular-nums;margin-top:4px;letter-spacing:-.01em}
+.tile .sub{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.tile.spark{min-width:210px;display:flex;flex-direction:column}
+.tile.attn{box-shadow:inset 0 0 0 1px var(--warn-weak)}
+.tile.attn .v{color:var(--warn)}
+
+/* toolbar */
+.toolbar{display:flex;align-items:center;gap:10px;padding:12px 18px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-1);padding:2px}
+.seg button{border:none;background:transparent;color:var(--ink-3);font-size:12px;font-weight:600;padding:5px 11px;border-radius:5px}
+.seg button.on{background:var(--surface-4);color:var(--ink-1)}
+.chipf{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-pill);padding:5px 11px;font-size:12px;color:var(--ink-2)}
+.chipf .x{color:var(--ink-4)}
+
+/* board */
+.board{display:flex;gap:14px;padding:6px 18px 20px;align-items:flex-start;overflow-x:auto;flex:1}
+.col{flex:0 0 288px;display:flex;flex-direction:column;gap:10px}
+.colhead{display:flex;align-items:center;gap:8px;padding:6px 4px}
+.colhead .ct{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);background:var(--surface-3);border-radius:var(--r-pill);padding:1px 8px}
+.colhead.queue{border-left:2px solid var(--warn);padding-left:8px;border-radius:2px}
+
+.card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-2);padding:12px 13px 11px 15px;position:relative;cursor:pointer;transition:transform .06s ease,background .1s ease,box-shadow .1s ease}
+.card::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;border-radius:2px;background:var(--stripe,var(--ink-3))}
+.card:hover{background:var(--surface-3);box-shadow:var(--shadow-1);transform:translateY(-1px)}
+.card.sel{box-shadow:0 0 0 1px var(--accent-line),var(--shadow-1);background:var(--surface-3)}
+.card .top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.mono-av{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:10px;font-weight:700;font-family:var(--font-mono)}
+.card .who{font-size:12.5px;font-weight:600}
+.card .tid{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--ink-3)}
+.card .title{font-size:13px;font-weight:600;line-height:18px;margin:0 0 3px}
+.card .req{font-family:var(--font-mono);font-size:11px;color:var(--ink-3)}
+.card .doing{font-size:12px;color:var(--ink-2);margin-top:6px;display:flex;gap:6px;align-items:baseline}
+.card .arts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.card .foot{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:11px;color:var(--ink-3)}
+
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:var(--r-pill);padding:2px 8px;font-size:11px;font-weight:600;line-height:16px;white-space:nowrap}
+.chip .g{width:6px;height:6px;border-radius:50%}
+.art{display:inline-flex;align-items:center;gap:5px;border-radius:var(--r-1);padding:2px 7px;font-size:11px;font-weight:600;background:var(--surface-3);border:1px solid var(--border);color:var(--ink-2);font-family:var(--font-mono)}
+.art:hover{border-color:var(--border-2);color:var(--ink-1)}
+.st-ok{background:var(--ok-weak);color:var(--ok)}.st-warn{background:var(--warn-weak);color:var(--warn)}
+.st-crit{background:var(--crit-weak);color:var(--crit)}.st-info{background:var(--info-weak);color:var(--info)}
+.st-run{background:var(--accent-weak);color:var(--accent)}.st-risk{background:var(--risk-weak);color:var(--risk)}
+.tag{font-size:10.5px;color:var(--ink-3);font-family:var(--font-mono);border:1px solid var(--border);border-radius:4px;padding:0 5px}
+
+/* inspector */
+.insp-head{padding:14px 16px;border-bottom:1px solid var(--border)}
+.insp-head .row1{display:flex;align-items:center;gap:9px}
+.insp-head .close{margin-left:auto;background:var(--surface-3);border:1px solid var(--border);color:var(--ink-2);border-radius:var(--r-1);width:26px;height:26px;font-size:15px;line-height:1}
+.insp-title{font-size:15px;font-weight:600;margin:11px 0 3px;line-height:20px}
+.insp-sub{font-size:12px;color:var(--ink-3)}
+.tabs{display:flex;gap:2px;padding:0 12px;border-bottom:1px solid var(--border);background:var(--surface-1);position:sticky;top:0}
+.tabs button{border:none;background:transparent;color:var(--ink-3);font-size:12.5px;font-weight:600;padding:11px 12px;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--ink-1);border-bottom-color:var(--accent)}
+.panel{padding:16px;display:none}.panel.on{display:block}
+.md h4{margin:0 0 8px;font-size:13px}.md p{margin:0 0 10px;color:var(--ink-2)}
+.md ol,.md ul{margin:0 0 10px;padding-left:18px;color:var(--ink-2)}.md li{margin:3px 0}
+.md code{font-family:var(--font-mono);font-size:12px;background:var(--surface-3);padding:1px 5px;border-radius:4px;color:var(--ink-1)}
+.diff{font-family:var(--font-mono);font-size:12px;line-height:18px;border:1px solid var(--border);border-radius:var(--r-1);overflow:hidden}
+.diff .fn{background:var(--surface-3);padding:6px 10px;color:var(--ink-2);border-bottom:1px solid var(--border);font-size:11.5px}
+.diff .ln{display:flex;gap:10px;padding:0 10px;white-space:pre}
+.diff .ln .g{width:26px;color:var(--ink-4);text-align:right;user-select:none}
+.diff .add{background:rgba(70,201,138,.10)}.diff .add .t{color:#bfe9d0}
+.diff .del{background:rgba(232,106,106,.10)}.diff .del .t{color:#f0c0c0}
+.testrow{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r-1);margin-bottom:7px;font-size:12.5px}
+.testrow .nm{color:var(--ink-2)}.testrow .ms{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--ink-3)}
+.bar{height:6px;border-radius:99px;background:var(--surface-3);overflow:hidden;margin:6px 0 14px}
+.bar i{display:block;height:100%;background:var(--ok)}
+.trace{display:flex;align-items:center;gap:0;overflow-x:auto;padding:6px 0 12px}
+.tnode{flex:0 0 auto;display:flex;flex-direction:column;gap:3px;align-items:flex-start;border:1px solid var(--accent-line);background:var(--surface-2);border-radius:var(--r-1);padding:7px 10px;min-width:96px}
+.tnode.pending{border-style:dashed;border-color:var(--border-2);opacity:.7}
+.tnode .s{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.tnode .id{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-1)}
+.tedge{flex:0 0 22px;height:2px;background:var(--spectral)}
+.tedge.off{background:var(--border-2)}
+.actionbar{display:flex;gap:8px;padding:14px 16px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--surface-1)}
+.btn{border:1px solid var(--border-2);background:var(--surface-3);color:var(--ink-1);font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:var(--r-1)}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+.btn.primary:hover{background:var(--accent-hover)}
+.btn.danger{color:var(--crit);border-color:var(--border)}
+.ledger-mini{border:1px solid var(--border);border-radius:var(--r-1);overflow:hidden;margin-top:4px}
+.ledger-mini .lr{display:flex;gap:9px;padding:7px 10px;font-family:var(--font-mono);font-size:11px;color:var(--ink-3);border-bottom:1px solid var(--border)}
+.ledger-mini .lr:last-child{border-bottom:none}
+.ledger-mini .lr b{color:var(--ink-1);font-weight:600}
+.hint{color:var(--ink-4);font-size:11px;padding:6px 4px;text-align:center}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- top context bar -->
+  <div class="topbar">
+    <div class="brand"><span class="mark"></span> Shade</div>
+    <div class="ws"><b>Acme</b> Shade ▾</div>
+    <div class="crumb"><b>Console</b> / Fleet · Mission Control</div>
+    <div class="spacer"></div>
+    <div class="ribbon" title="Global gate state">
+      <span class="gdot" style="border-color:var(--accent-line)"><i style="background:var(--accent)"></i>G-DESIGN</span>
+      <span class="gdot"><i style="background:var(--warn)"></i>G-LOCK</span>
+      <span class="gdot"><i style="background:var(--ink-4)"></i>G-PUSH</span>
+      <span class="gdot"><i style="background:var(--ink-4)"></i>G-CLIENT</span>
+      <span class="gdot"><i style="background:var(--ink-4)"></i>G-MONEY</span>
+    </div>
+    <div class="search">⌕ Search objects… <kbd>⌘K</kbd></div>
+    <div class="avatar" style="background:var(--human-weak);color:var(--ink-1)">CT</div>
+  </div>
+
+  <div class="body">
+    <!-- left rail -->
+    <nav class="rail">
+      <div class="grp label">Console</div>
+      <a class="nav on"><span class="ic">◈</span> Fleet <span class="ct">14</span></a>
+      <a class="nav" href="gate-traceability.html"><span class="ic">⛨</span> Gates <span class="ct">3</span></a>
+      <a class="nav" href="second-brain.html"><span class="ic">◍</span> Second Brain</a>
+      <a class="nav"><span class="ic">≋</span> Activity</a>
+      <hr/>
+      <div class="grp label">Backbone <span style="color:var(--ink-4);font-weight:500;text-transform:none;letter-spacing:0">· Huly + overlay</span></div>
+      <a class="nav"><span class="ic">◧</span> Tracker</a>
+      <a class="nav"><span class="ic">▤</span> Documents</a>
+      <a class="nav"><span class="ic">▦</span> Specs · QMS</a>
+      <a class="nav"><span class="ic">◫</span> Test Mgmt</a>
+      <div style="flex:1"></div>
+      <div class="hint">Prism coordinator · online</div>
+    </nav>
+
+    <!-- main -->
+    <main class="main">
+      <div class="strip">
+        <div class="tile"><div class="k">Active threads</div><div class="v">14</div><div class="sub">3 Prism · 8 Claude · 3 Gemini</div></div>
+        <div class="tile attn"><div class="k">Awaiting your review</div><div class="v">2</div><div class="sub">gate sign-off queue</div></div>
+        <div class="tile"><div class="k">Blocked</div><div class="v" style="color:var(--crit)">1</div><div class="sub">CI failure · TH-2051</div></div>
+        <div class="tile"><div class="k">Merged today</div><div class="v" style="color:var(--ok)">9</div><div class="sub">+3 vs. yesterday</div></div>
+        <div class="tile spark">
+          <div class="k">Throughput · 12h</div>
+          <svg width="100%" height="46" viewBox="0 0 200 46" preserveAspectRatio="none" style="margin-top:6px">
+            <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(55,207,189,.28)"/><stop offset="1" stop-color="rgba(55,207,189,0)"/></linearGradient></defs>
+            <path d="M0,38 L18,34 L36,36 L54,28 L72,30 L90,22 L108,24 L126,16 L144,18 L162,12 L180,14 L200,8 L200,46 L0,46 Z" fill="url(#sg)"/>
+            <path d="M0,38 L18,34 L36,36 L54,28 L72,30 L90,22 L108,24 L126,16 L144,18 L162,12 L180,14 L200,8" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+            <circle cx="200" cy="8" r="2.8" fill="var(--accent)"/>
+          </svg>
+          <div class="sub">threads reaching Done / hour</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <span class="label" style="margin-right:2px">Group by</span>
+        <div class="seg">
+          <button class="on">State</button><button>Agent</button><button>Work-item</button><button>Gate</button>
+        </div>
+        <span class="chipf">All agents <span class="x">▾</span></span>
+        <span class="chipf">Workspace: Acme <span class="x">▾</span></span>
+        <div style="flex:1"></div>
+        <span class="chipf" style="color:var(--ink-3)">Live · updated 4s ago</span>
+      </div>
+
+      <div class="board" id="board">
+        <!-- columns populated by JS -->
+      </div>
+    </main>
+
+    <!-- inspector drawer -->
+    <aside class="inspector" id="insp">
+      <div class="insp-head">
+        <div class="row1">
+          <span class="mono-av" id="iav">CL</span>
+          <span class="who" id="iwho">Claude</span>
+          <span class="chip" id="istate">◆ Awaiting review</span>
+          <button class="close" onclick="closeInsp()">✕</button>
+        </div>
+        <div class="insp-title" id="ititle">—</div>
+        <div class="insp-sub"><span class="mono" id="itid">TH-0000</span> · <span class="mono" id="ireq">REQ-000</span> · <span id="imodel">—</span></div>
+      </div>
+      <div class="tabs">
+        <button class="on" data-t="plan" onclick="tab(this)">Plan</button>
+        <button data-t="diff" onclick="tab(this)">Diff</button>
+        <button data-t="tests" onclick="tab(this)">Tests</button>
+        <button data-t="prov" onclick="tab(this)">Provenance</button>
+      </div>
+      <div class="panel on" id="p-plan"></div>
+      <div class="panel" id="p-diff"></div>
+      <div class="panel" id="p-tests"></div>
+      <div class="panel" id="p-prov"></div>
+      <div class="actionbar">
+        <button class="btn primary">Approve</button>
+        <button class="btn danger">Request changes</button>
+        <button class="btn">Reassign ▾</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const AG = {
+  prism:{av:'PR',name:'Prism',cls:'--prism',bg:'var(--prism-weak)',fg:'var(--prism)'},
+  claude:{av:'CL',name:'Claude',cls:'--claude',bg:'var(--claude-weak)',fg:'var(--claude)'},
+  gemini:{av:'GM',name:'Gemini',cls:'--gemini',bg:'var(--gemini-weak)',fg:'var(--gemini)'}
+};
+// generic software-delivery placeholder data (no client specifics)
+const THREADS = [
+  {id:'TH-2043',ag:'claude',col:'review',title:'Rework checkout total to integer cents',req:'REQ-014',doing:'Diff ready · awaiting G-DESIGN sign-off',state:['◆ Awaiting review','st-warn'],model:'claude · sonnet · subs',
+    arts:[['⌥ Diff +142/−31','diff'],['✓ Tests 18/18','tests'],['◫ Plan','plan']],
+    plan:`<div class="md"><h4>Plan · REQ-014 checkout totals</h4><p>Move all money math to integer cents; render with a single <code>formatMoney()</code>. Remove float accumulation in <code>CartTotals</code>.</p><ol><li>Introduce <code>Money</code> value type (cents + currency).</li><li>Refactor <code>CartTotals.subtotal/tax/total</code>.</li><li>Add property tests for rounding.</li><li>Backfill snapshot fixtures.</li></ol><p>Touches 6 files · est. low risk · no schema change.</p></div>`,
+    diff:`<div class="diff"><div class="fn">src/cart/CartTotals.ts</div>
+<div class="ln del"><span class="g">142</span><span class="t">-  const total = subtotal + subtotal * 0.13</span></div>
+<div class="ln add"><span class="g">142</span><span class="t">+  const total = addCents(subtotal, taxCents(subtotal))</span></div>
+<div class="ln"><span class="g">143</span><span class="t">   return total</span></div>
+<div class="fn" style="margin-top:8px">src/money/Money.ts (new)</div>
+<div class="ln add"><span class="g">1</span><span class="t">+export const addCents = (a:number,b:number)=> a + b</span></div>
+<div class="ln add"><span class="g">2</span><span class="t">+export const taxCents = (c:number)=> Math.round(c * 0.13)</span></div></div>`,
+    tests:`<div style="font-size:12.5px;color:var(--ink-2);margin-bottom:8px">18 passed · 0 failed · 1.9s</div><div class="bar"><i style="width:100%"></i></div>
+<div class="testrow"><span class="chip st-ok"><span class="g" style="background:var(--ok)"></span>pass</span><span class="nm">rounds tax half-up at boundary</span><span class="ms">4ms</span></div>
+<div class="testrow"><span class="chip st-ok"><span class="g" style="background:var(--ok)"></span>pass</span><span class="nm">no float drift over 10k line items</span><span class="ms">61ms</span></div>
+<div class="testrow"><span class="chip st-ok"><span class="g" style="background:var(--ok)"></span>pass</span><span class="nm">total = subtotal + tax (property)</span><span class="ms">120ms</span></div>`,
+    prov:`<div class="label" style="margin-bottom:8px">Traceability</div><div class="trace">
+<div class="tnode"><span class="s">Requirement</span><span class="id">REQ-014</span></div><span class="tedge"></span>
+<div class="tnode"><span class="s">Spec</span><span class="id">SPEC-07</span></div><span class="tedge"></span>
+<div class="tnode"><span class="s">Code</span><span class="id">TH-2043</span></div><span class="tedge off"></span>
+<div class="tnode pending"><span class="s">Test</span><span class="id">pending</span></div><span class="tedge off"></span>
+<div class="tnode pending"><span class="s">Deploy</span><span class="id">—</span></div></div>
+<div class="label" style="margin:12px 0 6px">Audit trail</div><div class="ledger-mini">
+<div class="lr">14:02:11 · <b>Claude</b> · opened thread · <b>TH-2043</b> · a1b9f3c</div>
+<div class="lr">14:19:40 · <b>Claude</b> · plan submitted · <b>REQ-014</b> · 7c2e0b1</div>
+<div class="lr">14:41:02 · <b>you</b> · reviewing… · <b>TH-2043</b> · —</div></div>` },
+  {id:'TH-2048',ag:'gemini',col:'review',title:'Checkout redesign — high-fidelity spec',req:'REQ-014',doing:'Design spec ready for G-DESIGN',state:['◆ Awaiting review','st-warn'],model:'gemini · 2.x · MCP',
+    arts:[['◫ Spec','plan'],['⬒ 6 screens','plan']],
+    plan:`<div class="md"><h4>Design spec · Checkout redesign</h4><p>3-step checkout collapsed to a single reviewable page; totals block pinned. 6 screens delivered as Stitch export + tokens.</p><ul><li>Single-page layout · sticky order summary</li><li>Inline validation on address fields</li><li>Total block wired to <code>REQ-014</code> cents math</li></ul><p>Ready for domain-expert + design sign-off (G-DESIGN).</p></div>`,
+    diff:`<div class="hint">No code diff — design artifact. See Plan tab.</div>`,
+    tests:`<div class="hint">No automated tests on a design spec — reviewed at G-DESIGN.</div>`,
+    prov:`<div class="label" style="margin-bottom:8px">Traceability</div><div class="trace">
+<div class="tnode"><span class="s">Requirement</span><span class="id">REQ-014</span></div><span class="tedge"></span>
+<div class="tnode"><span class="s">Spec</span><span class="id">SPEC-07</span></div><span class="tedge off"></span>
+<div class="tnode pending"><span class="s">Code</span><span class="id">pending</span></div></div>
+<div class="label" style="margin:12px 0 6px">Audit trail</div><div class="ledger-mini">
+<div class="lr">13:20:00 · <b>Gemini</b> · spec drafted · <b>SPEC-07</b> · 55aa10f</div>
+<div class="lr">13:58:22 · <b>Gemini</b> · submitted to G-DESIGN · <b>SPEC-07</b> · 9f0c4d2</div></div>` },
+  {id:'TH-2051',ag:'claude',col:'blocked',title:'Migrate orders table to DECIMAL(19,4)',req:'REQ-021',doing:'CI failed — migration lock timeout',state:['✕ Blocked','st-crit'],model:'claude · sonnet · subs',
+    arts:[['⌥ Diff +88/−12','diff'],['✕ Tests 14/16','tests']],
+    plan:`<div class="md"><h4>Plan · REQ-021 money column precision</h4><p>Alter <code>orders.total</code> to <code>DECIMAL(19,4)</code> with a backfill migration.</p><ol><li>Add column, backfill from cents.</li><li>Dual-write window.</li><li>Cut over reads, drop old.</li></ol></div>`,
+    diff:`<div class="diff"><div class="fn">migrations/0042_orders_decimal.sql</div>
+<div class="ln add"><span class="g">1</span><span class="t">+ALTER TABLE orders ADD COLUMN total_d DECIMAL(19,4);</span></div>
+<div class="ln add"><span class="g">2</span><span class="t">+UPDATE orders SET total_d = total_cents / 100.0;</span></div></div>`,
+    tests:`<div style="font-size:12.5px;color:var(--crit);margin-bottom:8px">14 passed · 2 failed · lock timeout</div><div class="bar"><i style="width:87%;background:var(--crit)"></i></div>
+<div class="testrow"><span class="chip st-crit"><span class="g" style="background:var(--crit)"></span>fail</span><span class="nm">migration acquires lock &lt; 5s</span><span class="ms">5001ms</span></div>
+<div class="testrow"><span class="chip st-crit"><span class="g" style="background:var(--crit)"></span>fail</span><span class="nm">dual-write keeps parity</span><span class="ms">—</span></div>
+<div class="testrow"><span class="chip st-ok"><span class="g" style="background:var(--ok)"></span>pass</span><span class="nm">backfill math exact</span><span class="ms">33ms</span></div>`,
+    prov:`<div class="hint">Blocked — resolve CI before traceability advances.</div>` },
+  {id:'TH-2039',ag:'prism',col:'working',title:'Schedule weekly QMS doc-upkeep sweep',req:'REQ-009',doing:'Reconciling stale spec links (3 of 11)',state:['● Running','st-run'],model:'prism · local OSS',
+    arts:[['◫ Plan','plan'],['≋ Log','plan']],
+    plan:`<div class="md"><h4>Routine · doc-upkeep</h4><p>Weekly sweep: find controlled docs whose linked requirements changed since last Effective; flag for re-review.</p><ul><li>11 specs scanned · 3 drifted</li><li>Opens tracker issues, tags owners</li></ul></div>`,
+    diff:`<div class="hint">Coordinator routine — no code diff.</div>`,
+    tests:`<div class="hint">N/A — housekeeping routine.</div>`,
+    prov:`<div class="hint">Feeds G-LOCK freshness checks.</div>` },
+  {id:'TH-2055',ag:'claude',col:'working',title:'Add idempotency keys to payments API',req:'REQ-030',doing:'Writing handler + retry tests',state:['● Running','st-run'],model:'claude · sonnet · subs',
+    arts:[['⌥ Diff +64/−4','diff'],['◫ Plan','plan']],
+    plan:`<div class="md"><h4>Plan · REQ-030 idempotency</h4><p>Add <code>Idempotency-Key</code> support to POST /payments; store key→result for 24h.</p></div>`,
+    diff:`<div class="diff"><div class="fn">src/api/payments.ts</div>
+<div class="ln add"><span class="g">51</span><span class="t">+  const key = req.header('Idempotency-Key')</span></div>
+<div class="ln add"><span class="g">52</span><span class="t">+  const prior = await idem.get(key); if (prior) return prior</span></div></div>`,
+    tests:`<div class="hint">In progress — tests being written.</div>`,
+    prov:`<div class="hint">Chain forms once tests land.</div>` },
+  {id:'TH-2058',ag:'gemini',col:'working',title:'Empty-state illustrations for tracker',req:'REQ-033',doing:'Generating 4 variants',state:['● Running','st-run'],model:'gemini · 2.x · MCP',
+    arts:[['⬒ 4 variants','plan']],
+    plan:`<div class="md"><h4>Design · empty states</h4><p>4 on-brand empty-state illustrations using Shade tokens for the tracker overlay.</p></div>`,
+    diff:`<div class="hint">Design artifact.</div>`,tests:`<div class="hint">N/A.</div>`,prov:`<div class="hint">—</div>` },
+  {id:'TH-2061',ag:'prism',col:'planning',title:'Break down "invoicing" epic into work-items',req:'REQ-041',doing:'Drafting 8 candidate work-items from spec',state:['◐ Planning','st-info'],model:'prism · local OSS',
+    arts:[['◫ Draft plan','plan']],
+    plan:`<div class="md"><h4>Decomposition · invoicing epic</h4><p>Proposes 8 work-items with acceptance criteria, each cited back to SPEC-12. Awaiting operator confirm before dispatch to Claude/Gemini.</p></div>`,
+    diff:`<div class="hint">—</div>`,tests:`<div class="hint">—</div>`,
+    prov:`<div class="label" style="margin-bottom:8px">Traceability</div><div class="trace"><div class="tnode"><span class="s">Requirement</span><span class="id">REQ-041</span></div><span class="tedge"></span><div class="tnode"><span class="s">Spec</span><span class="id">SPEC-12</span></div></div>` },
+  {id:'TH-2062',ag:'claude',col:'planning',title:'Rate-limit the public search endpoint',req:'REQ-044',doing:'Reading codebase · drafting approach',state:['◐ Planning','st-info'],model:'claude · sonnet · subs',
+    arts:[['◫ Draft plan','plan']],
+    plan:`<div class="md"><h4>Approach · search rate-limit</h4><p>Token-bucket per API key; 429 with Retry-After. Draft plan for review.</p></div>`,
+    diff:`<div class="hint">—</div>`,tests:`<div class="hint">—</div>`,prov:`<div class="hint">—</div>` },
+  {id:'TH-2030',ag:'claude',col:'done',title:'Fix off-by-one in cycle burndown',req:'REQ-002',doing:'Merged · deployed to staging',state:['● Passed','st-ok'],model:'claude · sonnet · subs',
+    arts:[['⌥ Diff +12/−9','diff'],['✓ Tests 22/22','tests'],['⇧ Deploy','prov']],
+    plan:`<div class="md"><h4>Fix · burndown off-by-one</h4><p>Inclusive end-of-day boundary corrected.</p></div>`,
+    diff:`<div class="diff"><div class="fn">src/charts/burndown.ts</div><div class="ln del"><span class="g">30</span><span class="t">-  for (let d=0; d&lt;days; d++)</span></div><div class="ln add"><span class="g">30</span><span class="t">+  for (let d=0; d&lt;=days; d++)</span></div></div>`,
+    tests:`<div style="font-size:12.5px;color:var(--ok);margin-bottom:8px">22 passed · 0 failed</div><div class="bar"><i style="width:100%"></i></div><div class="testrow"><span class="chip st-ok"><span class="g" style="background:var(--ok)"></span>pass</span><span class="nm">last day included in burndown</span><span class="ms">7ms</span></div>`,
+    prov:`<div class="label" style="margin-bottom:8px">Traceability · complete</div><div class="trace">
+<div class="tnode"><span class="s">Requirement</span><span class="id">REQ-002</span></div><span class="tedge"></span>
+<div class="tnode"><span class="s">Spec</span><span class="id">SPEC-01</span></div><span class="tedge"></span>
+<div class="tnode"><span class="s">Code</span><span class="id">a1b9f3c</span></div><span class="tedge"></span>
+<div class="tnode"><span class="s">Test</span><span class="id">run#812</span></div><span class="tedge"></span>
+<div class="tnode"><span class="s">Deploy</span><span class="id">stg-4471</span></div></div>
+<div class="label" style="margin:12px 0 6px">Audit trail</div><div class="ledger-mini">
+<div class="lr">11:02 · <b>Claude</b> · merged · <b>a1b9f3c</b> · 3d1f9aa</div>
+<div class="lr">11:05 · <b>you</b> · G-PUSH signed · <b>REQ-002</b> · e77b210</div>
+<div class="lr">11:07 · <b>Prism</b> · deployed staging · <b>stg-4471</b> · c0aa993</div></div>` }
+];
+const COLS=[
+  {k:'planning',t:'Planning'},{k:'working',t:'Working'},{k:'review',t:'Awaiting review',queue:true},{k:'blocked',t:'Blocked'},{k:'done',t:'Done'}
+];
+const board=document.getElementById('board');
+COLS.forEach(c=>{
+  const items=THREADS.filter(t=>t.col===c.k);
+  const col=document.createElement('div');col.className='col';
+  col.innerHTML=`<div class="colhead ${c.queue?'queue':''}"><span class="label" style="color:var(--ink-2)">${c.t}</span><span class="ct">${items.length}</span></div>`;
+  items.forEach(t=>{
+    const a=AG[t.ag];
+    const card=document.createElement('div');card.className='card';card.style.setProperty('--stripe',`var(${a.cls})`);
+    card.innerHTML=`
+      <div class="top">
+        <span class="mono-av" style="background:${a.bg};color:${a.fg}">${a.av}</span>
+        <span class="who">${a.name}</span>
+        <span class="tid">${t.id}</span>
+      </div>
+      <div class="title">${t.title}</div>
+      <div class="req">${t.req}</div>
+      <div class="doing">${t.doing}</div>
+      <div class="arts">${t.arts.map(x=>`<span class="art" data-tab="${x[1]}">${x[0]}</span>`).join('')}</div>
+      <div class="foot"><span class="chip ${t.state[1]}">${t.state[0]}</span><span class="tag">${t.model}</span></div>`;
+    card.addEventListener('click',(e)=>{const wantTab=e.target.closest('.art')?.dataset.tab; openInsp(t.id,wantTab);});
+    col.appendChild(card);
+  });
+  board.appendChild(col);
+});
+
+let selCard=null;
+function openInsp(id,wantTab){
+  const t=THREADS.find(x=>x.id===id);const a=AG[t.ag];
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('sel'));
+  // mark selected
+  [...document.querySelectorAll('.card')].forEach(c=>{ if(c.querySelector('.tid')?.textContent===id) c.classList.add('sel'); });
+  document.getElementById('iav').textContent=a.av;
+  document.getElementById('iav').style.background=a.bg;document.getElementById('iav').style.color=a.fg;
+  document.getElementById('iwho').textContent=a.name;
+  const st=document.getElementById('istate');st.textContent=t.state[0];st.className='chip '+t.state[1];
+  document.getElementById('ititle').textContent=t.title;
+  document.getElementById('itid').textContent=t.id;
+  document.getElementById('ireq').textContent=t.req;
+  document.getElementById('imodel').textContent=t.model;
+  document.getElementById('p-plan').innerHTML=t.plan;
+  document.getElementById('p-diff').innerHTML=t.diff;
+  document.getElementById('p-tests').innerHTML=t.tests;
+  document.getElementById('p-prov').innerHTML=t.prov;
+  document.getElementById('insp').classList.add('open');
+  const tt=wantTab&&['plan','diff','tests','prov'].includes(wantTab)?wantTab:'plan';
+  showTab(tt);
+}
+function closeInsp(){document.getElementById('insp').classList.remove('open');document.querySelectorAll('.card').forEach(c=>c.classList.remove('sel'));}
+function tab(btn){showTab(btn.dataset.t);}
+function showTab(t){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  ['plan','diff','tests','prov'].forEach(x=>document.getElementById('p-'+x).classList.toggle('on',x===t));
+}
+// open the first review item by default so the drawer isn't empty
+openInsp('TH-2043','diff');
+</script>
+</body>
+</html>
