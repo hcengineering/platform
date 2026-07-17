@@ -196,9 +196,8 @@ export async function OnDepartmentStaff (txes: Tx[], control: TriggerControl): P
         const removedDepartments = await buildHierarchy(lastDepartment, control)
         const removed = removedDepartments.map((p) => p._id)
         const pushIds = push.map((p) => p._id)
-        const added = push.filter((p) => !removed.includes(p._id))
         const removedIds = exclude(pushIds, removed)
-        result.push(...getTxes(control.txFactory, [employee], added, removedIds))
+        result.push(...getTxes(control.txFactory, [employee], push, removedIds))
       }
     }
   }
@@ -228,12 +227,10 @@ export async function OnDepartmentUpdate (txes: Tx[], control: TriggerControl): 
     const oldHierarchy = oldParent !== undefined ? await buildHierarchy(oldParent, control) : []
     const newHierarchy = newParent !== undefined ? await buildHierarchy(newParent, control) : []
 
-    const oldHierarchyIds = oldHierarchy.map((p) => p._id)
     const newHierarchyIds = newHierarchy.map((p) => p._id)
-    const added = newHierarchy.filter((p) => !oldHierarchyIds.includes(p._id))
     const removed = oldHierarchy.filter((p) => !newHierarchyIds.includes(p._id)).map((p) => p._id)
 
-    result.push(...getTxes(control.txFactory, members, added, removed))
+    result.push(...getTxes(control.txFactory, members, newHierarchy, removed))
   }
   return result
 }
@@ -309,29 +306,30 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
  * @public
  */
 export async function OnEmployeeDeactivate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const result: Tx[] = []
-  for (const tx of txes) {
-    if (core.class.TxMixin !== tx._class) {
-      continue
-    }
-    const ctx = tx as TxMixin<Person, Employee>
-    if (ctx.mixin !== contact.mixin.Employee || ctx.attributes.active !== false) {
-      continue
-    }
-    const employee = ctx.objectId as Ref<Employee>
-    const departments = await control.queryFind(control.ctx, hr.class.Department, {})
-    const removed = departments.filter((dep) => dep.members.some((p) => p === employee))
-    result.push(
-      ...getTxes(
-        control.txFactory,
-        [employee],
-        [],
-        removed.map((p) => p._id)
-      )
-    )
-  }
+  return []
+  // const result: Tx[] = []
+  // for (const tx of txes) {
+  //   if (core.class.TxMixin !== tx._class) {
+  //     continue
+  //   }
+  //   const ctx = tx as TxMixin<Person, Employee>
+  //   if (ctx.mixin !== contact.mixin.Employee || ctx.attributes.active !== false) {
+  //     continue
+  //   }
+  //   const employee = ctx.objectId as Ref<Employee>
+  //   const departments = await control.queryFind(control.ctx, hr.class.Department, {})
+  //   const removed = departments.filter((dep) => dep.members.some((p) => p === employee))
+  //   result.push(
+  //     ...getTxes(
+  //       control.txFactory,
+  //       [employee],
+  //       [],
+  //       removed.map((p) => p._id)
+  //     )
+  //   )
+  // }
 
-  return result
+  // return result
 }
 
 // TODO: why we need specific email notifications instead of using general flow?

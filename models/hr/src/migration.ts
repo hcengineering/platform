@@ -136,7 +136,7 @@ async function rebuildDepartmentMembersFromStaff (client: MigrationClient): Prom
   const persons = await client.find<Person>(DOMAIN_CONTACT, { _class: contact.class.Person })
   for (const person of persons) {
     const staff = client.hierarchy.asIf<Person, Staff>(person, hr.mixin.Staff)
-    if (staff?.department === undefined || !staff.active) {
+    if (staff?.department === undefined) {
       continue
     }
 
@@ -171,6 +171,10 @@ export const hrOperation: MigrateOperation = {
       },
       {
         state: 'rebuildDepartmentMembersFromStaff',
+        func: rebuildDepartmentMembersFromStaff
+      },
+      {
+        state: 'rebuildDepartmentMembersFromStaffIncludingInactive',
         func: rebuildDepartmentMembersFromStaff
       }
     ])

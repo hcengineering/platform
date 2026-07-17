@@ -19,7 +19,7 @@
   import { type Department } from '@hcengineering/hr'
   import { getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Section, showPopup, Scroller } from '@hcengineering/ui'
-  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Viewlet, ViewletPreference, type ViewOptions } from '@hcengineering/view'
   import { Table, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../plugin'
 
@@ -60,6 +60,7 @@
 
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
+  let viewOptions: ViewOptions | undefined
 </script>
 
 <Section id="members" label={hr.string.Members} icon={hr.icon.Members}>
@@ -72,7 +73,7 @@
         bind:loading
         viewletQuery={{ _id: hr.viewlet.TableMember }}
       />
-      <ViewletSettingButton kind={'tertiary'} bind:viewlet />
+      <ViewletSettingButton kind={'tertiary'} bind:viewlet bind:viewOptions />
       {#if !readonly}
         <Button id={hr.string.AddMember} icon={IconAdd} kind={'ghost'} on:click={createApp} />
       {/if}
@@ -83,9 +84,11 @@
     {#if members.length > 0 && viewlet}
       <Scroller horizontal noFade={false}>
         <Table
-          _class={contact.mixin.Employee}
+          _class={hr.mixin.Staff}
           config={preference?.config ?? viewlet.config}
           options={viewlet.options}
+          viewOptionsConfig={viewlet.viewOptions?.other}
+          {viewOptions}
           query={{ _id: { $in: members } }}
           loadingProps={{ length: members.length }}
           {readonly}

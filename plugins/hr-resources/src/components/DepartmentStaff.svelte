@@ -19,7 +19,7 @@
   import { Department } from '@hcengineering/hr'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, IconAdd, Label, Scroller, Section, eventToHTMLElement, showPopup } from '@hcengineering/ui'
-  import { Viewlet, ViewletPreference } from '@hcengineering/view'
+  import { Viewlet, ViewletPreference, type ViewOptions } from '@hcengineering/view'
   import { Table, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
   import hr from '../plugin'
   import { addMember } from '../utils'
@@ -63,6 +63,7 @@
   let preference: ViewletPreference | undefined
   let loading = false
   let viewlet: WithLookup<Viewlet> | undefined
+  let viewOptions: ViewOptions | undefined
 </script>
 
 <Section label={hr.string.Members}>
@@ -75,7 +76,7 @@
         bind:loading
         viewletQuery={{ _id: hr.viewlet.TableMember }}
       />
-      <ViewletSettingButton kind={'ghost'} bind:viewlet />
+      <ViewletSettingButton kind={'ghost'} bind:viewlet bind:viewOptions />
       <Button id={hr.string.AddEmployee} icon={IconAdd} kind={'ghost'} on:click={add} />
     </div>
   </svelte:fragment>
@@ -87,6 +88,8 @@
           _class={hr.mixin.Staff}
           config={preference?.config ?? viewlet?.config ?? []}
           options={viewlet?.options}
+          viewOptionsConfig={viewlet?.viewOptions?.other}
+          {viewOptions}
           query={{ _id: { $in: members } }}
           loadingProps={{ length: members.length }}
         />
