@@ -62,6 +62,7 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       user-select: none;
+      -webkit-user-select: none;
       min-width: 0;
       line-height: 150%;
       color: var(--theme-caption-color);

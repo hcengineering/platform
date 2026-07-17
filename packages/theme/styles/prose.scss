@@ -542,6 +542,7 @@ pre.proseCodeBlock>pre.proseCode {
   }
 
   header {
+    -webkit-user-select: none;
     user-select: none;
     position: absolute;
     right: 0.5rem;

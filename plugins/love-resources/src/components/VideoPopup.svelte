@@ -73,6 +73,7 @@
     align-items: stretch;
     width: 100%;
     max-width: 100%;
+    -webkit-user-select: none;
     user-select: none;
 
     &:not(.isDock) {

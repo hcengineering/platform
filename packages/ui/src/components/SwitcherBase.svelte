@@ -63,6 +63,7 @@
     span {
       text-wrap: nowrap;
       color: var(--global-secondary-TextColor);
+      -webkit-user-select: none;
       user-select: none;
     }
   }

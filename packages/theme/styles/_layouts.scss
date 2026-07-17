@@ -61,6 +61,7 @@ button {
   border: 1px solid transparent;
   outline: none;
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
 }
 input {
@@ -124,6 +125,7 @@ li {
 }
 
 p {
+  -webkit-user-select: inherit;
   user-select:inherit;
   
   a {
@@ -345,6 +347,7 @@ input.search {
     color: var(--theme-content-color);
 
     overflow: hidden;
+    -webkit-user-select: none;
     user-select: none;
 
     &:not(.nowrap) {
@@ -886,6 +889,7 @@ a.no-line {
   font-size: 1rem;
   color: var(--theme-caption-color);
   user-select: none;
+  -webkit-user-select: none;
   text-rendering: optimizeLegibility;
 }
 .trans-title {
@@ -894,6 +898,7 @@ a.no-line {
   font-size: .75rem;
   color: var(--theme-dark-color);
   user-select: none;
+  -webkit-user-select: none;
   text-rendering: optimizeLegibility;
 }
 .text-16px { font-size: 16px; }
@@ -941,6 +946,7 @@ a.no-line {
   overflow: hidden;
   white-space: pre-wrap;
   width: max-content;
+  -webkit-user-select: none;
   user-select: none;
   min-width: auto;
 }

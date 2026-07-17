@@ -168,6 +168,7 @@
     font-weight: 500;
     font-size: var(--body-font-size);
     color: var(--theme-caption-color);
+    -webkit-user-select: none;
     user-select: none;
   }
 </style>
