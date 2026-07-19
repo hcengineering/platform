@@ -264,6 +264,15 @@ function parseExportFormat (rawFormat: unknown): ExportFormat {
   return rawFormat as ExportFormat
 }
 
+function toSafeFormatFileToken (format: ExportFormat): 'json' | 'csv' {
+  switch (format) {
+    case ExportFormat.JSON:
+      return 'json'
+    case ExportFormat.CSV:
+      return 'csv'
+  }
+}
+
 export function createServer (
   storageConfig: StorageConfiguration,
   dbUrl: string,
@@ -416,7 +425,8 @@ export function createServer (
         } else {
           // Pack all spaces into a single archive so the sync endpoint can still return exactly one downloadable file.
           archiveDir = await fs.mkdtemp(join(tmpdir(), 'export-archive-'))
-          const archiveName = `export-${wsIds.uuid}-${format}-${Date.now()}.zip`
+          const safeFormatToken = toSafeFormatFileToken(format)
+          const archiveName = `export-${wsIds.uuid}-${safeFormatToken}-${Date.now()}.zip`
           exportedFile = join(archiveDir, archiveName)
           await saveToArchive(exportDir, exportedFile)
         }
