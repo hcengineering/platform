@@ -399,6 +399,7 @@ export function createServer (
       const txOperations = new TxOperations(platformClient, socialId)
 
       const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
+      let archiveDir: string | undefined
       try {
         const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, wsIds, config)
         await exporter.export(_class, exportDir, { format, attributesOnly: attributesOnly ?? false, query })
@@ -408,17 +409,35 @@ export function createServer (
           throw new ApiError(400, 'No data to export')
         }
 
-        if (files.length !== 1) {
-          throw new ApiError(400, 'Unexpected number of files exported')
+        let exportedFile: string
+        if (files.length === 1) {
+          // Single space exported: return its file directly.
+          exportedFile = join(exportDir, files[0])
+        } else {
+          // Pack all spaces into a single archive so the sync endpoint can still return exactly one downloadable file.
+          archiveDir = await fs.mkdtemp(join(tmpdir(), 'export-archive-'))
+          const archiveName = `export-${wsIds.uuid}-${format}-${Date.now()}.zip`
+          exportedFile = join(archiveDir, archiveName)
+          await saveToArchive(exportDir, exportedFile)
         }
 
-        const exportedFile = join(exportDir, files[0])
-        res.download(exportedFile, basename(exportedFile), () => {})
+        await new Promise<void>((resolve, reject) => {
+          res.download(exportedFile, basename(exportedFile), (err) => {
+            if (err != null && !res.headersSent) {
+              reject(err)
+            } else {
+              resolve()
+            }
+          })
+        })
       } catch (err: any) {
         measureCtx.error('Export failed:', err)
         throw err
       } finally {
         void fs.rm(exportDir, { recursive: true, force: true })
+        if (archiveDir !== undefined) {
+          void fs.rm(archiveDir, { recursive: true, force: true })
+        }
       }
     })
   )
