@@ -270,6 +270,8 @@ function toSafeFormatFileToken (format: ExportFormat): 'json' | 'csv' {
       return 'json'
     case ExportFormat.CSV:
       return 'csv'
+    default:
+      throw new ApiError(400, `Invalid format. Supported formats: ${supportedExportFormats.join(', ')}`)
   }
 }
 
