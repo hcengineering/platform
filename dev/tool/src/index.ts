@@ -75,7 +75,6 @@ import { RatingCalculator, ratingEvents, type QueueRatingMessage } from '@hcengi
 
 import core, {
   AccountRole,
-  generateId,
   isArchivingMode,
   isDeletingMode,
   MeasureMetricsContext,
@@ -92,7 +91,6 @@ import core, {
   type PersonId,
   type PersonUuid,
   type Ref,
-  type Space,
   type Tx,
   type Version,
   type WorkspaceDataId,
@@ -1136,8 +1134,7 @@ export function devTool (
     .command('validate-workspace <workspace>')
     .description('Validate a (restored) workspace: connect as system, check model, data counts and blob download')
     .option('--blobs <blobs>', 'Number of sample blobs to download-check (0 to skip)', '5')
-    .option('--write', 'Run a write smoke-test (creates and removes a temporary space; use on clones only)', false)
-    .action(async (workspace: string, cmd: { blobs: string, write: boolean }) => {
+    .action(async (workspace: string, cmd: { blobs: string }) => {
       await withAccountDatabase(async (db) => {
         const ws = await getWorkspace(db, workspace)
         if (ws === null) {
@@ -1156,9 +1153,16 @@ export function devTool (
         const info = (m: string): void => {
           console.log(`  • ${m}`)
         }
+        const warn = (m: string): void => {
+          console.warn(`  ! ${m}`)
+        }
         const emsg = (err: any): string => (err instanceof Error ? err.message : String(err))
 
         console.log(`Validating workspace ${ws.url ?? ws.uuid} (${ws.uuid})`)
+
+        if ((process.env.STORAGE_CONFIG ?? '').trim() === '') {
+          warn('STORAGE_CONFIG is not set — storage falls back to default minio; blob results may be wrong')
+        }
 
         const workspaceStorage: StorageAdapter = buildStorageFromConfig(storageConfigFromEnv())
         let connection: Client | undefined
@@ -1209,81 +1213,67 @@ export function devTool (
             }
           }
           await countOf('transactions (Tx)', core.class.Tx)
-          const blobTotal = await countOf('blobs (Blob)', core.class.Blob)
           await countOf('spaces (Space)', core.class.Space)
 
-          // 4. Blob end-to-end: download a sample and verify bytes match metadata
+          // 4. Verify blobs
           const nBlobs = parseInt(cmd.blobs)
-          if (!Number.isNaN(nBlobs) && nBlobs > 0) {
-            if (blobTotal === 0) {
-              fail('no blobs found in workspace — attachments/files would be missing')
-            } else if (blobTotal > 0) {
-              try {
-                const blobClient = new BlobClient(workspaceStorage, wsIds)
-                const sample = await ops.findAll(core.class.Blob, {}, { limit: nBlobs })
-                let okCount = 0
-                for (const blob of sample) {
-                  try {
-                    let bytes = 0
-                    await blobClient.writeTo(toolCtx, blob._id, blob.size, {
-                      write: (buffer: Buffer, cb: (err?: any) => void) => {
-                        bytes += buffer.length
-                        cb()
-                      },
-                      end: (cb: () => void) => {
-                        cb()
-                      }
-                    })
-                    if (bytes === blob.size) {
-                      okCount++
-                    } else {
-                      fail(`blob ${blob._id}: downloaded ${bytes} of ${blob.size} bytes`)
-                    }
-                  } catch (err: any) {
-                    fail(`blob ${blob._id} download failed: ${emsg(err)}`)
+          try {
+            const blobClient = new BlobClient(workspaceStorage, wsIds)
+            const iterator = await workspaceStorage.listStream(toolCtx, wsIds)
+            let blobCount = 0
+            const sample: Array<{ id: Ref<Doc>, size: number }> = []
+            try {
+              while (true) {
+                const batch = await iterator.next()
+                if (batch.length === 0) {
+                  break
+                }
+                for (const b of batch) {
+                  blobCount++
+                  if (!Number.isNaN(nBlobs) && nBlobs > 0 && sample.length < nBlobs) {
+                    sample.push({ id: b._id, size: b.size })
                   }
                 }
-                if (okCount === sample.length && okCount > 0) {
-                  pass(`downloaded ${okCount}/${sample.length} sample blobs, sizes match metadata`)
-                }
-              } catch (err: any) {
-                fail(`blob download check failed: ${emsg(err)}`)
               }
-            }
-          }
-
-          // 5. Optional write smoke-test (mutating — clones only)
-          if (cmd.write) {
-            const spaceId = generateId<Space>()
-            try {
-              await ops.createDoc(
-                core.class.Space,
-                core.space.Space,
-                {
-                  name: `__validate_${spaceId}`,
-                  description: 'temporary workspace validation space',
-                  private: true,
-                  archived: false,
-                  members: []
-                },
-                spaceId
-              )
-              const readBack = await ops.findOne(core.class.Space, { _id: spaceId })
-              if (readBack !== undefined) {
-                pass('write smoke-test: created and read back a temporary space')
-              } else {
-                fail('write smoke-test: created space not found on read-back')
-              }
-            } catch (err: any) {
-              fail(`write smoke-test (create) failed: ${emsg(err)}`)
             } finally {
-              try {
-                await ops.removeDoc(core.class.Space, core.space.Space, spaceId)
-                pass('write smoke-test: removed temporary space')
-              } catch (err: any) {
-                fail(`write smoke-test (cleanup) failed, temporary space ${spaceId} may remain: ${emsg(err)}`)
+              await iterator.close()
+            }
+
+            info(`blobs in storage: ${blobCount}`)
+            if (blobCount === 0) {
+              fail(
+                'no blobs found in storage — either the workspace has no files, ' +
+                  "or STORAGE_CONFIG does not point at this workspace's storage"
+              )
+            } else if (!Number.isNaN(nBlobs) && nBlobs > 0) {
+              let okCount = 0
+              for (const s of sample) {
+                try {
+                  let bytes = 0
+                  await blobClient.writeTo(toolCtx, s.id, s.size, {
+                    write: (buffer: Buffer, cb: (err?: any) => void) => {
+                      bytes += buffer.length
+                      cb()
+                    },
+                    end: (cb: () => void) => {
+                      cb()
+                    }
+                  })
+                  if (bytes === s.size) {
+                    okCount++
+                  } else {
+                    fail(`blob ${s.id}: downloaded ${bytes} of ${s.size} bytes`)
+                  }
+                } catch (err: any) {
+                  fail(`blob ${s.id} download failed: ${emsg(err)}`)
+                }
+              }
+              if (okCount === sample.length && okCount > 0) {
+                pass(`downloaded ${okCount}/${sample.length} sample blobs, sizes match metadata`)
               }
             }
+          } catch (err: any) {
+            fail(`blob storage check failed: ${emsg(err)}`)
           }
         } finally {
           await connection?.close()
@@ -1333,6 +1323,12 @@ export function devTool (
           accounts: boolean
         }
       ) => {
+        if ((process.env.STORAGE_CONFIG ?? '').trim() === '') {
+          console.warn(
+            'WARNING: STORAGE_CONFIG is not set — blob storage falls back to default minio. ' +
+              'Restored blobs may be written to the wrong storage. Set STORAGE_CONFIG to match the transactor before restoring.'
+          )
+        }
         await withAccountDatabase(async (db) => {
           const { txes, dbUrl } = prepareTools()
           const ws = await getWorkspace(db, workspaceId)
