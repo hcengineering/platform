@@ -1134,7 +1134,8 @@ export function devTool (
     .command('validate-workspace <workspace>')
     .description('Validate a (restored) workspace: connect as system, check model, data counts and blob download')
     .option('--blobs <blobs>', 'Number of sample blobs to download-check (0 to skip)', '5')
-    .action(async (workspace: string, cmd: { blobs: string }) => {
+    .option('--blob-limit <blobLimit>', 'Stop enumerating blobs after this many (0 = iterate all)', '0')
+    .action(async (workspace: string, cmd: { blobs: string, blobLimit: string }) => {
       await withAccountDatabase(async (db) => {
         const ws = await getWorkspace(db, workspace)
         if (ws === null) {
@@ -1215,12 +1216,15 @@ export function devTool (
           await countOf('transactions (Tx)', core.class.Tx)
           await countOf('spaces (Space)', core.class.Space)
 
-          // 4. Verify blobs
+          // 4. Verify blobs count
           const nBlobs = parseInt(cmd.blobs)
+          const blobLimit = parseInt(cmd.blobLimit)
+          const hasBlobLimit = !Number.isNaN(blobLimit) && blobLimit > 0
           try {
             const blobClient = new BlobClient(workspaceStorage, wsIds)
             const iterator = await workspaceStorage.listStream(toolCtx, wsIds)
             let blobCount = 0
+            let capped = false
             const sample: Array<{ id: Ref<Doc>, size: number }> = []
             try {
               while (true) {
@@ -1233,13 +1237,24 @@ export function devTool (
                   if (!Number.isNaN(nBlobs) && nBlobs > 0 && sample.length < nBlobs) {
                     sample.push({ id: b._id, size: b.size })
                   }
+                  if (hasBlobLimit && blobCount >= blobLimit) {
+                    capped = true
+                    break
+                  }
+                }
+                if (capped) {
+                  break
                 }
               }
             } finally {
               await iterator.close()
             }
 
-            info(`blobs in storage: ${blobCount}`)
+            if (capped) {
+              info(`blobs in storage: >= ${blobCount} (stopped at --blob-limit ${blobLimit})`)
+            } else {
+              info(`blobs in storage: ${blobCount}`)
+            }
             if (blobCount === 0) {
               fail(
                 'no blobs found in storage — either the workspace has no files, ' +
