@@ -124,6 +124,7 @@
     "ExecutionInitiator": "Inicjator wykonania",
     "ExecutionStarted": "Wykonanie rozpoczęte",
     "Filter": "Filtr",
+    "AllMatchValue": "Wszystkie pasujące wartości",
     "FirstMatchValue": "Pierwsza pasująca wartość",
     "ConfigLabel": "Konfiguracja procesu",
     "ConfigDescription": "Definiuj procesy do automatyzacji organizacji zadań i procesów biznesowych.",

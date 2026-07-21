@@ -388,6 +388,10 @@ export function createModel (builder: Builder): void {
     func: serverProcess.transform.FirstMatchValue
   })
 
+  builder.mixin(process.function.AllMatchValue, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
+    func: serverProcess.transform.AllMatchValue
+  })
+
   builder.mixin(process.function.Filter, process.class.ProcessFunction, serverProcess.mixin.FuncImpl, {
     func: serverProcess.transform.Filter
   })

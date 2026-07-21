@@ -121,6 +121,7 @@
     "ProcessFinished": "\"{process}\" süreci \"{state}\" durumunda tamamlandı",
     "NewProcessToDo": "Yeni süreç Eylem öğesi",
     "Filter": "Filtre",
+    "AllMatchValue": "Tüm eşleşen değerler",
     "FirstMatchValue": "İlk eşleşen değer",
     "ConfigLabel": "Süreç yapılandırması",
     "ConfigDescription": "İş akışlarını ve iş süreçlerini otomatikleştirmek için süreçler tanımlayın.",
