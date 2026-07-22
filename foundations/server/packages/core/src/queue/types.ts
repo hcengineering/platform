@@ -1,4 +1,4 @@
-import type { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
+import type { AccountUuid, MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 
 export enum QueueTopic {
   // Topic with partitions to split workspace transactions into
@@ -79,4 +79,17 @@ export interface PlatformQueueProducer<T> {
   close: () => Promise<void>
 
   getQueue: () => PlatformQueue
+}
+
+/**
+ * Lifecycle event broadcast on the account.lifecycle topic when an admin
+ * disables or re-enables an account. Consumed by TSessionManager to fan
+ * out TxWorkspaceEvent.AccountDisabled to all workspaces hosting that
+ * account, which the client uses to force-logout the affected user.
+ */
+export interface QueueAccountLifecycleMessage {
+  accountUuid: AccountUuid
+  event: 'disabled' | 'enabled'
+  timestamp: number
+  reason?: string
 }

@@ -83,7 +83,11 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV23Migration(ns, flavor),
     getV24Migration(ns, flavor),
     getV25Migration(ns, flavor),
-    getV26Migration(ns, flavor)
+    getV26Migration(ns, flavor),
+    getV27Migration(ns, flavor),
+    getV28Migration(ns, flavor),
+    getV29Migration(ns, flavor),
+    getV30Migration(ns, flavor)
   ]
 }
 
@@ -806,6 +810,106 @@ function getV26Migration (ns: string, flavor: DBFlavor): [string, string] {
     -- after model init, then cleared back to NULL.
     ALTER TABLE ${ns}.workspace
     ADD COLUMN IF NOT EXISTS pending_configuration JSONB;
+    `
+  ]
+}
+
+function getV27Migration (ns: string, flavor: DBFlavor): [string, string] {
+  const types = dbTypes[flavor]
+  return [
+    'account_db_v27_admin_user_management',
+    `
+    /* Account: disable + token-version + last activity */
+    ALTER TABLE ${ns}.account
+      ADD COLUMN IF NOT EXISTS disabled_at ${types.int8} NULL,
+      ADD COLUMN IF NOT EXISTS token_version ${types.int4} NOT NULL DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS last_activity_at ${types.int8} NULL;
+
+    /* Admin audit log table */
+    CREATE TABLE IF NOT EXISTS ${ns}.admin_audit_log (
+      id              ${types.string} NOT NULL DEFAULT gen_random_uuid()::TEXT,
+      ts_ms           ${types.int8} NOT NULL DEFAULT current_epoch_ms(),
+      admin_account   ${types.string} NOT NULL,
+      target_account  ${types.string} NOT NULL,
+      action          ${types.string} NOT NULL,
+      workspace_uuid  ${types.string} NULL,
+      details         JSONB NULL,
+      PRIMARY KEY (id)
+    );
+
+    CREATE INDEX IF NOT EXISTS admin_audit_log_target_idx ON ${ns}.admin_audit_log (target_account, ts_ms DESC);
+    CREATE INDEX IF NOT EXISTS admin_audit_log_admin_idx  ON ${ns}.admin_audit_log (admin_account, ts_ms DESC);
+    CREATE INDEX IF NOT EXISTS admin_audit_log_ts_idx     ON ${ns}.admin_audit_log (ts_ms DESC);
+    `
+  ]
+}
+
+function getV28Migration (ns: string, _flavor: DBFlavor): [string, string] {
+  // V28 — admin audit log: allow workspace-only entries; add admin-panel indexes.
+  // - target_account is nullable so performWorkspaceOperation can write
+  //   { workspace_uuid: ws, target_account: null } rows for archive/migrate/etc.
+  // - CHECK guarantees at least one target slot is filled.
+  // - 5 indexes cover the SQL-pushdown listAccountsAdmin query.
+  return [
+    'account_db_v28_admin_audit_log_relax_and_indexes',
+    `
+    ALTER TABLE ${ns}.admin_audit_log
+      ALTER COLUMN target_account DROP NOT NULL;
+
+    ALTER TABLE ${ns}.admin_audit_log
+      ADD CONSTRAINT admin_audit_log_target_required_chk
+      CHECK (target_account IS NOT NULL OR workspace_uuid IS NOT NULL);
+
+    CREATE INDEX IF NOT EXISTS admin_audit_log_workspace_idx
+      ON ${ns}.admin_audit_log (workspace_uuid, ts_ms DESC)
+      WHERE workspace_uuid IS NOT NULL;
+
+    CREATE INDEX IF NOT EXISTS account_disabled_at_idx
+      ON ${ns}.account (disabled_at);
+
+    CREATE INDEX IF NOT EXISTS account_last_activity_idx
+      ON ${ns}.account (last_activity_at);
+
+    CREATE INDEX IF NOT EXISTS social_id_person_verified_idx
+      ON ${ns}.social_id (person_uuid)
+      WHERE verified_on IS NOT NULL;
+
+    CREATE INDEX IF NOT EXISTS workspace_members_account_idx
+      ON ${ns}.workspace_members (account_uuid);
+    `
+  ]
+}
+
+function getV29Migration (ns: string, _flavor: DBFlavor): [string, string] {
+  // V29 — admin audit log: add batch_id column (Plan 1d Task 3).
+  // - Bulk-action service calls (bulkSetDisabled, bulkAddToWorkspace,
+  //   bulkRemoveFromWorkspace, bulkSendPasswordReset, performWorkspaceOperation
+  //   on a list) generate one UUID and stamp every row with it, so the admin UI
+  //   can render "these N rows are from one operation".
+  // - Single-action sites pass nothing — column stays NULL and existing rows
+  //   are unaffected.
+  // Index follows in V30 — CockroachDB rejects partial indexes on columns
+  // added in the same transaction ("column is not public"), so we split.
+  return [
+    'account_db_v29_admin_audit_log_batch_id',
+    `
+    ALTER TABLE ${ns}.admin_audit_log
+      ADD COLUMN IF NOT EXISTS batch_id UUID NULL;
+    `
+  ]
+}
+
+function getV30Migration (ns: string, _flavor: DBFlavor): [string, string] {
+  // V30 — partial index on the batch_id column added in V29.
+  // - WHERE batch_id IS NOT NULL keeps the index small: the vast majority of
+  //   rows are singleton actions (NULL).
+  // - Must be a separate migration because CockroachDB doesn't allow a partial
+  //   index DDL on a column added in the same transaction.
+  return [
+    'account_db_v30_admin_audit_log_batch_id_idx',
+    `
+    CREATE INDEX IF NOT EXISTS admin_audit_log_batch_id_idx
+      ON ${ns}.admin_audit_log (batch_id) WHERE batch_id IS NOT NULL;
     `
   ]
 }

@@ -101,6 +101,13 @@
     "EnterTwoFactorCode": "Enter two-factor authentication code",
     "TwoFactorCode": "Two-factor authentication code",
     "Verify": "Verify",
+    "AccountDisabledTitle": "Account disabled",
+    "AccountDisabledBody": "Your account has been disabled by an administrator. Please contact your administrator if you believe this is in error.",
+    "SignOut": "Sign out",
+    "AdminPanel": "Admin panel",
+    "AdminUsers": "Users",
+    "AdminWorkspaces": "Workspaces",
+    "BackToWorkbench": "Back to workbench",
     "CreateSampleProjects": "Create sample projects and demo content"
   }
 }

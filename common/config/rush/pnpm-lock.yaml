@@ -22910,6 +22910,9 @@ importers:
       '@hcengineering/analytics-providers':
         specifier: workspace:^0.7.0
         version: link:../../packages/analytics-providers
+      '@hcengineering/client-resources':
+        specifier: workspace:^0.7.0
+        version: link:../../foundations/core/packages/client-resources
       '@hcengineering/core':
         specifier: workspace:^0.7.26
         version: link:../../foundations/core/packages/core
@@ -30155,6 +30158,9 @@ importers:
       '@hcengineering/core':
         specifier: workspace:^0.7.26
         version: link:../../foundations/core/packages/core
+      '@hcengineering/kafka':
+        specifier: workspace:^0.7.18
+        version: link:../../foundations/server/packages/kafka
       '@hcengineering/platform':
         specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/platform
@@ -35785,6 +35791,9 @@ importers:
 
   ../../server/account:
     dependencies:
+      '@hcengineering/account-client':
+        specifier: workspace:^0.7.25
+        version: link:../../foundations/core/packages/account-client
       '@hcengineering/analytics':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/analytics
@@ -35879,6 +35888,9 @@ importers:
       '@hcengineering/account':
         specifier: workspace:^0.7.0
         version: link:../account
+      '@hcengineering/account-client':
+        specifier: workspace:^0.7.25
+        version: link:../../foundations/core/packages/account-client
       '@hcengineering/analytics':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/analytics

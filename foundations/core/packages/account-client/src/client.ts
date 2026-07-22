@@ -57,7 +57,17 @@ import type {
   UserProfile,
   WorkspaceConfiguration,
   WorkspaceLoginInfo,
-  WorkspaceOperation
+  WorkspaceOperation,
+  ListAccountsAdminParams,
+  AccountListRow,
+  AccountDetailsResponse,
+  AddWorkspaceMemberParams,
+  WorkspaceMembersAdminResponse,
+  BulkResult,
+  CreateAccountParams,
+  CreateAccountResponse,
+  ListAuditAdminParams,
+  ListAuditAdminResponse
 } from './types'
 import { getClientTimezone, isNetworkError } from './utils'
 
@@ -170,7 +180,6 @@ export interface AccountClient {
   getMailboxes: () => Promise<MailboxInfo[]>
   deleteMailbox: (mailbox: string) => Promise<void>
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
-  deleteAccount: (uuid: AccountUuid) => Promise<void>
 
   workerHandshake: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<void>
   getPendingWorkspace: (
@@ -267,6 +276,35 @@ export interface AccountClient {
   generate2faSecret: () => Promise<{ secret: string, url: string }>
   enable2fa: (secret: string, code: string) => Promise<void>
   disable2fa: (code: string) => Promise<void>
+
+  // Admin user management (V27)
+  listAccountsAdmin: (params: ListAccountsAdminParams) => Promise<{ total: number, accounts: AccountListRow[] }>
+  getAccountDetails: (accountUuid: AccountUuid) => Promise<AccountDetailsResponse>
+  listAuditAdmin: (params: ListAuditAdminParams) => Promise<ListAuditAdminResponse>
+  setWorkspaceMemberRole: (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid,
+    newRole: AccountRole
+  ) => Promise<{ ok: true }>
+  removeWorkspaceMember: (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid
+  ) => Promise<{ ok: true, wasMember: boolean }>
+  triggerPasswordReset: (accountUuid: AccountUuid) => Promise<{ ok: true, emailSentTo: string }>
+  disableAccount: (accountUuid: AccountUuid) => Promise<{ ok: true }>
+  enableAccount: (accountUuid: AccountUuid) => Promise<{ ok: true }>
+  addWorkspaceMember: (params: AddWorkspaceMemberParams) => Promise<AccountDetailsResponse>
+  getWorkspaceMembersAdmin: (workspaceUuid: WorkspaceUuid) => Promise<WorkspaceMembersAdminResponse>
+  createAccountAdmin: (params: CreateAccountParams) => Promise<CreateAccountResponse>
+  bulkAddToWorkspace: (
+    accountUuids: AccountUuid[],
+    workspaceUuid: WorkspaceUuid,
+    role: AccountRole
+  ) => Promise<BulkResult>
+  bulkRemoveFromWorkspace: (accountUuids: AccountUuid[], workspaceUuid: WorkspaceUuid) => Promise<BulkResult>
+  bulkSetDisabled: (accountUuids: AccountUuid[], disabled: boolean) => Promise<BulkResult>
+  bulkSendPasswordReset: (accountUuids: AccountUuid[]) => Promise<BulkResult>
+  getAdminEmails: () => Promise<{ emails: string[] }>
 }
 
 /** @public */
@@ -1057,15 +1095,6 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async deleteAccount (uuid: AccountUuid): Promise<void> {
-    const request = {
-      method: 'deleteAccount' as const,
-      params: { uuid }
-    }
-
-    await this.rpc(request)
-  }
-
   async releaseSocialId (
     personUuid: PersonUuid | undefined,
     type: SocialIdType,
@@ -1385,6 +1414,109 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async listAccountsAdmin (params: ListAccountsAdminParams): Promise<{ total: number, accounts: AccountListRow[] }> {
+    const request = { method: 'listAccountsAdmin' as const, params }
+    return await this.rpc(request)
+  }
+
+  async getAccountDetails (accountUuid: AccountUuid): Promise<AccountDetailsResponse> {
+    const request = { method: 'getAccountDetails' as const, params: { accountUuid } }
+    return await this.rpc(request)
+  }
+
+  async listAuditAdmin (params: ListAuditAdminParams): Promise<ListAuditAdminResponse> {
+    const request = { method: 'listAuditAdmin' as const, params }
+    return await this.rpc(request)
+  }
+
+  async setWorkspaceMemberRole (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid,
+    newRole: AccountRole
+  ): Promise<{ ok: true }> {
+    const request = {
+      method: 'setWorkspaceMemberRole' as const,
+      params: { accountUuid, workspaceUuid, newRole }
+    }
+    return await this.rpc(request)
+  }
+
+  async removeWorkspaceMember (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid
+  ): Promise<{ ok: true, wasMember: boolean }> {
+    const request = {
+      method: 'removeWorkspaceMember' as const,
+      params: { accountUuid, workspaceUuid }
+    }
+    return await this.rpc(request)
+  }
+
+  async triggerPasswordReset (accountUuid: AccountUuid): Promise<{ ok: true, emailSentTo: string }> {
+    const request = { method: 'triggerPasswordReset' as const, params: { accountUuid } }
+    return await this.rpc(request)
+  }
+
+  async disableAccount (accountUuid: AccountUuid): Promise<{ ok: true }> {
+    const request = { method: 'disableAccount' as const, params: { accountUuid } }
+    return await this.rpc(request)
+  }
+
+  async enableAccount (accountUuid: AccountUuid): Promise<{ ok: true }> {
+    const request = { method: 'enableAccount' as const, params: { accountUuid } }
+    return await this.rpc(request)
+  }
+
+  async addWorkspaceMember (params: AddWorkspaceMemberParams): Promise<AccountDetailsResponse> {
+    const request = { method: 'addWorkspaceMember' as const, params }
+    return await this.rpc(request)
+  }
+
+  async getWorkspaceMembersAdmin (workspaceUuid: WorkspaceUuid): Promise<WorkspaceMembersAdminResponse> {
+    const request = { method: 'getWorkspaceMembersAdmin' as const, params: { workspaceUuid } }
+    return await this.rpc(request)
+  }
+
+  async createAccountAdmin (params: CreateAccountParams): Promise<CreateAccountResponse> {
+    const request = { method: 'createAccountAdmin' as const, params }
+    return await this.rpc(request)
+  }
+
+  async bulkAddToWorkspace (
+    accountUuids: AccountUuid[],
+    workspaceUuid: WorkspaceUuid,
+    role: AccountRole
+  ): Promise<BulkResult> {
+    const request = {
+      method: 'bulkAddToWorkspace' as const,
+      params: { accountUuids, workspaceUuid, role }
+    }
+    return await this.rpc(request)
+  }
+
+  async bulkRemoveFromWorkspace (accountUuids: AccountUuid[], workspaceUuid: WorkspaceUuid): Promise<BulkResult> {
+    const request = {
+      method: 'bulkRemoveFromWorkspace' as const,
+      params: { accountUuids, workspaceUuid }
+    }
+    return await this.rpc(request)
+  }
+
+  async bulkSetDisabled (accountUuids: AccountUuid[], disabled: boolean): Promise<BulkResult> {
+    const request = { method: 'bulkSetDisabled' as const, params: { accountUuids, disabled } }
+    return await this.rpc(request)
+  }
+
+  async bulkSendPasswordReset (accountUuids: AccountUuid[]): Promise<BulkResult> {
+    const request = { method: 'bulkSendPasswordReset' as const, params: { accountUuids } }
+    return await this.rpc(request)
+  }
+
+  async getAdminEmails (): Promise<{ emails: string[] }> {
+    const request = { method: 'getAdminEmails' as const, params: {} }
+    return await this.rpc(request)
   }
 }
 

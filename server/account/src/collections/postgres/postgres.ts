@@ -18,13 +18,15 @@ import {
   type Version,
   type Person,
   type WorkspaceMemberInfo,
-  type AccountRole,
+  AccountRole,
   type WorkspaceUuid,
   type AccountUuid,
   type PersonUuid
 } from '@hcengineering/core'
 
 import { getMigrations } from './migrations'
+import { buildListAccountsAdminSql, rowToAccountListRow } from './listAccountsAdminPg'
+import { escapeLike } from '../../util/escapeLike'
 import type {
   DbCollection,
   Query,
@@ -50,8 +52,14 @@ import type {
   UserProfile,
   Subscription,
   WorkspacePermission,
-  DBFlavor
+  DBFlavor,
+  AdminAuditLogCollection,
+  AdminAuditLogEntry,
+  AdminAuditLogListParams,
+  AdminAuditLogListResult,
+  ListAccountsAdminQueryParams
 } from '../../types'
+import type { AccountListRow } from '@hcengineering/account-client'
 
 function toSnakeCase (str: string): string {
   // Preserve leading underscore
@@ -454,6 +462,9 @@ export class AccountPostgresDbCollection
         a.max_workspaces,
         a.failed_login_attempts,
         a.tfa_secret,
+        a.disabled_at,
+        a.token_version,
+        a.last_activity_at,
         p.hash,
         p.salt
       FROM ${this.getTableName()} as a
@@ -515,6 +526,224 @@ export class AccountPostgresDbCollection
   }
 }
 
+class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
+  constructor (
+    private readonly client: Sql,
+    private readonly ns: string
+  ) {}
+
+  private getTableName (): string {
+    return `${this.ns}.admin_audit_log`
+  }
+
+  async insert (entry: Omit<AdminAuditLogEntry, 'id' | 'tsMs'>): Promise<void> {
+    // batch_id (V29) is NULL for single-action call sites; bulk-action service
+    // functions generate one UUID per call and pass it through to every row.
+    const sql = `
+      INSERT INTO ${this.getTableName()}
+        (admin_account, target_account, action, workspace_uuid, details, batch_id)
+      VALUES ($1::text, $2::text, $3::text, $4::text, $5::jsonb, $6::uuid)
+    `
+    await this.client.unsafe(sql, [
+      entry.adminAccount,
+      entry.targetAccount,
+      entry.action,
+      entry.workspaceUuid,
+      entry.details != null ? JSON.stringify(entry.details) : null,
+      entry.batchId ?? null
+    ])
+  }
+
+  async findByTarget (target: AccountUuid, limit: number): Promise<AdminAuditLogEntry[]> {
+    const sql = `
+      SELECT id, ts_ms AS "tsMs", admin_account AS "adminAccount",
+             target_account AS "targetAccount", action,
+             workspace_uuid AS "workspaceUuid", details
+      FROM ${this.getTableName()}
+      WHERE target_account = $1::text
+      ORDER BY ts_ms DESC LIMIT $2::int
+    `
+    const rows = await this.client.unsafe(sql, [target, limit])
+    return rows.map((row: any) => this.parseRow(row))
+  }
+
+  async findByAdmin (admin: AccountUuid, limit: number): Promise<AdminAuditLogEntry[]> {
+    const sql = `
+      SELECT id, ts_ms AS "tsMs", admin_account AS "adminAccount",
+             target_account AS "targetAccount", action,
+             workspace_uuid AS "workspaceUuid", details
+      FROM ${this.getTableName()}
+      WHERE admin_account = $1::text
+      ORDER BY ts_ms DESC LIMIT $2::int
+    `
+    const rows = await this.client.unsafe(sql, [admin, limit])
+    return rows.map((row: any) => this.parseRow(row))
+  }
+
+  async listAuditAdmin (params: AdminAuditLogListParams): Promise<AdminAuditLogListResult> {
+    const conds: string[] = []
+    const args: any[] = []
+    const ph = (v: any): string => {
+      args.push(v)
+      return `$${args.length}`
+    }
+
+    const f = params.filter ?? {}
+    if (f.adminUuid != null) conds.push(`al.admin_account = ${ph(f.adminUuid)}`)
+    if (f.action != null) conds.push(`al.action = ${ph(f.action)}`)
+    if (f.targetAccountUuid != null) conds.push(`al.target_account = ${ph(f.targetAccountUuid)}`)
+    if (f.targetWorkspaceUuid != null) conds.push(`al.workspace_uuid = ${ph(f.targetWorkspaceUuid)}`)
+    if (f.from != null) conds.push(`al.ts_ms >= ${ph(f.from)}`)
+    if (f.to != null) conds.push(`al.ts_ms <= ${ph(f.to)}`)
+
+    // V30 — substring filters bound to UI-visible identifiers (Audit-log
+    // filter redesign). adminNameOrEmail matches against the admin
+    // person's first+last name OR any of their social_id values (email).
+    // targetNameOrUrl matches against the target account's name OR the
+    // target workspace's name/url.
+    const ns = this.ns
+    // V30 + D1 (security): substring filters must escape % and _ so a
+    // user typing `%` in the input does not turn into a broad wildcard.
+    // ESCAPE '\' is required everywhere the escaped pattern is used.
+    if (f.adminNameOrEmail != null && f.adminNameOrEmail.trim() !== '') {
+      const pat = `%${escapeLike(f.adminNameOrEmail.trim())}%`
+      const p = ph(pat)
+      conds.push(
+        `(ap.first_name ILIKE ${p} ESCAPE '\\' OR ap.last_name ILIKE ${p} ESCAPE '\\'
+          OR (ap.first_name || ' ' || ap.last_name) ILIKE ${p} ESCAPE '\\'
+          OR EXISTS (SELECT 1 FROM ${ns}.social_id s
+                     WHERE s.person_uuid::TEXT = al.admin_account
+                       AND s.value ILIKE ${p} ESCAPE '\\'))`
+      )
+    }
+    if (f.targetNameOrUrl != null && f.targetNameOrUrl.trim() !== '') {
+      const pat = `%${escapeLike(f.targetNameOrUrl.trim())}%`
+      const p = ph(pat)
+      conds.push(
+        `(tp.first_name ILIKE ${p} ESCAPE '\\' OR tp.last_name ILIKE ${p} ESCAPE '\\'
+          OR (tp.first_name || ' ' || tp.last_name) ILIKE ${p} ESCAPE '\\'
+          OR w.name ILIKE ${p} ESCAPE '\\' OR w.url ILIKE ${p} ESCAPE '\\')`
+      )
+    }
+    if (Array.isArray(f.actionIn) && f.actionIn.length > 0) {
+      conds.push(`al.action = ANY(${ph(f.actionIn)}::text[])`)
+    }
+
+    // V30 — sort with whitelist mapping. Default = time DESC (legacy).
+    // Cursor pagination is keyset-style for the time-sort default. For
+    // other sort fields we use offset-based pagination (cursor encodes
+    // the next offset as "o:<n>") because keyset on non-unique string
+    // columns would need composite cursors which add little value here
+    // and we only paginate within a single in-browser session anyway.
+    const sortField = params.sort?.field ?? 'time'
+    const sortDir: 'asc' | 'desc' = params.sort?.direction === 'asc' ? 'asc' : 'desc'
+    const SORT_COLUMNS: Record<string, string> = {
+      time: 'al.ts_ms',
+      admin: "COALESCE(ap.first_name, '') || ' ' || COALESCE(ap.last_name, '')",
+      action: 'al.action',
+      target: "COALESCE(tp.first_name || ' ' || tp.last_name, w.name, w.url, '')"
+    }
+    const sortCol = SORT_COLUMNS[sortField] ?? SORT_COLUMNS.time
+    const dirSql = sortDir === 'asc' ? 'ASC' : 'DESC'
+    // Tiebreaker by al.id to make the order deterministic across pages.
+    const orderBy = `${sortCol} ${dirSql}, al.id ${dirSql}`
+
+    let offsetSql = ''
+    if (params.cursor != null) {
+      const decoded = Buffer.from(params.cursor, 'base64').toString('utf-8')
+      if (decoded.startsWith('o:')) {
+        // Offset-style cursor used for non-time sort.
+        const off = Math.max(0, Number(decoded.slice(2)))
+        offsetSql = `OFFSET ${ph(off)}`
+      } else if (sortField === 'time') {
+        // Keyset cursor — only valid for the time-DESC default. Legacy
+        // format: base64("{ts_ms}_{id}"). Use DESC strict-less-than;
+        // for ASC we'd flip but the legacy cursor is only emitted in
+        // DESC mode, so this branch is only reached for DESC.
+        const sepIdx = decoded.lastIndexOf('_')
+        const cTs = decoded.slice(0, sepIdx)
+        const cId = decoded.slice(sepIdx + 1)
+        if (sortDir === 'desc') {
+          conds.push(`(al.ts_ms < ${ph(Number(cTs))} OR (al.ts_ms = ${ph(Number(cTs))} AND al.id < ${ph(cId)}))`)
+        } else {
+          conds.push(`(al.ts_ms > ${ph(Number(cTs))} OR (al.ts_ms = ${ph(Number(cTs))} AND al.id > ${ph(cId)}))`)
+        }
+      }
+      // Unknown cursor under a non-time sort: silently ignore (the page
+      // will simply restart from the top — safer than a hard error).
+    }
+
+    const where = conds.length === 0 ? 'TRUE' : conds.join(' AND ')
+    const limit = Math.min(Math.max(1, params.limit ?? 50), 200)
+    const limitPh = ph(limit + 1) // fetch +1 to detect nextCursor
+
+    const tbl = this.getTableName()
+    const sql = `
+      SELECT
+        al.id, al.ts_ms, al.admin_account, al.target_account, al.workspace_uuid, al.action, al.details, al.batch_id,
+        ap.first_name AS admin_first_name, ap.last_name AS admin_last_name,
+        tp.first_name AS target_first_name, tp.last_name AS target_last_name,
+        w.name AS target_ws_name, w.url AS target_ws_url
+      FROM ${tbl} al
+      LEFT JOIN ${ns}.person ap ON ap.uuid::TEXT = al.admin_account
+      LEFT JOIN ${ns}.person tp ON tp.uuid::TEXT = al.target_account
+      LEFT JOIN ${ns}.workspace w ON w.uuid::TEXT = al.workspace_uuid
+      WHERE ${where}
+      ORDER BY ${orderBy}
+      LIMIT ${limitPh}
+      ${offsetSql}
+    `
+    const rows = await this.client.unsafe(sql, args)
+    const hasMore = rows.length > limit
+    const visible = rows.slice(0, limit)
+    let nextCursor: string | null = null
+    if (hasMore) {
+      if (sortField === 'time') {
+        const last: any = visible[visible.length - 1]
+        nextCursor = Buffer.from(`${last.ts_ms}_${last.id}`).toString('base64')
+      } else {
+        // Offset cursor: previous offset (0 if absent) + page size.
+        const prevOffset =
+          params.cursor != null && Buffer.from(params.cursor, 'base64').toString('utf-8').startsWith('o:')
+            ? Number(Buffer.from(params.cursor, 'base64').toString('utf-8').slice(2))
+            : 0
+        nextCursor = Buffer.from(`o:${prevOffset + limit}`).toString('base64')
+      }
+    }
+
+    const entries = visible.map((r: any) => ({
+      id: r.id,
+      tsMs: Number(r.ts_ms),
+      adminAccount: r.admin_account as AccountUuid,
+      targetAccount: r.target_account as AccountUuid | null,
+      action: r.action,
+      workspaceUuid: r.workspace_uuid as WorkspaceUuid | null,
+      details: typeof r.details === 'string' ? JSON.parse(r.details) : r.details,
+      batchId: r.batch_id ?? null,
+      adminFirstName: r.admin_first_name ?? '',
+      adminLastName: r.admin_last_name ?? '',
+      targetFirstName: r.target_first_name ?? undefined,
+      targetLastName: r.target_last_name ?? undefined,
+      targetWsName: r.target_ws_name ?? undefined,
+      targetWsUrl: r.target_ws_url ?? undefined
+    }))
+
+    return { entries, nextCursor }
+  }
+
+  private parseRow (row: any): AdminAuditLogEntry {
+    return {
+      id: row.id,
+      tsMs: Number(row.tsMs),
+      adminAccount: row.adminAccount,
+      targetAccount: row.targetAccount,
+      action: row.action,
+      workspaceUuid: row.workspaceUuid,
+      details: typeof row.details === 'string' ? JSON.parse(row.details) : row.details
+    }
+  }
+}
+
 export class PostgresAccountDB implements AccountDB {
   private readonly retryOptions = {
     maxAttempts: 5,
@@ -540,6 +769,7 @@ export class PostgresAccountDB implements AccountDB {
   userProfile: PostgresDbCollection<UserProfile, 'personUuid'>
   subscription: PostgresDbCollection<Subscription, 'id'>
   workspacePermission: PostgresDbCollection<WorkspacePermission>
+  adminAuditLog: AdminAuditLogCollection
 
   constructor (
     readonly client: Sql,
@@ -609,6 +839,7 @@ export class PostgresAccountDB implements AccountDB {
       timestampFields: ['createdOn'],
       withRetryClient
     })
+    this.adminAuditLog = new PostgresAdminAuditLogCollection(client, ns)
   }
 
   getWsMembersTableName (): string {
@@ -854,11 +1085,47 @@ export class PostgresAccountDB implements AccountDB {
     )
   }
 
+  async unassignIfNotLastOwner (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<boolean> {
+    // L-RACE: lock the workspace's Owner rows FOR UPDATE so concurrent
+    // owner-removals serialize; the last-owner check + delete then run against
+    // a consistent, locked snapshot. On a serializable backend (CockroachDB)
+    // a conflicting txn retries via withRetry; on READ COMMITTED the row locks
+    // force the second caller to observe the first commit before re-checking.
+    return await this.withRetry(async (rTx) => {
+      const owners: any =
+        await rTx`SELECT account_uuid FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND role = ${AccountRole.Owner} FOR UPDATE`
+      const isOwner = owners.some((o: any) => o.account_uuid === accountUuid)
+      if (isOwner) {
+        const otherOwners = owners.filter((o: any) => o.account_uuid !== accountUuid)
+        if (otherOwners.length === 0) return false
+      }
+      await rTx`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+      return true
+    })
+  }
+
   async updateWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
     await this.withRetry(
       async (rTx) =>
         await rTx`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
     )
+  }
+
+  async updateWorkspaceRoleIfOtherOwnerExists (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid,
+    role: AccountRole
+  ): Promise<boolean> {
+    // L-RACE: see unassignIfNotLastOwner. Lock Owner rows, verify another Owner
+    // remains, then demote — all within one serialized transaction.
+    return await this.withRetry(async (rTx) => {
+      const owners: any =
+        await rTx`SELECT account_uuid FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND role = ${AccountRole.Owner} FOR UPDATE`
+      const otherOwners = owners.filter((o: any) => o.account_uuid !== accountUuid)
+      if (otherOwners.length === 0) return false
+      await rTx`UPDATE ${this.client(this.getWsMembersTableName())} SET role = ${role} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
+      return true
+    })
   }
 
   async getWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid): Promise<AccountRole | null> {
@@ -1064,33 +1331,6 @@ export class PostgresAccountDB implements AccountDB {
     )
   }
 
-  async deleteAccount (accountUuid: AccountUuid): Promise<void> {
-    await this.withRetry(async (rTx) => {
-      const socialIds = await this.socialId.find({ personUuid: accountUuid }, undefined, undefined, rTx)
-
-      for (const socialIdObj of socialIds) {
-        await this.integrationSecret.deleteMany({ socialId: socialIdObj._id }, rTx)
-        await this.integration.deleteMany({ socialId: socialIdObj._id }, rTx)
-      }
-
-      const mailboxes = await this.mailbox.find({ accountUuid }, undefined, undefined, rTx)
-
-      for (const mailboxObj of mailboxes) {
-        await this.mailboxSecret.deleteMany({ mailbox: mailboxObj.mailbox }, rTx)
-      }
-
-      await this.mailbox.deleteMany({ accountUuid }, rTx)
-
-      await this.socialId.update({ personUuid: accountUuid }, { verifiedOn: undefined }, rTx)
-
-      // Unassign from all workspaces
-      await rTx`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE account_uuid = ${accountUuid}`
-
-      // This removes the account along with the password if any
-      await this.account.deleteMany({ uuid: accountUuid }, rTx)
-    })
-  }
-
   async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {
     const sqlChunks: string[] = [
       `
@@ -1210,6 +1450,29 @@ export class PostgresAccountDB implements AccountDB {
         return converted as AccountAggregatedInfo
       })
     })
+  }
+
+  async listAccountsAdmin (params: ListAccountsAdminQueryParams): Promise<{ rows: AccountListRow[], total: number }> {
+    const adminEmails = (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean)
+    const { rowsSql, countSql, rowsArgs, countArgs } = buildListAccountsAdminSql(this.ns, params, adminEmails)
+    const [rows, count] = await Promise.all([
+      this.client.unsafe(rowsSql, rowsArgs),
+      this.client.unsafe(countSql, countArgs)
+    ])
+    return {
+      rows: rows.map((r: any) => rowToAccountListRow(r, adminEmails)),
+      total: Number((count[0] as any).n)
+    }
+  }
+
+  async pruneAuditOlderThan (beforeMs: number): Promise<number> {
+    // Index range scan on admin_audit_log_ts_idx (ts_ms DESC) covers this DELETE.
+    // Returns the rowcount so the scheduled job can log progress.
+    const res = await this.client.unsafe(`DELETE FROM ${this.ns}.admin_audit_log WHERE ts_ms < $1`, [beforeMs])
+    return res.count ?? 0
   }
 
   async generatePersonUuid (): Promise<PersonUuid> {

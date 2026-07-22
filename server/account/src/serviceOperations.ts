@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import {
-  type AccountRole,
+  AccountRole,
   type Data,
   isActiveMode,
   type MeasureContext,
@@ -32,16 +32,43 @@ import {
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
+import { randomUUID } from 'crypto'
+import type {
+  ListAccountsAdminParams,
+  AccountListRow,
+  AccountDetailsResponse,
+  AddWorkspaceMemberParams,
+  WorkspaceMembersAdminResponse,
+  CreateAccountParams,
+  CreateAccountResponse,
+  BulkResult,
+  ListAuditAdminParams,
+  ListAuditAdminResponse,
+  AuditEntry
+} from '@hcengineering/account-client'
+
+import {
+  auditAdminActionDenied,
+  disableAccountInternal,
+  enableAccountInternal,
+  removeWorkspaceMemberInternal,
+  sendPasswordResetEmail,
+  triggerPasswordResetInternal,
+  wrapWithDeps
+} from './operations'
 
 import { accountPlugin } from './plugin'
 import type {
   AccountAggregatedInfo,
+  AdminAuditAction,
   AccountDB,
+  AccountMethodDeps,
   AccountMethodHandler,
   Integration,
   IntegrationKey,
   IntegrationSecret,
   IntegrationSecretKey,
+  ListAccountsAdminQueryParams,
   Query,
   SocialId,
   Subscription,
@@ -62,6 +89,7 @@ import {
   getRolePower,
   getSocialIdByKey,
   getWorkspaceById,
+  getWorkspaceInfoWithStatusById,
   getWorkspacesInfoWithStatusByIds,
   verifyAllowedServices,
   wrap,
@@ -70,7 +98,9 @@ import {
   updateWorkspaceRole,
   getPersonName,
   doMergeAccounts,
-  assignableRoles
+  assignableRoles,
+  verifyTokenVersion,
+  signUpByEmail
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -79,6 +109,31 @@ import {
 
 // Move to config?
 const processingTimeoutMs = 30 * 1000
+
+const ACTIVE_WORKSPACE_MODES = new Set(['active', 'creating', 'upgrading', 'restoring'])
+
+// Postgres int8 columns come back as string from node-postgres; coerce so the
+// JSON response stays a real epoch-ms number (new Date(string) -> Invalid Date).
+function toEpochMs (v: number | string | null | undefined): number | null {
+  if (v == null) return null
+  const n = typeof v === 'number' ? v : Number(v)
+  return Number.isFinite(n) ? n : null
+}
+
+/**
+ * Verify that the provided token belongs to an admin user.
+ * Throws PlatformError with Forbidden status if the token is invalid or does not have admin privileges.
+ */
+export async function assertAdmin (ctx: MeasureContext, db: AccountDB, token: string): Promise<void> {
+  await verifyTokenVersion(ctx, db, token)
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true') {
+    // L-AUD: make pre-auth denials observable (no audit row, since there is no
+    // trusted actor yet; the security log is the forensic source).
+    ctx.warn?.('admin RPC denied pre-auth', { caller: account, hasAdminClaim: extra?.admin != null })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+}
 
 export async function listWorkspaces (
   ctx: MeasureContext,
@@ -119,6 +174,583 @@ export async function listAccounts (
   return await db.listAccounts(search, skip, limit)
 }
 
+export async function listAccountsAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: ListAccountsAdminParams
+): Promise<{ total: number, accounts: AccountListRow[] }> {
+  await assertAdmin(ctx, db, token)
+
+  // Map the public ListAccountsAdminParams (account-client) to the internal
+  // ListAccountsAdminQueryParams used by the DB layer.
+  const query: ListAccountsAdminQueryParams = {
+    search: params.search,
+    statusIn: params.statusIn,
+    authMethodIn: params.authMethodIn,
+    nameContains: params.nameContains,
+    emailContains: params.emailContains,
+    workspaceUuidsIn: params.workspaceUuidsIn,
+    wsMin: params.workspaceCountRange?.min,
+    wsMax: params.workspaceCountRange?.max,
+    lastActivityFilter: params.lastActivityFilter,
+    orphan: (params as any).orphan === true ? true : undefined,
+    isAdmin: (params as any).isAdmin === true ? true : undefined,
+    sort: params.sort,
+    pagination: { limit: params.pagination.limit, offset: params.pagination.offset }
+  }
+
+  const { rows, total } = await db.listAccountsAdmin(query)
+  return { accounts: rows, total }
+}
+
+export async function getAccountDetails (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid }
+): Promise<AccountDetailsResponse> {
+  await assertAdmin(ctx, db, token)
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+
+  const person = await db.person.findOne({ uuid: params.accountUuid as unknown as PersonUuid })
+  const socialIds = await db.socialId.find({ personUuid: params.accountUuid })
+  const workspaces = await db.getAccountWorkspaces(params.accountUuid)
+  const roleMap = await db.getWorkspaceRoles(params.accountUuid)
+
+  const workspaceMemberships = workspaces.map((w) => ({
+    workspaceUuid: w.uuid,
+    workspaceName: w.name,
+    workspaceUrl: w.url,
+    role: roleMap.get(w.uuid) ?? AccountRole.User
+  }))
+
+  const auditRaw = await db.adminAuditLog.findByTarget(params.accountUuid, 20)
+  const adminUuids = Array.from(new Set(auditRaw.map((e) => e.adminAccount).filter((u): u is AccountUuid => u != null)))
+  const adminPersons =
+    adminUuids.length > 0 ? await db.person.find({ uuid: { $in: adminUuids as unknown as PersonUuid[] } }) : []
+  const adminNameByUuid = new Map<string, { firstName: string, lastName: string }>(
+    adminPersons.map((p) => [p.uuid as unknown as string, { firstName: p.firstName, lastName: p.lastName }])
+  )
+  const recentAuditEntries = auditRaw.map((e) => {
+    const n = adminNameByUuid.get(e.adminAccount as unknown as string)
+    return {
+      tsMs: e.tsMs,
+      adminFirstName: n?.firstName ?? '',
+      adminLastName: n?.lastName ?? '',
+      action: e.action,
+      details: e.details
+    }
+  })
+
+  const primaryEmail = socialIds.find((s) => s.type === SocialIdType.EMAIL)?.value ?? ''
+  const adminEmails = new Set(
+    (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean)
+  )
+
+  return {
+    uuid: account.uuid,
+    firstName: person?.firstName ?? '',
+    lastName: person?.lastName ?? '',
+    status: account.disabledAt != null ? 'disabled' : 'active',
+    disabledAt: toEpochMs(account.disabledAt),
+    lastActivityAt: toEpochMs(account.lastActivityAt),
+    isAdmin: primaryEmail !== '' && adminEmails.has(primaryEmail),
+    socialIds: socialIds.map((s) => ({
+      type: s.type,
+      value: s.value,
+      verified: (s as any).verifiedOn != null
+    })),
+    workspaceMemberships,
+    recentAuditEntries
+  }
+}
+
+export async function listAuditAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: ListAuditAdminParams
+): Promise<ListAuditAdminResponse> {
+  await assertAdmin(ctx, db, token)
+  const rawResult = await db.adminAuditLog.listAuditAdmin({
+    filter: params.filter as any,
+    sort: params.sort as any,
+    cursor: params.pagination?.cursor,
+    limit: params.pagination?.limit
+  })
+  const entries: AuditEntry[] = rawResult.entries.map((e) => ({
+    id: e.id,
+    tsMs: e.tsMs,
+    admin: {
+      uuid: e.adminAccount,
+      firstName: e.adminFirstName,
+      lastName: e.adminLastName
+    },
+    action: e.action,
+    targetAccount:
+      e.targetAccount != null
+        ? { uuid: e.targetAccount, firstName: e.targetFirstName ?? '', lastName: e.targetLastName ?? '' }
+        : undefined,
+    targetWorkspace:
+      e.workspaceUuid != null
+        ? { uuid: e.workspaceUuid, name: e.targetWsName ?? '', url: e.targetWsUrl ?? '' }
+        : undefined,
+    details: e.details,
+    batchId: e.batchId ?? undefined
+  }))
+  return { entries, nextCursor: rawResult.nextCursor }
+}
+
+// AddWorkspaceMemberParams is imported from '@hcengineering/account-client'
+// (Task 1b). Do NOT redeclare it locally.
+
+export async function addWorkspaceMember (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: AddWorkspaceMemberParams
+): Promise<AccountDetailsResponse> {
+  await assertAdmin(ctx, db, token)
+  const adminUuid = decodeTokenVerbose(ctx, token).account
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.AccountNotFound, { account: params.accountUuid as string })
+    )
+  }
+  if (account.disabledAt != null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Cannot add disabled account' })
+    )
+  }
+
+  const workspace = await getWorkspaceInfoWithStatusById(db, params.workspaceUuid)
+  if (workspace == null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: params.workspaceUuid as string })
+    )
+  }
+  if (!ACTIVE_WORKSPACE_MODES.has(workspace.status.mode)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Workspace not available' }))
+  }
+
+  const existingRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
+  if (existingRole != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Conflict, { msg: 'Already a member' }))
+  }
+
+  await db.assignWorkspace(params.accountUuid, params.workspaceUuid, params.role)
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'add_workspace_member',
+    workspaceUuid: params.workspaceUuid,
+    details: { role: params.role }
+  })
+
+  return await getAccountDetails(ctx, db, branding, token, { accountUuid: params.accountUuid })
+}
+
+/**
+ * Add a workspace member WITHOUT re-checking admin auth or resolving the workspace.
+ * Caller must pass a pre-resolved adminUuid and workspace.
+ */
+export async function addWorkspaceMemberInternal (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  adminUuid: AccountUuid,
+  params: { workspace: WorkspaceInfoWithStatus, accountUuid: AccountUuid, role: AccountRole },
+  batchId?: string
+): Promise<void> {
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.AccountNotFound, { account: params.accountUuid as string })
+    )
+  }
+  if (account.disabledAt != null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Cannot add disabled account' })
+    )
+  }
+
+  if (!ACTIVE_WORKSPACE_MODES.has(params.workspace.status.mode)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Workspace not available' }))
+  }
+
+  const existingRole = await db.getWorkspaceRole(params.accountUuid, params.workspace.uuid)
+  if (existingRole != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Conflict, { msg: 'Already a member' }))
+  }
+
+  await db.assignWorkspace(params.accountUuid, params.workspace.uuid, params.role)
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'add_workspace_member',
+    workspaceUuid: params.workspace.uuid,
+    details: { role: params.role },
+    batchId
+  })
+}
+
+// WorkspaceMembersAdminResponse is imported from '@hcengineering/account-client'
+// (Task 1b). Do NOT redeclare it locally.
+
+export async function getWorkspaceMembersAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { workspaceUuid: WorkspaceUuid }
+): Promise<WorkspaceMembersAdminResponse> {
+  await assertAdmin(ctx, db, token)
+
+  const workspace = await getWorkspaceInfoWithStatusById(db, params.workspaceUuid)
+  if (workspace == null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: params.workspaceUuid as string })
+    )
+  }
+
+  const members = await db.getWorkspaceMembers(params.workspaceUuid)
+  const accountUuids = members.map((m: any) => m.person as AccountUuid)
+  // L-FTS: targeted $in query on the member UUIDs instead of a full-table scan.
+  // db.account/person/socialId.find({}) used to load each entire table ->
+  // memory/DoS risk on large deployments. Empty member set -> no query at all.
+  const personUuids = accountUuids as unknown as PersonUuid[]
+  const accounts = accountUuids.length > 0 ? await db.account.find({ uuid: { $in: accountUuids } }) : []
+  const accountByUuid = new Map(accounts.map((a: any) => [a.uuid, a]))
+  const persons = personUuids.length > 0 ? await db.person.find({ uuid: { $in: personUuids } }) : []
+  const personByUuid = new Map(persons.map((p: any) => [p.uuid, p]))
+  const socials = personUuids.length > 0 ? await db.socialId.find({ personUuid: { $in: personUuids } }) : []
+  const socialsByPerson = new Map<string, any[]>()
+  for (const s of socials) {
+    const k = s.personUuid as string
+    let personSocials = socialsByPerson.get(k)
+    if (personSocials === undefined) {
+      personSocials = []
+      socialsByPerson.set(k, personSocials)
+    }
+    personSocials.push(s)
+  }
+  const adminEmails = new Set(
+    (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e) => e.trim())
+      .filter(Boolean)
+  )
+
+  const enriched = members.map((m: any) => {
+    const uuid = m.person as AccountUuid
+    const acc = accountByUuid.get(uuid) ?? { disabledAt: null, lastActivityAt: null }
+    const person = personByUuid.get(uuid)
+    const primaryEmail = (socialsByPerson.get(uuid as string) ?? []).find((s) => s.type === 'email')?.value ?? null
+    return {
+      accountUuid: uuid,
+      firstName: person?.firstName ?? '',
+      lastName: person?.lastName ?? '',
+      primaryEmail,
+      role: m.role as AccountRole,
+      lastActivityAt: toEpochMs(acc.lastActivityAt),
+      status: acc.disabledAt != null ? ('disabled' as const) : ('active' as const),
+      isAdmin: primaryEmail != null && adminEmails.has(primaryEmail)
+    }
+  })
+
+  return {
+    workspaceUuid: workspace.uuid,
+    workspaceName: workspace.name ?? '',
+    workspaceUrl: workspace.url ?? '',
+    workspaceMode: workspace.status.mode,
+    members: enriched
+  }
+}
+
+// CreateAccountParams and CreateAccountResponse are imported from
+// '@hcengineering/account-client' (Task 1b). Do NOT redeclare them locally.
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+export async function createAccountAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: CreateAccountParams
+): Promise<CreateAccountResponse> {
+  await assertAdmin(ctx, db, token)
+  const adminUuid = decodeTokenVerbose(ctx, token).account
+
+  if (!EMAIL_RE.test(params.email)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Invalid email' }))
+  }
+  const normalizedEmail = params.email.toLowerCase()
+
+  if (params.passwordMode === 'set') {
+    if (params.password == null || params.password.length < 8) {
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.BadRequest, { msg: 'Password must be at least 8 characters' })
+      )
+    }
+  }
+
+  // signUpByEmail (utils.ts:722) already does email-collision detection
+  // (throws AccountAlreadyExists), person creation, social-id creation,
+  // account-row insert via the internal `createAccount` helper, and
+  // optional password setting. We mark the email confirmed because the
+  // admin is vouching for it.
+  let newUuid: AccountUuid
+  try {
+    const r = await signUpByEmail(
+      ctx,
+      db,
+      branding,
+      normalizedEmail,
+      params.passwordMode === 'set' ? (params.password ?? null) : null,
+      params.firstName,
+      params.lastName,
+      true /* confirmed — admin vouches for the email */,
+      false /* automatic */
+    )
+    newUuid = r.account
+  } catch (err: any) {
+    if (err instanceof PlatformError && err.status.code === platform.status.AccountAlreadyExists) {
+      throw new PlatformError(
+        new Status(Severity.ERROR, platform.status.Conflict, { msg: 'Account with this email already exists' })
+      )
+    }
+    throw err
+  }
+
+  let initialWorkspaceAssigned: boolean | null = null
+  if (params.initialWorkspace != null) {
+    try {
+      const ws = await getWorkspaceInfoWithStatusById(db, params.initialWorkspace.workspaceUuid)
+      if (ws == null) throw new Error('Workspace gone')
+      if (!ACTIVE_WORKSPACE_MODES.has(ws.status.mode)) throw new Error('Workspace not available')
+      await db.assignWorkspace(newUuid, params.initialWorkspace.workspaceUuid, params.initialWorkspace.role)
+      initialWorkspaceAssigned = true
+    } catch (err: any) {
+      ctx.error('initial workspace assignment failed', { err, accountUuid: newUuid })
+      initialWorkspaceAssigned = false
+    }
+  }
+
+  let inviteEmailSent: boolean | null = null
+  if (params.passwordMode === 'invite') {
+    try {
+      inviteEmailSent = await sendPasswordResetEmail(ctx, db, branding, newUuid, normalizedEmail)
+    } catch (err: any) {
+      // Helper throws on missing MAIL_URL / token issues. The account
+      // itself is already committed; createAccountAdmin's contract is
+      // that the account stays and the admin retries the email later.
+      ctx.error('createAccountAdmin: invite email helper threw', { err, accountUuid: newUuid })
+      inviteEmailSent = false
+    }
+  }
+
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: newUuid,
+    action: 'create_account',
+    workspaceUuid: params.initialWorkspace?.workspaceUuid ?? null,
+    details: {
+      email: normalizedEmail,
+      passwordMode: params.passwordMode,
+      initialWorkspaceAssigned
+    }
+  })
+
+  const account = await getAccountDetails(ctx, db, branding, token, { accountUuid: newUuid })
+  return { account, inviteEmailSent, initialWorkspaceAssigned }
+}
+
+// BulkResult is imported from '@hcengineering/account-client' (Task 1b).
+// Do NOT redeclare it locally.
+
+const BULK_MAX = 200
+
+function assertBulkSize (uuids: AccountUuid[]): void {
+  if (uuids.length > BULK_MAX) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.BadRequest, {
+        msg: `Too many accounts in one batch (max ${BULK_MAX})`
+      })
+    )
+  }
+}
+
+async function bulkLoop (
+  uuids: AccountUuid[],
+  op: (uuid: AccountUuid) => Promise<void>,
+  selfFilter?: { adminUuid: AccountUuid, reason: string }
+): Promise<BulkResult> {
+  const result: BulkResult = { succeeded: [], failed: [] }
+  for (const uuid of uuids) {
+    if (selfFilter != null && uuid === selfFilter.adminUuid) {
+      result.failed.push({ accountUuid: uuid, error: selfFilter.reason })
+      continue
+    }
+    try {
+      await op(uuid)
+      result.succeeded.push(uuid)
+    } catch (err: any) {
+      const msg =
+        err instanceof PlatformError ? (err.status.params?.msg ?? err.status.code) : String(err?.message ?? err)
+      result.failed.push({ accountUuid: uuid, error: msg })
+    }
+  }
+  return result
+}
+
+export async function bulkAddToWorkspace (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuids: AccountUuid[], workspaceUuid: WorkspaceUuid, role: AccountRole }
+): Promise<BulkResult> {
+  await assertAdmin(ctx, db, token)
+  assertBulkSize(params.accountUuids)
+  const adminUuid = decodeTokenVerbose(ctx, token).account
+  // Resolve workspace ONCE — not per-row.
+  const workspace = await getWorkspaceInfoWithStatusById(db, params.workspaceUuid)
+  if (workspace == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, {}))
+  }
+  // V29 — One batch UUID per bulk call, stamped on every audit row so the
+  // admin UI can group "these N rows are from one operation" (Plan 1d Task 3).
+  const batchId = randomUUID()
+  return await bulkLoop(params.accountUuids, async (uuid) => {
+    await addWorkspaceMemberInternal(
+      ctx,
+      db,
+      branding,
+      adminUuid,
+      { workspace, accountUuid: uuid, role: params.role },
+      batchId
+    )
+  })
+}
+
+export async function bulkRemoveFromWorkspace (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuids: AccountUuid[], workspaceUuid: WorkspaceUuid }
+): Promise<BulkResult> {
+  await assertAdmin(ctx, db, token)
+  assertBulkSize(params.accountUuids)
+  const adminUuid = decodeTokenVerbose(ctx, token).account
+  const batchId = randomUUID()
+  return await bulkLoop(
+    params.accountUuids,
+    async (uuid) => {
+      await removeWorkspaceMemberInternal(
+        ctx,
+        db,
+        adminUuid,
+        { accountUuid: uuid, workspaceUuid: params.workspaceUuid },
+        batchId
+      )
+    },
+    { adminUuid, reason: 'cannot bulk-remove self from workspace; use single-row remove with explicit confirmation' }
+  )
+}
+
+export async function bulkSetDisabled (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  deps: AccountMethodDeps,
+  token: string,
+  params: { accountUuids: AccountUuid[], disabled: boolean }
+): Promise<BulkResult> {
+  await assertAdmin(ctx, db, token)
+  assertBulkSize(params.accountUuids)
+  const adminUuid = decodeTokenVerbose(ctx, token).account
+  const batchId = randomUUID()
+
+  // V13 — bulkLoop's selfFilter catches self-targets BEFORE op() runs,
+  // so the audit-write inside disableAccountInternal never fires for the
+  // bulk-self case. We audit it here, once per call, before bulkLoop
+  // strips the self-target. The rate-limit (60 min per
+  // (admin, reason, method)) handles repeat-call dedup.
+  if (params.disabled && params.accountUuids.includes(adminUuid)) {
+    await auditAdminActionDenied(ctx, db, adminUuid, 'self_disable', 'bulkSetDisabled', adminUuid)
+  }
+
+  return await bulkLoop(
+    params.accountUuids,
+    async (uuid) => {
+      if (params.disabled) {
+        // Use disableAccountInternal to skip per-row admin re-check.
+        // deps.accountLifecycleProducer is threaded through so bulk-disabled
+        // accounts receive an immediate force-logout event (§2.3).
+        // Pass methodName='bulkSetDisabled' so any last_admin denial that
+        // fires INSIDE disableAccountInternal is audited under the correct
+        // method tag (the rate-limit key includes method).
+        await disableAccountInternal(ctx, db, deps, adminUuid, { accountUuid: uuid }, batchId, 'bulkSetDisabled')
+      } else {
+        // Mirror the disable branch: enableAccountInternal skips the
+        // per-row requireAdmin + verifyTokenVersion + account findOne
+        // that the public enableAccount would re-run for each uuid.
+        await enableAccountInternal(ctx, db, adminUuid, { accountUuid: uuid }, batchId)
+      }
+    },
+    params.disabled ? { adminUuid, reason: 'cannot disable self' } : undefined
+  )
+}
+
+export async function bulkSendPasswordReset (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuids: AccountUuid[] }
+): Promise<BulkResult> {
+  await assertAdmin(ctx, db, token)
+  assertBulkSize(params.accountUuids)
+  const adminUuid = decodeTokenVerbose(ctx, token).account
+  const batchId = randomUUID()
+  return await bulkLoop(params.accountUuids, async (uuid) => {
+    await triggerPasswordResetInternal(ctx, db, branding, adminUuid, { accountUuid: uuid }, batchId)
+  })
+}
+
+function actionForWorkspaceEvent (event: string): AdminAuditAction {
+  switch (event) {
+    case 'archive':
+      return 'archive_workspace'
+    case 'unarchive':
+      return 'unarchive_workspace'
+    case 'migrate-to':
+      return 'migrate_workspace'
+    case 'delete':
+      return 'delete_workspace'
+    case 'reset-attempts':
+      return 'reset_workspace_attempts'
+    default:
+      return event as AdminAuditAction // defensive fallthrough
+  }
+}
+
 export async function performWorkspaceOperation (
   ctx: MeasureContext,
   db: AccountDB,
@@ -131,7 +763,7 @@ export async function performWorkspaceOperation (
   }
 ): Promise<boolean> {
   const { workspaceId, event, params } = parameters
-  const { extra, workspace } = decodeTokenVerbose(ctx, token)
+  const { extra, workspace, account: callerAccount } = decodeTokenVerbose(ctx, token)
 
   if (extra?.admin !== 'true') {
     if (event !== 'unarchive' || workspaceId !== workspace) {
@@ -139,12 +771,20 @@ export async function performWorkspaceOperation (
     }
   }
 
+  const adminUuid = callerAccount
+
   const workspaceUuids = Array.isArray(workspaceId) ? workspaceId : [workspaceId]
 
   const workspaces = await getWorkspacesInfoWithStatusByIds(db, workspaceUuids)
   if (workspaces.length === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, {}))
   }
+
+  // V29 — When invoked with an array of workspaceIds, stamp every audit row
+  // with one shared UUID so the admin UI can group "this is one bulk archive".
+  // Single-workspace invocations also get a batchId-less NULL, since a single
+  // row needs no grouping (Plan 1d Task 3).
+  const batchId = Array.isArray(workspaceId) && workspaceId.length > 1 ? randomUUID() : undefined
 
   let ops = 0
   for (const workspace of workspaces) {
@@ -215,6 +855,29 @@ export async function performWorkspaceOperation (
 
     if (Object.keys(update).length !== 0) {
       await db.workspaceStatus.update({ workspaceUuid: workspace.uuid }, update)
+      // Write audit entry for this workspace operation. targetAccount is null
+      // because this is a workspace-level action (V28 relaxed the NOT NULL).
+      try {
+        await db.adminAuditLog.insert({
+          adminAccount: adminUuid,
+          targetAccount: null,
+          workspaceUuid: workspace.uuid,
+          action: actionForWorkspaceEvent(event),
+          details: { previousMode: workspace.status.mode, params: params ?? [] },
+          batchId
+        })
+      } catch (auditErr) {
+        // Audit failure must NOT roll back the workspace operation itself.
+        // L-AUD: stabiler Alert-Marker AUDIT_WRITE_FAILED fuer Observability,
+        // damit eine Mutation ohne Audit-Spur alarmierbar bleibt.
+        ctx.error?.('AUDIT_WRITE_FAILED', {
+          marker: 'AUDIT_WRITE_FAILED',
+          action: 'performWorkspaceOperation',
+          auditErr,
+          workspaceUuid: workspace.uuid,
+          event
+        })
+      }
       ops++
     }
   }
@@ -1119,6 +1782,21 @@ export async function getSubscriptionByProviderId (
   return subscription ?? null
 }
 
+export async function getAdminEmails (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: Record<string, never>
+): Promise<{ emails: string[] }> {
+  await assertAdmin(ctx, db, token)
+  const emails = (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean)
+  return { emails }
+}
+
 export type AccountServiceMethods =
   | 'getPendingWorkspace'
   | 'updateWorkspaceInfo'
@@ -1146,14 +1824,27 @@ export type AccountServiceMethods =
   | 'mergeSpecifiedAccounts'
   | 'findPersonBySocialKey'
   | 'listAccounts'
+  | 'listAccountsAdmin'
+  | 'getAccountDetails'
+  | 'listAuditAdmin'
+  | 'addWorkspaceMember'
+  | 'getWorkspaceMembersAdmin'
+  | 'createAccountAdmin'
+  | 'bulkAddToWorkspace'
+  | 'bulkRemoveFromWorkspace'
+  | 'bulkSetDisabled'
+  | 'bulkSendPasswordReset'
   | 'findFullSocialIds'
   | 'getSubscriptionByProviderId'
   | 'upsertSubscription'
+  | 'getAdminEmails'
 
 /**
  * @public
  */
-export function getServiceMethods (): Partial<Record<AccountServiceMethods, AccountMethodHandler>> {
+export function getServiceMethods (
+  deps?: AccountMethodDeps
+): Partial<Record<AccountServiceMethods, AccountMethodHandler>> {
   return {
     getPendingWorkspace: wrap(getPendingWorkspace),
     updateWorkspaceInfo: wrap(updateWorkspaceInfo),
@@ -1182,7 +1873,18 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     listAccounts: wrap(listAccounts),
+    listAccountsAdmin: wrap(listAccountsAdmin),
+    getAccountDetails: wrap(getAccountDetails),
+    listAuditAdmin: wrap(listAuditAdmin),
+    addWorkspaceMember: wrap(addWorkspaceMember),
+    getWorkspaceMembersAdmin: wrap(getWorkspaceMembersAdmin),
+    createAccountAdmin: wrap(createAccountAdmin),
+    bulkAddToWorkspace: wrap(bulkAddToWorkspace),
+    bulkRemoveFromWorkspace: wrap(bulkRemoveFromWorkspace),
+    bulkSetDisabled: wrapWithDeps(bulkSetDisabled, deps),
+    bulkSendPasswordReset: wrap(bulkSendPasswordReset),
     getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
-    upsertSubscription: wrap(upsertSubscription)
+    upsertSubscription: wrap(upsertSubscription),
+    getAdminEmails: wrap(getAdminEmails)
   }
 }

@@ -178,9 +178,11 @@ describe('TSessionManager', () => {
 
     it('should setup queue producers and consumers', () => {
       expect(mockQueue.getProducer).toHaveBeenCalledTimes(2)
-      expect(mockQueue.createConsumer).toHaveBeenCalledTimes(1)
+      // workspace consumer + account lifecycle consumer
+      expect(mockQueue.createConsumer).toHaveBeenCalledTimes(2)
       expect(sessionManager.workspaceProducer).toBeDefined()
       expect(sessionManager.usersProducer).toBeDefined()
+      expect(sessionManager.accountLifecycleConsumer).toBeDefined()
     })
 
     it('should start tick interval when doHandleTick is true', () => {

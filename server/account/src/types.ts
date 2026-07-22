@@ -34,6 +34,7 @@ import {
   type WorkspaceInfo,
   type IntegrationKind
 } from '@hcengineering/core'
+import type { AccountListRow } from '@hcengineering/account-client'
 import type { EndpointInfo } from './utils'
 
 /* ========= D A T A B A S E  E N T I T I E S ========= */
@@ -67,6 +68,112 @@ export interface Account {
   maxWorkspaces?: number
   failedLoginAttempts?: number // Number of consecutive failed login attempts
   tfaSecret?: string
+  // V27 admin user management:
+  disabledAt?: number | null // epoch-ms; null = active
+  tokenVersion?: number // monotonic counter, default 0
+  lastActivityAt?: number | null // epoch-ms; null = no logins yet
+}
+
+// V27 admin user management
+export type AdminAuditAction =
+  | 'role_change'
+  | 'remove_member'
+  | 'trigger_password_reset'
+  | 'disable'
+  | 'enable'
+  | 'create_account' // new: createAccountAdmin endpoint
+  | 'add_workspace_member' // new: addWorkspaceMember + bulkAddToWorkspace
+  // Workspace-operation audit entries (V28 — targetAccount is null for these)
+  | 'archive_workspace'
+  | 'unarchive_workspace'
+  | 'migrate_workspace'
+  | 'delete_workspace'
+  | 'reset_workspace_attempts'
+  // V13 — Denied admin attempt. Payload carries { reason, method, target }.
+  | 'admin_action_denied'
+
+export interface AdminAuditLogEntry {
+  id: string
+  tsMs: number
+  adminAccount: AccountUuid
+  targetAccount: AccountUuid | null // nullable: workspace-only audit entries have null here (V28)
+  action: AdminAuditAction
+  workspaceUuid: WorkspaceUuid | null
+  details: Record<string, any> | null
+  // V29 — Bulk-action service calls stamp every row with one shared UUID so
+  // the admin UI can group "this is one operation". NULL on single-action sites.
+  batchId?: string | null
+}
+
+/**
+ * Parameters for the SQL-pushdown listAccountsAdmin query (Task 2-2).
+ * This is a server-internal type; the public API uses ListAccountsAdminParams
+ * from \@hcengineering/account-client.
+ */
+export interface ListAccountsAdminQueryParams {
+  search?: string
+  statusIn?: Array<'active' | 'disabled'>
+  isAdmin?: boolean
+  authMethodIn?: Array<'email_only' | 'oidc' | 'mixed'>
+  nameContains?: string
+  emailContains?: string
+  workspaceUuidsIn?: WorkspaceUuid[]
+  wsMin?: number
+  wsMax?: number
+  lastActivityFilter?:
+  | { kind: 'never' }
+  | { kind: 'before', tsMs: number }
+  | { kind: 'after', tsMs: number }
+  | { kind: 'between', from: number, to: number }
+  | { kind: 'range', fromMs?: number, toMs?: number } // legacy compat with existing params shape
+  orphan?: boolean
+  sort?: {
+    field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
+    direction: 'asc' | 'desc'
+  }
+  pagination?: { limit?: number, offset?: number }
+}
+
+export interface AdminAuditLogListParams {
+  filter?: {
+    adminUuid?: AccountUuid
+    action?: string
+    targetAccountUuid?: AccountUuid
+    targetWorkspaceUuid?: WorkspaceUuid
+    from?: number
+    to?: number
+    // V30 — Substring filters bound to UI-visible identifiers.
+    adminNameOrEmail?: string
+    targetNameOrUrl?: string
+    actionIn?: string[]
+  }
+  sort?: {
+    field: 'time' | 'admin' | 'action' | 'target'
+    direction: 'asc' | 'desc'
+  }
+  cursor?: string
+  limit?: number
+}
+
+export interface AdminAuditLogListResult {
+  entries: Array<
+  AdminAuditLogEntry & {
+    adminFirstName: string
+    adminLastName: string
+    targetFirstName?: string
+    targetLastName?: string
+    targetWsName?: string
+    targetWsUrl?: string
+  }
+  >
+  nextCursor: string | null
+}
+
+export interface AdminAuditLogCollection {
+  insert: (entry: Omit<AdminAuditLogEntry, 'id' | 'tsMs'>) => Promise<void>
+  findByTarget: (target: AccountUuid, limit: number) => Promise<AdminAuditLogEntry[]>
+  findByAdmin: (admin: AccountUuid, limit: number) => Promise<AdminAuditLogEntry[]>
+  listAuditAdmin: (params: AdminAuditLogListParams) => Promise<AdminAuditLogListResult>
 }
 
 // TODO: type data with generic type
@@ -327,6 +434,7 @@ export interface AccountDB {
   userProfile: DbCollection<UserProfile>
   subscription: DbCollection<Subscription>
   workspacePermission: DbCollection<WorkspacePermission>
+  adminAuditLog: AdminAuditLogCollection
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
@@ -336,7 +444,26 @@ export interface AccountDB {
   assignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
   batchAssignWorkspace: (data: [AccountUuid, WorkspaceUuid, AccountRole][]) => Promise<void>
   updateWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
+  /**
+   * L-RACE: atomically demote an Owner only if at least one OTHER Owner remains.
+   * Returns true if the role was changed, false if the change was blocked
+   * because `accountId` is the last Owner of the workspace. Callers MUST treat
+   * `false` as `last_owner_in_workspace`. Only meaningful when demoting an
+   * Owner; for non-owner role changes use `updateWorkspaceRole`.
+   */
+  updateWorkspaceRoleIfOtherOwnerExists: (
+    accountId: AccountUuid,
+    workspaceId: WorkspaceUuid,
+    role: AccountRole
+  ) => Promise<boolean>
   unassignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<void>
+  /**
+   * L-RACE: atomically remove a member unless doing so would remove the last
+   * Owner. Returns true if the member was removed (or was not an Owner), false
+   * if removal was blocked because `accountId` is the last Owner. Callers MUST
+   * treat `false` as `last_owner_in_workspace`.
+   */
+  unassignIfNotLastOwner: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<boolean>
   getWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<AccountRole | null>
   getWorkspaceRoles: (accountId: AccountUuid) => Promise<Map<WorkspaceUuid, AccountRole>>
   getWorkspaceMembers: (workspaceId: WorkspaceUuid) => Promise<WorkspaceMemberInfo[]>
@@ -363,8 +490,16 @@ export interface AccountDB {
   ) => Promise<WorkspaceInfoWithStatus | undefined>
   setPassword: (accountId: AccountUuid, passwordHash: Buffer, salt: Buffer) => Promise<void>
   resetPassword: (accountId: AccountUuid) => Promise<void>
-  deleteAccount: (accountId: AccountUuid) => Promise<void>
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
+  listAccountsAdmin: (params: ListAccountsAdminQueryParams) => Promise<{ rows: AccountListRow[], total: number }>
+  /**
+   * Delete admin_audit_log rows whose ts_ms is strictly less than `beforeMs`.
+   * Returns the number of rows deleted. Used by the scheduled retention job
+   * in account-service (env `AUDIT_RETENTION_DAYS`, default 365).
+   *
+   * Mongo backend throws — v7 runs on CockroachDB exclusively.
+   */
+  pruneAuditOlderThan: (beforeMs: number) => Promise<number>
   generatePersonUuid: () => Promise<PersonUuid>
 }
 
@@ -515,4 +650,17 @@ export interface AccountAggregatedInfo extends Omit<Account, 'hash' | 'salt'>, P
   integrations: Omit<Integration, 'data'>[]
   socialIds: SocialId[]
   workspaces: Omit<WorkspaceInfo, 'allowReadOnlyGuest' | 'allowGuestSignUp'>[]
+}
+
+/**
+ * Optional deps the account pod injects into a subset of method handlers.
+ * Currently the only consumer is disableAccount, which uses the
+ * accountLifecycleProducer to broadcast force-logout signals across pods.
+ * When undefined, disableAccount still bumps tokenVersion (which gives
+ * a slower but correct fallback path).
+ */
+export interface AccountMethodDeps {
+  accountLifecycleProducer?: {
+    send: (ctx: any, workspace: any, msgs: any[], partitionKey?: string) => Promise<void>
+  }
 }

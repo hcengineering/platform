@@ -28,6 +28,7 @@ loadMetadata(setting.icon, {
   Privacy: `${icons}#privacy`,
   Terms: `${icons}#terms`,
   Signout: `${icons}#signout`,
+  AdminPanel: `${icons}#adminPanel`,
   SelectWorkspace: `${icons}#selectWorkspace`,
   Clazz: `${icons}#clazz`,
   Enums: `${icons}#enums`,

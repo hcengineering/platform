@@ -4,6 +4,7 @@
 
 import account, {
   type AccountMethods,
+  type AccountMethodDeps,
   type Meta,
   type ClientNetworkPosition,
   EndpointKind,
@@ -11,10 +12,15 @@ import account, {
   getAccountDB,
   getAllTransactors,
   getMethods,
-  cleanExpiredOtp
+  cleanExpiredOtp,
+  listAccountsAdmin,
+  assertAdmin,
+  decodeFilterParam,
+  FilterDecodeError
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
+import { csvLine } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
 import { metricsAggregate, type Branding, type BrandingMap, type MeasureContext } from '@hcengineering/core'
@@ -22,12 +28,14 @@ import platform, { Severity, Status, addStringsLoader, setMetadata, unknownStatu
 import serverToken, { decodeToken, decodeTokenVerbose, generateToken } from '@hcengineering/server-token'
 import cors from '@koa/cors'
 import type Cookies from 'cookies'
+import { createHash } from 'crypto'
 import { type IncomingHttpHeaders } from 'http'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import os from 'os'
 import { migrateFromOldAccounts } from './migration/migration'
+import { TokenBucketLimiter } from './util/rateLimiter'
 
 export * from './migration/utils'
 export * from './migration/types'
@@ -43,7 +51,12 @@ const KEEP_ALIVE_HEADERS = {
 /**
  * @public
  */
-export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap, onClose?: () => void): void {
+export function serveAccount (
+  measureCtx: MeasureContext,
+  brandings: BrandingMap,
+  deps?: AccountMethodDeps,
+  onClose?: () => void
+): void {
   console.log('Starting account service with brandings: ', brandings)
   const ACCOUNT_PORT = parseInt(process.env.ACCOUNT_PORT ?? '3000')
   const dbUrl = process.env.DB_URL
@@ -135,7 +148,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   setMetadata(serverToken.metadata.Service, undefined)
 
   const hasSignUp = process.env.DISABLE_SIGNUP !== 'true'
-  const methods = getMethods(hasSignUp)
+  const methods = getMethods(hasSignUp, deps)
 
   const dbNs = process.env.DB_NS
   const accountsDb = getAccountDB(dbUrl, dbNs)
@@ -145,6 +158,61 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       console.log('Migrations verified/done')
     }
   })
+
+  const csvExportLimiter = new TokenBucketLimiter({ max: 5, windowMs: 60_000 })
+  // GC every minute — sub-second precision not needed for cleanup.
+  setInterval(() => {
+    csvExportLimiter.gc(Date.now())
+  }, 60_000).unref()
+
+  // ── admin_audit_log retention ─────────────────────────────────────────
+  // AUDIT_RETENTION_DAYS: positive N keeps the last N days, 0 disables.
+  // Default 365 to bound table growth on long-running deployments.
+  const retentionDays = parseInt(process.env.AUDIT_RETENTION_DAYS ?? '365', 10)
+  if (Number.isFinite(retentionDays) && retentionDays > 0) {
+    const dayMs = 86_400_000
+    // Hold the interval handle so the runPrune closure can disable
+    // itself the first time it encounters a backend that doesn't
+    // support pruning (currently MongoDB). Otherwise we'd log the
+    // same 'not implemented' error every 24h forever.
+    let intervalHandle: NodeJS.Timeout | null = null
+    const runPrune = async (): Promise<void> => {
+      const [db] = await accountsDb
+      const cutoff = Date.now() - retentionDays * dayMs
+      try {
+        const deleted = await db.pruneAuditOlderThan(cutoff)
+        measureCtx.info('audit_log pruned', { deleted, retentionDays })
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg.includes('not implemented for Mongo')) {
+          measureCtx.info('audit_log retention: backend does not support prune, disabling timer')
+          if (intervalHandle !== null) {
+            clearInterval(intervalHandle)
+            intervalHandle = null
+          }
+          return
+        }
+        measureCtx.error('audit_log prune failed', { error: err })
+      }
+    }
+    // Initial run 5 min after startup so we don't hammer cockroach right at boot.
+    setTimeout(() => {
+      void runPrune()
+    }, 5 * 60_000).unref()
+    // Then once every 24h.
+    intervalHandle = setInterval(() => {
+      void runPrune()
+    }, dayMs)
+    intervalHandle.unref()
+  }
+
+  // Key the limiter on a SHA-256 of the token rather than the raw token.
+  // Limiter state lives in process memory and can land in heap dumps,
+  // crash logs, or third-party APM samples. Hashing means a leaked
+  // state-snapshot doesn't grant the holder a usable admin token.
+  // (Account-uuid would also work but requires decoding the token —
+  // hashing keeps the limiter independent of the auth layer.)
+  const limiterKey = (token: string): string => createHash('sha256').update(token).digest('hex')
 
   const app = new Koa()
   const router = new Router()
@@ -444,6 +512,85 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
       { method: request.method }
     )
   })
+
+  // ── CSV Export routes ────────────────────────────────────────────────────
+  // NOTE: clients use fetch + Authorization header + blob download
+  // (no token-in-URL leakage). The admin token is accepted ONLY via the
+  // Authorization header; a token in the URL query would leak into proxy/
+  // access logs, browser history and Referrer headers (M-CSV).
+
+  router.get('/api/v1/admin/export/accounts.csv', async (ctx) => {
+    // M-CSV: Token NUR aus Authorization-Header (URL-Query leakt in Logs/Referrer).
+    const token = extractToken(ctx.request.headers) ?? ''
+    const [db] = await accountsDb
+    const childCtx = measureCtx.newChild('csv-export-accounts', {})
+    try {
+      await assertAdmin(childCtx, db, token)
+    } catch {
+      ctx.res.writeHead(403, { 'Content-Type': 'text/plain' })
+      ctx.res.end('Forbidden')
+      return
+    }
+    if (!csvExportLimiter.allow(limiterKey(token), Date.now())) {
+      // charset=utf-8 so the em-dash in the body renders correctly in
+      // browsers that default to ISO-8859-1 for text/plain (D3).
+      ctx.res.writeHead(429, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Retry-After': '60'
+      })
+      ctx.res.end('Too many exports — try again in 60 seconds.')
+      return
+    }
+    // Respect the same filter+sort the user sees in the admin UI.
+    let filterObj: Record<string, any>
+    try {
+      filterObj = decodeFilterParam(ctx.query.filter)
+    } catch (err) {
+      ctx.res.writeHead(400, { 'Content-Type': 'text/plain' })
+      ctx.res.end(err instanceof FilterDecodeError ? err.message : 'Bad filter')
+      return
+    }
+    ctx.res.writeHead(200, {
+      'Content-Type': 'text/csv; charset=utf-8',
+      'Content-Disposition': `attachment; filename="huly-users-${Date.now()}.csv"`,
+      'Cache-Control': 'no-store',
+      'Referrer-Policy': 'no-referrer'
+    })
+    // UTF-8 BOM (D2) — Excel-on-Windows decodes the file as ISO-8859-1
+    // without it, which mangles every non-ASCII byte in names/emails.
+    // Emit the raw 3-byte EF BB BF sequence as a Buffer so tooling
+    // (esbuild, eslint, terser) can't silently strip a literal U+FEFF
+    // from string source. Followed by an RFC-4180 CRLF header row.
+    ctx.res.write(Buffer.from([0xef, 0xbb, 0xbf]))
+    ctx.res.write('uuid,firstName,lastName,primaryEmail,status,workspaceCount,lastActivityAt,isAdmin\r\n')
+    const pageSize = 500
+    let offset = 0
+    for (;;) {
+      const { accounts } = await listAccountsAdmin(childCtx, db, null, token, {
+        ...filterObj,
+        pagination: { limit: pageSize, offset }
+      })
+      for (const a of accounts) {
+        ctx.res.write(
+          csvLine([
+            a.uuid,
+            a.firstName,
+            a.lastName,
+            a.primaryEmail ?? '',
+            a.status,
+            String(a.workspaceCount),
+            a.lastActivityAt != null ? new Date(a.lastActivityAt).toISOString() : '',
+            String(a.isAdmin)
+          ])
+        )
+      }
+      if (accounts.length < pageSize) break
+      offset += pageSize
+    }
+    ctx.res.end()
+  })
+
+  // ── End CSV Export routes ────────────────────────────────────────────────
 
   app.use(router.routes()).use(router.allowedMethods())
 

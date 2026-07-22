@@ -1781,7 +1781,13 @@ describe('account operations', () => {
           mockFirstName,
           mockLastName
         )
-        expect(utils.sendEmailConfirmation).toHaveBeenCalledWith(mockCtx, mockBranding, mockAccountId, mockEmail)
+        expect(utils.sendEmailConfirmation).toHaveBeenCalledWith(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          mockAccountId,
+          mockEmail
+        )
         expect(mockCtx.warn).not.toHaveBeenCalled()
       })
 
@@ -2398,6 +2404,7 @@ describe('account operations', () => {
         // Confirmation email must be sent, threading the invite info through the token
         expect(utils.sendEmailConfirmation).toHaveBeenCalledWith(
           mockCtx,
+          mockDb,
           mockBranding,
           mockAccountId,
           mockEmail,

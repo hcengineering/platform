@@ -31,6 +31,7 @@
     SearchEdit,
     Spinner,
     deviceOptionsStore as deviceInfo,
+    navigate,
     showPopup,
     ticker
   } from '@hcengineering/ui'
@@ -215,6 +216,18 @@
     </Scroller>
     <div class="grow-separator" />
     <div class="footer">
+      {#if isAdminUser()}
+        <div class="admin-cta">
+          <Button
+            kind={'regular'}
+            size={'medium'}
+            label={login.string.AdminPanel}
+            on:click={() => {
+              navigate({ path: ['login', 'admin', 'users'] })
+            }}
+          />
+        </div>
+      {/if}
       {#if workspaces.length > 0 && !isReadOnlyGuest}
         <div>
           <span><Label label={login.string.WantAnotherWorkspace} /></span>
@@ -290,6 +303,11 @@
     }
     .grow-separator {
       flex-grow: 1;
+    }
+    .admin-cta {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
     }
     .footer {
       margin-top: 3.5rem;

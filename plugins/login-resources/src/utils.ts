@@ -66,6 +66,8 @@ import { LoginEvents } from './analytics'
 import { type Pages } from './index'
 import login from './plugin'
 
+import { writable, type Writable } from 'svelte/store'
+
 /**
  * Constructs an account client.
  * @param token - The token to use for authentication. If not provided, the token from the metadata will be used. If null, no token will be used.
@@ -1145,3 +1147,13 @@ export function getAccountDisplayName (loginInfo: LoginInfo | null | undefined):
 
   return loginInfo.account
 }
+
+/**
+ * Cross-component force-logout signal. Set by client-resources via the
+ * setForceLogoutHandler bridge wired in index.ts. Read by LoginApp.svelte
+ * to display the ForceLogoutModal.
+ *
+ * null = no force-logout active
+ * string = the reason ('account_disabled', 'manual_admin_action', etc.)
+ */
+export const forceLogoutReason: Writable<string | null> = writable(null)

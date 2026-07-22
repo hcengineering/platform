@@ -37,16 +37,22 @@ import {
   type IntegrationKind
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant } from '@hcengineering/server-token'
+import {
+  decodeToken,
+  decodeTokenVerbose,
+  generateToken,
+  type PermissionsGrant,
+  TokenError
+} from '@hcengineering/server-token'
 
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 import {
-  AccountEventType,
   type MailboxSecret,
   type AccountDB,
   type AccountMethodHandler,
+  type AccountMethodDeps,
   type LoginInfo,
   type LoginInfoWithWorkspaces,
   type Mailbox,
@@ -127,7 +133,10 @@ import {
   checkPasswordAging,
   generateTotpSecret,
   verifyTotpCode,
-  getTotpUrl
+  getTotpUrl,
+  generateTokenWithVersion,
+  verifyTokenVersion,
+  touchLastActivity
 } from './utils'
 
 const NIL_UUID = '00000000-0000-0000-0000-000000000000' as AccountUuid
@@ -198,6 +207,11 @@ export async function login (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
 
+    if (existingAccount.disabledAt != null) {
+      ctx.warn('Login attempt on disabled account', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, 'account_disabled' as any, {}))
+    }
+
     // Check if account is locked due to too many failed login attempts
     if (isAccountPasswordLocked(existingAccount)) {
       ctx.warn('Login attempt on locked account - password login locked', {
@@ -225,6 +239,7 @@ export async function login (
 
     // Successful login - reset failed attempts counter
     await resetFailedLoginAttempts(db, existingAccount.uuid)
+    await touchLastActivity(db, existingAccount.uuid)
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
@@ -236,7 +251,9 @@ export async function login (
     return {
       account: existingAccount.uuid,
       token: isConfirmed
-        ? generateToken(
+        ? await generateTokenWithVersion(
+          ctx,
+          db,
           existingAccount.tfaSecret != null ? NIL_UUID : existingAccount.uuid,
           undefined,
           existingAccount.tfaSecret != null ? { ...extraToken, tfaAccount: existingAccount.uuid } : extraToken
@@ -322,7 +339,7 @@ export async function signUp (
   if (forceConfirmation) {
     const normalizedEmail = cleanEmail(email)
 
-    await sendEmailConfirmation(ctx, branding, account, normalizedEmail)
+    await sendEmailConfirmation(ctx, db, branding, account, normalizedEmail)
   } else {
     ctx.warn('Please provide MAIL_URL to enable sign up email confirmations.')
     await confirmEmail(ctx, db, account, email)
@@ -334,7 +351,7 @@ export async function signUp (
     account,
     name: getPersonName(person),
     socialId,
-    token: !forceConfirmation ? generateToken(account) : undefined
+    token: !forceConfirmation ? await generateTokenWithVersion(ctx, db, account) : undefined
   }
 }
 
@@ -436,6 +453,11 @@ export async function validateOtp (
 
     const targetAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
+    if (targetAccount?.disabledAt != null) {
+      ctx.warn('OTP validation attempt on disabled account', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, 'account_disabled' as any, {}))
+    }
+
     if (action !== 'verify') {
       // login/sign up
       if (emailSocialId.verifiedOn == null) {
@@ -528,12 +550,18 @@ export async function validateOtp (
       : { authMethod: 'otp' }
 
     const _token = isConfirmed
-      ? generateToken(
+      ? await generateTokenWithVersion(
+        ctx,
+        db,
         targetAccount?.tfaSecret != null ? NIL_UUID : emailSocialId.personUuid,
         undefined,
         targetAccount?.tfaSecret != null ? { ...extraToken, tfaAccount: emailSocialId.personUuid } : extraToken
       )
       : undefined
+
+    if (emailSocialId.personUuid != null) {
+      await touchLastActivity(db, emailSocialId.personUuid as AccountUuid)
+    }
 
     return {
       account: emailSocialId.personUuid as AccountUuid,
@@ -624,7 +652,7 @@ export async function createWorkspace (
     account,
     socialId: socialId._id,
     name: getPersonName(person),
-    token: generateToken(account, workspaceUuid, extra),
+    token: await generateTokenWithVersion(ctx, db, account, workspaceUuid, extra),
     endpoint: getEndpoint(workspaceUuid, region, EndpointKind.External),
     workspace: workspaceUuid,
     workspaceUrl,
@@ -1247,7 +1275,7 @@ export async function checkAutoJoin (
       }
 
       if (token === undefined || token === null) {
-        token = generateToken(targetAccount.uuid)
+        token = await generateTokenWithVersion(ctx, db, targetAccount.uuid)
       }
       return await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
     }
@@ -1271,7 +1299,15 @@ export async function checkAutoJoin (
     true
   )
 
-  return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
+  return await doJoinByInvite(
+    ctx,
+    db,
+    branding,
+    await generateTokenWithVersion(ctx, db, account, workspaceUuid),
+    account,
+    workspace,
+    invite
+  )
 }
 
 /**
@@ -1333,7 +1369,7 @@ export async function signUpJoin (
     const normalizedEmail = cleanEmail(email)
     // Thread the invite info through the confirmation token so the user
     // is auto-joined to the workspace once they confirm their email.
-    await sendEmailConfirmation(ctx, branding, account, normalizedEmail, {
+    await sendEmailConfirmation(ctx, db, branding, account, normalizedEmail, {
       inviteId,
       workspaceUrl
     })
@@ -1353,7 +1389,7 @@ export async function signUpJoin (
     ctx,
     db,
     branding,
-    generateToken(account, workspaceJoinInfo.workspace?.uuid),
+    await generateTokenWithVersion(ctx, db, account, workspaceJoinInfo.workspace?.uuid),
     account,
     workspaceJoinInfo.workspace,
     workspaceJoinInfo.invite
@@ -1387,7 +1423,7 @@ export async function confirm (
     account,
     name: getPersonName(person),
     socialId,
-    token: generateToken(account)
+    token: await generateTokenWithVersion(ctx, db, account)
   }
 
   // If invite info was carried through the confirmation token (signUpJoin flow),
@@ -1401,7 +1437,7 @@ export async function confirm (
         ctx,
         db,
         branding,
-        generateToken(account, joinInfo.workspace?.uuid),
+        await generateTokenWithVersion(ctx, db, account, joinInfo.workspace?.uuid),
         account,
         joinInfo.workspace,
         joinInfo.invite
@@ -1479,6 +1515,64 @@ export async function changePassword (
   ctx.info('Password changed', { accountUuid })
 }
 
+/**
+ * Internal — sends the password-reset email and reports whether the mail
+ * service accepted it. Three failure modes, handled like the original
+ * inline code at operations.ts:1561 did:
+ *   - Missing MAIL_URL config            -> THROWS via getMailUrl()
+ *   - Token generation / translate fails -> THROWS (caller's problem)
+ *   - fetch raises a network exception   -> THROWS (caller's problem)
+ *   - HTTP response.ok === false         -> RETURNS false (logged)
+ *   - HTTP response.ok === true          -> RETURNS true
+ * The boolean exists only to let callers distinguish "mail server said
+ * no" from "mail server said yes". Anything more catastrophic stays an
+ * exception, exactly as in the legacy requestPasswordReset.
+ */
+export async function sendPasswordResetEmail (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  accountUuid: AccountUuid,
+  email: string
+): Promise<boolean> {
+  const front = getFrontUrl(branding)
+  const { mailURL, mailAuth } = getMailUrl() // THROWS when MAIL_URL missing — matches legacy
+
+  const normalizedEmail = cleanEmail(email)
+  const token = await generateTokenWithVersion(ctx, db, accountUuid, undefined, {
+    restoreEmail: normalizedEmail
+  })
+
+  const link = concatLink(front, `/login/recovery?id=${token}`)
+  const lang = branding?.language
+  const text = await translate(accountPlugin.string.RecoveryText, { link }, lang)
+  const html = await translate(accountPlugin.string.RecoveryHTML, { link }, lang)
+  const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
+
+  // NO try/catch around fetch — network exceptions propagate to the
+  // caller (legacy behavior). createAccountAdmin wraps THIS call in its
+  // own try/catch to convert anything to inviteEmailSent=false for its
+  // local UX needs, but requestPasswordReset must let exceptions through.
+  const response = await fetch(concatLink(mailURL, '/send'), {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
+    },
+    body: JSON.stringify({ text, html, subject, to: normalizedEmail })
+  })
+  if (response.ok) {
+    ctx.info('Password reset email sent', { email, normalizedEmail, accountUuid })
+    return true
+  }
+  ctx.error(`Failed to send reset password email: ${response.statusText}`, {
+    email,
+    normalizedEmail,
+    accountUuid
+  })
+  return false
+}
+
 export async function requestPasswordReset (
   ctx: MeasureContext,
   db: AccountDB,
@@ -1514,41 +1608,11 @@ export async function requestPasswordReset (
     )
   }
 
-  const { mailURL, mailAuth } = getMailUrl()
-  const front = getFrontUrl(branding)
-
-  const token = generateToken(account.uuid, undefined, {
-    restoreEmail: normalizedEmail
-  })
-
-  const link = concatLink(front, `/login/recovery?id=${token}`)
-  const lang = branding?.language
-  const text = await translate(accountPlugin.string.RecoveryText, { link }, lang)
-  const html = await translate(accountPlugin.string.RecoveryHTML, { link }, lang)
-  const subject = await translate(accountPlugin.string.RecoverySubject, {}, lang)
-
-  const response = await fetch(concatLink(mailURL, '/send'), {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(mailAuth != null ? { Authorization: `Bearer ${mailAuth}` } : {})
-    },
-    body: JSON.stringify({
-      text,
-      html,
-      subject,
-      to: normalizedEmail
-    })
-  })
-  if (response.ok) {
-    ctx.info('Password reset email sent', { email, normalizedEmail, account: account.uuid })
-  } else {
-    ctx.error(`Failed to send reset password email: ${response.statusText}`, {
-      email,
-      normalizedEmail,
-      account: account.uuid
-    })
-  }
+  // Helper sends, logs and either returns true/false on fetch outcomes or
+  // throws on config/token errors. requestPasswordReset has always allowed
+  // the throw to propagate to its single caller (triggerPasswordReset), so
+  // we keep the same shape and just discard the boolean.
+  await sendPasswordResetEmail(ctx, db, branding, account.uuid, normalizedEmail)
 }
 
 /**
@@ -1590,7 +1654,9 @@ export async function requestPasswordSetup (
 
   const { mailURL, mailAuth } = getMailUrl()
   const front = getFrontUrl(branding)
-  const resetToken = generateToken(accountUuid, undefined, { restoreEmail: emailSocialId.value })
+  const resetToken = await generateTokenWithVersion(ctx, db, accountUuid, undefined, {
+    restoreEmail: emailSocialId.value
+  })
   const link = concatLink(front, `/login/recovery?id=${resetToken}`)
   const lang = branding?.language
   const text = await translate(accountPlugin.string.PasswordSetupText, { link }, lang)
@@ -1728,7 +1794,7 @@ export async function leaveWorkspace (
     return {
       account,
       name: getPersonName(person),
-      token: generateToken(account, undefined, extra)
+      token: await generateTokenWithVersion(ctx, db, account, undefined, extra)
     }
   }
 
@@ -1910,7 +1976,7 @@ export async function verify2fa (
 
   return {
     account: accountUuid,
-    token: generateToken(accountUuid, undefined, filteredExtra),
+    token: await generateTokenWithVersion(ctx, db, accountUuid, undefined, filteredExtra),
     name: getPersonName(person),
     socialId: socialId?._id
   }
@@ -2065,6 +2131,7 @@ export async function getLoginInfoByToken (
 
   try {
     ;({ account, workspace: workspaceUuid, extra, grant, nbf, exp, sub } = decodeTokenVerbose(ctx, token))
+    await verifyTokenVersion(ctx, db, token)
     if (grant != null && sub == null) {
       sub = (await db.generatePersonUuid()) as AccountUuid
     }
@@ -2190,7 +2257,7 @@ export async function getLoginInfoByToken (
     account: accountUuid,
     name: getPersonName(person),
     socialId: socialId?._id,
-    token: generateToken(accountUuid, workspaceUuid, extra, undefined, { grant, nbf, exp, sub })
+    token: await generateTokenWithVersion(ctx, db, accountUuid, workspaceUuid, extra, { grant, nbf, exp, sub })
   }
 
   if (!isSystem) {
@@ -2256,6 +2323,13 @@ export async function getLoginWithWorkspaceInfo (
   let workspace: WorkspaceUuid | undefined
   try {
     ;({ account: accountUuid, extra, workspace } = decodeTokenVerbose(ctx, token))
+    // C2: enforce disable + token-version on the transactor session path.
+    // verifyTokenVersion throws TokenError('Account disabled') when disabledAt
+    // is set and TokenError('Token version invalidated') on a stale claim.
+    // Workspace JWTs have no exp, so a disabled account holding a never-expiring
+    // token must NOT be able to (re)establish a session here. Guest/system/
+    // read-only-guest/service principals are early-returned inside the helper.
+    await verifyTokenVersion(ctx, db, token)
   } catch (err: any) {
     Analytics.handleError(err)
     ctx.error('Invalid token', { token })
@@ -2787,7 +2861,7 @@ export async function refreshHulyAssistantToken (
     key
   }
 
-  const secret = generateToken(account, undefined, { userAiAssistant: 'true' })
+  const secret = await generateTokenWithVersion(ctx, db, account, undefined, { userAiAssistant: 'true' })
 
   const existingToken = await db.integrationSecret.findOne(integrationSecretKey)
 
@@ -2846,35 +2920,6 @@ export async function releaseSocialId (
   }
 
   return await doReleaseSocialId(db, personUuid, type, value, extra?.service ?? account, deleteIntegrations)
-}
-
-export async function deleteAccount (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { uuid?: AccountUuid }
-): Promise<void> {
-  const { extra } = decodeTokenVerbose(ctx, token)
-
-  const isAdmin = extra?.admin === 'true'
-
-  if (!isAdmin) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const { uuid } = params
-
-  if (uuid == null || uuid === '') {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-  }
-
-  await db.deleteAccount(uuid)
-  await db.accountEvent.insertOne({
-    accountUuid: uuid,
-    eventType: AccountEventType.ACCOUNT_DELETED,
-    time: Date.now()
-  })
 }
 
 export async function canMergeSpecifiedPersons (
@@ -3290,6 +3335,485 @@ export async function getWorkspaceUsersWithPermission (
   return await db.getWorkspaceUsersWithPermission(workspace, permission)
 }
 
+// =====================================================================
+// Admin user management (V27) — admin-gated mutation endpoints
+// =====================================================================
+
+/**
+ * Verify the caller is an active admin: token-version not stale, account
+ * not disabled, and extra.admin === 'true'. Returns the caller account uuid.
+ */
+async function requireAdmin (ctx: MeasureContext, db: AccountDB, token: string): Promise<AccountUuid> {
+  await verifyTokenVersion(ctx, db, token)
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true') {
+    // L-AUD: make pre-auth denials observable (no audit row, since there is no
+    // trusted actor yet; the security log is the forensic source).
+    ctx.warn?.('admin RPC denied pre-auth', { caller: account, hasAdminClaim: extra?.admin != null })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  return account
+}
+
+export async function setWorkspaceMemberRole (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, newRole: AccountRole }
+): Promise<{ ok: true }> {
+  const adminUuid = await requireAdmin(ctx, db, token)
+
+  const currentRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
+  if (currentRole == null) {
+    throw new PlatformError(
+      new Status(Severity.ERROR, platform.status.AccountNotFound, { account: params.accountUuid })
+    )
+  }
+
+  if (currentRole === AccountRole.Owner && params.newRole !== AccountRole.Owner) {
+    // L-RACE: atomic conditional demote — the last-owner check and the write
+    // happen under one lock so two parallel demotes cannot both pass.
+    const applied = await db.updateWorkspaceRoleIfOtherOwnerExists(
+      params.accountUuid,
+      params.workspaceUuid,
+      params.newRole
+    )
+    if (!applied) {
+      throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
+    }
+  } else {
+    await db.updateWorkspaceRole(params.accountUuid, params.workspaceUuid, params.newRole)
+  }
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'role_change',
+    workspaceUuid: params.workspaceUuid,
+    details: { oldRole: currentRole, newRole: params.newRole }
+  })
+
+  return { ok: true }
+}
+
+export async function removeWorkspaceMember (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid }
+): Promise<{ ok: true, wasMember: boolean }> {
+  const adminUuid = await requireAdmin(ctx, db, token)
+
+  const currentRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
+  if (currentRole == null) {
+    return { ok: true, wasMember: false }
+  }
+
+  // L-RACE: atomic conditional removal — last-owner check + delete under one
+  // lock so parallel owner-removals cannot both drop the final owner.
+  const applied = await db.unassignIfNotLastOwner(params.accountUuid, params.workspaceUuid)
+  if (!applied) {
+    throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
+  }
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'remove_member',
+    workspaceUuid: params.workspaceUuid,
+    details: { priorRole: currentRole }
+  })
+
+  return { ok: true, wasMember: true }
+}
+
+export async function triggerPasswordReset (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid }
+): Promise<{ ok: true, emailSentTo: string }> {
+  const adminUuid = await requireAdmin(ctx, db, token)
+
+  const socials = await db.socialId.find({ personUuid: params.accountUuid })
+  const emailSocial = socials.find((s) => s.type === SocialIdType.EMAIL)
+  if (emailSocial == null) {
+    throw new PlatformError(new Status(Severity.ERROR, 'user_has_no_email' as any, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account?.hash == null) {
+    throw new PlatformError(new Status(Severity.ERROR, 'user_has_no_password' as any, {}))
+  }
+
+  try {
+    await requestPasswordReset(ctx, db, branding, '', { email: emailSocial.value })
+  } catch (err: any) {
+    ctx.error('Password reset email send failed', { err, accountUuid: params.accountUuid })
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount: params.accountUuid,
+      action: 'trigger_password_reset',
+      workspaceUuid: null,
+      details: { emailSentTo: emailSocial.value, failed: true, errMsg: err?.message ?? String(err) }
+    })
+    if (err instanceof PlatformError) throw err
+    throw new PlatformError(new Status(Severity.ERROR, 'password_reset_send_failed' as any, {}))
+  }
+
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'trigger_password_reset',
+    workspaceUuid: null,
+    details: { emailSentTo: emailSocial.value }
+  })
+
+  return { ok: true, emailSentTo: emailSocial.value }
+}
+
+// ─── *Internal helpers ───────────────────────────────────────────────────────
+// These take a pre-resolved adminUuid (and optionally a pre-resolved workspace)
+// so that bulk endpoints can call assertAdmin + workspace lookup ONCE per call
+// instead of O(n) per row.  The public functions above remain unchanged and
+// call the corresponding *Internal helper after their own validation.
+
+/**
+ * Remove a workspace member WITHOUT re-checking admin auth.
+ * Caller must have already verified admin privileges and resolved workspaceUuid.
+ */
+export async function removeWorkspaceMemberInternal (
+  ctx: MeasureContext,
+  db: AccountDB,
+  adminUuid: AccountUuid,
+  params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid },
+  batchId?: string
+): Promise<{ ok: true, wasMember: boolean }> {
+  const currentRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
+  if (currentRole == null) {
+    return { ok: true, wasMember: false }
+  }
+
+  // L-RACE: atomic conditional removal (see removeWorkspaceMember).
+  const applied = await db.unassignIfNotLastOwner(params.accountUuid, params.workspaceUuid)
+  if (!applied) {
+    throw new PlatformError(new Status(Severity.ERROR, 'last_owner_in_workspace' as any, {}))
+  }
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'remove_member',
+    workspaceUuid: params.workspaceUuid,
+    details: { priorRole: currentRole },
+    batchId
+  })
+
+  return { ok: true, wasMember: true }
+}
+
+// V13 — In-memory rate-limit for admin_action_denied audit rows.
+// Key: `${adminUuid}::${reason}::${method}`. Value: last-write epoch ms.
+// Window: 1 hour. Resets on pod restart (acceptable per spec — attacker
+// gets at most one row per pod-restart-cycle).
+// L-AUD: the audit table is NOT the forensic source of truth for repeated
+// denial attempts (it is intentionally throttled/lossy across restarts). The
+// authoritative record of failed attempts is the security/ctx log (ctx.warn
+// pre-auth denial + the throttled row here is only a convenience surface).
+const ADMIN_DENIED_AUDIT_WINDOW_MS = 60 * 60 * 1000
+const adminDeniedAuditLog = new Map<string, number>()
+
+/**
+ * Write an admin_action_denied audit row, throttled per (admin, reason, method).
+ *
+ * MUST be called AFTER requireAdmin() has succeeded — never on pre-auth
+ * Forbidden paths, since those have no actor uuid to attribute and writing
+ * audit rows pre-auth is itself an attack surface.
+ *
+ * Scope: only 'self_disable' and 'last_admin' reasons today. Additional
+ * reasons can be added as more admin actions gain explicit denial paths.
+ *
+ * Method names match the actual call site:
+ *   'disableAccount'   — single-target RPC (default)
+ *   'bulkSetDisabled'  — bulk RPC in serviceOperations.ts
+ *
+ * EXPORTED so serviceOperations.ts can import it for the pre-bulkLoop
+ * audit-write in bulkSetDisabled.
+ */
+export async function auditAdminActionDenied (
+  ctx: MeasureContext,
+  db: AccountDB,
+  adminUuid: AccountUuid,
+  reason: 'self_disable' | 'last_admin',
+  method: 'disableAccount' | 'bulkSetDisabled',
+  targetAccount?: AccountUuid | null
+): Promise<void> {
+  const key = `${adminUuid}::${reason}::${method}`
+  const last = adminDeniedAuditLog.get(key)
+  const now = Date.now()
+  if (last !== undefined && now - last < ADMIN_DENIED_AUDIT_WINDOW_MS) {
+    return
+  }
+  adminDeniedAuditLog.set(key, now)
+  try {
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount: targetAccount ?? null,
+      action: 'admin_action_denied',
+      workspaceUuid: null,
+      details: { reason, method, target: targetAccount ?? null }
+    } as any)
+  } catch (err) {
+    // L-AUD: stabiler Alert-Marker, damit ein verschluckter Audit-Write nicht
+    // spurlos bleibt. Mutation-Verhalten unveraendert (Denial-Row ist best-effort).
+    ctx.error?.('AUDIT_WRITE_FAILED', { marker: 'AUDIT_WRITE_FAILED', action: 'admin_action_denied', reason, method, err })
+  }
+}
+
+/**
+ * Disable an account WITHOUT re-checking admin auth.
+ * Caller must have already verified admin privileges.
+ *
+ * V13 — optional `methodName` parameter (default 'disableAccount') tags any
+ * admin_action_denied audit row this function writes. The bulk path passes
+ * 'bulkSetDisabled' explicitly so its last_admin denials are audited under
+ * the correct method tag (which matters because the rate-limit key includes
+ * method).
+ */
+export async function disableAccountInternal (
+  ctx: MeasureContext,
+  db: AccountDB,
+  deps: AccountMethodDeps,
+  adminUuid: AccountUuid,
+  params: { accountUuid: AccountUuid },
+  batchId?: string,
+  methodName: 'disableAccount' | 'bulkSetDisabled' = 'disableAccount'
+): Promise<{ ok: true }> {
+  if (adminUuid === params.accountUuid) {
+    await auditAdminActionDenied(ctx, db, adminUuid, 'self_disable', methodName, params.accountUuid)
+    throw new PlatformError(new Status(Severity.ERROR, 'cannot_self_disable' as any, {}))
+  }
+
+  const socials = await db.socialId.find({ personUuid: params.accountUuid })
+  const targetEmail = socials.find((s) => s.type === SocialIdType.EMAIL)?.value
+  if (targetEmail != null && (await isLastAdmin(db, targetEmail))) {
+    await auditAdminActionDenied(ctx, db, adminUuid, 'last_admin', methodName, params.accountUuid)
+    throw new PlatformError(new Status(Severity.ERROR, 'last_admin' as any, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+  const priorDisabledAt = account.disabledAt ?? null
+  await db.account.update({ uuid: params.accountUuid }, { disabledAt: Date.now(), $inc: { tokenVersion: 1 } } as any)
+
+  // L-RACE: the last-admin guard above and this write are not a single atomic
+  // op; a concurrent disable of the OTHER remaining admin could have passed its
+  // own pre-write guard. Re-verify the invariant against now-committed state and
+  // roll back (re-enable) if this write left zero active admins. In the
+  // symmetric two-admin race both writers observe the invariant broken and both
+  // roll back — over-conservative but fail-closed: at least one admin always
+  // stays active. The bumped tokenVersion is intentionally NOT un-bumped on
+  // rollback (never lower a token version); the account is simply re-enabled.
+  if (targetEmail != null && (await isLastAdmin(db, targetEmail))) {
+    await db.account.update({ uuid: params.accountUuid }, { disabledAt: priorDisabledAt } as any)
+    await auditAdminActionDenied(ctx, db, adminUuid, 'last_admin', methodName, params.accountUuid)
+    throw new PlatformError(new Status(Severity.ERROR, 'last_admin' as any, {}))
+  }
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'disable',
+    workspaceUuid: null,
+    details: { reason: 'manual_admin_action' },
+    batchId
+  })
+
+  if (deps.accountLifecycleProducer !== undefined) {
+    try {
+      await deps.accountLifecycleProducer.send(
+        ctx,
+        systemAccountUuid as unknown as WorkspaceUuid,
+        [
+          {
+            accountUuid: params.accountUuid,
+            event: 'disabled',
+            timestamp: Date.now(),
+            reason: 'manual_admin_action'
+          }
+        ],
+        params.accountUuid
+      )
+    } catch (err) {
+      ctx.warn('failed to emit account.lifecycle event; relying on token-version fallback', { err })
+    }
+  }
+
+  return { ok: true }
+}
+
+/**
+ * Trigger a password-reset email WITHOUT re-checking admin auth.
+ * Caller must have already verified admin privileges.
+ */
+export async function triggerPasswordResetInternal (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  adminUuid: AccountUuid,
+  params: { accountUuid: AccountUuid },
+  batchId?: string
+): Promise<{ ok: true, emailSentTo: string }> {
+  const socials = await db.socialId.find({ personUuid: params.accountUuid })
+  const emailSocial = socials.find((s) => s.type === SocialIdType.EMAIL)
+  if (emailSocial == null) {
+    throw new PlatformError(new Status(Severity.ERROR, 'user_has_no_email' as any, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account?.hash == null) {
+    throw new PlatformError(new Status(Severity.ERROR, 'user_has_no_password' as any, {}))
+  }
+
+  try {
+    await requestPasswordReset(ctx, db, branding, '', { email: emailSocial.value })
+  } catch (err: any) {
+    ctx.error('Password reset email send failed', { err, accountUuid: params.accountUuid })
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount: params.accountUuid,
+      action: 'trigger_password_reset',
+      workspaceUuid: null,
+      details: { emailSentTo: emailSocial.value, failed: true, errMsg: err?.message ?? String(err) },
+      batchId
+    })
+    if (err instanceof PlatformError) throw err
+    throw new PlatformError(new Status(Severity.ERROR, 'password_reset_send_failed' as any, {}))
+  }
+
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'trigger_password_reset',
+    workspaceUuid: null,
+    details: { emailSentTo: emailSocial.value },
+    batchId
+  })
+
+  return { ok: true, emailSentTo: emailSocial.value }
+}
+
+function getConfiguredAdminEmails (): string[] {
+  return (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean)
+}
+
+/**
+ * Returns true when disabling the target account would leave zero active
+ * admins. Walks the configured ADMIN_EMAILS list, resolves each entry to
+ * an account via its email social id, and counts only accounts that
+ * currently exist and are not already disabled.
+ */
+async function isLastAdmin (db: AccountDB, targetEmail: string): Promise<boolean> {
+  const adminEmails = getConfiguredAdminEmails()
+  if (adminEmails.length === 0) return false
+
+  const targetEmailNorm = targetEmail.trim().toLowerCase()
+  if (!adminEmails.map((e) => e.toLowerCase()).includes(targetEmailNorm)) {
+    return false
+  }
+
+  let activeOtherAdmins = 0
+  for (const email of adminEmails) {
+    if (email.toLowerCase() === targetEmailNorm) continue
+    const socialId = await db.socialId.findOne({ type: SocialIdType.EMAIL, value: email })
+    if (socialId == null) continue
+    const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
+    if (account == null) continue
+    if (account.disabledAt != null) continue
+    activeOtherAdmins += 1
+  }
+
+  return activeOtherAdmins === 0
+}
+
+export async function disableAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  deps: AccountMethodDeps,
+  token: string,
+  params: { accountUuid: AccountUuid }
+): Promise<{ ok: true }> {
+  const adminUuid = await requireAdmin(ctx, db, token)
+  // V13 — delegate to disableAccountInternal so the guard + audit-write
+  // logic lives in exactly one place. methodName defaults to
+  // 'disableAccount' so any admin_action_denied row from the single-RPC
+  // path is tagged correctly.
+  return await disableAccountInternal(ctx, db, deps, adminUuid, params)
+}
+
+/**
+ * Re-enable a disabled account WITHOUT re-checking admin auth.
+ * Caller must have already verified admin privileges (assertAdmin + token
+ * version) — this sibling of disableAccountInternal exists so bulk loops
+ * can avoid N redundant requireAdmin() round-trips per row.
+ */
+export async function enableAccountInternal (
+  ctx: MeasureContext,
+  db: AccountDB,
+  adminUuid: AccountUuid,
+  params: { accountUuid: AccountUuid },
+  batchId?: string
+): Promise<{ ok: true }> {
+  const account = await db.account.findOne({ uuid: params.accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
+  }
+
+  // If the account is not currently disabled, this is a no-op: don't bump
+  // tokenVersion (spec §10.7 — idempotent for never-disabled). Still record
+  // the audit entry so admins see the action even when it had no effect.
+  if (account.disabledAt == null) {
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount: params.accountUuid,
+      action: 'enable',
+      workspaceUuid: null,
+      details: { noop: true },
+      batchId
+    })
+    return { ok: true }
+  }
+
+  await db.account.update({ uuid: params.accountUuid }, { disabledAt: null, $inc: { tokenVersion: 1 } } as any)
+  await db.adminAuditLog.insert({
+    adminAccount: adminUuid,
+    targetAccount: params.accountUuid,
+    action: 'enable',
+    workspaceUuid: null,
+    details: null,
+    batchId
+  })
+
+  return { ok: true }
+}
+
+export async function enableAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid },
+  batchId?: string
+): Promise<{ ok: true }> {
+  const adminUuid = await requireAdmin(ctx, db, token)
+  return await enableAccountInternal(ctx, db, adminUuid, params, batchId)
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -3353,7 +3877,6 @@ export type AccountMethods =
   | 'addHulyAssistantSocialId'
   | 'refreshHulyAssistantToken'
   | 'releaseSocialId'
-  | 'deleteAccount'
   | 'canMergeSpecifiedPersons'
   | 'mergeSpecifiedPersons'
   | 'setMyProfile'
@@ -3367,11 +3890,50 @@ export type AccountMethods =
   | 'hasWorkspacePermission'
   | 'getWorkspacePermissions'
   | 'getWorkspaceUsersWithPermission'
+  | 'setWorkspaceMemberRole'
+  | 'removeWorkspaceMember'
+  | 'triggerPasswordReset'
+  | 'disableAccount'
+  | 'enableAccount'
 
 /**
  * @public
  */
-export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMethods, AccountMethodHandler>> {
+export function wrapWithDeps<
+  F extends (
+    ctx: MeasureContext,
+    db: AccountDB,
+    branding: Branding | null,
+    deps: AccountMethodDeps,
+    ...args: any[]
+  ) => Promise<any>
+> (method: F, deps: AccountMethodDeps | undefined): AccountMethodHandler {
+  return async function (ctx, db, branding, request, token, meta) {
+    return await method(ctx, db, branding, deps ?? {}, token, { ...request.params }, meta)
+      .then((result) => ({ id: request.id, result }))
+      .catch((err: Error) => {
+        const status =
+          err instanceof PlatformError
+            ? err.status
+            : new Status(Severity.ERROR, platform.status.InternalServerError, {})
+        if (err instanceof TokenError) {
+          return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
+        }
+        if (status.code === platform.status.InternalServerError) {
+          Analytics.handleError(err)
+          ctx.error('Error while processing account method', { method: method.name, status, origErr: err })
+        } else {
+          ctx.error('Error while processing account method', { method: method.name, status })
+        }
+        return { error: status }
+      })
+  }
+}
+
+export function getMethods (
+  hasSignUp: boolean = true,
+  deps?: AccountMethodDeps
+): Partial<Record<AccountMethods, AccountMethodHandler>> {
   return {
     /* OPERATIONS */
     login: wrap(login),
@@ -3421,7 +3983,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     addHulyAssistantSocialId: wrap(addHulyAssistantSocialId),
     refreshHulyAssistantToken: wrap(refreshHulyAssistantToken),
     releaseSocialId: wrap(releaseSocialId),
-    deleteAccount: wrap(deleteAccount),
     canMergeSpecifiedPersons: wrap(canMergeSpecifiedPersons),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     setMyProfile: wrap(setMyProfile),
@@ -3433,6 +3994,13 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     hasWorkspacePermission: wrap(hasWorkspacePermission),
     getWorkspacePermissions: wrap(getWorkspacePermissions),
     getWorkspaceUsersWithPermission: wrap(getWorkspaceUsersWithPermission),
+
+    /* ADMIN USER MANAGEMENT (V27) */
+    setWorkspaceMemberRole: wrap(setWorkspaceMemberRole),
+    removeWorkspaceMember: wrap(removeWorkspaceMember),
+    triggerPasswordReset: wrap(triggerPasswordReset),
+    disableAccount: wrapWithDeps(disableAccount, deps),
+    enableAccount: wrap(enableAccount),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
@@ -3453,7 +4021,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     isReadOnlyGuest: wrap(isReadOnlyGuest),
 
     /* SERVICE METHODS */
-    ...getServiceMethods()
+    ...getServiceMethods(deps)
   }
 }
 

@@ -243,3 +243,159 @@ export interface Subscription {
  * Used by billing service to upsert subscription data
  */
 export type SubscriptionData = Omit<Subscription, 'createdOn' | 'updatedOn'>
+
+// =====================================================================
+// Admin user management DTOs (V27)
+// =====================================================================
+
+export interface ListAccountsAdminParams {
+  search?: string
+  authMethod?: 'all' | 'email_only' | 'oidc' | 'mixed'
+  status?: 'all' | 'active' | 'disabled'
+  // v4 admin-panel enhancements — per-column filter inputs (AND with the globals above)
+  emailContains?: string
+  nameContains?: string
+  statusIn?: Array<'active' | 'disabled'>
+  authMethodIn?: Array<'email_only' | 'oidc' | 'mixed' | 'none'>
+  workspaceUuidsIn?: WorkspaceUuid[]
+  workspaceCountRange?: { min?: number, max?: number }
+  lastActivityFilter?: { kind: 'range', fromMs?: number, toMs?: number } | { kind: 'never' }
+  // Active accounts with zero workspaces. Drives the "Orphan accounts"
+  // quick-filter button in AdminUsers.
+  orphan?: boolean
+  // Filter to admin accounts only (primaryEmail matches the configured
+  // admin-emails allowlist). Drives the Admins stat-pill quick-filter.
+  isAdmin?: boolean
+  sort?: {
+    field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
+    direction: 'asc' | 'desc'
+  }
+  pagination: { limit: number, offset: number } // EXISTING required-nested, do NOT flatten
+}
+
+export interface AccountListRow {
+  uuid: AccountUuid
+  firstName: string
+  lastName: string
+  primaryEmail: string | null
+  authMethods: Array<'email' | 'oidc'>
+  hasPassword: boolean
+  workspaceCount: number
+  status: 'active' | 'disabled'
+  lastActivityAt: number | null
+  isAdmin: boolean
+}
+
+export interface AccountDetailsResponse {
+  uuid: AccountUuid
+  firstName: string
+  lastName: string
+  status: 'active' | 'disabled'
+  disabledAt: number | null
+  lastActivityAt: number | null
+  isAdmin: boolean
+  socialIds: Array<{ type: string, value: string, verified: boolean }>
+  workspaceMemberships: Array<{
+    workspaceUuid: WorkspaceUuid
+    workspaceName: string
+    workspaceUrl: string
+    role: AccountRole
+  }>
+  recentAuditEntries: Array<{
+    tsMs: number
+    adminFirstName: string
+    adminLastName: string
+    action: string
+    details: any
+  }>
+}
+
+export interface AddWorkspaceMemberParams {
+  accountUuid: AccountUuid
+  workspaceUuid: WorkspaceUuid
+  role: AccountRole
+}
+
+export interface WorkspaceMembersAdminResponse {
+  workspaceUuid: WorkspaceUuid
+  workspaceName: string
+  workspaceUrl: string
+  workspaceMode: string
+  members: Array<{
+    accountUuid: AccountUuid
+    firstName: string
+    lastName: string
+    primaryEmail: string | null
+    role: AccountRole
+    lastActivityAt: number | null
+    status: 'active' | 'disabled'
+    isAdmin: boolean
+  }>
+}
+
+export interface BulkResult {
+  succeeded: AccountUuid[]
+  failed: Array<{ accountUuid: AccountUuid, error: string }>
+}
+
+// Audit log DTOs (Task 3-5)
+
+export interface AuditEntry {
+  id: string
+  tsMs: number
+  admin: { uuid: AccountUuid, firstName: string, lastName: string }
+  action: string
+  targetAccount?: { uuid: AccountUuid, firstName: string, lastName: string }
+  targetWorkspace?: { uuid: WorkspaceUuid, name: string, url: string }
+  details: any | null
+  // V29 — Bulk-action service calls stamp every row with one shared UUID so
+  // the admin UI can group "this is one operation". Undefined on single-action
+  // sites. Plan 1d Task 3.
+  batchId?: string
+}
+
+export interface ListAuditAdminParams {
+  filter?: {
+    // Legacy UUID filters — kept for API compatibility. Prefer the
+    // name/email substring filters below for human-facing UIs.
+    adminUuid?: AccountUuid
+    action?: string
+    targetAccountUuid?: AccountUuid
+    targetWorkspaceUuid?: WorkspaceUuid
+    from?: number // ms
+    to?: number
+    // V30 — Audit-log filter UX redesign. Substring-match against the
+    // identifiers the admin actually sees in the table (name / email /
+    // workspace name) instead of UUIDs.
+    adminNameOrEmail?: string
+    targetNameOrUrl?: string
+    // Multi-select action filter. When present takes precedence over the
+    // legacy `action` exact-match. Empty array is treated as "no filter".
+    actionIn?: string[]
+  }
+  sort?: {
+    field: 'time' | 'admin' | 'action' | 'target'
+    direction: 'asc' | 'desc'
+  }
+  pagination?: { cursor?: string, limit?: number }
+}
+
+export interface ListAuditAdminResponse {
+  entries: AuditEntry[]
+  nextCursor: string | null
+}
+
+export interface CreateAccountParams {
+  firstName: string
+  lastName: string
+  email: string
+  passwordMode: 'invite' | 'set'
+  password?: string
+  initialWorkspace?: { workspaceUuid: WorkspaceUuid, role: AccountRole }
+}
+
+export interface CreateAccountResponse {
+  account: AccountDetailsResponse
+  inviteEmailSent: boolean | null
+  initialWorkspaceAssigned: boolean | null
+}

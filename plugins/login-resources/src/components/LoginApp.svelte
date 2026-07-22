@@ -25,7 +25,8 @@
     getCurrentLocation,
     location,
     setMetadataLocalStorage,
-    themeStore
+    themeStore,
+    location as locationStore
   } from '@hcengineering/ui'
   import workbench from '@hcengineering/workbench'
   import { onDestroy, onMount } from 'svelte'
@@ -53,7 +54,13 @@
   import loginBackWebp from '../../img/login_back.webp'
   import loginBack2xWebp from '../../img/login_back_2x.webp'
   import AdminWorkspaces from './AdminWorkspaces.svelte'
+  import AdminUsers from './AdminUsers.svelte'
+  import AdminAudit from './AdminAudit.svelte'
   import ChangePassword from './ChangePassword.svelte'
+  import ForceLogoutModal from './ForceLogoutModal.svelte'
+  import { forceLogoutReason } from '../utils'
+
+  $: subPath = $locationStore.path[2]
 
   export let page: Pages = 'signup'
 
@@ -122,8 +129,19 @@
   onMount(chooseToken)
 </script>
 
+{#if $forceLogoutReason != null}
+  <ForceLogoutModal reason={$forceLogoutReason} />
+{/if}
+
 {#if page === 'admin'}
-  <AdminWorkspaces />
+  {#if subPath === 'users'}
+    <AdminUsers />
+  {:else if subPath === 'audit'}
+    <AdminAudit />
+  {:else}
+    <AdminWorkspaces />
+  {/if}
+  <Popup />
 {:else}
   <div
     class="theme-dark w-full h-full backd"

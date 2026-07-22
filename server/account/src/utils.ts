@@ -172,6 +172,80 @@ export function isGuest (account: AccountUuid, extra: Record<string, any> | unde
   return account === GUEST_ACCOUNT && extra?.guest === 'true'
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * Issue a JWT token that includes the account's current `token_version` as a string claim
+ * when version > 0. Accounts with version 0 (or no row) get a token without the claim,
+ * which `verifyTokenVersion` treats as version 0.
+ *
+ * Skips the DB lookup for guest accounts and non-UUID principals (e.g. service accounts).
+ */
+export async function generateTokenWithVersion (
+  ctx: MeasureContext,
+  db: AccountDB,
+  accountUuid: PersonUuid,
+  workspaceUuid?: WorkspaceUuid,
+  extra?: Record<string, string>,
+  options?: Parameters<typeof generateToken>[4]
+): Promise<string> {
+  let mergedExtra = extra
+  if (accountUuid !== GUEST_ACCOUNT && UUID_REGEX.test(accountUuid)) {
+    const account = await db.account.findOne({ uuid: accountUuid as AccountUuid })
+    if (account?.tokenVersion != null && account.tokenVersion > 0) {
+      mergedExtra = { ...(extra ?? {}), token_version: String(account.tokenVersion) }
+    }
+  }
+  return generateToken(accountUuid, workspaceUuid, mergedExtra, undefined, options)
+}
+
+/**
+ * Verify that a token's `token_version` claim is not less than the account's current
+ * tokenVersion, and that the account is not disabled. Called from DB-aware token-
+ * verification paths (getLoginInfoByToken, selectWorkspace, provider-login refresh).
+ *
+ * Throws TokenError on mismatch / disabled.
+ */
+export async function verifyTokenVersion (ctx: MeasureContext, db: AccountDB, token: string): Promise<void> {
+  const { account: accountUuid, extra } = decodeTokenVerbose(ctx, token)
+  if (accountUuid === GUEST_ACCOUNT) return
+  if (accountUuid === systemAccountUuid) return
+  if (accountUuid === readOnlyGuestAccountUuid) return
+  if (!UUID_REGEX.test(accountUuid)) return
+  const tokenVersionClaim = parseInt(extra?.token_version ?? '0', 10)
+  const account = await db.account.findOne({ uuid: accountUuid })
+  // Account row may be missing for service-issued tokens (e.g. NIL_UUID for 2FA-pending).
+  // Only enforce when a row exists.
+  if (account == null) return
+  if (account.disabledAt != null) {
+    throw new TokenError('Account disabled')
+  }
+  if ((account.tokenVersion ?? 0) > tokenVersionClaim) {
+    throw new TokenError('Token version invalidated')
+  }
+}
+
+const LAST_ACTIVITY_THROTTLE_MS = 5 * 60 * 1000
+
+/**
+ * Update account.lastActivityAt with throttling. Only writes when the existing
+ * value is older than 5 minutes (or null) to avoid a hot-path write storm.
+ * Best-effort: failures are logged and swallowed, never block auth.
+ */
+export async function touchLastActivity (db: AccountDB, accountUuid: AccountUuid): Promise<void> {
+  try {
+    const account = await db.account.findOne({ uuid: accountUuid })
+    if (account == null) return
+    const now = Date.now()
+    const last = account.lastActivityAt ?? 0
+    if (now - last < LAST_ACTIVITY_THROTTLE_MS) return
+    await db.account.update({ uuid: accountUuid }, { lastActivityAt: now })
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('touchLastActivity failed', { accountUuid, err })
+  }
+}
+
 export function wrap (
   accountMethod: (ctx: MeasureContext, db: AccountDB, branding: Branding | null, ...args: any[]) => Promise<any>
 ): AccountMethodHandler {
@@ -758,6 +832,7 @@ export async function selectWorkspace (
   let nbf: number | undefined
   try {
     const decodedToken = decodeTokenVerbose(ctx, token ?? '')
+    await verifyTokenVersion(ctx, db, token ?? '')
     accountUuid = decodedToken.account
     if (workspace == null) {
       workspace = await getWorkspaceById(db, decodedToken.workspace)
@@ -815,7 +890,7 @@ export async function selectWorkspace (
   if (accountUuid === systemAccountUuid) {
     return {
       account: accountUuid,
-      token: generateToken(accountUuid, workspace.uuid, extra, undefined, {
+      token: await generateTokenWithVersion(ctx, db, accountUuid, workspace.uuid, extra, {
         grant,
         sub,
         exp,
@@ -853,6 +928,10 @@ export async function selectWorkspace (
     void setTimezone(ctx, db, accountUuid, account, meta)
   }
 
+  if (accountUuid !== systemAccountUuid && accountUuid !== readOnlyGuestAccountUuid) {
+    await touchLastActivity(db, accountUuid)
+  }
+
   if (role === AccountRole.ReadOnlyGuest) {
     if (extra == null) {
       extra = {}
@@ -877,7 +956,7 @@ export async function selectWorkspace (
 
   return {
     account: accountUuid,
-    token: generateToken(accountUuid, workspace.uuid, extra, undefined, {
+    token: await generateTokenWithVersion(ctx, db, accountUuid, workspace.uuid, extra, {
       grant,
       sub,
       exp,
@@ -1233,6 +1312,7 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
 
 export async function sendEmailConfirmation (
   ctx: MeasureContext,
+  db: AccountDB,
   branding: Branding | null,
   account: PersonUuid,
   email: string,
@@ -1252,7 +1332,7 @@ export async function sendEmailConfirmation (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  const token = generateToken(account, undefined, {
+  const token = await generateTokenWithVersion(ctx, db, account, undefined, {
     confirmEmail: email,
     ...(extra ?? {})
   })
@@ -1575,6 +1655,9 @@ export async function loginOrSignUpWithProvider (
 
       await createAccount(db, personUuid, true)
       await db.person.update({ uuid: personUuid }, { firstName: first, lastName: last })
+    } else if (account.disabledAt != null) {
+      ctx.warn('Provider login attempt on disabled account', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, 'account_disabled' as any, {}))
     }
 
     // We should check and reset password if there's an account with password but no social ids have been
@@ -1608,6 +1691,7 @@ export async function loginOrSignUpWithProvider (
     }
 
     await confirmHulyIds(ctx, db, personUuid as AccountUuid)
+    await touchLastActivity(db, personUuid as AccountUuid)
     const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
     ctx.info('Provider login succeeded', { email, normalizedEmail, emailSocialId, socialId, ...extraToken })
 
@@ -1615,7 +1699,7 @@ export async function loginOrSignUpWithProvider (
       account: personUuid as AccountUuid,
       socialId: socialIdId,
       name: getPersonName(person),
-      token: generateToken(personUuid, undefined, extraToken)
+      token: await generateTokenWithVersion(ctx, db, personUuid, undefined, extraToken)
     }
   } catch (err: any) {
     Analytics.handleError(err)
@@ -1667,7 +1751,7 @@ export async function joinWithProvider (
     ctx,
     db,
     branding,
-    generateToken(loginInfo.account, workspaceUuid),
+    await generateTokenWithVersion(ctx, db, loginInfo.account, workspaceUuid),
     loginInfo.account,
     workspace,
     invite
