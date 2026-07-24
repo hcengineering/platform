@@ -974,17 +974,6 @@ export function devTool (
       await storageAdapter.close()
     })
 
-  //     toolCtx.info('using datalake', { datalake: datalakeConfig })
-
-  //           toolCtx.info('processing workspace', { workspace: workspace.workspace, index, count })
-
-  //           toolCtx.info('processing workspace', {
-  //             workspace: workspace.workspace,
-  //             version: workspace.version,
-  //             index,
-  //             count
-  //           })
-
   program
     .command('generate-token <name> <workspace>')
     .description('generate token')
@@ -1262,13 +1251,6 @@ export function devTool (
       await filterMergedAccountsInMembers(toolCtx, dbUrl, accDb)
     }, dbUrl)
   })
-
-  //         toolCtx.info('processing workspace', {
-  //           workspace: workspace.workspace,
-  //           version: workspace.version,
-  //           index,
-  //           count
-  //         })
 
   program
     .command('migrate-github-account')
