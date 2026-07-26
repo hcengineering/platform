@@ -159,7 +159,23 @@ export type ApiTokenRevocationChecker = (apiTokenId: string, token: Token, raw: 
 let apiTokenRevocationChecker: ApiTokenRevocationChecker | undefined
 
 const REVOCATION_CACHE_TTL_MS = 60_000
+const REVOCATION_CACHE_LIMIT = 4096
 const revocationCache = new Map<string, { revoked: boolean, checkedAt: number }>()
+
+function cacheRevocation (apiTokenId: string, revoked: boolean, now: number): void {
+  // Bounded so a stream of distinct tokens cannot grow this without limit.
+  if (revocationCache.size >= REVOCATION_CACHE_LIMIT && !revocationCache.has(apiTokenId)) {
+    for (const [key, value] of revocationCache) {
+      if (now - value.checkedAt > REVOCATION_CACHE_TTL_MS) {
+        revocationCache.delete(key)
+      }
+    }
+    if (revocationCache.size >= REVOCATION_CACHE_LIMIT) {
+      revocationCache.delete(revocationCache.keys().next().value as string)
+    }
+  }
+  revocationCache.set(apiTokenId, { revoked, checkedAt: now })
+}
 
 /**
  * Registers the revocation resolver used by {@link verifyToken}. Services with
@@ -175,19 +191,22 @@ export function setApiTokenRevocationChecker (checker: ApiTokenRevocationChecker
 
 async function isApiTokenRevoked (apiTokenId: string, token: Token, raw: string, now: number): Promise<boolean> {
   const cached = revocationCache.get(apiTokenId)
-  // Revocation is irreversible — once confirmed it stays cached.
-  if (cached?.revoked === true) return true
-  if (cached === undefined || now - cached.checkedAt > REVOCATION_CACHE_TTL_MS) {
-    try {
-      const revoked = await (apiTokenRevocationChecker as ApiTokenRevocationChecker)(apiTokenId, token, raw)
-      revocationCache.set(apiTokenId, { revoked, checkedAt: now })
-      return revoked
-    } catch {
-      // Account unreachable: fall back to the stale verdict (fail-open) and retry next TTL.
-      return cached?.revoked ?? false
-    }
+  if (cached !== undefined && now - cached.checkedAt <= REVOCATION_CACHE_TTL_MS) {
+    return cached.revoked
   }
-  return cached.revoked
+
+  try {
+    const revoked = await (apiTokenRevocationChecker as ApiTokenRevocationChecker)(apiTokenId, token, raw)
+    cacheRevocation(apiTokenId, revoked, now)
+    return revoked
+  } catch {
+    // The account is the only authority on revocation. If it cannot be reached we
+    // do not know whether this token still stands, so refuse it rather than let a
+    // revoked token survive by making the account unreachable. A verdict from
+    // within the TTL is still trusted, which keeps brief outages from cutting off
+    // healthy tokens mid-flight.
+    throw new TokenError('Token revocation could not be verified')
+  }
 }
 
 /**

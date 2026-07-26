@@ -36,7 +36,7 @@ import {
   type WorkspaceUuid,
   type IntegrationKind
 } from '@hcengineering/core'
-import platform, { PlatformError, Severity, Status, getMetadata, translate } from '@hcengineering/platform'
+import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant } from '@hcengineering/server-token'
 
 import { randomUUID } from 'crypto'
@@ -419,7 +419,7 @@ export async function validateOtp (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
     }
 
-    let callerAccountUuid: AccountUuid | undefined
+    let callerAccountUuid: AccountUuid | null = null
     let callerAccount: Account | null = null
 
     if (action === 'verify') {
@@ -2060,7 +2060,7 @@ export async function getLoginInfoByToken (
   let extra: any
   let grant: PermissionsGrant | undefined
   let sub: AccountUuid | undefined
-  let account: AccountUuid
+  let account: AccountUuid | undefined
   let nbf: number | undefined
   let exp: number | undefined
 
@@ -2672,12 +2672,25 @@ async function deleteMailbox (
 
 // ── API Token Management ────────────────────────────────────────────
 
+const MAX_TOKENS_PER_ACCOUNT = 100
+
+/**
+ * API tokens carry the full rights of their account, so letting one manage tokens
+ * would make a leaked token self-renewing: it could mint a fresh token with a new
+ * expiry, or revoke the tokens its owner would use to cut it off. Token management
+ * stays with an interactive session.
+ */
+function verifyNotApiToken (extra: Record<string, any> | undefined): void {
+  if (extra?.apiTokenId !== undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+}
+
 /**
  * Creates a new API token for the authenticated user.
  * @param params.name Human-readable token name (1–255 chars)
  * @param params.workspaceUuid Target workspace — user must have access
  * @param params.expiryDays Token validity period (1–365 days)
- * @param params.scopes Optional scopes array. NULL/undefined = full access. e.g. ['read:*', 'write:*']
  * @returns Token ID, signed JWT, and expiration timestamp (ms)
  * @throws BadRequest if validation fails
  * @throws Forbidden if user lacks workspace access
@@ -2691,10 +2704,9 @@ async function createApiToken (
     name: string
     workspaceUuid: WorkspaceUuid
     expiryDays: number
-    scopes?: string[]
   }
 ): Promise<{ id: string, token: string, expiresOn: number }> {
-  const { name, workspaceUuid, expiryDays, scopes } = params
+  const { name, workspaceUuid, expiryDays } = params
 
   if (
     name == null ||
@@ -2716,6 +2728,7 @@ async function createApiToken (
   }
 
   const { account, extra } = decodeTokenVerbose(ctx, token)
+  verifyNotApiToken(extra)
 
   // Verify the user has access to this workspace and is at least a User (not a guest)
   const role = await db.getWorkspaceRole(account, workspaceUuid)
@@ -2724,36 +2737,20 @@ async function createApiToken (
   }
   verifyAllowedRole(role, AccountRole.User, extra)
 
-  // Enforce per-account token limit
-  const MAX_TOKENS_PER_ACCOUNT = 100
+  // Enforce per-account token limit. Revoked and expired tokens are kept for the
+  // audit trail, so counting them would eventually lock out anyone who rotates.
+  const now = Date.now()
   const existingTokens = await db.apiToken.find({ accountUuid: account })
-  if (existingTokens.length >= MAX_TOKENS_PER_ACCOUNT) {
+  const usableTokens = existingTokens.filter((it) => !it.revoked && it.expiresOn > now)
+  if (usableTokens.length >= MAX_TOKENS_PER_ACCOUNT) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  // Validate scopes if provided
-  const validScopePattern = /^(read|write|delete):\*$/
-  if (scopes !== undefined) {
-    if (!Array.isArray(scopes) || scopes.length === 0) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-    }
-    for (const scope of scopes) {
-      if (typeof scope !== 'string' || !validScopePattern.test(scope)) {
-        throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-      }
-    }
-  }
-
-  const now = Date.now()
   const expiresOn = now + days * 86400000
   const expSec = Math.floor(expiresOn / 1000)
 
   const id = randomUUID()
-  const tokenExtra: Record<string, string> = { apiTokenId: id }
-  if (scopes !== undefined) {
-    tokenExtra.scopes = JSON.stringify(scopes)
-  }
-  const apiToken = generateToken(account, workspaceUuid, tokenExtra, undefined, { exp: expSec })
+  const apiToken = generateToken(account, workspaceUuid, { apiTokenId: id }, undefined, { exp: expSec })
 
   await db.apiToken.insertOne({
     id,
@@ -2762,11 +2759,10 @@ async function createApiToken (
     workspaceUuid,
     createdOn: now,
     expiresOn,
-    revoked: false,
-    scopes
+    revoked: false
   })
 
-  ctx.info('API token created', { id, account, workspaceUuid, days, scopes })
+  ctx.info('API token created', { id, account, workspaceUuid, days })
   return { id, token: apiToken, expiresOn }
 }
 
@@ -2790,7 +2786,8 @@ async function listApiTokens (
     revoked: boolean
   }>
   > {
-  const { account } = decodeTokenVerbose(ctx, token)
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  verifyNotApiToken(extra)
 
   const tokens = await db.apiToken.find({ accountUuid: account })
   const wsUuids = [...new Set(tokens.map((t) => t.workspaceUuid))]
@@ -2804,15 +2801,13 @@ async function listApiTokens (
     workspaceName: wsMap.get(t.workspaceUuid) ?? t.workspaceUuid,
     createdOn: t.createdOn,
     expiresOn: t.expiresOn,
-    revoked: t.revoked,
-    scopes: t.scopes ?? undefined
+    revoked: t.revoked
   }))
 }
 
 /**
- * Marks the token as revoked in the DB. Enforcement is centralized: the account
- * rejects revoked tokens (see `wrap`), and services validate via `verifyToken`,
- * so a revoked token stops working within the verification cache TTL (~60s).
+ * Revokes one of the caller's own API tokens. The record is kept so the token
+ * stays visible as revoked rather than silently disappearing.
  */
 async function revokeApiToken (
   ctx: MeasureContext,
@@ -2822,88 +2817,20 @@ async function revokeApiToken (
   params: { tokenId: string }
 ): Promise<void> {
   const { account, extra } = decodeTokenVerbose(ctx, token)
+  verifyNotApiToken(extra)
   const { tokenId } = params
 
+  // Scoped to the caller's own tokens, which is the only authority revoking needs.
+  // Deliberately no workspace role check: leaving a workspace must not strand a
+  // credential its owner can no longer revoke.
   const existing = await db.apiToken.findOne({ id: tokenId, accountUuid: account })
   if (existing == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  // Verify the user is at least a User (not a guest) in the token's workspace
-  const role = await db.getWorkspaceRole(account, existing.workspaceUuid)
-  verifyAllowedRole(role, AccountRole.User, extra)
-
   await db.apiToken.update({ id: tokenId }, { revoked: true })
-  ctx.info('API token revoked', { tokenId, account })
-}
 
-/**
- * Lists all API tokens for a workspace. Requires OWNER role.
- * Returns tokens from all members, with account UUIDs for attribution.
- */
-async function listWorkspaceApiTokens (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { workspaceUuid: WorkspaceUuid }
-): Promise<
-  Array<{
-    id: string
-    name: string
-    accountUuid: PersonUuid
-    workspaceUuid: WorkspaceUuid
-    createdOn: number
-    expiresOn: number
-    revoked: boolean
-  }>
-  > {
-  const { account } = decodeTokenVerbose(ctx, token)
-  const { workspaceUuid } = params
-
-  const role = await db.getWorkspaceRole(account, workspaceUuid)
-  if (role == null || role !== AccountRole.Owner) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const tokens = await db.apiToken.find({ workspaceUuid })
-  return tokens.map((t) => ({
-    id: t.id,
-    name: t.name,
-    accountUuid: t.accountUuid,
-    workspaceUuid: t.workspaceUuid,
-    createdOn: t.createdOn,
-    expiresOn: t.expiresOn,
-    revoked: t.revoked,
-    scopes: t.scopes ?? undefined
-  }))
-}
-
-/**
- * Revoke any token in the workspace. Requires OWNER role.
- */
-async function revokeWorkspaceApiToken (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: { tokenId: string, workspaceUuid: WorkspaceUuid }
-): Promise<void> {
-  const { account } = decodeTokenVerbose(ctx, token)
-  const { tokenId, workspaceUuid } = params
-
-  const role = await db.getWorkspaceRole(account, workspaceUuid)
-  if (role == null || role !== AccountRole.Owner) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  const existing = await db.apiToken.findOne({ id: tokenId, workspaceUuid })
-  if (existing == null) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-  }
-
-  await db.apiToken.update({ id: tokenId }, { revoked: true })
-  ctx.info('Workspace API token revoked by owner', { tokenId, account, workspaceUuid })
+  ctx.info('API token revoked', { id: tokenId, account })
 }
 
 async function exchangeGuestToken (
@@ -3321,7 +3248,7 @@ export async function getSubscriptions (
     targetWorkspace = tokenWorkspace
 
     // Verify user has OWNER or MAINTAINER role
-    const role = await db.getWorkspaceRole(account, tokenWorkspace)
+    const role = await db.getWorkspaceRole(account, targetWorkspace)
     if (role === null) {
       throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
     }
@@ -3607,8 +3534,6 @@ export type AccountMethods =
   | 'createApiToken'
   | 'listApiTokens'
   | 'revokeApiToken'
-  | 'listWorkspaceApiTokens'
-  | 'revokeWorkspaceApiToken'
 
 /**
  * @public
@@ -3680,8 +3605,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     createApiToken: wrap(createApiToken),
     listApiTokens: wrap(listApiTokens),
     revokeApiToken: wrap(revokeApiToken),
-    listWorkspaceApiTokens: wrap(listWorkspaceApiTokens),
-    revokeWorkspaceApiToken: wrap(revokeWorkspaceApiToken),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),

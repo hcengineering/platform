@@ -129,47 +129,6 @@ async function sendJson (
   res.end(body)
 }
 
-// ── Token Scope Enforcement ─────────────────────────────────────────
-// Phase 1: coarse scopes only (read:*, write:*, delete:*)
-
-export function hasScope (scopes: string[], required: string): boolean {
-  return scopes.includes(required)
-}
-
-// Scopes are carried in the JWT as a JSON-serialized string under `extra.scopes`.
-// Parse once per request and thread the result through, rather than re-decoding.
-export function parseScopes (decoded: Token): string[] | undefined {
-  const raw = decoded.extra?.scopes
-  if (raw === undefined) return undefined
-  try {
-    const scopes = JSON.parse(raw)
-    return Array.isArray(scopes) ? scopes : undefined
-  } catch {
-    return undefined
-  }
-}
-
-export function getRequiredScope (method: string): string | null {
-  switch (method) {
-    case 'ping':
-    case 'generateId':
-      return null // Always allowed
-    case 'findAll':
-    case 'searchFulltext':
-    case 'loadModel':
-    case 'account':
-      return 'read:*'
-    case 'tx':
-      // write:* checked here; delete:* checked after body parsing in the tx handler
-      return 'write:*'
-    case 'domainRequest':
-    case 'ensurePerson':
-      return 'write:*'
-    default:
-      return 'read:*'
-  }
-}
-
 export function registerRPC (app: Express, sessions: SessionManager, ctx: MeasureContext, accountsUrl: string): void {
   const rpcSessions = new Map<string, RPCClientInfo>()
 
@@ -201,8 +160,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       ctx: ClientSessionCtx,
       session: Session,
       rateLimit: RateLimitInfo | undefined,
-      token: string,
-      scopes: string[] | undefined
+      token: string
     ) => Promise<void>
   ): Promise<void> {
     try {
@@ -224,22 +182,15 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       try {
         decodedToken = await verifyToken(token)
       } catch (err: any) {
+        // Keep the response opaque, but leave operators something to debug with:
+        // expired, revoked and unverifiable all look identical from outside.
+        ctx.warn('REST token rejected', { method, error: err?.message })
         sendError(res, 401, { message: 'Invalid or revoked token' })
         return
       }
       if (workspaceId !== decodedToken.workspace) {
         sendError(res, 403, { message: 'Invalid workspace', workspace: decodedToken.workspace })
         return
-      }
-
-      // Enforce token scopes (Phase 1: coarse scopes — read:*, write:*, delete:*)
-      const scopes = parseScopes(decodedToken)
-      if (scopes !== undefined) {
-        const requiredScope = getRequiredScope(method)
-        if (requiredScope !== null && !hasScope(scopes, requiredScope)) {
-          sendError(res, 403, { message: 'Insufficient token scope', required: requiredScope })
-          return
-        }
       }
 
       let transactorRpc = rpcSessions.get(token)
@@ -265,7 +216,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         method,
         rpc.client,
         async (ctx, rateLimit) => {
-          await operation(ctx, rpc.session, rateLimit, token, scopes)
+          await operation(ctx, rpc.session, rateLimit, token)
         }
       )
       if (rateLimit !== undefined) {
@@ -342,14 +293,8 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
   })
 
   app.post('/api/v1/tx/:workspaceId', (req, res) => {
-    void withSession(req, res, 'tx', async (ctx, session, rateLimit, token, scopes) => {
+    void withSession(req, res, 'tx', async (ctx, session, rateLimit, token) => {
       const tx: any = (await retrieveJson(req)) ?? {}
-
-      // Enforce delete:* scope for remove transactions (write:* already checked in withSession)
-      if (tx._class === core.class.TxRemoveDoc && scopes !== undefined && !scopes.includes('delete:*')) {
-        sendError(res, 403, { message: 'Insufficient token scope', required: 'delete:*' })
-        return
-      }
 
       try {
         if (tx._class === core.class.TxDomainEvent) {

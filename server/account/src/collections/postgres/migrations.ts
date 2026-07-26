@@ -825,7 +825,6 @@ function getV27Migration (ns: string, flavor: DBFlavor): [string, string] {
         created_on ${types.int8} NOT NULL DEFAULT current_epoch_ms(),
         expires_on ${types.int8} NOT NULL,
         revoked ${types.bool} NOT NULL DEFAULT false,
-        scopes TEXT[] DEFAULT NULL,
         CONSTRAINT api_tokens_pk PRIMARY KEY (id),
         CONSTRAINT api_tokens_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.person(uuid),
         CONSTRAINT api_tokens_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${ns}.workspace(uuid)

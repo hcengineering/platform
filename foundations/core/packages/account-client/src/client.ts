@@ -262,16 +262,9 @@ export interface AccountClient {
   getWorkspaceUsersWithPermission: (params: { permission: string }) => Promise<AccountUuid[]>
 
   verify2fa: (code: string) => Promise<LoginInfo>
-  createApiToken: (
-    name: string,
-    workspaceUuid: WorkspaceUuid,
-    expiryDays: number,
-    scopes?: string[]
-  ) => Promise<ApiTokenResult>
+  createApiToken: (name: string, workspaceUuid: WorkspaceUuid, expiryDays: number) => Promise<ApiTokenResult>
   listApiTokens: () => Promise<ApiTokenInfo[]>
   revokeApiToken: (tokenId: string) => Promise<void>
-  listWorkspaceApiTokens: (workspaceUuid: WorkspaceUuid) => Promise<ApiTokenInfo[]>
-  revokeWorkspaceApiToken: (tokenId: string, workspaceUuid: WorkspaceUuid) => Promise<void>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -1245,15 +1238,10 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async createApiToken (
-    name: string,
-    workspaceUuid: WorkspaceUuid,
-    expiryDays: number,
-    scopes?: string[]
-  ): Promise<ApiTokenResult> {
+  async createApiToken (name: string, workspaceUuid: WorkspaceUuid, expiryDays: number): Promise<ApiTokenResult> {
     const request = {
       method: 'createApiToken' as const,
-      params: { name, workspaceUuid, expiryDays, scopes }
+      params: { name, workspaceUuid, expiryDays }
     }
 
     return await this.rpc(request)
@@ -1272,24 +1260,6 @@ class AccountClientImpl implements AccountClient {
     const request = {
       method: 'revokeApiToken' as const,
       params: { tokenId }
-    }
-
-    await this.rpc(request)
-  }
-
-  async listWorkspaceApiTokens (workspaceUuid: WorkspaceUuid): Promise<ApiTokenInfo[]> {
-    const request = {
-      method: 'listWorkspaceApiTokens' as const,
-      params: { workspaceUuid }
-    }
-
-    return await this.rpc(request)
-  }
-
-  async revokeWorkspaceApiToken (tokenId: string, workspaceUuid: WorkspaceUuid): Promise<void> {
-    const request = {
-      method: 'revokeWorkspaceApiToken' as const,
-      params: { tokenId, workspaceUuid }
     }
 
     await this.rpc(request)

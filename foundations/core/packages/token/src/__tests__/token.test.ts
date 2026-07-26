@@ -170,6 +170,28 @@ describe('verifyToken', () => {
     await expect(verifyToken(token, 'secret')).rejects.toThrow('Token revoked')
   })
 
+  it('refuses the token when revocation cannot be verified', async () => {
+    // The account is the only authority on revocation. Failing open here would let
+    // a revoked token survive for as long as an attacker can keep the account busy.
+    setApiTokenRevocationChecker(async () => {
+      throw new Error('account unreachable')
+    })
+    const token = generateToken(ACCOUNT, WORKSPACE, { apiTokenId: 'tok-unreachable' }, 'secret')
+    await expect(verifyToken(token, 'secret')).rejects.toThrow('Token revocation could not be verified')
+  })
+
+  it('does not re-ask while a verdict is still fresh', async () => {
+    let calls = 0
+    setApiTokenRevocationChecker(async () => {
+      calls++
+      return false
+    })
+    const token = generateToken(ACCOUNT, WORKSPACE, { apiTokenId: 'tok-cached' }, 'secret')
+    await verifyToken(token, 'secret')
+    await verifyToken(token, 'secret')
+    expect(calls).toBe(1)
+  })
+
   it('only invokes the checker for revokable (API) tokens', async () => {
     let calls = 0
     setApiTokenRevocationChecker(async () => {
