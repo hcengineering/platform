@@ -440,16 +440,20 @@ export function createModel (builder: Builder): void {
     setting.ids.OfficeSettings
   )
 
+  // Tokens belong to the account, not to a workspace: they are listed across every
+  // workspace the user is in, and creating one only needs the User role the account
+  // service checks. So this sits with the other per-account settings.
   builder.createDoc(
-    setting.class.WorkspaceSettingCategory,
+    setting.class.SettingsCategory,
     core.space.Model,
     {
       name: 'apiTokens',
       label: setting.string.ApiTokens,
       icon: setting.icon.ApiToken,
       component: setting.component.ApiTokens,
-      order: 1050,
-      role: AccountRole.Owner
+      group: 'settings-account',
+      order: 1500,
+      role: AccountRole.User
     },
     setting.ids.ApiTokens
   )

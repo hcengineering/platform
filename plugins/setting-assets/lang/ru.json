@@ -217,9 +217,6 @@
     "IntegrationIsUnstable": "Сервис интеграции испытывает проблемы. Некоторые функции могут работать некорректно.",
     "AccessControl": "Контроль доступа",
     "DangerZone": "Опасная зона",
-    "ApiAccess": "Доступ к API",
-    "ApiToken": "API токен",
-    "GenerateApiToken": "Создать API токен",
     "Restricted": "Ограничено",
     "RestrictedAttributeWarning": "Вы действительно хотите ограничить изменение атрибута? Это действие создаст разрешения для этого атрибута. Отменить это действие невозможно.",
     "PasswordAgingRule": "Правило устаревания пароля",
@@ -284,10 +281,6 @@
     "Created": "Создан",
     "Expires": "Истекает",
     "TokenStatus": "Статус",
-    "ApiTokenPermissions": "Разрешения",
-    "ApiTokenScopePreset": "Разрешения",
-    "ApiTokenScopeReadOnly": "Только чтение",
-    "ApiTokenScopeReadWrite": "Чтение и запись",
-    "ApiTokenScopeFullAccess": "Полный доступ"
+    "ApiTokenRevokeError": "Не удалось отозвать токен. Попробуйте ещё раз."
   }
 }

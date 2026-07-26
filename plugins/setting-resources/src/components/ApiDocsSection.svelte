@@ -17,8 +17,15 @@
   import { copyTextToClipboard } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import login from '@hcengineering/login'
+  import view from '@hcengineering/view'
+  import { translate } from '@hcengineering/platform'
+  import { themeStore } from '@hcengineering/theme'
 
   let showApiDocs = false
+  let copyHint = ''
+  $: void translate(view.string.CopyToClipboard, {}, $themeStore.language).then((t) => {
+    copyHint = t
+  })
 
   // The REST API is served by the transactor. Its address is returned by the
   // account service on authentication and stored as the login endpoint (a
@@ -36,6 +43,7 @@
 <div class="api-docs-section">
   <button
     class="api-docs-toggle"
+    aria-expanded={showApiDocs}
     on:click={() => {
       showApiDocs = !showApiDocs
     }}
@@ -53,6 +61,7 @@
           class="api-docs-code clickable"
           role="button"
           tabindex="0"
+          aria-label={copyHint}
           on:click={() => copySnippet(baseApiUrl)}
           on:keydown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') copySnippet(baseApiUrl)
@@ -96,11 +105,12 @@
       </div>
 
       <div class="api-docs-example">
-        <span class="api-docs-label">Example</span>
+        <span class="api-docs-label"><Label label={view.string.CopyToClipboard} /></span>
         <pre
           class="api-docs-pre clickable"
           role="button"
           tabindex="0"
+          aria-label={copyHint}
           on:click={() => copySnippet(curlExample)}
           on:keydown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') copySnippet(curlExample)

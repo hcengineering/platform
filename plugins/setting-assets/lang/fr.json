@@ -217,9 +217,6 @@
     "IntegerOnly": "Nombres entiers uniquement",
     "AccessControl": "Contrôle d'accès",
     "DangerZone": "Zone dangereuse",
-    "ApiAccess": "Accès API",
-    "ApiToken": "Token API",
-    "GenerateApiToken": "Générer un token API",
     "IdentifierExists": "Identifiant déjà utilisé",
     "PasswordAgingRule": "Règle de vieillissement du mot de passe",
     "PasswordAgingRuleDescription": "Nombre de jours après lesquels les utilisateurs devront changer leur mot de passe.",
@@ -284,10 +281,6 @@
     "ApiTokenExpiry365Days": "365 jours",
     "ApiTokenLoadError": "Échec du chargement des jetons API",
     "ApiTokenCreateError": "Échec de la création du jeton. Veuillez réessayer.",
-    "ApiTokenPermissions": "Autorisations",
-    "ApiTokenScopePreset": "Autorisations",
-    "ApiTokenScopeReadOnly": "Lecture seule",
-    "ApiTokenScopeReadWrite": "Lecture et écriture",
-    "ApiTokenScopeFullAccess": "Accès complet"
+    "ApiTokenRevokeError": "Échec de la révocation du jeton. Veuillez réessayer."
   }
 }

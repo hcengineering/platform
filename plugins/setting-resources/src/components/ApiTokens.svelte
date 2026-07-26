@@ -15,8 +15,8 @@
 <script lang="ts">
   import { Breadcrumb, Header, IconAdd, Label, Loading, ModernButton, Scroller, showPopup } from '@hcengineering/ui'
   import { MessageBox } from '@hcengineering/presentation'
-  import { translate } from '@hcengineering/platform'
   import setting from '@hcengineering/setting'
+  import { Analytics } from '@hcengineering/analytics'
   import { type ApiTokenInfo } from '@hcengineering/account-client'
   import { getAccountClient } from '../utils'
   import { onMount } from 'svelte'
@@ -26,6 +26,7 @@
 
   let loading = true
   let loadError = false
+  let revokeError = false
   let tokens: ApiTokenInfo[] = []
 
   const statusLabelMap = {
@@ -45,7 +46,7 @@
         loading = false
       })
       .catch((err) => {
-        console.error('Failed to load API tokens', err)
+        Analytics.handleError(err)
         tokens = []
         loading = false
         loadError = true
@@ -68,8 +69,10 @@
       action: async () => {
         try {
           await getAccountClient().revokeApiToken(token.id)
-        } catch (err) {
-          console.error('Failed to revoke API token', err)
+          revokeError = false
+        } catch (err: any) {
+          Analytics.handleError(err)
+          revokeError = true
         }
         loadTokens()
       }
@@ -84,33 +87,6 @@
     })
   }
 
-  let scopeLabels = {
-    readOnly: 'Read Only',
-    readWrite: 'Read & Write',
-    fullAccess: 'Full Access'
-  }
-
-  async function resolveScopeLabels (): Promise<void> {
-    const lang = $themeStore.language
-    scopeLabels = {
-      readOnly: await translate(setting.string.ApiTokenScopeReadOnly, {}, lang),
-      readWrite: await translate(setting.string.ApiTokenScopeReadWrite, {}, lang),
-      fullAccess: await translate(setting.string.ApiTokenScopeFullAccess, {}, lang)
-    }
-  }
-
-  function getScopeLabel (token: ApiTokenInfo): string {
-    const scopes = token.scopes
-    if (scopes == null || scopes.length === 0) return scopeLabels.fullAccess
-    const hasRead = scopes.includes('read:*')
-    const hasWrite = scopes.includes('write:*')
-    const hasDelete = scopes.includes('delete:*')
-    if (hasRead && hasWrite && hasDelete && scopes.length === 3) return scopeLabels.fullAccess
-    if (hasRead && hasWrite && scopes.length === 2) return scopeLabels.readWrite
-    if (hasRead && scopes.length === 1) return scopeLabels.readOnly
-    return `${scopes.length} scopes`
-  }
-
   function getStatus (token: ApiTokenInfo): 'active' | 'expiring' | 'revoked' | 'expired' {
     if (token.revoked) return 'revoked'
     const now = Date.now()
@@ -121,7 +97,6 @@
 
   onMount(() => {
     loadTokens()
-    void resolveScopeLabels()
   })
 </script>
 
@@ -150,6 +125,13 @@
             <ModernButton label={setting.string.Reconnect} size="small" on:click={loadTokens} />
           </div>
         </div>
+      {:else if revokeError}
+        <div class="hulyComponent-content__empty">
+          <Label label={setting.string.ApiTokenRevokeError} />
+          <div class="mt-2">
+            <ModernButton label={setting.string.Reconnect} size="small" on:click={loadTokens} />
+          </div>
+        </div>
       {:else if tokens.length === 0}
         <div class="hulyComponent-content__empty">
           <Label label={setting.string.ApiTokenNoTokens} />
@@ -161,7 +143,6 @@
               <tr class="scroller-thead__tr">
                 <th><Label label={setting.string.ApiTokenName} /></th>
                 <th><Label label={setting.string.ApiTokenWorkspace} /></th>
-                <th><Label label={setting.string.ApiTokenPermissions} /></th>
                 <th><Label label={setting.string.Created} /></th>
                 <th><Label label={setting.string.Expires} /></th>
                 <th><Label label={setting.string.TokenStatus} /></th>
@@ -174,7 +155,6 @@
                 <tr class="antiGrid-row">
                   <td class="overflow-label font-medium-14">{token.name}</td>
                   <td class="overflow-label">{token.workspaceName}</td>
-                  <td><span class="tag-item tag-scope">{getScopeLabel(token)}</span></td>
                   <td>{formatDate(token.createdOn)}</td>
                   <td>{token.revoked ? '—' : formatDate(token.expiresOn)}</td>
                   <td>

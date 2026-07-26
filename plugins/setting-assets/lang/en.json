@@ -215,9 +215,6 @@
     "IntegerOnly": "Integer numbers only",
     "AccessControl": "Access control",
     "DangerZone": "Danger zone",
-    "ApiAccess": "API access",
-    "ApiToken": "API token",
-    "GenerateApiToken": "Generate API token",
     "IdentifierExists": "Identifier already exists",
     "Reset": "Reset",
     "Restricted": "Restricted",
@@ -271,11 +268,6 @@
     "ApiTokenCopyWarning": "Copy this token now. You won't be able to see it again.",
     "ApiTokenNoTokens": "No API tokens yet",
     "ApiTokenWorkspace": "Workspace",
-    "ApiTokenPermissions": "Permissions",
-    "ApiTokenScopePreset": "Permissions",
-    "ApiTokenScopeReadOnly": "Read Only",
-    "ApiTokenScopeReadWrite": "Read & Write",
-    "ApiTokenScopeFullAccess": "Full Access",
     "Created": "Created",
     "Expires": "Expires",
     "TokenStatus": "Status",
@@ -288,6 +280,7 @@
     "ApiEndpointLoadModel": "Load the data model",
     "ApiEndpointAccount": "Get account info",
     "ApiBaseUrl": "Base URL",
-    "ApiWorkspaceId": "Your workspace ID (UUID) is included in the token. Pass it as :workspaceId in the URL."
+    "ApiWorkspaceId": "Your workspace ID (UUID) is included in the token. Pass it as :workspaceId in the URL.",
+    "ApiTokenRevokeError": "Failed to revoke token. Please try again."
   }
 }

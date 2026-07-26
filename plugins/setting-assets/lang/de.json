@@ -217,9 +217,6 @@
     "IntegerOnly": "Nur ganze Zahlen",
     "AccessControl": "Zugriffskontrolle",
     "DangerZone": "Gefahrenzone",
-    "ApiAccess": "API-Zugriff",
-    "ApiToken": "API-Token",
-    "GenerateApiToken": "API-Token generieren",
     "IdentifierExists": "Bezeichner existiert bereits",
     "PasswordAgingRule": "Passwort-Alterungsregel",
     "PasswordAgingRuleDescription": "Anzahl der Tage, nach denen Benutzer ihr Passwort ändern müssen.",
@@ -285,10 +282,6 @@
     "ApiTokenExpiry365Days": "365 Tage",
     "ApiTokenLoadError": "API-Token konnten nicht geladen werden",
     "ApiTokenCreateError": "Token konnte nicht erstellt werden. Bitte versuche es erneut.",
-    "ApiTokenPermissions": "Berechtigungen",
-    "ApiTokenScopePreset": "Berechtigungen",
-    "ApiTokenScopeReadOnly": "Nur Lesen",
-    "ApiTokenScopeReadWrite": "Lesen & Schreiben",
-    "ApiTokenScopeFullAccess": "Vollzugriff"
+    "ApiTokenRevokeError": "Token konnte nicht widerrufen werden. Bitte versuchen Sie es erneut."
   }
 }

@@ -208,9 +208,6 @@
     "IntegerOnly": "Apenas números inteiros",
     "AccessControl": "Controle de acesso",
     "DangerZone": "Zona de perigo",
-    "ApiAccess": "Acesso à API",
-    "ApiToken": "Token de API",
-    "GenerateApiToken": "Gerar token de API",
     "IdentifierExists": "Identificador já existe",
     "PasswordAgingRule": "Regra de envelhecimento de senha",
     "PasswordAgingRuleDescription": "Número de dias após os quais os usuários serão obrigados a alterar sua senha.",
@@ -284,10 +281,6 @@
     "ApiTokenExpiry365Days": "365 dias",
     "ApiTokenLoadError": "Falha ao carregar os tokens de API",
     "ApiTokenCreateError": "Falha ao criar o token. Tente novamente.",
-    "ApiTokenPermissions": "Permissões",
-    "ApiTokenScopePreset": "Permissões",
-    "ApiTokenScopeReadOnly": "Somente leitura",
-    "ApiTokenScopeReadWrite": "Leitura e escrita",
-    "ApiTokenScopeFullAccess": "Acesso total"
+    "ApiTokenRevokeError": "Falha ao revogar o token. Tente novamente."
   }
 }

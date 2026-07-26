@@ -28,6 +28,7 @@
     ticker
   } from '@hcengineering/ui'
   import setting from '@hcengineering/setting'
+  import { Analytics } from '@hcengineering/analytics'
   import { createEventDispatcher, onMount } from 'svelte'
   import { getAccountClient } from '../utils'
 
@@ -39,22 +40,6 @@
   let createdToken: string | undefined
   let copiedTime: Timestamp | undefined
   let copied = false
-
-  const scopePresetItems: DropdownIntlItem[] = [
-    { id: 'read-only', label: setting.string.ApiTokenScopeReadOnly },
-    { id: 'read-write', label: setting.string.ApiTokenScopeReadWrite },
-    { id: 'full-access', label: setting.string.ApiTokenScopeFullAccess }
-  ]
-  const scopeScopes: Record<string, string[]> = {
-    'read-only': ['read:*'],
-    'read-write': ['read:*', 'write:*'],
-    'full-access': ['read:*', 'write:*', 'delete:*']
-  }
-  let selectedScopePreset: string = 'read-only'
-
-  function getSelectedScopes (): string[] {
-    return scopeScopes[selectedScopePreset] ?? ['read:*']
-  }
 
   const expiryItems: DropdownIntlItem[] = [
     { id: '7', label: setting.string.ApiTokenExpiry7Days },
@@ -74,10 +59,15 @@
   }
 
   async function loadWorkspaces (): Promise<void> {
-    const workspaces = await getAccountClient().getUserWorkspaces()
-    wsItems = workspaces.map((w) => ({ _id: w.uuid, label: w.name ?? w.url }))
-    if (wsItems.length > 0) {
-      selectedWs = wsItems[0]
+    try {
+      const workspaces = await getAccountClient().getUserWorkspaces()
+      wsItems = workspaces.map((w) => ({ _id: w.uuid, label: w.name ?? w.url }))
+      if (wsItems.length > 0) {
+        selectedWs = wsItems[0]
+      }
+    } catch (err: any) {
+      Analytics.handleError(err)
+      error = setting.string.ApiTokenLoadError
     }
   }
 
@@ -86,16 +76,14 @@
     loading = true
     error = undefined
     try {
-      const scopes = getSelectedScopes()
       const result = await getAccountClient().createApiToken(
         name.trim(),
         selectedWs._id as WorkspaceUuid,
-        parseInt(selectedExpiry, 10),
-        scopes
+        parseInt(selectedExpiry, 10)
       )
       createdToken = result.token
     } catch (err: any) {
-      console.error('Failed to create API token', err)
+      Analytics.handleError(err)
       error = setting.string.ApiTokenCreateError
     } finally {
       loading = false
@@ -103,7 +91,12 @@
   }
 
   async function copyToken (): Promise<void> {
-    if (createdToken === undefined || !window.isSecureContext) return
+    if (createdToken === undefined) return
+    if (!window.isSecureContext) {
+      // No clipboard API outside a secure context. The token stays selectable above.
+      dispatch('close', true)
+      return
+    }
     await copyTextToClipboard(createdToken)
     copied = true
     copiedTime = Date.now()
@@ -150,18 +143,6 @@
     <div class="antiPopup-msg">
       <span class="label"><Label label={setting.string.ApiTokenWorkspace} /></span>
       <Dropdown placeholder={setting.string.ApiTokenWorkspace} items={wsItems} bind:selected={selectedWs} />
-    </div>
-    <div class="antiPopup-msg">
-      <span class="label"><Label label={setting.string.ApiTokenScopePreset} /></span>
-      <DropdownLabelsIntl
-        kind="regular"
-        size="medium"
-        items={scopePresetItems}
-        selected={selectedScopePreset}
-        on:selected={(e) => {
-          selectedScopePreset = e.detail
-        }}
-      />
     </div>
     <div class="antiPopup-msg">
       <span class="label"><Label label={setting.string.ApiTokenExpiry} /></span>

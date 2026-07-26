@@ -217,9 +217,6 @@
     "IntegerOnly": "仅整数",
     "AccessControl": "访问控制",
     "DangerZone": "危险区域",
-    "ApiAccess": "API访问",
-    "ApiToken": "API令牌",
-    "GenerateApiToken": "生成API令牌",
     "IdentifierExists": "标识符已存在",
     "PasswordAgingRule": "密码老化规则",
     "PasswordAgingRuleDescription": "用户需要更改密码的天数",
@@ -284,10 +281,6 @@
     "ApiTokenExpiry365Days": "365 天",
     "ApiTokenLoadError": "加载 API 令牌失败",
     "ApiTokenCreateError": "创建令牌失败，请重试。",
-    "ApiTokenPermissions": "权限",
-    "ApiTokenScopePreset": "权限",
-    "ApiTokenScopeReadOnly": "只读",
-    "ApiTokenScopeReadWrite": "读写",
-    "ApiTokenScopeFullAccess": "完全访问"
+    "ApiTokenRevokeError": "撤销令牌失败，请重试。"
   }
 }

@@ -217,9 +217,6 @@
     "IntegerOnly": "整数のみ",
     "AccessControl": "アクセス制御",
     "DangerZone": "危険ゾーン",
-    "ApiAccess": "APIアクセス",
-    "ApiToken": "APIトークン",
-    "GenerateApiToken": "APIトークンを生成",
     "IdentifierExists": "識別子は既に存在します",
     "PasswordAgingRule": "パスワードエイジングルール",
     "PasswordAgingRuleDescription": "ユーザーがパスワードを変更する必要がある日数",
@@ -284,10 +281,6 @@
     "ApiTokenExpiry365Days": "365 日",
     "ApiTokenLoadError": "API トークンの読み込みに失敗しました",
     "ApiTokenCreateError": "トークンの作成に失敗しました。もう一度お試しください。",
-    "ApiTokenPermissions": "権限",
-    "ApiTokenScopePreset": "権限",
-    "ApiTokenScopeReadOnly": "読み取り専用",
-    "ApiTokenScopeReadWrite": "読み取りと書き込み",
-    "ApiTokenScopeFullAccess": "フルアクセス"
+    "ApiTokenRevokeError": "トークンの取り消しに失敗しました。もう一度お試しください。"
   }
 }
