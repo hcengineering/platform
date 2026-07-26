@@ -227,6 +227,7 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   defaultValue?: any
   automationOnly?: boolean
   rank?: Rank
+  required?: boolean
 
   // Extra customization properties
   [key: string]: any
@@ -950,6 +951,7 @@ export interface UsageStatus {
   usage: Record<string, number>
   startTime: Timestamp
   updateTime: Timestamp
+  limitsExceededSince?: Timestamp // Timestamp when current usage first exceeded the workspace plan limits.
 }
 
 export interface WorkspaceInfoWithStatus extends WorkspaceInfo {

@@ -58,10 +58,12 @@ import time, { type ToDo } from '@hcengineering/time'
 import {
   type ProjectTargetPreference,
   type Component,
+  type DependencyKind,
   type Issue,
   type IssueChildInfo,
   type IssueParentInfo,
   type IssuePriority,
+  type IssueRelation,
   type IssueStatus,
   type IssueTemplate,
   type IssueTemplateChild,
@@ -233,6 +235,10 @@ export class TIssue extends TTask implements Issue {
   @ReadOnly()
   declare space: Ref<Project>
 
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.IssueStartDate)
+  @Index(IndexKind.Indexed)
+  declare startDate: Timestamp | null
+
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
   declare dueDate: Timestamp | null
 
@@ -340,6 +346,28 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
   @Prop(TypeString(), tracker.string.TimeSpendReportDescription)
     description!: string
 }
+
+/**
+ * @public
+ */
+@Model(tracker.class.IssueRelation, core.class.AttachedDoc, DOMAIN_TRACKER)
+@UX(tracker.string.GanttDependency, tracker.icon.Issue)
+export class TIssueRelation extends TAttachedDoc implements IssueRelation {
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+  declare attachedTo: Ref<Issue>
+
+  declare collection: 'relations'
+
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+  @Index(IndexKind.Indexed)
+    target!: Ref<Issue>
+
+  @Prop(TypeString(), tracker.string.GanttDependency)
+    kind!: DependencyKind
+
+  @Prop(TypeNumber(), tracker.string.GanttLag)
+    lag!: number
+}
 /**
  * @public
  */
@@ -388,6 +416,9 @@ export class TMilestone extends TDoc implements Milestone {
 
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
+
+  @Prop(TypeDate(), tracker.string.StartDate)
+    startDate!: Timestamp | null
 
   @Prop(TypeDate(), tracker.string.TargetDate)
     targetDate!: Timestamp

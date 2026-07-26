@@ -17,7 +17,7 @@
 
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
-  import { pushRootBarComponent } from '@hcengineering/ui'
+  import { pushNavFooterComponent, pushRootBarComponent } from '@hcengineering/ui'
   import presentation from '@hcengineering/presentation'
 
   import billing from '../plugin'
@@ -44,6 +44,7 @@
 
       if (showExtension) {
         pushRootBarComponent('right', billing.component.UsageExtension, 10)
+        pushNavFooterComponent(billing.component.LimitsFooterIndicator, 5)
       }
     } catch (e) {
       console.error('Failed to load WorkbenchExtension:', e)

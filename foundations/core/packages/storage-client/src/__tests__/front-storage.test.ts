@@ -55,14 +55,24 @@ describe('FrontStorage', () => {
       expect(url).toBe(`${baseUrl}/${workspace}/${filename}?file=${file}&workspace=${workspace}`)
     })
 
-    it('should handle special characters in workspace and file names', () => {
+    it('should encode special characters in workspace, file, and filename', () => {
       const workspace = 'test workspace'
       const file = 'file 123'
       const filename = 'my document.pdf'
 
       const url = storage.getFileUrl(workspace, file, filename)
 
-      expect(url).toBe(`${baseUrl}/${workspace}/${filename}?file=${file}&workspace=${workspace}`)
+      expect(url).toBe(`${baseUrl}/test%20workspace/my%20document.pdf?file=file%20123&workspace=test%20workspace`)
+    })
+
+    it('should encode slash in filename as a single path segment', () => {
+      const workspace = 'test-workspace'
+      const file = 'file-123'
+      const filename = 'folder/document.pdf'
+
+      const url = storage.getFileUrl(workspace, file, filename)
+
+      expect(url).toBe(`${baseUrl}/${workspace}/folder%2Fdocument.pdf?file=${file}&workspace=${workspace}`)
     })
 
     it('should handle base URL with trailing slash', () => {

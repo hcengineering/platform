@@ -139,6 +139,7 @@
   }
 
   let resultOptions = options
+  let resultQuery: DocumentQuery<Doc> = query
 
   const update = reduceCalls(async function (
     _class: Ref<Class<Doc>>,
@@ -148,10 +149,12 @@
     lookup: Lookup<Doc>,
     associations: AssociationQuery[] | undefined,
     limit: number,
-    options: FindOptions<Doc> | undefined
+    options: FindOptions<Doc> | undefined,
+    viewOptionsConfig: ViewOptionModel[] | undefined,
+    viewOptions: ViewOptions | undefined
   ) {
     const p = await getResultQuery(hierarchy, query, viewOptionsConfig, viewOptions)
-    const resultQuery = mergeQueries(p, query)
+    resultQuery = mergeQueries(p, query)
     loading += q.query(
       _class,
       resultQuery,
@@ -170,7 +173,18 @@
       ? 1
       : 0
   })
-  $: void update(_class, query, _sortKey, sortOrder, lookup, associations, limit, resultOptions)
+  $: void update(
+    _class,
+    query,
+    _sortKey,
+    sortOrder,
+    lookup,
+    associations,
+    limit,
+    resultOptions,
+    viewOptionsConfig,
+    viewOptions
+  )
 
   $: void getResultOptions(options, viewOptionsConfig, viewOptions).then((p) => {
     resultOptions = p
@@ -181,7 +195,7 @@
   const qSlow = createQuery()
   $: qSlow.query(
     _class,
-    query,
+    resultQuery,
     (result) => {
       total = result.total
       if (totalQuery === undefined) {

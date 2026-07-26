@@ -100,6 +100,9 @@ export class TMasterTag extends TClass implements MasterTag {
 
   @Prop(TypeBoolean(), card.string.SingleColumn)
     singleColumn?: boolean
+
+  @Prop(TypeBoolean(), card.string.BaseType)
+    baseType?: boolean
 }
 
 @Model(card.class.Tag, core.class.Mixin)
@@ -960,6 +963,10 @@ export function createModel (builder: Builder): void {
     titleProvider: card.function.CardTitleProvider
   })
 
+  builder.mixin(card.class.Card, core.class.Class, view.mixin.ReferenceObjectProvider, {
+    provider: card.function.CardReferenceObjectProvider
+  })
+
   builder.mixin(card.class.Card, core.class.Class, view.mixin.LinkProvider, {
     encode: card.function.GetCardLink
   })
@@ -1058,6 +1065,7 @@ export function createModel (builder: Builder): void {
   })
 
   builder.mixin(card.class.Card, core.class.Class, view.mixin.ObjectFactory, {
+    component: card.component.CreateCard,
     create: card.function.CardFactory
   })
 

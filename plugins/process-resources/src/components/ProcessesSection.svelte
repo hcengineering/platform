@@ -18,10 +18,20 @@
   import { translate } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Process, State } from '@hcengineering/process'
-  import { ButtonIcon, getCurrentLocation, Icon, IconAdd, IconFile, IconOpen, Label, navigate } from '@hcengineering/ui'
-  import process from '../plugin'
   import { makeRank } from '@hcengineering/rank'
-  import { importProcess } from '../exporter'
+  import {
+    ButtonIcon,
+    getCurrentLocation,
+    Icon,
+    IconAdd,
+    IconFile,
+    Label,
+    navigate,
+    showPopup
+  } from '@hcengineering/ui'
+  import { getRequiredSlots, importProcess } from '../exporter'
+  import process from '../plugin'
+  import ImportSlotsPopup from './settings/ImportSlotsPopup.svelte'
 
   export let masterTag: MasterTag
 
@@ -86,7 +96,21 @@
       const file = (evt.target as HTMLInputElement).files?.[0]
       if (file != null) {
         const text = await file.text()
-        await importProcess(masterTag._id, text)
+        const slots = getRequiredSlots(text)
+        if (slots && Object.keys(slots).length > 0) {
+          showPopup(
+            ImportSlotsPopup,
+            { requiredSlots: slots, masterTag: masterTag._id },
+            undefined,
+            async (bindings) => {
+              if (bindings) {
+                await importProcess(masterTag._id, text, bindings)
+              }
+            }
+          )
+        } else {
+          await importProcess(masterTag._id, text)
+        }
       }
     }
     input.click()

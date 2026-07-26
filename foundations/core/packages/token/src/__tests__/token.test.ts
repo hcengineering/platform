@@ -14,7 +14,7 @@
 //
 
 import { setMetadata } from '@hcengineering/platform'
-import type { PersonUuid, WorkspaceUuid } from '@hcengineering/core'
+import type { AccountUuid, PersonUuid, WorkspaceUuid } from '@hcengineering/core'
 import { decodeToken, generateToken, isTokenExpired, setApiTokenRevocationChecker, verifyToken } from '../token'
 import plugin from '../plugin'
 
@@ -115,7 +115,7 @@ describe('generateToken', () => {
   })
 })
 
-const ACCOUNT = '123e4567-e89b-12d3-a456-426614174000' as PersonUuid
+const ACCOUNT = '123e4567-e89b-12d3-a456-426614174000' as AccountUuid
 const WORKSPACE = '123e4567-e89b-12d3-a456-426614174001' as WorkspaceUuid
 
 describe('isTokenExpired', () => {

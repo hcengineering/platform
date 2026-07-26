@@ -150,7 +150,7 @@ export interface RadioItem {
 
 export type ButtonBaseType = 'type-button' | 'type-button-icon'
 
-export type ButtonBaseKind = 'primary' | 'secondary' | 'tertiary' | 'negative'
+export type ButtonBaseKind = 'primary' | 'secondary' | 'tertiary' | 'negative' | 'ghost'
 
 export type ButtonBaseSize = 'large' | 'medium' | 'small' | 'extra-small' | 'min'
 
@@ -171,6 +171,7 @@ export type ButtonKind =
   | 'contrast'
   | 'stepper'
   | 'attention'
+  | 'warning'
 export type ButtonSize = 'inline' | 'x-small' | 'small' | 'medium' | 'large' | 'x-large'
 export type ButtonShape =
   | 'rectangle'

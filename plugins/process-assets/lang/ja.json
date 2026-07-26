@@ -101,6 +101,7 @@
     "CreateCard": "カードを作成",
     "WhenCardMatches": "カードが一致したとき",
     "WhenFieldChanges": "フィールドが変更されたとき",
+    "WhenRequiredFieldsFilled": "必須フィールドが入力されたとき",
     "ArraySizeEquals": "サイズが等しい",
     "ArraySizeGt": "サイズがより大きい",
     "ArraySizeGte": "サイズが以上",
@@ -122,6 +123,7 @@
     "ExecutionInitiator": "実行の発起人",
     "ExecutionStarted": "実行が開始されました",
     "Filter": "フィルター",
+    "AllMatchValue": "一致するすべての値",
     "FirstMatchValue": "最初の一致する値",
     "ConfigLabel": "プロセス構成",
     "ConfigDescription": "ワークフローやビジネスプロセスを自動化するためのプロセスを定義します。",
@@ -176,7 +178,12 @@
     "TextFromSelect": "テキストから選択",
     "SelectFromText": "選択からテキスト",
     "AskSubclass": "サブクラスを尋ねる",
-    "TextFromIdentifier": "テキストから識別子"
+    "TextFromIdentifier": "テキストから識別子",
+    "ExportWithSlots": "スロット付きでエクスポート",
+    "ExportWithoutSlots": "スロットなしでエクスポート",
+    "RequiredSlots": "必須スロット",
+    "Bindings": "バインディング",
+    "AskRequired": "必須フィールドを尋ねる"
   },
   "error": {
     "MethodNotFound": "メソッドが見つかりません: {methodId}",

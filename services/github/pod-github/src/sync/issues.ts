@@ -868,6 +868,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       rank: calcRank(lastOne, undefined),
       comments: 0,
       subIssues: 0,
+      startDate: null,
       dueDate: null,
       parents: [],
       reportedTime: 0,

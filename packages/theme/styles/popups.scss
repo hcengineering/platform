@@ -363,6 +363,7 @@
   min-height: 0;
   min-width: 0;
   user-select: none;
+  -webkit-user-select: none;
   
   &:not(.embedded) {
     max-width: 30rem;

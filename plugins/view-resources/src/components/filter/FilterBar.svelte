@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
+  import { AccountRole, Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient, reduceCalls } from '@hcengineering/presentation'
   import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
@@ -36,6 +36,9 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
+
+  const account = getCurrentAccount()
+  const canSaveFilteredView = account.role !== AccountRole.ReadOnlyGuest && account.role !== AccountRole.DocGuest
 
   function onChange (e: Filter | undefined) {
     if (e === undefined) return
@@ -189,7 +192,7 @@
       </div>
     </div>
 
-    {#if !hideSaveButtons}
+    {#if !hideSaveButtons && canSaveFilteredView}
       <div class="flex gap-1-5">
         <Button
           icon={view.icon.Views}

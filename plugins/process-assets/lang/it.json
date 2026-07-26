@@ -102,6 +102,7 @@
     "CreateCard": "Crea scheda",
     "WhenCardMatches": "Quando la scheda corrisponde",
     "WhenFieldChanges": "Quando il campo cambia",
+    "WhenRequiredFieldsFilled": "Quando i campi richiesti sono compilati",
     "ArraySizeEquals": "Dimensione uguale a",
     "ArraySizeGt": "Dimensione maggiore di",
     "ArraySizeGte": "Dimensione maggiore o uguale a",
@@ -123,6 +124,7 @@
     "ExecutionInitiator": "Iniziatore dell'esecuzione",
     "ExecutionStarted": "Esecuzione avviata",
     "Filter": "Filtro",
+    "AllMatchValue": "Tutti i valori corrispondenti",
     "FirstMatchValue": "Primo valore corrispondente",
     "ConfigLabel": "Configurazione del processo",
     "ConfigDescription": "Definire i processi per automatizzare i flussi di lavoro e i processi aziendali.",
@@ -177,7 +179,12 @@
     "TextFromSelect": "Testo da selezione",
     "SelectFromText": "Selezione da testo",
     "AskSubclass": "Chiedi sottoclasse",
-    "TextFromIdentifier": "Testo da identificatore" 
+    "TextFromIdentifier": "Testo da identificatore",
+    "ExportWithSlots": "Esporta con slot",
+    "ExportWithoutSlots": "Esporta senza slot",
+    "RequiredSlots": "Slot richiesti",
+    "Bindings": "Binding",
+    "AskRequired": "Richiedi campi"
   },
   "error": {
     "MethodNotFound": "Metodo non trovato: {methodId}",

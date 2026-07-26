@@ -55,6 +55,7 @@
     vertical-align: middle;
     font-size: inherit;
     user-select: none;
+    -webkit-user-select: none;
     .chBox {
       position: absolute;
       width: 1px;

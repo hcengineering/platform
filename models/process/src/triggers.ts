@@ -124,6 +124,21 @@ export function defineTriggers (builder: Builder): void {
     process.trigger.WhenFieldChanges
   )
 
+  builder.createDoc(
+    process.class.Trigger,
+    core.space.Model,
+    {
+      label: process.string.WhenRequiredFieldsFilled,
+      icon: process.icon.WhenCardMatches,
+      presenter: process.component.CardUpdatePresenter,
+      requiredParams: [],
+      checkFunction: process.triggerCheck.RequiredFieldsFilledCheck,
+      init: false,
+      auto: true
+    },
+    process.trigger.WhenRequiredFieldsFilled
+  )
+
   // builder.createDoc(
   //   process.class.Trigger,
   //   core.space.Model,

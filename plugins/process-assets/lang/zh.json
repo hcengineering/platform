@@ -102,6 +102,7 @@
     "CreateCard": "创建卡片",
     "WhenCardMatches": "当卡片匹配时",
     "WhenFieldChanges": "当字段更改时",
+    "WhenRequiredFieldsFilled": "当必需字段被填充时",
     "ArraySizeEquals": "大小等于",
     "ArraySizeGt": "大小大于",
     "ArraySizeGte": "大小大于等于",
@@ -123,6 +124,7 @@
     "ExecutionInitiator": "执行发起者",
     "ExecutionStarted": "执行已启动",
     "Filter": "过滤",
+    "AllMatchValue": "所有匹配值",
     "FirstMatchValue": "第一个匹配值",
     "ConfigLabel": "流程配置",
     "ConfigDescription": "定义流程以自动化工作流和业务流程。",
@@ -177,7 +179,12 @@
     "TextFromSelect": "选择到文本",
     "SelectFromText": "文本到选择",
     "AskSubclass": "询问子类",
-    "TextFromIdentifier": "文本从标识符"
+    "TextFromIdentifier": "文本从标识符",
+    "ExportWithSlots": "导出包含槽",
+    "ExportWithoutSlots": "导出不含槽",
+    "RequiredSlots": "必需槽",
+    "Bindings": "绑定",
+    "AskRequired": "询问必需字段"
   },
   "error": {
     "MethodNotFound": "找不到方法：{methodId}",

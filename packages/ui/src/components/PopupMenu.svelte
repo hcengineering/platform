@@ -112,6 +112,7 @@
     border-radius: 0.75rem;
     box-shadow: var(--popup-shadow);
     user-select: none;
+    -webkit-user-select: none;
     z-index: 10;
   }
   .scrolling {

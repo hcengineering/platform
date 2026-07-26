@@ -96,6 +96,7 @@
     "CreateCard": "Karte erstellen",
     "WhenCardMatches": "Wenn Karte übereinstimmt",
     "WhenFieldChanges": "Wenn sich das Feld ändert",
+    "WhenRequiredFieldsFilled": "Wenn erforderliche Felder ausgefüllt sind",
     "Insert": "Einfügen",
     "Remove": "Entfernen",
     "RemoveFirst": "Erstes entfernen",
@@ -116,6 +117,7 @@
     "ExecutionInitiator": "Ausführungsinitiator",
     "ExecutionStarted": "Ausführung gestartet",
     "Filter": "Filter",
+    "AllMatchValue": "Alle passenden Werte",
     "FirstMatchValue": "Erster passender Wert",
     "ConfigLabel": "Prozesskonfiguration",
     "ConfigDescription": "Definieren Sie Prozesse, um Workflows und Geschäftsprozesse zu automatisieren.",
@@ -172,7 +174,12 @@
     "TextFromSelect": "Text aus Auswahl",
     "SelectFromText": "Auswahl aus Text",
     "AskSubclass": "Nach Unterklasse fragen",
-    "TextFromIdentifier": "Text aus Identifikator"
+    "TextFromIdentifier": "Text aus Identifikator",
+    "ExportWithSlots": "Slot-Export",
+    "ExportWithoutSlots": "Slot-freier Export",
+    "RequiredSlots": "Erforderliche Slots",
+    "Bindings": "Bindungen",
+    "AskRequiredFields": "Erforderliche Felder erfragen"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

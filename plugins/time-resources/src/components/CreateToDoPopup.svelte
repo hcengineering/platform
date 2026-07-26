@@ -15,7 +15,7 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { AccessLevel, Calendar, generateEventId } from '@hcengineering/calendar'
-  import { VisibilityEditor } from '@hcengineering/calendar-resources'
+  import { EventReminders, VisibilityEditor } from '@hcengineering/calendar-resources'
   import calendar from '@hcengineering/calendar-resources/src/plugin'
   import { getCurrentEmployee } from '@hcengineering/contact'
   import core, { AttachedData, Doc, Ref, SortingOrder, generateId, getCurrentAccount } from '@hcengineering/core'
@@ -104,7 +104,7 @@
         allDay: false,
         access: AccessLevel.Owner,
         visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
-        reminders: [],
+        reminders,
         user: myAccount.primarySocialId
       })
       Analytics.handleEvent(TimeEvents.ToDoScheduled, { id })
@@ -126,6 +126,7 @@
   })
 
   let slots: WorkSlot[] = []
+  let reminders: number[] = []
 
   function removeSlot (e: CustomEvent<{ _id: Ref<WorkSlot> }>): void {
     const index = slots.findIndex((p) => p._id === e.detail._id)
@@ -151,7 +152,7 @@
       blockTime: true,
       access: AccessLevel.Owner,
       visibility: todo.visibility,
-      reminders: [],
+      reminders,
       calendar: _calendar,
       space: calendar.space.Calendar,
       _id: generateId(),
@@ -267,6 +268,9 @@
         on:change={changeSlot}
         on:dueChange={changeDueSlot}
       />
+      {#if slots.length > 0}
+        <EventReminders bind:reminders />
+      {/if}
     </div>
     <div class="flex-row-reverse btn flex-no-shrink">
       <Button

@@ -516,9 +516,11 @@ export function startHttpServer (
         }
         if ('upgrade' in s) {
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-          void cs.send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false).then(() => {
-            cs.close()
-          })
+          void cs
+            .send(ctx, { id: -1, result: { state: 'upgrading', stats: (s as any).upgradeInfo } }, false, false)
+            .then(() => {
+              cs.close()
+            })
         }
       })
       void webSocketData.session.catch((err) => {

@@ -351,15 +351,26 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         return
       }
 
-      if (tx._class === core.class.TxDomainEvent) {
-        const domainTx = tx as TxDomainEvent
-        const { result } = await session.domainRequestRaw(ctx, domainTx.domain, {
-          event: domainTx.event
-        })
-        await sendJson(req, res, result.value, rateLimitToHeaders(rateLimit))
-      } else {
-        const result = await session.txRaw(ctx, tx)
-        await sendJson(req, res, result.result, rateLimitToHeaders(rateLimit))
+      try {
+        if (tx._class === core.class.TxDomainEvent) {
+          const domainTx = tx as TxDomainEvent
+          const { result } = await session.domainRequestRaw(ctx, domainTx.domain, {
+            event: domainTx.event
+          })
+          await sendJson(req, res, result.value, rateLimitToHeaders(rateLimit))
+        } else {
+          const result = await session.txRaw(ctx, tx)
+          await sendJson(req, res, result.result, rateLimitToHeaders(rateLimit))
+        }
+      } catch (err: unknown) {
+        if (err instanceof PlatformError && err.status.code === platform.status.BadRequest) {
+          sendError(res, 400, {
+            message: 'Invalid tx',
+            error: err.status
+          })
+          return
+        }
+        throw err
       }
     })
   })

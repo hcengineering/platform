@@ -24,6 +24,19 @@ import { SelectedExecutionContext } from './types'
  */
 export const processId = 'process' as Plugin
 
+export interface SlotModel {
+  slotKind: 'attribute' | 'class' | 'association' | 'process' | 'unknown'
+  _class: Ref<Class<Doc>>
+  label?: IntlString
+  name?: string
+  memberOf?: string
+}
+
+export interface AttributeSlotModel extends SlotModel {
+  slotKind: 'attribute'
+  type: Type<any>
+}
+
 // Process model dscription
 export interface Process extends Doc {
   masterTag: Ref<MasterTag | Tag>
@@ -34,6 +47,8 @@ export interface Process extends Doc {
   automationOnly?: boolean
   context: Record<ContextId, ProcessContext>
   resultType?: Type<any>
+  requiredSlots?: Record<string, SlotModel>
+  bindings?: Record<string, string>
 }
 
 export interface ProcessContext {
@@ -125,6 +140,7 @@ export interface ProcessToDo extends ToDo {
 
   results?: UserResult[]
   field?: string
+  askRequired?: boolean
 }
 
 export interface ApproveRequest extends ProcessToDo {
@@ -263,6 +279,7 @@ export default plugin(processId, {
   trigger: {
     OnCardUpdate: '' as Ref<Trigger>, // in fact WhenCardMatches, should migrate in future
     WhenFieldChanges: '' as Ref<Trigger>,
+    WhenRequiredFieldsFilled: '' as Ref<Trigger>,
     OnSubProcessesDone: '' as Ref<Trigger>,
     OnSubProcessMatch: '' as Ref<Trigger>,
     OnToDoClose: '' as Ref<Trigger>,
@@ -278,6 +295,7 @@ export default plugin(processId, {
     ToDo: '' as Resource<CheckFunc>,
     MatchCheck: '' as Resource<CheckFunc>,
     FieldChangedCheck: '' as Resource<CheckFunc>,
+    RequiredFieldsFilledCheck: '' as Resource<CheckFunc>,
     SubProcessesDoneCheck: '' as Resource<CheckFunc>,
     SubProcessMatchCheck: '' as Resource<CheckFunc>,
     Time: '' as Resource<CheckFunc>,
@@ -335,6 +353,7 @@ export default plugin(processId, {
     OnEvent: '' as Asset
   },
   function: {
+    AllMatchValue: '' as Ref<ProcessFunction>,
     FirstMatchValue: '' as Ref<ProcessFunction>,
     Filter: '' as Ref<ProcessFunction>,
     FirstValue: '' as Ref<ProcessFunction>,

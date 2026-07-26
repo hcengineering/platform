@@ -20,36 +20,53 @@
   import { createEventDispatcher } from 'svelte'
   import card from '../plugin'
   import view from '@hcengineering/view'
+  import { getFirstCreatableSubtype, getRootType, isBaseTypeWithSubtypes } from '../utils'
 
-  export let value: Ref<MasterTag>
+  export let value: Ref<MasterTag> | null
   export let width: string | undefined = undefined
   export let kind: ButtonKind | undefined = undefined
   export let size: ButtonSize | undefined = undefined
   export let parent: Ref<MasterTag> = card.class.Card
   export let disabled: boolean = false
+  export let excludeBaseTypes: boolean = false
+  export let allowedRootTypes: Ref<MasterTag>[] | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  const dispatch = createEventDispatcher()
 
-  function filterClasses (): [DropdownIntlItem, DropdownIntlItem[]][] {
-    const descendants = hierarchy.getDescendants(parent).filter((p) => p !== parent)
+  function isAllowedBySpace (type: Ref<MasterTag>, roots: Ref<MasterTag>[] | undefined): boolean {
+    return roots === undefined || roots.includes(getRootType(hierarchy, type))
+  }
+
+  function isSelectableClass (_class: Class<Doc>, roots: Ref<MasterTag>[] | undefined, skipBaseTypes: boolean): boolean {
+    if (_class.label === undefined) return false
+    if (_class.kind !== ClassifierKind.CLASS) return false
+    if ((_class as MasterTag).removed === true) return false
+    if (!isAllowedBySpace(_class._id as Ref<MasterTag>, roots)) return false
+    if (skipBaseTypes && isBaseTypeWithSubtypes(hierarchy, _class._id as Ref<MasterTag>)) return false
+    return true
+  }
+
+  function filterClasses (
+    root: Ref<MasterTag>,
+    roots: Ref<MasterTag>[] | undefined,
+    skipBaseTypes: boolean
+  ): [DropdownIntlItem, DropdownIntlItem[]][] {
+    const descendants = hierarchy.getDescendants(root).filter((p) => p !== root)
     const added = new Set<Ref<Class<Doc>>>()
     const base = new Map<Ref<Class<Doc>>, Class<Doc>[]>()
     for (const _id of descendants) {
       if (added.has(_id)) continue
       const _class = hierarchy.getClass(_id)
-      if (_class.label === undefined) continue
-      if (_class.kind !== ClassifierKind.CLASS) continue
-      if ((_class as MasterTag).removed === true) continue
+      if (!isSelectableClass(_class, roots, skipBaseTypes)) continue
       added.add(_id)
       const descendants = hierarchy.getDescendants(_id)
       const toAdd: Class<Doc>[] = []
       for (const desc of descendants) {
         if (added.has(desc)) continue
         const _class = hierarchy.getClass(desc)
-        if (_class.label === undefined) continue
-        if (_class.kind !== ClassifierKind.CLASS) continue
-        if ((_class as MasterTag).removed === true) continue
+        if (!isSelectableClass(_class, roots, skipBaseTypes)) continue
         added.add(desc)
         toAdd.push(_class)
       }
@@ -77,15 +94,31 @@
     }
   }
 
-  const classes = filterClasses()
-  const dispatch = createEventDispatcher()
+  let classes: [DropdownIntlItem, DropdownIntlItem[]][] = []
+  $: classes = filterClasses(parent, allowedRootTypes, excludeBaseTypes)
 
-  $: selectedClass = hierarchy.getClass(value)
-  $: selected = {
-    id: selectedClass._id,
-    label: selectedClass.label,
-    ...getIconProps(selectedClass)
+  $: if (value != null && excludeBaseTypes && isBaseTypeWithSubtypes(hierarchy, value)) {
+    const nextType = getFirstCreatableSubtype(hierarchy, value)
+    if (nextType !== undefined) {
+      value = nextType
+      dispatch('change', value)
+    }
   }
+
+  $: if (value != null && !isAllowedBySpace(value, allowedRootTypes)) {
+    value = null
+    dispatch('change', value)
+  }
+
+  $: selectedClass = value != null ? hierarchy.getClass(value) : undefined
+  $: selected =
+    selectedClass !== undefined
+      ? {
+          id: selectedClass._id,
+          label: selectedClass.label,
+          ...getIconProps(selectedClass)
+        }
+      : undefined
 </script>
 
 <NestedDropdown

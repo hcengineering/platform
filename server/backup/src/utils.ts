@@ -47,6 +47,7 @@ import { BackupStorage } from './storage'
 import type {
   BackupDocId,
   BackupInfo,
+  BackupMigrations,
   BackupResult,
   BackupSnapshot,
   BlobData,
@@ -1455,6 +1456,38 @@ export function toAccountDomain (domain: string): Domain {
 
 export function isAccountDomain (domain: Domain): boolean {
   return domain.startsWith(accountPrefix)
+}
+
+const uuidRegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * Checks that a backup digest key is valid for the given account domain.
+ * Person records are keyed by UUID while socialId records are keyed by
+ * numeric (INT8) identifiers. Keys of the wrong shape (e.g. leaked from
+ * another domain by older backup versions) must be filtered out.
+ */
+export function isValidAccountDomainKey (domain: Domain, key: BackupDocId): boolean {
+  if (domain === toAccountDomain('person')) {
+    return uuidRegExp.test(key)
+  }
+  try {
+    BigInt(key)
+    return true
+  } catch (err: any) {
+    return false
+  }
+}
+
+/**
+ * Decides whether an account domain requires a full rescan of the workspace
+ * contact/channel domains to collect affected persons/social identities.
+ * A rescan is needed on explicit full check or until the initial rescan has
+ * been completed and recorded in backup info migrations — i.e. the very first
+ * accounts backup or a backup produced by a version which failed to dump
+ * account domains.
+ */
+export function shouldRescanAccountDomain (domain: Domain, fullCheck: boolean, migrations: BackupMigrations): boolean {
+  return fullCheck || migrations.accountsRescan?.[domain] !== true
 }
 
 export function getGetObjKey (domain: Domain): GetObjKeyFn {

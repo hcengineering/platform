@@ -49,6 +49,7 @@
         "DueDatePopupOverdueDescription": "{value, plural, =1 {1일 초과} other {#일 초과}}",
         "English": "English",
         "Russian": "Русский",
+        "Polish": "Polski",
         "Portuguese": "Português",
         "PortugueseBrazil": "Português (Brasil)",
         "Spanish": "Español",

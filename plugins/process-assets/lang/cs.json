@@ -96,6 +96,7 @@
     "CreateCard": "Vytvořit kartu",
     "WhenCardMatches": "Když karta odpovídá",
     "WhenFieldChanges": "Když se pole změní",
+    "WhenRequiredFieldsFilled": "Když jsou vyplněna všechna povinná pole",
     "Insert": "Vložit",
     "Remove": "Odstranit",
     "RemoveFirst": "Odstranit první",
@@ -116,6 +117,7 @@
     "ExecutionInitiator": "Iniciátor provedení",
     "ExecutionStarted": "Provedení spuštěno",
     "Filter": "Filtr",
+    "AllMatchValue": "Všechny odpovídající hodnoty",
     "FirstMatchValue": "První odpovídající hodnota",
     "ConfigLabel": "Konfigurace procesů",
     "ConfigDescription": "Definujte procesy pro automatizaci pracovních postupů a obchodních procesů.",
@@ -172,7 +174,12 @@
     "TextFromSelect": "Text z výběru",
     "SelectFromText": "Výběr z textu",
     "AskSubclass": "Zeptat se na podtřídu",
-    "TextFromIdentifier": "Text z identifikátoru"
+    "TextFromIdentifier": "Text z identifikátoru",
+    "ExportWithSlots": "Exportovat se sloty",
+    "ExportWithoutSlots": "Exportovat bez slotů",
+    "RequiredSlots": "Požadované sloty",
+    "Bindings": "Vazby",
+    "AskRequired": "zeptat se na prázdná povinná pole"
   },
   "error": {
     "MethodNotFound": "Metoda nenalezena: {methodId}",

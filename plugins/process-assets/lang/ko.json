@@ -98,6 +98,7 @@
         "CreateCard": "카드 생성",
         "WhenCardMatches": "카드 일치 시",
         "WhenFieldChanges": "필드 변경 시",
+        "WhenRequiredFieldsFilled": "필수 필드가 채워졌을 때",
         "ArraySizeEquals": "크기 같음",
         "ArraySizeGt": "크기가 더 큼",
         "ArraySizeGte": "크기가 이상",
@@ -123,6 +124,7 @@
         "ExecutionInitiator": "실행 시작자",
         "ExecutionStarted": "실행 시작됨",
         "Filter": "필터",
+        "AllMatchValue": "모든 일치 값",
         "FirstMatchValue": "첫 일치 값",
         "ConfigLabel": "프로세스 구성",
         "ConfigDescription": "워크플로와 비즈니스 프로세스를 자동화할 프로세스를 정의합니다.",
@@ -177,7 +179,12 @@
         "TextFromSelect": "선택에서 텍스트로",
         "SelectFromText": "텍스트에서 선택으로",
         "AskSubclass": "하위 클래스 선택",
-        "TextFromIdentifier": "식별자에서 텍스트로"
+        "TextFromIdentifier": "식별자에서 텍스트로",
+        "ExportWithSlots": "슬롯 포함 내보내기",
+        "ExportWithoutSlots": "슬롯 없이 내보내기",
+        "RequiredSlots": "필수 슬롯",
+        "Bindings": "바인딩",
+        "AskRequired": "필수 필드 질문"
     },
     "error": {
         "MethodNotFound": "메서드를 찾을 수 없습니다: {methodId}",

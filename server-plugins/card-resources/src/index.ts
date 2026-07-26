@@ -61,8 +61,78 @@ import { getMetadata, translate } from '@hcengineering/platform'
 import { getEmployee, getPersonSpaces } from '@hcengineering/server-contact'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import setting from '@hcengineering/setting'
-import view from '@hcengineering/view'
+import view, { type BuildModelKey, type Viewlet } from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
+
+type ViewletConfigItem = BuildModelKey | string
+interface IndexedViewletConfigItem {
+  item: ViewletConfigItem
+  index: number
+}
+
+function getViewletConfigKey (item: ViewletConfigItem): string {
+  return typeof item === 'string' ? item : item.key
+}
+
+function getAttributeKey (key: string): string {
+  if (key.startsWith('$lookup.')) {
+    return key.slice('$lookup.'.length)
+  }
+  const dotIndex = key.lastIndexOf('.')
+  return dotIndex === -1 ? key : key.slice(dotIndex + 1)
+}
+
+function isSourceAttribute (control: TriggerControl, sourceClass: Ref<Class<Doc>>, key: string): boolean {
+  return control.hierarchy.getAllAttributes(sourceClass).has(getAttributeKey(key))
+}
+
+function syncViewletConfigOrder (
+  control: TriggerControl,
+  sourceClass: Ref<Class<Doc>>,
+  previousSourceConfig: ViewletConfigItem[],
+  sourceConfig: ViewletConfigItem[],
+  targetConfig: ViewletConfigItem[]
+): ViewletConfigItem[] {
+  const sourceKeys = new Set(sourceConfig.map(getViewletConfigKey))
+  const previousSourceKeys = new Set(previousSourceConfig.map(getViewletConfigKey))
+  const targetByKey = new Map<string, IndexedViewletConfigItem[]>()
+  for (const [index, item] of targetConfig.entries()) {
+    const key = getViewletConfigKey(item)
+    const items = targetByKey.get(key) ?? []
+    items.push({ item, index })
+    targetByKey.set(key, items)
+  }
+
+  const sourceItems: ViewletConfigItem[] = []
+  const usedIndexes = new Set<number>()
+  for (const sourceItem of sourceConfig) {
+    const key = getViewletConfigKey(sourceItem)
+    const targetItem = targetByKey.get(key)?.shift()
+    const item = targetItem?.item ?? sourceItem
+    sourceItems.push(item)
+    if (targetItem !== undefined) {
+      usedIndexes.add(targetItem.index)
+    }
+  }
+
+  const synced = [...sourceItems]
+  for (const [index, targetItem] of targetConfig.entries()) {
+    if (usedIndexes.has(index)) continue
+
+    const key = getViewletConfigKey(targetItem)
+    if (!sourceKeys.has(key) && (previousSourceKeys.has(key) || isSourceAttribute(control, sourceClass, key))) {
+      continue
+    }
+
+    synced.splice(Math.min(index, synced.length), 0, targetItem)
+  }
+
+  return synced
+}
+
+function isConfigOrderChanged (current: ViewletConfigItem[], next: ViewletConfigItem[]): boolean {
+  return current.length !== next.length || current.some((item, index) => item !== next[index])
+}
 
 async function OnAttribute (ctx: TxCreateDoc<AnyAttribute>[], control: TriggerControl): Promise<Tx[]> {
   const attr = TxProcessor.createDoc2Doc(ctx[0])
@@ -157,6 +227,47 @@ async function OnAttributeRemove (ctx: TxRemoveDoc<AnyAttribute>[], control: Tri
     return res
   }
   return []
+}
+
+async function OnViewletUpdate (ctx: TxUpdateDoc<Viewlet>[], control: TriggerControl): Promise<Tx[]> {
+  const updateTx = ctx[0]
+  if (updateTx.space === core.space.DerivedTx) return []
+  if (!Array.isArray(updateTx.operations.config)) return []
+
+  const sourceViewlet = (await control.findAll<Viewlet>(control.ctx, view.class.Viewlet, { _id: updateTx.objectId }))[0]
+  if (sourceViewlet === undefined) return []
+  if (!control.hierarchy.isDerived(sourceViewlet.attachTo, card.class.Card)) return []
+
+  const descendants = control.hierarchy
+    .getDescendants(sourceViewlet.attachTo)
+    .filter((it) => it !== sourceViewlet.attachTo)
+  if (descendants.length === 0) return []
+
+  const childViewlets = await control.findAll<Viewlet>(control.ctx, view.class.Viewlet, {
+    attachTo: { $in: descendants },
+    descriptor: sourceViewlet.descriptor,
+    variant: sourceViewlet.variant ?? { $exists: false }
+  })
+
+  const res: Tx[] = []
+  for (const childViewlet of childViewlets) {
+    const config = syncViewletConfigOrder(
+      control,
+      sourceViewlet.attachTo,
+      sourceViewlet.config,
+      updateTx.operations.config,
+      childViewlet.config
+    )
+    if (!isConfigOrderChanged(childViewlet.config, config)) continue
+
+    res.push(
+      control.txFactory.createTxUpdateDoc(childViewlet._class, childViewlet.space, childViewlet._id, {
+        config
+      })
+    )
+  }
+
+  return res
 }
 
 async function OnMasterTagRemove (ctx: TxUpdateDoc<MasterTag>[], control: TriggerControl): Promise<Tx[]> {
@@ -937,6 +1048,7 @@ export default async () => ({
   trigger: {
     OnAttribute,
     OnAttributeRemove,
+    OnViewletUpdate,
     OnMasterTagCreate,
     OnMasterTagRemove,
     OnTagRemove,

@@ -98,6 +98,7 @@
     "CreateCard": "Kart oluştur",
     "WhenCardMatches": "Kart eşleştiğinde",
     "WhenFieldChanges": "Alan değiştiğinde",
+    "WhenRequiredFieldsFilled": "Gerekli alanlar doldurulduğunda",
     "ArraySizeEquals": "Boyut eşittir",
     "ArraySizeGt": "Boyut büyüktür",
     "ArraySizeGte": "Boyut büyük veya eşittir",
@@ -120,6 +121,7 @@
     "ProcessFinished": "\"{process}\" süreci \"{state}\" durumunda tamamlandı",
     "NewProcessToDo": "Yeni süreç Eylem öğesi",
     "Filter": "Filtre",
+    "AllMatchValue": "Tüm eşleşen değerler",
     "FirstMatchValue": "İlk eşleşen değer",
     "ConfigLabel": "Süreç yapılandırması",
     "ConfigDescription": "İş akışlarını ve iş süreçlerini otomatikleştirmek için süreçler tanımlayın.",
@@ -172,7 +174,12 @@
     "TextFromSelect": "Seçimden metin",
     "SelectFromText": "Metinden seçim",
     "AskSubclass": "Alt sınıfı sor",
-    "TextFromIdentifier": "Tanımlayıcıdan metne"
+    "TextFromIdentifier": "Tanımlayıcıdan metne",
+    "ExportWithSlots": "Slotlu dışa aktar",
+    "ExportWithoutSlots": "Slotsuz dışa aktar",
+    "RequiredSlots": "Gerekli slotlar",
+    "Bindings": "Bağlamalar",
+    "AskRequired": "Gerekli alanları sor"
   },
   "error": {
     "MethodNotFound": "Metod bulunamadı: {methodId}",

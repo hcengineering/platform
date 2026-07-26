@@ -65,8 +65,9 @@
   }
 
   const changeToggle = (model: ViewOptionModel) => {
-    viewOptions[model.key] = !viewOptions[model.key]
-    dispatch('update', { key: model.key, value: viewOptions[model.key] })
+    const value = !(viewOptions[model.key] ?? model.defaultValue)
+    viewOptions[model.key] = value
+    dispatch('update', { key: model.key, value })
   }
 
   // checking if selector provides multiple choice options
@@ -143,12 +144,16 @@
     >
       <span class="overflow-label"><Label label={model.label} /></span>
       {#if isToggleType(model)}
-        <Toggle
-          on={viewOptions[model.key] ?? model.defaultValue}
-          on:change={() => {
-            changeToggle(model)
-          }}
-        />
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <span on:click|stopPropagation>
+          <Toggle
+            on={viewOptions[model.key] ?? model.defaultValue}
+            on:change={() => {
+              changeToggle(model)
+            }}
+          />
+        </span>
       {:else if isDropdownType(model)}
         {@const items = model.values.filter(({ hidden }) => !hidden?.(viewOptions))}
         <DropdownLabelsIntl

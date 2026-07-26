@@ -6,6 +6,7 @@ import {
   type FullParamsType,
   type MeasureContext,
   type MeasureLogger,
+  type MeasureLogLevel,
   type Metrics,
   type ParamsType,
   type OperationLog,
@@ -42,6 +43,14 @@ export const consoleLogger = (logParams: Record<string, any>): MeasureLogger => 
   warn: (msg, args) => {
     console.warn(msg, ...Object.entries(args ?? {}).map((it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`))
   },
+  debug: (msg, args) => {
+    console.debug(
+      msg,
+      ...Object.entries({ ...(args ?? {}), ...(logParams ?? {}) }).map(
+        (it) => `${it[0]}=${JSON.stringify(replacer(it[1]))}`
+      )
+    )
+  },
   close: async () => {},
   logOperation: (operation, time, params) => {}
 })
@@ -62,6 +71,8 @@ export class MeasureMetricsContext implements MeasureContext {
   metrics: Metrics
   id?: string
 
+  private readonly logLevel: MeasureLogLevel
+
   st = platformNow()
   contextData: object = {}
   private done (value?: number, override?: boolean): void {
@@ -75,12 +86,14 @@ export class MeasureMetricsContext implements MeasureContext {
     metrics: Metrics = newMetrics(),
     logger?: MeasureLogger,
     readonly parent?: MeasureContext,
-    readonly logParams?: ParamsType
+    readonly logParams?: ParamsType,
+    logLevel: MeasureLogLevel = 'info'
   ) {
     this.name = name
     this.params = params
     this.fullParams = fullParams
     this.metrics = metrics
+    this.logLevel = logLevel
     this.metrics.namedParams = this.metrics.namedParams ?? {}
     for (const [k, v] of Object.entries(params)) {
       if (this.metrics.namedParams[k] !== v) {
@@ -94,7 +107,16 @@ export class MeasureMetricsContext implements MeasureContext {
   }
 
   measure (name: string, value: number, override?: boolean): void {
-    const c = new MeasureMetricsContext('#' + name, {}, {}, childMetrics(this.metrics, ['#' + name]), this.logger, this)
+    const c = new MeasureMetricsContext(
+      '#' + name,
+      {},
+      {},
+      childMetrics(this.metrics, ['#' + name]),
+      this.logger,
+      this,
+      undefined,
+      this.logLevel
+    )
     c.contextData = this.contextData
     c.done(value, override)
   }
@@ -106,6 +128,8 @@ export class MeasureMetricsContext implements MeasureContext {
       fullParams?: FullParamsType
       logger?: MeasureLogger
       span?: WithOptions['span'] // By default true
+      meta?: Record<string, string | number | boolean>
+      logLevel?: MeasureLogLevel
     }
   ): MeasureContext {
     const result = new MeasureMetricsContext(
@@ -115,7 +139,8 @@ export class MeasureMetricsContext implements MeasureContext {
       childMetrics(this.metrics, [name]),
       opt?.logger ?? this.logger,
       this,
-      this.logParams
+      this.logParams,
+      opt?.logLevel ?? this.logLevel
     )
     result.id = this.id
     result.contextData = this.contextData
@@ -187,6 +212,11 @@ export class MeasureMetricsContext implements MeasureContext {
     this.logger.warn(message, { ...this.params, ...args, ...(this.logParams ?? {}) })
   }
 
+  debug (message: string, args?: Record<string, any>): void {
+    if (this.logLevel !== 'debug') return
+    this.logger.debug(message, { ...this.params, ...args, ...(this.logParams ?? {}) })
+  }
+
   end (): void {
     this.done()
   }
@@ -202,8 +232,11 @@ export class NoMetricsContext implements MeasureContext {
 
   contextData: object = {}
 
-  constructor (logger?: MeasureLogger) {
+  private readonly logLevel: MeasureLogLevel
+
+  constructor (logger?: MeasureLogger, logLevel: MeasureLogLevel = 'info') {
     this.logger = logger ?? consoleLogger({})
+    this.logLevel = logLevel
   }
 
   measure (name: string, value: number, override?: boolean): void {}
@@ -211,10 +244,15 @@ export class NoMetricsContext implements MeasureContext {
   newChild (
     name: string,
     params: ParamsType,
-    fullParams?: FullParamsType | (() => FullParamsType),
-    logger?: MeasureLogger
+    opt?: {
+      fullParams?: FullParamsType | (() => FullParamsType)
+      logger?: MeasureLogger
+      span?: WithOptions['span']
+      meta?: Record<string, string | number | boolean>
+      logLevel?: MeasureLogLevel
+    }
   ): MeasureContext {
-    const result = new NoMetricsContext(logger ?? this.logger)
+    const result = new NoMetricsContext(opt?.logger ?? this.logger, opt?.logLevel ?? this.logLevel)
     result.id = this.id
     result.contextData = this.contextData
     return result
@@ -226,7 +264,7 @@ export class NoMetricsContext implements MeasureContext {
     op: (ctx: MeasureContext) => T | Promise<T>,
     fullParams?: ParamsType | (() => FullParamsType)
   ): Promise<T> {
-    const r = op(this.newChild(name, params, fullParams, this.logger))
+    const r = op(this.newChild(name, params, { fullParams, logger: this.logger }))
     return r instanceof Promise ? r : Promise.resolve(r)
   }
 
@@ -240,7 +278,7 @@ export class NoMetricsContext implements MeasureContext {
     op: (ctx: MeasureContext) => T,
     fullParams?: ParamsType | (() => FullParamsType)
   ): T {
-    const c = this.newChild(name, params, fullParams, this.logger)
+    const c = this.newChild(name, params, { fullParams, logger: this.logger })
     return op(c)
   }
 
@@ -250,7 +288,7 @@ export class NoMetricsContext implements MeasureContext {
     op: (ctx: MeasureContext) => T | Promise<T>,
     fullParams?: ParamsType
   ): Promise<T> {
-    const r = op(this.newChild(name, params, fullParams, this.logger))
+    const r = op(this.newChild(name, params, { fullParams, logger: this.logger }))
     return r instanceof Promise ? r : Promise.resolve(r)
   }
 
@@ -264,6 +302,11 @@ export class NoMetricsContext implements MeasureContext {
 
   warn (message: string, args?: Record<string, any>): void {
     this.logger.warn(message, { ...args })
+  }
+
+  debug (message: string, args?: Record<string, any>): void {
+    if (this.logLevel !== 'debug') return
+    this.logger.debug(message, { ...args })
   }
 
   end (): void {}

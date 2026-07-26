@@ -87,6 +87,7 @@
     "UnableToLoadEmbeddedContent": "Link preview couldn't be loaded due to permission settings or unsupported content",
     "CannotConnectToCollaborationService": "Cannot connect to collaboration service",
     "SourceURL": "Source URL",
-    "SelectedDocuments": "Selected documents ({count, plural, =1 {1 item} other {# items}})"
+    "SelectedDocuments": "Selected documents ({count, plural, =1 {1 item} other {# items}})",
+    "LatestVersion": "Latest"
   }
 }

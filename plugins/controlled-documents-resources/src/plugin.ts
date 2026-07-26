@@ -21,7 +21,7 @@ import documents, {
 import { type Client, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { type IntlString, mergeIds, type Resource } from '@hcengineering/platform'
 import { type AnyComponent, type Location } from '@hcengineering/ui/src/types'
-import type { KeyFilter, SortFunc, ViewActionAvailabilityFunction } from '@hcengineering/view'
+import type { KeyFilter, ReferenceVersion, SortFunc, ViewActionAvailabilityFunction } from '@hcengineering/view'
 
 export default mergeIds(documentsId, documents, {
   component: {
@@ -256,6 +256,9 @@ export default mergeIds(documentsId, documents, {
     CanPrintDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     CanTransferDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     ControlledDocumentTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
-    DocumentMetaTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>
+    DocumentMetaTitleProvider: '' as Resource<(client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<string>>,
+    DocumentMetaReferenceVersionsProvider: '' as Resource<
+    (client: Client, ref: Ref<Doc>, doc?: Doc) => Promise<ReferenceVersion[]>
+    >
   }
 })
