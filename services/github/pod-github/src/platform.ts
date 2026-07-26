@@ -738,7 +738,7 @@ export class PlatformWorker {
   }
 
   async checkRefreshToken (ctx: MeasureContext, auth: GithubUserRecord, force: boolean = false): Promise<boolean> {
-    if (auth.refreshToken != null && auth.expiresIn != null && auth.expiresIn < Date.now() / 1000) {
+    if (auth.refreshToken != null && (force || (auth.expiresIn != null && auth.expiresIn < Date.now() / 1000))) {
       const uri =
         'https://github.com/login/oauth/access_token?' +
         makeQuery({

@@ -642,7 +642,11 @@ export class GithubWorker implements IntegrationManager {
     if (record !== undefined) {
       ctx.info('get octokit', { account, recordId: record._id, workspace: this.workspace.uuid })
       if (!(await this.platform.checkRefreshToken(ctx, record))) {
+        // Token is invalid and could not be refreshed: report no octokit so
+        // callers fall back to the installation token instead of using a
+        // client with dead credentials.
         record.octokit = undefined
+        return undefined
       }
       if (record.octokit !== undefined) {
         return record.octokit
