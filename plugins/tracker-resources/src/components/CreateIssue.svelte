@@ -186,6 +186,7 @@
       priority: priority ?? IssuePriority.NoPriority,
       space: _space as Ref<Project>,
       component: component ?? $activeComponent ?? null,
+      startDate: null,
       dueDate: null,
       attachments: 0,
       estimation: 0,
@@ -312,6 +313,7 @@
         _id: generateId(),
         space: _space as Ref<Project>,
         subIssues: [],
+        startDate: null,
         dueDate: null,
         labels:
           p.labels !== undefined
@@ -488,6 +490,7 @@
         rank: '',
         comments: 0,
         subIssues: 0,
+        startDate: object.startDate,
         dueDate: object.dueDate,
         parents:
           parentIssue != null

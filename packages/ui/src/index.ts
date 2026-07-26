@@ -52,6 +52,7 @@ export type {
 export { themeStore, languageStore } from '@hcengineering/theme'
 // export { applicationShortcutKey } from './utils'
 export { getCurrentLocation, locationToUrl, navigate, location, setLocationStorageKey } from './location'
+export { isAppFocusedStore, printModeStore } from './stores'
 
 export { default as EditBox } from './components/EditBox.svelte'
 export { default as Label } from './components/Label.svelte'

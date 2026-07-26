@@ -1,0 +1,80 @@
+# Ext overlay: enables the optional billing + payment services so that the client
+# can reach them and plan-limit restrictions kick in.
+# Use with: docker compose -f docker-compose.yaml -f docker-compose.ext.yaml up
+#       or: rush docker:up:ext
+# (or: docker compose -f docker-compose.yaml -f docker-compose.min.yaml -f docker-compose.ext.yaml up
+#  if you want to keep the small footprint and just add billing/payment on top.)
+#
+# The base docker-compose.yaml already advertises PAYMENT_URL=http://huly.local:3040
+# to the front. This overlay materialises the matching `payment` and `billing`
+# services and adds BILLING_URL to the front so the client picks them up.
+#
+# Provider credentials are read from the host environment (e.g. dev/.env or shell):
+#   PAYMENT_USE_SANDBOX           default: true
+#   POLAR_ACCESS_TOKEN, POLAR_WEBHOOK_SECRET, POLAR_ORGANIZATION_ID,
+#   POLAR_SUBSCRIPTION_PLANS
+#   STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_SUBSCRIPTION_PLANS
+# All are optional — without them the service starts in sandbox mode.
+
+services:
+  payment:
+    image: hardcoreeng/payment
+    # Clear the profile gate from docker-compose.min.yaml so the service starts
+    # whenever this overlay is included, even alongside `min`.
+    profiles: !override []
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      account:
+        condition: service_started
+    ports:
+      - 3040:3040
+    environment:
+      - PORT=3040
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - FRONT_URL=http://huly.local:8087
+      - USE_SANDBOX=${PAYMENT_USE_SANDBOX:-true}
+      # Provider credentials — supply via .env / shell env. Empty values keep
+      # the service running in safe "sandbox" mode without making outbound calls.
+      # - POLAR_ACCESS_TOKEN=${POLAR_ACCESS_TOKEN:-}
+      # - POLAR_WEBHOOK_SECRET=${POLAR_WEBHOOK_SECRET:-}
+      # - POLAR_ORGANIZATION_ID=${POLAR_ORGANIZATION_ID:-}
+      # - POLAR_SUBSCRIPTION_PLANS=${POLAR_SUBSCRIPTION_PLANS:-}
+      - STRIPE_API_KEY=${STRIPE_API_KEY:-}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-}
+      - STRIPE_SUBSCRIPTION_PLANS=${STRIPE_SUBSCRIPTION_PLANS:-}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
+
+  billing:
+    image: hardcoreeng/billing
+    profiles: !override []
+    extra_hosts:
+      - 'huly.local:host-gateway'
+    depends_on:
+      cockroach:
+        condition: service_started
+      minio:
+        condition: service_healthy
+      account:
+        condition: service_started
+    ports:
+      - 4042:4042
+    environment:
+      - PORT=4042
+      - SECRET=secret
+      - ACCOUNTS_URL=http://huly.local:3000
+      - DB_URL=${DB_CR_URL}
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      # Recheck workspace usage every 10 minutes in dev (default is 1 hour).
+      - USAGE_UPDATE_INTERVAL=600
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    restart: unless-stopped
+
+  # Make the billing endpoint discoverable by the client. PAYMENT_URL is already
+  # set in the base compose file so we don't repeat it here — environment values
+  # are merged additively.
+  front:
+    environment:
+      - BILLING_URL=http://huly.local:4042

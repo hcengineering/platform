@@ -48,6 +48,7 @@
   .caption {
     margin-right: 1rem;
     color: var(--caption-color);
+    -webkit-user-select: none;
     user-select: none;
     span {
       display: block;

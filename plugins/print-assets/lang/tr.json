@@ -3,6 +3,8 @@
     "PrintToPDF": "PDF'e yazdır",
     "PrintingDocumentOf": "Belge yazdırılıyor {current} / {total}",
     "DownloadAll": "Tümünü indir",
-    "PrintFailed": "Yazdırma başarısız"
+    "PrintFailed": "Yazdırma başarısız",
+    "PrintSettings": "Print settings",
+    "LandscapeMode": "Landscape mode"
   }
 }

@@ -28,6 +28,7 @@ import {
   type PersonUuid,
   type SocialId as SocialIdBase,
   type UsageStatus,
+  type WorkspaceConfiguration,
   type WorkspaceDataId,
   type WorkspaceUuid,
   type WorkspaceInfo,
@@ -115,7 +116,7 @@ export interface Workspace {
   url: string
   allowReadOnlyGuest: boolean
   allowGuestSignUp: boolean
-  passwordAgingRule?: number // Number of days after which password must be changed
+  passwordAgingRule?: number | null // Number of days after which password must be changed
   dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
   branding?: string
   location?: Location
@@ -123,6 +124,8 @@ export interface Workspace {
   createdBy?: PersonUuid
   billingAccount?: PersonUuid
   createdOn?: Timestamp
+  // Initial-state configuration captured at workspace creation
+  pendingConfiguration?: WorkspaceConfiguration | null
 }
 
 export interface OTP {
@@ -329,7 +332,7 @@ export interface AccountDB {
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
   updateAllowReadOnlyGuests: (workspaceId: WorkspaceUuid, readOnlyGuestsAllowed: boolean) => Promise<void>
   updateAllowGuestSignUp: (workspaceId: WorkspaceUuid, guestSignUpAllowed: boolean) => Promise<void>
-  updatePasswordAgingRule: (workspaceId: WorkspaceUuid, days: number) => Promise<void>
+  updatePasswordAgingRule: (workspaceId: WorkspaceUuid, days: number | null) => Promise<void>
   assignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
   batchAssignWorkspace: (data: [AccountUuid, WorkspaceUuid, AccountRole][]) => Promise<void>
   updateWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
@@ -455,7 +458,7 @@ export interface LoginInfoWorkspace {
 
   progress?: number
   branding?: string
-  passwordAgingRule?: number
+  passwordAgingRule?: number | null
 }
 
 export interface LoginInfoWithWorkspaces extends LoginInfo {

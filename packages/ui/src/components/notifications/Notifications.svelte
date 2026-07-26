@@ -14,7 +14,7 @@
 </script>
 
 <slot />
-<div class="notifications">
+<div class="notifications no-print">
   {#each Object.entries(positionByClassName) as [className, position]}
     <div class={className} style:z-index={9999}>
       {#each $store.slice(0, maxVisibleNotifications) as notification (notification.id)}

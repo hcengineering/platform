@@ -141,6 +141,14 @@
         "BackupFileDownload": "파일 다운로드",
         "BackupFiles": "백업 파일",
         "BackupNoBackup": "현재 사용 가능한 백업이 없습니다.",
+        "BackupDownloadAll": "전체 백업 다운로드",
+        "BackupPreparingDownload": "백업 준비 중…",
+        "BackupDownloadAllInfo": "모든 백업 파일을 컴퓨터에 보관할 수 있는 단일 .zip 아카이브로 다운로드합니다.",
+        "BackupCopyScript": "다운로드 스크립트 복사",
+        "BackupCopyToken": "토큰 복사",
+        "BackupScriptInfo": "curl로 모든 백업 파일을 다운로드하는 셸 스크립트입니다. 저장한 후 터미널에서 실행하세요. 백업 토큰을 입력하라는 메시지가 표시되므로 스크립트에 비밀 정보가 저장되지 않습니다.",
+        "BackupRestoreGuide": "백업 및 복원 가이드",
+        "BackupRestoreGuideInfo": "이 백업을 다운로드하여 다른 Huly 인스턴스로 복원하는 단계별 안내입니다.",
         "NonBackupedBlobs": "백업되지 않은 Blob",
         "Calendar": "캘린더",
         "StartOfTheWeek": "주 시작일",
@@ -239,6 +247,8 @@
         "TwoFactorAuthEnabled": "2단계 인증이 활성화됨",
         "TwoFactorAuthDisabled": "2단계 인증이 비활성화됨",
         "ShowQRCode": "QR 코드 표시",
-        "EnterVerificationCode": "인증 코드 입력"
+        "EnterVerificationCode": "인증 코드 입력",
+        "OverrideAttribute": "속성 재정의",
+        "Required": "필수"
     }
 }

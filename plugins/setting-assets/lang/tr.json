@@ -141,6 +141,14 @@
     "BackupFileDownload": "Dosya İndir",
     "BackupFiles": "Yedek Dosyaları",
     "BackupNoBackup": "Şu anda kullanılabilir yedek yok.",
+    "BackupDownloadAll": "Tam yedeği indir",
+    "BackupPreparingDownload": "Yedek hazırlanıyor…",
+    "BackupDownloadAllInfo": "Tüm yedek dosyalarını bilgisayarınızda saklayabileceğiniz tek bir .zip arşivi olarak indirin.",
+    "BackupCopyScript": "İndirme betiğini kopyala",
+    "BackupCopyToken": "Jetonu kopyala",
+    "BackupScriptInfo": "Tüm yedek dosyalarını curl ile indiren bir kabuk betiği. Kaydedip bir terminalde çalıştırın; yedek jetonunuzu ister, bu nedenle betikte hiçbir gizli bilgi saklanmaz.",
+    "BackupRestoreGuide": "Yedekleme ve geri yükleme kılavuzu",
+    "BackupRestoreGuideInfo": "Bu yedeği indirmek ve başka bir Huly örneğine geri yüklemek için adım adım talimatlar.",
     "NonBackupedBlobs": "Yedeklenmemiş blob'lar",
     "Calendar": "Takvim",
     "StartOfTheWeek": "Haftanın başlangıcı",
@@ -239,6 +247,8 @@
     "TwoFactorAuthEnabled": "İki faktörlü kimlik doğrulama etkin",
     "TwoFactorAuthDisabled": "İki faktörlü kimlik doğrulama devre dışı",
     "ShowQRCode": "QR kodu göster",
-    "EnterVerificationCode": "Doğrulama kodunu gir"
+    "EnterVerificationCode": "Doğrulama kodunu gir",
+    "OverrideAttribute": "Özniteliği geçersiz kıl",
+    "Required": "Zorunlu"
   }
 }

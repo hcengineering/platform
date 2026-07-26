@@ -20,7 +20,7 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { Button, DropdownLabels, DropdownTextItem, getCurrentLocation, navigate, showPopup } from '@hcengineering/ui'
   import card from '../plugin'
-  import NewVersionPopup from './NewVersionPopup.svelte'
+  import { createNewVersion } from '../utils'
 
   export let value: Card
 
@@ -70,10 +70,12 @@
     }
   }
 
-  function newVersion (): void {
-    showPopup(NewVersionPopup, {
-      value
-    })
+  async function newVersion (): Promise<void> {
+    const _id = await createNewVersion(value)
+    const loc = getCurrentLocation()
+    loc.path[2] = cardId
+    loc.path[3] = _id
+    navigate(loc)
   }
 </script>
 

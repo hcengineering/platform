@@ -22,6 +22,7 @@
   import {
     Component,
     deviceOptionsStore as deviceInfo,
+    printModeStore,
     Panel,
     Scroller,
     resizeObserver,
@@ -122,6 +123,8 @@
       startScrollHeightCheck()
     }
   })
+
+  $: max = useMaxWidth === true || $printModeStore
 </script>
 
 <Panel
@@ -250,7 +253,7 @@
   </svelte:fragment>
 
   {#if $deviceInfo.isMobile}
-    <div bind:this={content} class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
+    <div bind:this={content} class="popupPanel-body__mobile-content clear-mins" class:max>
       <slot />
       {#if showActivity}
         {#key object._id}
@@ -265,7 +268,7 @@
     <div
       bind:this={content}
       class={contentClasses ?? 'popupPanel-body__main-content py-8 clear-mins'}
-      class:max={useMaxWidth}
+      class:max
       class:side-content-space={sideContentSpace > 0}
       style:--side-content-space={`${sideContentSpace}px`}
     >
@@ -296,7 +299,7 @@
     >
       <div
         class={contentClasses ?? 'popupPanel-body__main-content py-8'}
-        class:max={useMaxWidth}
+        class:max
         class:side-content-space={sideContentSpace > 0}
         style:--side-content-space={`${sideContentSpace}px`}
         use:resizeObserver={(element) => {

@@ -139,6 +139,7 @@
   }
 
   let resultOptions = options
+  let resultQuery: DocumentQuery<Doc> = query
 
   const update = reduceCalls(async function (
     _class: Ref<Class<Doc>>,
@@ -148,10 +149,12 @@
     lookup: Lookup<Doc>,
     associations: AssociationQuery[] | undefined,
     limit: number,
-    options: FindOptions<Doc> | undefined
+    options: FindOptions<Doc> | undefined,
+    viewOptionsConfig: ViewOptionModel[] | undefined,
+    viewOptions: ViewOptions | undefined
   ) {
     const p = await getResultQuery(hierarchy, query, viewOptionsConfig, viewOptions)
-    const resultQuery = mergeQueries(p, query)
+    resultQuery = mergeQueries(p, query)
     loading += q.query(
       _class,
       resultQuery,
@@ -170,7 +173,18 @@
       ? 1
       : 0
   })
-  $: void update(_class, query, _sortKey, sortOrder, lookup, associations, limit, resultOptions)
+  $: void update(
+    _class,
+    query,
+    _sortKey,
+    sortOrder,
+    lookup,
+    associations,
+    limit,
+    resultOptions,
+    viewOptionsConfig,
+    viewOptions
+  )
 
   $: void getResultOptions(options, viewOptionsConfig, viewOptions).then((p) => {
     resultOptions = p
@@ -181,7 +195,7 @@
   const qSlow = createQuery()
   $: qSlow.query(
     _class,
-    query,
+    resultQuery,
     (result) => {
       total = result.total
       if (totalQuery === undefined) {
@@ -217,6 +231,13 @@
       checked = []
     }
     const items = checked.length > 0 ? checked : object
+    showMenu(ev, { object: items, baseMenuClass })
+  }
+
+  const showHeaderContextMenu = (ev: MouseEvent): void => {
+    if (readonly) return
+    if (!enableChecking || objects.length === 0) return
+    const items = checked.length > 0 ? checked : objects
     showMenu(ev, { object: items, baseMenuClass })
   }
 
@@ -308,7 +329,7 @@
     if (attr === undefined) return
     if (attribute.collectionAttr) return
     if (attribute.isLookup) return
-    if (attribute?.attribute?.readonly === true) return
+    if (attribute.attribute?.readonly === true) return
     const key = attribute.castRequest ? attribute.key.substring(attribute.castRequest.length + 1) : attribute.key
     return (value: any) => {
       onChange(value, doc, key, attr)
@@ -390,7 +411,7 @@
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
           {#if enableChecking || showNotification}
-            <th>
+            <th on:contextmenu={showHeaderContextMenu}>
               {#if enableChecking && objects?.length > 0}
                 <div class="antiTable-cells__checkCell" class:checkall={checkedSet.size > 0}>
                   <CheckBox

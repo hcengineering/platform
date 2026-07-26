@@ -28,12 +28,12 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
-  let selected: Ref<MasterTag> = value._class
+  let selected: Ref<MasterTag> | null = value._class
 
   $: mapping = buildMapping(selected, value._class)
 
   async function changeType (): Promise<void> {
-    if (selected === undefined || selected === value._class) return
+    if (selected == null || selected === value._class) return
     const cloned = hierarchy.clone(value)
     applyMapping(cloned, mapping)
     const update = fillDefaults(hierarchy, cloned, selected)
@@ -54,8 +54,8 @@
     }
   }
 
-  function buildMapping (selected: Ref<MasterTag> | undefined, current: Ref<MasterTag>): Record<string, AnyAttribute> {
-    if (selected === undefined || selected === current) return {}
+  function buildMapping (selected: Ref<MasterTag> | null, current: Ref<MasterTag>): Record<string, AnyAttribute> {
+    if (selected == null || selected === current) return {}
     const selectedAttributes = hierarchy.getAllAttributes(selected, card.class.Card)
     const currentAttributes = hierarchy.getAllAttributes(current, card.class.Card)
     const res: Record<string, AnyAttribute> = {}
@@ -81,7 +81,7 @@
   label={card.string.ChangeType}
   okLabel={ui.string.Ok}
   okAction={changeType}
-  canSave={selected !== undefined && selected !== value._class}
+  canSave={selected != null && selected !== value._class}
   gap={'gapV-4'}
   on:close={() => {
     dispatch('close')
@@ -91,5 +91,5 @@
   <div class="mb-2">
     <Label label={card.string.ChangeTypeWarning} />
   </div>
-  <TypeSelector bind:value={selected} />
+  <TypeSelector bind:value={selected} excludeBaseTypes />
 </CardModal>

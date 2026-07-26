@@ -132,6 +132,14 @@
     "BackupFileDownload": "Baixar Arquivo",
     "BackupFiles": "Arquivos de Backup",
     "BackupNoBackup": "Não há backups disponíveis no momento.",
+    "BackupDownloadAll": "Baixar backup completo",
+    "BackupPreparingDownload": "Preparando backup…",
+    "BackupDownloadAllInfo": "Baixe todos os arquivos de backup em um único arquivo .zip que você pode guardar no seu computador.",
+    "BackupCopyScript": "Copiar script de download",
+    "BackupCopyToken": "Copiar token",
+    "BackupScriptInfo": "Um script de shell que baixa todos os arquivos de backup com curl. Salve-o e execute-o em um terminal; ele solicitará seu token de backup, então nenhum segredo é armazenado no script.",
+    "BackupRestoreGuide": "Guia de backup e restauração",
+    "BackupRestoreGuideInfo": "Instruções passo a passo para baixar este backup e restaurá-lo em outra instância do Huly.",
     "NonBackupedBlobs": "Blobs sem backup",
     "Calendar": "Calendário",
     "StartOfTheWeek": "Início da semana",
@@ -230,6 +238,8 @@
     "TwoFactorAuthEnabled": "Autenticação de dois fatores está ativada",
     "TwoFactorAuthDisabled": "Autenticação de dois fatores está desativada",
     "ShowQRCode": "Mostrar código QR",
-    "EnterVerificationCode": "Inserir código de verificação"
+    "EnterVerificationCode": "Inserir código de verificação",
+    "OverrideAttribute": "Sobrescrever atributo",
+    "Required": "Obrigatório"
   }
 }

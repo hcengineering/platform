@@ -257,6 +257,7 @@ const calendarPlugin = plugin(calendarId, {
     PersonsLabel: '' as IntlString,
     EventNumber: '' as IntlString,
     Reminders: '' as IntlString,
+    Reminder: '' as IntlString,
     Today: '' as IntlString,
     Visibility: '' as IntlString,
     Public: '' as IntlString,

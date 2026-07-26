@@ -274,6 +274,10 @@ export class TEmployee extends TPerson implements Employee {
     position?: string | null
 
   declare personUuid?: AccountUuid
+
+  @Prop(TypeString(), contact.string.Timezone)
+  @Hidden()
+    timezone?: string
 }
 
 @Model(contact.class.ContactsTab, core.class.Doc, DOMAIN_MODEL)

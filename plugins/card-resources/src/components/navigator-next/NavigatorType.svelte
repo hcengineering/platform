@@ -25,6 +25,7 @@
   import type { NavigatorConfig } from '../../types'
   import cardPlugin from '../../plugin'
   import CreateCardPopup from '../CreateCardPopup.svelte'
+  import { isBaseTypeWithSubtypes } from '../../utils'
 
   export let type: MasterTag
   export let level: number = -1
@@ -39,13 +40,18 @@
   let activeAction: string | undefined = undefined
 
   async function handleCreateCard (): Promise<void> {
-    showPopup(CreateCardPopup, { type: type._id, space: space?._id }, 'center', async (result) => {
-      if (result !== undefined) {
-        const card = await getClient().findOne(cardPlugin.class.Card, { _id: result })
-        if (card === undefined) return
-        dispatch('selectCard', card)
+    showPopup(
+      CreateCardPopup,
+      { type: type._id, space: space?._id, changeType: isBaseTypeWithSubtypes(getClient().getHierarchy(), type._id) },
+      'center',
+      async (result) => {
+        if (result !== undefined) {
+          const card = await getClient().findOne(cardPlugin.class.Card, { _id: result })
+          if (card === undefined) return
+          dispatch('selectCard', card)
+        }
       }
-    })
+    )
   }
 
   async function getActions (lang: string): Promise<Action[]> {

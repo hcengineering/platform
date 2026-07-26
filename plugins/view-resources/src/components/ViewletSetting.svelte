@@ -252,6 +252,67 @@
     return typeof value === 'string' ? value : value?.key
   }
 
+  function getAttributeKey (key: string): string {
+    if (key.startsWith('$lookup.')) {
+      return key.slice('$lookup.'.length)
+    }
+    const dotIndex = key.lastIndexOf('.')
+    return dotIndex === -1 ? key : key.slice(dotIndex + 1)
+  }
+
+  function isSourceAttribute (sourceClass: Ref<Class<Doc>>, key: string): boolean {
+    return hierarchy.getAllAttributes(sourceClass).has(getAttributeKey(key))
+  }
+
+  function syncConfigOrder (
+    sourceClass: Ref<Class<Doc>>,
+    previousSourceConfig: Array<BuildModelKey | string>,
+    sourceConfig: Array<BuildModelKey | string>,
+    targetConfig: Array<BuildModelKey | string>
+  ): Array<BuildModelKey | string> {
+    const sourceKeys = new Set(sourceConfig.map(getKey).filter((it): it is string => it !== undefined))
+    const previousSourceKeys = new Set(previousSourceConfig.map(getKey).filter((it): it is string => it !== undefined))
+    const targetByKey = new Map<string, Array<{ item: BuildModelKey | string, index: number }>>()
+    for (const [index, item] of targetConfig.entries()) {
+      const key = getKey(item)
+      if (key === undefined) continue
+      const items = targetByKey.get(key) ?? []
+      items.push({ item, index })
+      targetByKey.set(key, items)
+    }
+
+    const sourceItems: Array<BuildModelKey | string> = []
+    const usedIndexes = new Set<number>()
+    for (const sourceItem of sourceConfig) {
+      const key = getKey(sourceItem)
+      if (key === undefined) continue
+
+      const targetItem = targetByKey.get(key)?.shift()
+      sourceItems.push(targetItem?.item ?? sourceItem)
+      if (targetItem !== undefined) {
+        usedIndexes.add(targetItem.index)
+      }
+    }
+
+    const synced = [...sourceItems]
+    for (const [index, targetItem] of targetConfig.entries()) {
+      if (usedIndexes.has(index)) continue
+
+      const key = getKey(targetItem)
+      if (
+        key !== undefined &&
+        !sourceKeys.has(key) &&
+        (previousSourceKeys.has(key) || isSourceAttribute(sourceClass, key))
+      ) {
+        continue
+      }
+
+      synced.splice(Math.min(index, synced.length), 0, targetItem)
+    }
+
+    return synced
+  }
+
   function isExist (result: Config[], newValue: Config): boolean {
     if (!isAttribute(newValue)) return false
     const newValueKey = getKey(newValue.value)
@@ -391,6 +452,45 @@
     return preference === undefined ? result : setStatus(result, preference)
   }
 
+  async function upsertViewletPreference (
+    viewletId: Ref<Viewlet>,
+    config: Array<BuildModelKey | string>
+  ): Promise<void> {
+    const preference = preferences.find((p) => p.attachedTo === viewletId)
+    if (preference !== undefined) {
+      if (!deepEqual(preference.config, config)) {
+        await client.update(preference, {
+          config
+        })
+      }
+    } else {
+      await client.createDoc(view.class.ViewletPreference, core.space.Workspace, {
+        attachedTo: viewletId,
+        config
+      })
+    }
+  }
+
+  async function syncChildViewletPreferences (
+    sourceViewlet: Viewlet,
+    previousSourceConfig: Array<BuildModelKey | string>,
+    sourceConfig: Array<BuildModelKey | string>
+  ): Promise<void> {
+    const descendants = new Set(
+      hierarchy.getDescendants(sourceViewlet.attachTo).filter((it) => it !== sourceViewlet.attachTo)
+    )
+    for (const childViewlet of viewlets) {
+      if (!descendants.has(childViewlet.attachTo)) continue
+
+      const preference = preferences.find((p) => p.attachedTo === childViewlet._id)
+      const targetConfig = preference?.config ?? childViewlet.config
+      const config = syncConfigOrder(sourceViewlet.attachTo, previousSourceConfig, sourceConfig, targetConfig)
+      if (deepEqual(targetConfig, config)) continue
+
+      await upsertViewletPreference(childViewlet._id, config)
+    }
+  }
+
   async function addAssociations (
     result: Config[],
     _class: Ref<Class<Doc>>,
@@ -437,16 +537,14 @@
       }
       return value
     })
-    const preference = preferences.find((p) => p.attachedTo === viewletId)
-    if (preference !== undefined) {
-      await client.update(preference, {
-        config
-      })
-    } else {
-      await client.createDoc(view.class.ViewletPreference, core.space.Workspace, {
-        attachedTo: viewletId,
-        config
-      })
+    const selectedViewlet = viewlets.find((it) => it._id === viewletId)
+    const previousSourceConfig =
+      preferences.find((p) => p.attachedTo === viewletId)?.config ?? selectedViewlet?.config ?? []
+
+    await upsertViewletPreference(viewletId, config)
+
+    if (selectedViewlet !== undefined) {
+      await syncChildViewletPreferences(selectedViewlet, previousSourceConfig, config)
     }
   }
 

@@ -51,7 +51,7 @@ import {
   createStorageBackupStorage,
   restore
 } from '@hcengineering/server-backup'
-import serverClientPlugin, { getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
+import serverClientPlugin, { BlobClient, getAccountClient, getTransactorEndpoint } from '@hcengineering/server-client'
 import {
   createBackupPipeline,
   createEmptyBroadcastOps,
@@ -84,6 +84,8 @@ import core, {
   systemAccountUuid,
   TxOperations,
   type AccountUuid,
+  type Class,
+  type Client,
   type Data,
   type Doc,
   type PersonId,
@@ -1129,6 +1131,180 @@ export function devTool (
     })
 
   program
+    .command('validate-workspace <workspace>')
+    .description('Validate a (restored) workspace: connect as system, check model, data counts and blob download')
+    .option('--blobs <blobs>', 'Number of sample blobs to download-check (0 to skip)', '5')
+    .option('--blob-limit <blobLimit>', 'Stop enumerating blobs after this many (0 = iterate all)', '0')
+    .action(async (workspace: string, cmd: { blobs: string, blobLimit: string }) => {
+      await withAccountDatabase(async (db) => {
+        const ws = await getWorkspace(db, workspace)
+        if (ws === null) {
+          throw new Error(`workspace ${workspace} not found`)
+        }
+        const wsIds = { uuid: ws.uuid, dataId: ws.dataId, url: ws.url ?? '' }
+
+        const failures: string[] = []
+        const pass = (m: string): void => {
+          console.log(`  ✓ ${m}`)
+        }
+        const fail = (m: string): void => {
+          console.error(`  ✗ ${m}`)
+          failures.push(m)
+        }
+        const info = (m: string): void => {
+          console.log(`  • ${m}`)
+        }
+        const warn = (m: string): void => {
+          console.warn(`  ! ${m}`)
+        }
+        const emsg = (err: any): string => (err instanceof Error ? err.message : String(err))
+
+        console.log(`Validating workspace ${ws.url ?? ws.uuid} (${ws.uuid})`)
+
+        if ((process.env.STORAGE_CONFIG ?? '').trim() === '') {
+          warn('STORAGE_CONFIG is not set — storage falls back to default minio; blob results may be wrong')
+        }
+
+        const workspaceStorage: StorageAdapter = buildStorageFromConfig(storageConfigFromEnv())
+        let connection: Client | undefined
+        try {
+          // 1. Connectivity: resolve transactor endpoint and connect as system user
+          let endpoint: string
+          try {
+            endpoint = await getWorkspaceTransactorEndpoint(ws.uuid)
+            pass('resolved transactor endpoint')
+          } catch (err: any) {
+            fail(`cannot resolve transactor endpoint: ${emsg(err)}`)
+            process.exitCode = 1
+            return
+          }
+
+          try {
+            connection = await connect(endpoint, ws.uuid, undefined, { service: 'tool', admin: 'true' })
+            pass('connected to transactor as system user')
+          } catch (err: any) {
+            fail(`connect failed: ${emsg(err)}`)
+            process.exitCode = 1
+            return
+          }
+
+          const ops = new TxOperations(connection, core.account.System)
+
+          // 2. Model loads and hierarchy is populated
+          try {
+            const classes = ops.getHierarchy().getDescendants(core.class.Doc).length
+            if (classes > 0) {
+              pass(`model loaded: ${classes} classes in hierarchy`)
+            } else {
+              fail('model loaded but hierarchy is empty')
+            }
+          } catch (err: any) {
+            fail(`model load failed: ${emsg(err)}`)
+          }
+
+          // 3. Read path: count key domains
+          const countOf = async (label: string, _class: Ref<Class<Doc>>): Promise<number> => {
+            try {
+              const r = await ops.findAll(_class, {}, { limit: 1, total: true })
+              info(`${label}: ${r.total}`)
+              return r.total
+            } catch (err: any) {
+              fail(`findAll ${label} failed: ${emsg(err)}`)
+              return -1
+            }
+          }
+          await countOf('transactions (Tx)', core.class.Tx)
+          await countOf('spaces (Space)', core.class.Space)
+
+          // 4. Verify blobs count
+          const nBlobs = parseInt(cmd.blobs)
+          const blobLimit = parseInt(cmd.blobLimit)
+          const hasBlobLimit = !Number.isNaN(blobLimit) && blobLimit > 0
+          try {
+            const blobClient = new BlobClient(workspaceStorage, wsIds)
+            const iterator = await workspaceStorage.listStream(toolCtx, wsIds)
+            let blobCount = 0
+            let capped = false
+            const sample: Array<{ id: Ref<Doc>, size: number }> = []
+            try {
+              while (true) {
+                const batch = await iterator.next()
+                if (batch.length === 0) {
+                  break
+                }
+                for (const b of batch) {
+                  blobCount++
+                  if (!Number.isNaN(nBlobs) && nBlobs > 0 && sample.length < nBlobs) {
+                    sample.push({ id: b._id, size: b.size })
+                  }
+                  if (hasBlobLimit && blobCount >= blobLimit) {
+                    capped = true
+                    break
+                  }
+                }
+                if (capped) {
+                  break
+                }
+              }
+            } finally {
+              await iterator.close()
+            }
+
+            if (capped) {
+              info(`blobs in storage: >= ${blobCount} (stopped at --blob-limit ${blobLimit})`)
+            } else {
+              info(`blobs in storage: ${blobCount}`)
+            }
+            if (blobCount === 0) {
+              fail(
+                'no blobs found in storage — either the workspace has no files, ' +
+                  "or STORAGE_CONFIG does not point at this workspace's storage"
+              )
+            } else if (!Number.isNaN(nBlobs) && nBlobs > 0) {
+              let okCount = 0
+              for (const s of sample) {
+                try {
+                  let bytes = 0
+                  await blobClient.writeTo(toolCtx, s.id, s.size, {
+                    write: (buffer: Buffer, cb: (err?: any) => void) => {
+                      bytes += buffer.length
+                      cb()
+                    },
+                    end: (cb: () => void) => {
+                      cb()
+                    }
+                  })
+                  if (bytes === s.size) {
+                    okCount++
+                  } else {
+                    fail(`blob ${s.id}: downloaded ${bytes} of ${s.size} bytes`)
+                  }
+                } catch (err: any) {
+                  fail(`blob ${s.id} download failed: ${emsg(err)}`)
+                }
+              }
+              if (okCount === sample.length && okCount > 0) {
+                pass(`downloaded ${okCount}/${sample.length} sample blobs, sizes match metadata`)
+              }
+            }
+          } catch (err: any) {
+            fail(`blob storage check failed: ${emsg(err)}`)
+          }
+        } finally {
+          await connection?.close()
+          await workspaceStorage.close()
+        }
+
+        if (failures.length > 0) {
+          console.error(`\nVALIDATION FAILED: ${failures.length} issue(s)`)
+          process.exitCode = 1
+        } else {
+          console.log('\nVALIDATION PASSED')
+        }
+      })
+    })
+
+  program
     .command('backup-restore <dirName> <workspace> [date]')
     .option('-m, --merge', 'Enable merge of remote and backup content.', false)
     .option('-p, --parallel <parallel>', 'Enable merge of remote and backup content.', '1')
@@ -1136,6 +1312,8 @@ export function devTool (
     .option('-i, --include <include>', 'A list of ; separated domain names to include during backup', '*')
     .option('-s, --skip <skip>', 'A list of ; separated domain names to skip during backup', '')
     .option('--upgrade', 'Upgrade workspace', false)
+    .option('--noqueue', 'NoQueue', false)
+    .option('--accounts', 'Restore accounts (person/socialId) from backup', false)
     .option(
       '--history-file <historyFile>',
       'Store blob send info into file. Will skip already send documents.',
@@ -1156,8 +1334,16 @@ export function devTool (
           useStorage: string
           historyFile: string
           upgrade: boolean
+          noqueue: boolean
+          accounts: boolean
         }
       ) => {
+        if ((process.env.STORAGE_CONFIG ?? '').trim() === '') {
+          console.warn(
+            'WARNING: STORAGE_CONFIG is not set — blob storage falls back to default minio. ' +
+              'Restored blobs may be written to the wrong storage. Set STORAGE_CONFIG to match the transactor before restoring.'
+          )
+        }
         await withAccountDatabase(async (db) => {
           const { txes, dbUrl } = prepareTools()
           const ws = await getWorkspace(db, workspaceId)
@@ -1174,10 +1360,10 @@ export function devTool (
           const storage = await createFileBackupStorage(dirName)
           const storageConfig = storageConfigFromEnv()
 
-          const queue = getPlatformQueue('tool', ws.region)
-          const wsProducer = queue.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
+          const queue = !cmd.noqueue ? getPlatformQueue('tool', ws.region) : undefined
+          const wsProducer = queue?.getProducer<QueueWorkspaceMessage>(toolCtx, QueueTopic.Workspace)
 
-          await wsProducer.send(toolCtx, ws.uuid, [workspaceEvents.restoring()])
+          await wsProducer?.send(toolCtx, ws.uuid, [workspaceEvents.restoring()])
 
           const workspaceStorage: StorageAdapter = buildStorageFromConfig(storageConfig)
 
@@ -1202,7 +1388,7 @@ export function devTool (
             }
             await sendTransactorEvent(workspace, 'force-maintenance')
 
-            await restore(toolCtx, pipeline, wsIds, storage, {
+            await restore(toolCtx, pipeline, wsIds, storage, cmd.accounts ? db : undefined, {
               date: parseInt(date ?? '-1'),
               merge: cmd.merge,
               parallel: parseInt(cmd.parallel ?? '1'),
@@ -1219,12 +1405,12 @@ export function devTool (
             }
 
             console.log('workspace restored')
-            await wsProducer.send(toolCtx, ws.uuid, [workspaceEvents.restored()])
+            await wsProducer?.send(toolCtx, ws.uuid, [workspaceEvents.restored()])
           } catch (err) {
             toolCtx.error('failed to restore', { err })
           }
           await pipeline?.close()
-          await queue.shutdown()
+          await queue?.shutdown()
           await workspaceStorage?.close()
         })
       }

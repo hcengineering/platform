@@ -15,6 +15,7 @@
 
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import serverNotification, { PUSH_NOTIFICATION_TITLE_SIZE } from '@hcengineering/server-notification'
+import type { ReceiverInfo } from '@hcengineering/server-notification'
 import {
   AccountUuid,
   Class,
@@ -49,6 +50,7 @@ import contact, {
 } from '@hcengineering/contact'
 import { AvailableProvidersCache, AvailableProvidersCacheKey, getTranslatedNotificationContent } from './index'
 import { getPerson } from '@hcengineering/server-contact'
+import { getAllowedProviders, getNotificationProviderControl, getReceiversInfo } from './utils'
 
 async function createPushFromInbox (
   control: TriggerControl,
@@ -235,25 +237,51 @@ export async function PushNotificationsHandler (
 ): Promise<Tx[]> {
   const availableProviders: AvailableProvidersCache = control.contextCache.get(AvailableProvidersCacheKey) ?? new Map()
 
-  const all: InboxNotification[] = txes
-    .map((tx) => TxProcessor.createDoc2Doc(tx))
-    .filter(
-      (it) =>
-        availableProviders.get(it._id)?.find((p) => p === notification.providers.PushNotificationProvider) !== undefined
-    )
+  const all: InboxNotification[] = txes.map((tx) => TxProcessor.createDoc2Doc(tx))
 
-  if (all.length === 0) {
+  // First pass: use cache if present.
+  const pushEnabled: InboxNotification[] = all.filter(
+    (it) =>
+      availableProviders.get(it._id)?.find((p) => p === notification.providers.PushNotificationProvider) !== undefined
+  )
+
+  // Fallback: if cache doesn't have the provider info (e.g. scheduled notifications created outside tx-trigger paths),
+  // compute allowed providers from notification type + user settings.
+  if (pushEnabled.length < all.length) {
+    const notificationControl = await getNotificationProviderControl(control.ctx, control)
+    const receivers: ReceiverInfo[] = await getReceiversInfo(control.ctx, [...new Set(all.map((n) => n.user))], control)
+    const receiverByAccount = new Map(receivers.map((r) => [r.account, r]))
+
+    for (const n of all) {
+      if (availableProviders.get(n._id) !== undefined) continue
+      if (pushEnabled.includes(n)) continue
+
+      const type = (n.types ?? [])[0]
+      if (type === undefined) continue
+
+      const notificationType = control.modelDb.getObject(type)
+      const receiver = receiverByAccount.get(n.user)
+      if (receiver === undefined) continue
+
+      const allowedProviders = getAllowedProviders(control, receiver.socialIds, notificationType, notificationControl)
+      if (allowedProviders.includes(notification.providers.PushNotificationProvider)) {
+        pushEnabled.push(n)
+      }
+    }
+  }
+
+  if (pushEnabled.length === 0) {
     return []
   }
 
-  const receivers = new Set(all.map((it) => it.user))
+  const receivers = new Set(pushEnabled.map((it) => it.user))
   const subscriptions = (await control.queryFind(control.ctx, notification.class.PushSubscription, {})).filter((it) =>
     receivers.has(it.user)
   )
 
   const res: Tx[] = []
 
-  for (const inboxNotification of all) {
+  for (const inboxNotification of pushEnabled) {
     const { user } = inboxNotification
     const userSubscriptions = subscriptions.filter((it) => it.user === user)
 

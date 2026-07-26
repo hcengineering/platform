@@ -1,0 +1,19 @@
+{
+  "status": {
+    "RequiredField": "Wymagane pole {field}",
+    "FieldsDoNotMatch": "Pole {field} nie pasuje do pola {field2}",
+    "ConnectingToServer": "Łączenie z serwerem...."
+  },
+  "string": {
+    "CreateWorkspace": "Stwórz przestrzeń roboczą",
+    "LastName": "Nazwisko",
+    "FirstName": "Imię",
+    "Workspace": "Nazwa przestrzeni roboczej",
+    "FillInProfile": "Wypełnij swój profil",
+    "SetUpPassword": "Ustaw hasło",
+    "Next": "Dalej",
+    "Skip": "Pomiń",
+    "SignUpCompleted": "Rejestracja zakończona",
+    "StartUsingHuly": "Rozpocznij korzystanie z Huly"
+  }
+}
