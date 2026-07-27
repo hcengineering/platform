@@ -60,13 +60,14 @@
     Menu,
     noCategory,
     openDoc,
+    resultIssueCountStore,
     SelectDirection,
     setGroupByValues,
     showMenu,
     statusStore
   } from '@hcengineering/view-resources'
   import { ChatMessagesPresenter } from '@hcengineering/chunter-resources'
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
 
   import tracker from '../../plugin'
   import { activeProjects } from '../../utils'
@@ -143,6 +144,17 @@
   // Category information only
   let tasks: DocWithRank[] = []
 
+  // Feed the shared result-count store so IssuesView can show
+  // its SearchEmptyState card when the user's search yields zero hits.
+  // The count is written from the same fast-query callback that sets the
+  // data source (see docsQuery below), not reactively off `tasks` — the old
+  // coupling read `tasks` (fast + lagging slow query) while gating on a flag
+  // set by the fast query alone, so a stale slow-query result could skew the
+  // count right after a search changed.
+  onDestroy(() => {
+    resultIssueCountStore.set(-1)
+  })
+
   $: groupByDocs = groupBy(tasks, groupByKey, categories)
 
   let fastDocs: DocWithRank[] = []
@@ -171,6 +183,7 @@
     (res) => {
       fastDocs = res
       fastQueryIds = new Set(res.map((it) => it._id))
+      resultIssueCountStore.set(res.length)
     },
     { ...categoryQueryOptions, limit: 1000 }
   )

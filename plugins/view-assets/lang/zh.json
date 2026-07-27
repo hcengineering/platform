@@ -158,6 +158,9 @@
     "RoleLabel": "角色：{role}",
     "ForbidAttributeChanges": "禁止更改属性: ",
     "AllowAttributeChanges": "允许更改属性: ",
-    "RelationshipTable": "关系表"
+    "RelationshipTable": "关系表",
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "添加过滤器",
+    "HiddenFilters": "隐藏的过滤器"
   }
 }

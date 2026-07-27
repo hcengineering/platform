@@ -56,6 +56,8 @@ export default mergeIds(viewId, view, {
     RestoreDefaults: '' as IntlString,
     Filter: '' as IntlString,
     ClearFilters: '' as IntlString,
+    AddFilter: '' as IntlString,
+    HiddenFilters: '' as IntlString,
     FilterIsNot: '' as IntlString,
     FilterIsEither: '' as IntlString,
     FilterIsEitherPlural: '' as IntlString,
@@ -104,7 +106,8 @@ export default mergeIds(viewId, view, {
     EmojiCategory: '' as IntlString,
     NumberItems: '' as IntlString,
     ToViewCommands: '' as IntlString,
-    NoRelations: '' as IntlString
+    NoRelations: '' as IntlString,
+    FilterOverflowBadge: '' as IntlString
   },
   function: {
     CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>,

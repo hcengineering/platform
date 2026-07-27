@@ -3,11 +3,29 @@
   import { Asset, IntlString, translateCB } from '@hcengineering/platform'
   import { ComponentExtensions } from '@hcengineering/presentation'
   import { Issue, TrackerEvents } from '@hcengineering/tracker'
-  import { IModeSelector, themeStore } from '@hcengineering/ui'
+  import { Button, IconAdd, IModeSelector, SearchInputAdvanced, showPopup, themeStore } from '@hcengineering/ui'
   import { ViewOptions, Viewlet } from '@hcengineering/view'
-  import { FilterBar, SpaceHeader, ViewletContentView, ViewletSettingButton } from '@hcengineering/view-resources'
+  import {
+    FilterBar,
+    FilterButton,
+    InlineFilterChips,
+    SpaceHeader,
+    ViewletContentView,
+    ViewletSettingButton,
+    filterStore,
+    rawSearchTextStore,
+    resultIssueCountStore,
+    searchHighlightEnabledStore,
+    shouldShowSearchEmptyState
+  } from '@hcengineering/view-resources'
+  import { onDestroy } from 'svelte'
   import tracker from '../../plugin'
   import CreateIssue from '../CreateIssue.svelte'
+  import SearchEmptyState from '../SearchEmptyState.svelte'
+
+  function newIssue (): void {
+    showPopup(CreateIssue, { space, shouldSaveDraft: true }, 'top')
+  }
 
   export let space: Ref<Space> | undefined = undefined
   export let query: DocumentQuery<Issue> = {}
@@ -20,12 +38,38 @@
   const viewlets: WithLookup<Viewlet>[] | undefined = undefined
   let viewOptions: ViewOptions | undefined
 
+  // Single search source-of-truth. The legacy `search` binding still
+  // exists for SpaceHeader's internal SearchInput (only used when
+  // overrideSearch=false — never reached today). The new path uses
+  // searchRaw + searchEncoded written by SearchInputAdvanced. The
+  // `rawSearchTextStore` mirrors searchRaw so HighlightedText consumers
+  // can read it without prop-drilling.
   let search = ''
-  let searchQuery: DocumentQuery<Issue> = { ...query }
-  function updateSearchQuery (search: string): void {
-    searchQuery = search === '' ? { ...query } : { ...query, $search: search }
+  let searchRaw = ''
+  let searchEncoded = ''
+
+  function onSearchChange (e: CustomEvent<{ raw: string, encoded: string }>): void {
+    searchRaw = e.detail.raw
+    searchEncoded = e.detail.encoded
   }
-  $: if (query) updateSearchQuery(search)
+
+  // Sync rawSearchTextStore reactively with the LOCAL searchRaw so that
+  // route/space changes that remount this component immediately reset
+  // the global store to the empty initial value. Previously the store
+  // was only written from onSearchChange(), so the new view mounted
+  // with an empty input field but the global store still held the
+  // PREVIOUS view's search text — Empty-State + match-highlight could
+  // then react to a stale query that the user never typed in this view.
+  $: rawSearchTextStore.set(searchRaw)
+  onDestroy(() => {
+    rawSearchTextStore.set('')
+  })
+
+  let searchQuery: DocumentQuery<Issue> = { ...query }
+  function updateSearchQuery (eff: string): void {
+    searchQuery = eff === '' ? { ...query } : { ...query, $search: eff }
+  }
+  $: if (query !== undefined) updateSearchQuery(searchEncoded)
   let resultQuery: DocumentQuery<Issue> = { ...searchQuery }
 
   $: if (title) {
@@ -33,6 +77,41 @@
       label = res
     })
   }
+
+  // Mirror the Customize-View toggle into a store so HighlightedText
+  // consumers (IssuePresenter) can short-circuit to a no-op when the user
+  // turns highlighting off. Defaults to true on first mount so the toggle's
+  // default-on behaviour is honoured.
+  $: searchHighlightEnabledStore.set((viewOptions?.searchHighlight ?? true) !== false)
+
+  // Reset the result-count store to -1 on every search or filter change.
+  // Without this reset, a stale 0 from a previous query would leave the
+  // empty-state card stuck after the user retyped — the new query is
+  // already in flight but the card reads the old 0 until the viewlet's
+  // LiveQuery callback delivers the new count. The reset re-arms the
+  // sentinel so the card disappears immediately on input change and only
+  // re-appears when the new query confirms zero hits.
+  $: {
+    void searchEncoded
+    void $filterStore
+    resultIssueCountStore.set(-1)
+  }
+
+  // Empty-state is shown only when the user has typed something AND the
+  // viewlet returned zero results. Until the viewlet writes a real count
+  // (List.svelte / KanbanView.svelte) the store stays at -1, so the "no
+  // hits" card cannot flash during initial load before the first query
+  // response.
+  // The card does NOT replace the viewlet: it renders as a non-suppressive
+  // sibling below the always-mounted viewlet (see the comment above
+  // .viewlet-wrap below). It is suppressed entirely when the user turned on
+  // "show empty groups" (shouldShowAll), which keeps the empty groups/columns
+  // visible (its explicit choice wins).
+  $: showSearchEmptyState = shouldShowSearchEmptyState(
+    $rawSearchTextStore,
+    $resultIssueCountStore,
+    viewOptions?.shouldShowAll as boolean | undefined
+  )
 </script>
 
 <SpaceHeader
@@ -47,9 +126,23 @@
   {space}
   {resultQuery}
   {modeSelectorProps}
+  overrideSearch={true}
 >
   <svelte:fragment slot="header-tools">
     <ViewletSettingButton bind:viewOptions bind:viewlet />
+  </svelte:fragment>
+
+  <!-- Search slot is consumed by every Tracker viewlet (List / Kanban), so
+       SearchInputAdvanced + prefix-operators + searchScope + rawSearchTextStore
+       + match-highlight + empty-state all work uniformly across viewlets. -->
+  <svelte:fragment slot="search">
+    <SearchInputAdvanced
+      value={searchRaw}
+      on:change={onSearchChange}
+      scope={viewOptions?.searchScope ?? 'all'}
+      collapsed
+    />
+    <FilterButton _class={tracker.class.Issue} {space} />
   </svelte:fragment>
 
   <svelte:fragment slot="label_selector">
@@ -65,26 +158,139 @@
       extension={tracker.extensions.IssueListHeader}
       props={{ size: 'small', kind: 'tertiary', space }}
     />
+    <Button
+      kind="primary"
+      icon={IconAdd}
+      iconProps={{ size: 'medium' }}
+      shape="round"
+      showTooltip={{ label: tracker.string.NewIssue }}
+      on:click={newIssue}
+    />
   </svelte:fragment>
 </SpaceHeader>
+
+<!-- FilterBar owns the filter→resultQuery data path (debounced via
+     reduceCalls, shared with non-Tracker consumers). hideChips=true
+     suppresses its chip render — chips are mounted separately by
+     InlineFilterChips below the header. -->
 <FilterBar
   _class={tracker.class.Issue}
   {space}
   query={searchQuery}
   {viewOptions}
+  hideChips={true}
   on:change={(e) => (resultQuery = e.detail)}
 />
 <slot name="afterHeader" />
-{#if viewlet && viewOptions}
-  <ViewletContentView
-    _class={tracker.class.Issue}
-    {viewlet}
-    query={resultQuery}
-    {space}
-    {viewOptions}
-    createItemDialog={CreateIssue}
-    createItemLabel={tracker.string.AddIssueTooltip}
-    createItemEvent={TrackerEvents.IssuePlusButtonClicked}
-    createItemDialogProps={{ shouldSaveDraft: true }}
-  />
+<!-- Render the chip strip below the SpaceHeader. Mounted unconditionally
+     so it stays available the instant the user adds a filter; the visual
+     row hides when $filterStore is empty (via [data-empty='true']). -->
+<div class="below-header-filters" data-empty={$filterStore.length === 0}>
+  <InlineFilterChips _class={tracker.class.Issue} {space} />
+</div>
+<!-- Viewlet stays mounted AND laid out regardless of the empty-state card.
+     Two earlier iterations broke live list updates:
+       1. Unmounting the viewlet on a zero-hit search created a self-lock —
+          with no viewlet around, resultIssueCountStore never updated on
+          retype so the card stuck.
+       2. Keeping it mounted but toggling `display: none` starved the
+          virtualized viewlet (List uses a viewport-measured virtual scroller
+          since the row-virtualization tier): while hidden the scroller
+          measures a 0-height viewport and caches it, so when the count returns
+          to a positive value and the wrapper re-shows, the stale 0-height
+          measurement leaves ZERO rows rendered — a freshly created / searched
+          issue never appears in the list even though its LiveQuery already
+          delivered it. That is the uitest regression (issues + mentions
+          "create → search → open" timing out on the row locator).
+     The empty-state is therefore a non-suppressive OVERLAY: the live viewlet
+     is never collapsed, so its scroller always has a real viewport and always
+     renders its rows. The card only ever adds an informational panel; it can
+     never hide a populated list. `display: contents` is kept so
+     ViewletContentView stays a direct flex child of the page-level layout.
+
+     `showSearchEmptyState` therefore only decides whether the CARD renders:
+     with "show empty groups" (shouldShowAll) on it stays false, so the empty
+     groups / Kanban columns remain visible and the card is suppressed — the
+     user's explicit view option wins. -->
+<div class="viewlet-wrap">
+  {#if viewlet && viewOptions}
+    <ViewletContentView
+      _class={tracker.class.Issue}
+      {viewlet}
+      query={resultQuery}
+      {space}
+      {viewOptions}
+      createItemDialog={CreateIssue}
+      createItemLabel={tracker.string.AddIssueTooltip}
+      createItemEvent={TrackerEvents.IssuePlusButtonClicked}
+      createItemDialogProps={{ shouldSaveDraft: true }}
+    />
+  {/if}
+</div>
+{#if showSearchEmptyState}
+  <div class="search-empty-state-overlay">
+    <SearchEmptyState searchText={$rawSearchTextStore} activeFilters={$filterStore.map((f) => f.key.key)} />
+  </div>
 {/if}
+
+<style lang="scss">
+  .below-header-filters {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    min-height: 1.75rem;
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+  .below-header-filters[data-empty='true'] {
+    display: none;
+  }
+  /* `display: contents` lets the wrapper disappear from layout so
+     ViewletContentView stays a direct flex item of the page-level chain.
+     The wrapper is NEVER switched to `display: none` — doing so starved the
+     virtualized viewlet's scroller of a viewport and left rows unrendered
+     after the empty-state dismissed itself (see the template comment above).
+     The empty-state card is a sibling, so the live viewlet's layout is always
+     intact. */
+  .viewlet-wrap {
+    display: contents;
+  }
+  /* Out-of-flow overlay centred on the panel.
+
+     Why an overlay and not an in-flow block: the card must not take layout
+     space away from the viewlet. Displacing or hiding the viewlet starves
+     its virtual scroller — it caches a 0-height viewport and renders zero
+     rows once results come back (the create → search → open regression, see
+     the template comment above). An absolutely positioned card leaves the
+     viewlet's box byte-for-byte identical, so the scroller keeps measuring a
+     real viewport the whole time.
+
+     Why out-of-flow is required at all: the enclosing panel is an
+     `overflow: hidden` flex column, so an in-flow sibling appended after a
+     full-height viewlet lands below the bottom edge and is clipped — the
+     overlay is what makes the card reliably visible.
+
+     Containing block: the panel (`.hulyComponent`) applies
+     `container-type: inline-size`, i.e. layout containment, which makes it
+     the containing block for absolutely positioned descendants. Should that
+     ever change, the fallback is the initial containing block (the viewport)
+     — still on screen, just centred on the window instead of the panel.
+
+     `pointer-events: none` keeps the header, view options and toolbar
+     clickable through the transparent area; the card itself re-enables them.
+     The card only renders at resultCount === 0, so there are no result rows
+     underneath that it could cover. */
+  .search-empty-state-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Above the viewlet's sticky header cells / scrollbars (max 100), below
+       the global popup layer (450+). */
+    z-index: 101;
+    pointer-events: none;
+  }
+  .search-empty-state-overlay > :global(.search-empty-state) {
+    pointer-events: auto;
+  }
+</style>

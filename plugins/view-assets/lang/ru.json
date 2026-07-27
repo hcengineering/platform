@@ -155,6 +155,9 @@
     "RoleLabel": "Роль: {role}",
     "ForbidAttributeChanges": "Запретить изменение: ",
     "AllowAttributeChanges": "Разрешить изменение: ",
-    "RelationshipTable": "Таблица связей"
+    "RelationshipTable": "Таблица связей",
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "Добавить фильтр",
+    "HiddenFilters": "Скрытые фильтры"
   }
 }

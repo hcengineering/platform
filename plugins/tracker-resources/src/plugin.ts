@@ -307,7 +307,18 @@ export default mergeIds(trackerId, tracker, {
     UnsetParent: '' as IntlString,
     PreviousAssigned: '' as IntlString,
     EditRelatedTargets: '' as IntlString,
-    RelatedIssueTargetDescription: '' as IntlString
+    RelatedIssueTargetDescription: '' as IntlString,
+    ModeSelectorDisabledByFilter: '' as IntlString,
+    ShowQuickModeSelector: '' as IntlString,
+    SearchScopeLabel: '' as IntlString,
+    SearchScopeTitle: '' as IntlString,
+    SearchScopeTitleDescription: '' as IntlString,
+    SearchScopeAll: '' as IntlString,
+    SearchHighlight: '' as IntlString,
+    SearchEmptyTitle: '' as IntlString,
+    SearchEmptyActiveFilters: '' as IntlString,
+    SearchEmptyClearFilters: '' as IntlString,
+    SearchEmptyAllProjects: '' as IntlString
   },
   component: {
     NopeComponent: '' as AnyComponent,

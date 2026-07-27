@@ -69,6 +69,11 @@ export class CommonTrackerPage extends CalendarPage {
   shouldShowAllToggle = (): Locator =>
     this.page.locator('.antiCard.menu .antiCard-menu__item:has-text("Show empty groups")')
 
+  // Zero-hit search card. Rendered as an out-of-flow overlay centred on the
+  // panel while the viewlet stays mounted and measurable, so it is on screen
+  // in List and Kanban alike — assert with toBeInViewport().
+  searchEmptyStateCard = (): Locator => this.page.locator('.search-empty-state')
+
   header = (): Locator =>
     this.page.locator('button.hulyBreadcrumb-container > span.hulyBreadcrumb-label', { hasText: 'Issues' })
 

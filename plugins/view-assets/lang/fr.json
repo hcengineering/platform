@@ -153,6 +153,9 @@
     "RoleLabel": "Rôle : {role}",
     "ForbidAttributeChanges": "Interdire les modifications: ",
     "AllowAttributeChanges": "Autoriser les modifications: ",
-    "RelationshipTable": "Matrice de traçabilité"
+    "RelationshipTable": "Matrice de traçabilité",
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "Ajouter un filtre",
+    "HiddenFilters": "Filtres masqués"
   }
 }

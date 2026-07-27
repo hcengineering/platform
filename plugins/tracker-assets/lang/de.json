@@ -293,7 +293,18 @@
     "UnsetParentIssue": "Übergeordnete Aufgabe entfernen",
     "ForbidCreateProjectPermission": "Projekterstellung verbieten",
     "ForbidCreateProjectPermissionDescription": "Verbietet Benutzern das Erstellen neuer Projekte",
-    "AllowCreatingIssues": "Erstellen von Aufgaben erlauben"
+    "AllowCreatingIssues": "Erstellen von Aufgaben erlauben",
+    "ModeSelectorDisabledByFilter": "Status wird über aktive Filter gesteuert. Entferne den Status-Filter, um die Schnellauswahl zu nutzen.",
+    "ShowQuickModeSelector": "Schnellfilter: All / Active / Backlog",
+    "SearchScopeLabel": "Suche in…",
+    "SearchScopeTitle": "Nur Titel",
+    "SearchScopeTitleDescription": "Titel + Beschreibung",
+    "SearchScopeAll": "Titel + Beschreibung + Kommentare",
+    "SearchHighlight": "Treffer hervorheben",
+    "SearchEmptyTitle": "Keine Treffer für \"{query}\"",
+    "SearchEmptyActiveFilters": "Aktive Filter: {filters}",
+    "SearchEmptyClearFilters": "Suche ohne Filter",
+    "SearchEmptyAllProjects": "In allen Projekten suchen"
   },
   "status": {}
 }

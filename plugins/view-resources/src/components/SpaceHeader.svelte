@@ -20,10 +20,23 @@
   export let modeSelectorProps: IModeSelector | undefined = undefined
   export let adaptive: HeaderAdaptive = 'doubleRow'
   export let resultQuery: DocumentQuery<Doc> = {}
+  /**
+   * When true the consumer's `search` slot replaces the built-in
+   * SearchInput + FilterButton. Used by consumers that render their own
+   * search input (e.g. Tracker's SearchInputAdvanced) while keeping the
+   * search state owned here. Default false so other viewlets keep the
+   * standard search behaviour even when they forward an (otherwise empty)
+   * `search` slot upward.
+   */
+  export let overrideSearch: boolean = false
 
   let scroller: HTMLElement
 
   $: viewletActions = viewlet != null ? getViewletSpecialActions(getClient(), viewlet) : []
+
+  function setSearchProp (v: string): void {
+    search = v
+  }
 </script>
 
 <Header
@@ -49,8 +62,17 @@
   {/if}
 
   <svelte:fragment slot="search">
-    <SearchInput bind:value={search} collapsed />
-    <FilterButton {_class} {space} />
+    {#if overrideSearch}
+      <!-- Consumer-driven override. Used by consumers that render their own
+           search input (e.g. Tracker's SearchInputAdvanced) alongside a
+           Filter button. The slot props expose the current search value + a
+           setter so the consumer can render its own SearchInput while keeping
+           the search state owned here. -->
+      <slot name="search" {search} setSearch={setSearchProp} />
+    {:else}
+      <SearchInput bind:value={search} collapsed />
+      <FilterButton {_class} {space} />
+    {/if}
   </svelte:fragment>
   <svelte:fragment slot="actions">
     {#each viewletActions as action (action._id)}

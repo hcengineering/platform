@@ -158,6 +158,9 @@
     "RoleLabel": "Role: {role}",
     "ForbidAttributeChanges": "Zakázat změny: ",
     "AllowAttributeChanges": "Povolit změny: ",
-    "RelationshipTable": "Tabulka vztahů"
+    "RelationshipTable": "Tabulka vztahů",
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "Přidat filtr",
+    "HiddenFilters": "Skryté filtry"
   }
 }

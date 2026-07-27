@@ -293,7 +293,18 @@
     "UnsetParentIssue": "取消父问题",
     "ForbidCreateProjectPermission": "禁止创建项目",
     "ForbidCreateProjectPermissionDescription": "禁止用户创建新项目",
-    "AllowCreatingIssues": "允许创建问题"
+    "AllowCreatingIssues": "允许创建问题",
+    "ModeSelectorDisabledByFilter": "Status is controlled by an active filter. Remove the status filter to use this shortcut.",
+    "ShowQuickModeSelector": "Quick filter: All / Active / Backlog",
+    "SearchScopeLabel": "Search in…",
+    "SearchScopeTitle": "Title only",
+    "SearchScopeTitleDescription": "Title + Description",
+    "SearchScopeAll": "Title + Description + Comments",
+    "SearchHighlight": "Highlight search matches",
+    "SearchEmptyTitle": "No issues found for \"{query}\"",
+    "SearchEmptyActiveFilters": "Active filters: {filters}",
+    "SearchEmptyClearFilters": "Search without filters",
+    "SearchEmptyAllProjects": "Search in all projects"
   },
   "status": {}
 }

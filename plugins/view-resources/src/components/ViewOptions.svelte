@@ -136,8 +136,13 @@
   {#each visibleOthers as model}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <!-- Generic view-option items (sub-issues, colours, search-scope, …).
+         These are NOT the Order-by control; the `.ordering` test-hook class
+         must stay unique to the real order-by dropdown above, otherwise a
+         dropdown-type option here (e.g. the search-scope dropdown added by
+         the filter-search redesign) makes `.ordering button` ambiguous. -->
     <div
-      class="antiCard-menu__item hoverable ordering"
+      class="antiCard-menu__item hoverable viewoption-other"
       on:click={() => {
         if (isToggleType(model)) changeToggle(model)
       }}

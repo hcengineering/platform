@@ -293,7 +293,18 @@
     "UnsetParentIssue": "Снять родительскую задачу",
     "ForbidCreateProjectPermission": "Запретить создание проекта",
     "ForbidCreateProjectPermissionDescription": "Запрещает пользователям создавать новые проекты",
-    "AllowCreatingIssues": "Разрешить создание задач"
+    "AllowCreatingIssues": "Разрешить создание задач",
+    "ModeSelectorDisabledByFilter": "Статус задаётся активным фильтром. Уберите фильтр по статусу, чтобы воспользоваться этим переключателем.",
+    "ShowQuickModeSelector": "Быстрый фильтр: Все / Активные / Пул задач",
+    "SearchScopeLabel": "Искать в…",
+    "SearchScopeTitle": "Только заголовок",
+    "SearchScopeTitleDescription": "Заголовок + описание",
+    "SearchScopeAll": "Заголовок + описание + комментарии",
+    "SearchHighlight": "Подсвечивать совпадения",
+    "SearchEmptyTitle": "Не найдено задач по запросу «{query}»",
+    "SearchEmptyActiveFilters": "Активные фильтры: {filters}",
+    "SearchEmptyClearFilters": "Искать без фильтров",
+    "SearchEmptyAllProjects": "Искать во всех проектах"
   },
   "status": {}
 }

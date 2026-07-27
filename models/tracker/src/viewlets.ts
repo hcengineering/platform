@@ -23,6 +23,37 @@ import tags from '@hcengineering/tags'
 import { type ViewOptionModel, type BuildModelKey, type ViewOptionsModel } from '@hcengineering/view'
 import tracker from './plugin'
 
+// Shared Customize-View knobs reused by `issuesOptions()` (List + Kanban).
+// Kept as a single named constant so the search-scope / quick-filter /
+// highlight toggles stay consistent across every viewlet that opts in.
+const SEARCH_VIEW_OPTIONS: ViewOptionModel[] = [
+  {
+    key: 'showQuickModeSelector',
+    type: 'toggle',
+    defaultValue: true,
+    actionTarget: 'display',
+    label: tracker.string.ShowQuickModeSelector
+  },
+  {
+    key: 'searchScope',
+    type: 'dropdown',
+    defaultValue: 'all',
+    values: [
+      { id: 'title', label: tracker.string.SearchScopeTitle },
+      { id: 'title-description', label: tracker.string.SearchScopeTitleDescription },
+      { id: 'all', label: tracker.string.SearchScopeAll }
+    ],
+    label: tracker.string.SearchScopeLabel
+  },
+  {
+    key: 'searchHighlight',
+    type: 'toggle',
+    defaultValue: true,
+    actionTarget: 'display',
+    label: tracker.string.SearchHighlight
+  }
+]
+
 export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
   groupBy: [
     'status',
@@ -75,7 +106,8 @@ export const issuesOptions = (kanban: boolean): ViewOptionsModel => ({
       action: view.function.HideArchived,
       label: view.string.HideArchived
     },
-    ...(!kanban ? [showColorsViewOption] : [])
+    ...(!kanban ? [showColorsViewOption] : []),
+    ...SEARCH_VIEW_OPTIONS
   ]
 })
 

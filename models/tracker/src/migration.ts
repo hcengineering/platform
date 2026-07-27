@@ -38,16 +38,13 @@ import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
-import tracker, {
-  type Issue,
-  type IssueStatus,
-  type Project,
-  TimeReportDayType,
-  trackerId
-} from '@hcengineering/tracker'
+import { type Issue, type IssueStatus, type Project, TimeReportDayType, trackerId } from '@hcengineering/tracker'
+import view, { type ViewOptionModel } from '@hcengineering/view'
 
 import { classicIssueTaskStatuses } from '.'
+import tracker from './plugin'
 import { DOMAIN_TRACKER } from './types'
+import { issuesOptions } from './viewlets'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -179,6 +176,39 @@ export async function migrateAddStartDate (client: MigrationClient): Promise<voi
     { _class: tracker.class.Milestone, startDate: { $exists: false } },
     { startDate: null }
   )
+}
+
+// SEARCH_VIEW_OPTIONS (showQuickModeSelector / searchScope / searchHighlight)
+// are appended to issuesOptions(), which feeds the stored List (IssueList) and
+// Kanban (IssueKanban) viewlet docs. builder.createDoc is idempotent, so
+// existing workspaces never pick up the new `other` entries on upgrade; merge
+// the missing keys into both viewlets by `key`. Idempotent — a re-run (or a
+// partially-migrated workspace) is a no-op.
+async function addSearchViewOptions (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+
+  const targets = [
+    { id: tracker.viewlet.IssueList, desired: issuesOptions(false).other ?? [] },
+    { id: tracker.viewlet.IssueKanban, desired: issuesOptions(true).other ?? [] }
+  ]
+
+  for (const t of targets) {
+    const viewlets = await client.findAll(view.class.Viewlet, { _id: t.id })
+    for (const v of viewlets) {
+      const current = v.viewOptions ?? { groupBy: [], orderBy: [], other: [] }
+      const currentOther: ViewOptionModel[] = current.other ?? []
+      const existingKeys = new Set(currentOther.map((o) => o.key))
+      const missing = t.desired.filter((o) => !existingKeys.has(o.key))
+      if (missing.length === 0) continue
+
+      await txOp.update(v, {
+        viewOptions: {
+          ...current,
+          other: [...currentOther, ...missing]
+        }
+      })
+    }
+  }
 }
 
 async function migrateDefaultStatuses (client: MigrationClient, logger: ModelLogger): Promise<void> {
@@ -425,6 +455,10 @@ export const trackerOperation: MigrateOperation = {
           const tx = new TxOperations(client, core.account.System)
           await createDefaults(tx)
         }
+      },
+      {
+        state: 'add-search-view-options',
+        func: addSearchViewOptions
       }
     ])
   }

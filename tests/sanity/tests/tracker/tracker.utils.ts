@@ -48,9 +48,13 @@ export async function setViewGroup (page: Page, groupName: string): Promise<void
 
 export async function setViewOrder (page: Page, orderName: string): Promise<void> {
   await page.click('button[data-id="btn-viewOptions"]')
-  await page.click('.antiCard >> .ordering >> button')
+  // The View-Options popup now renders more than one `.ordering` row: the
+  // Order-by dropdown plus any "other" toggles/dropdowns (e.g. the new
+  // searchScope selector). Target the first `.ordering` button, which is the
+  // Order-by control, to keep the locator unambiguous.
+  await page.click('.antiCard >> .ordering >> button >> nth=0')
   await page.click(`.menu-item:has-text("${orderName}")`)
-  await expect(page.locator('.antiCard >> .ordering >> button')).toContainText(orderName)
+  await expect(page.locator('.antiCard >> .ordering >> button >> nth=0')).toContainText(orderName)
 
   await page.keyboard.press('Escape')
 }

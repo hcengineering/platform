@@ -1,4 +1,4 @@
-import { test } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import { CommonTrackerPage } from '../model/tracker/common-tracker-page'
 import { IssuesDetailsPage } from '../model/tracker/issues-details-page'
 import { IssuesPage } from '../model/tracker/issues-page'
@@ -190,6 +190,35 @@ test.describe('Tracker tests', () => {
     await issuesPage.openViewOptionsAndToggleShouldShowAll()
     await issuesPage.verifyCategoryHeadersVisibilityKanban()
     await issuesPage.openViewOptionsAndToggleShouldShowAll()
+  })
+
+  test('list zero-hit search shows the empty-state card unless shouldShowAll is on', async ({ page }) => {
+    await (
+      await page.goto(`${PlatformURI}/workbench/sanity-ws/tracker/tracker%3Aproject%3ADefaultProject/issues`)
+    )?.finished()
+    const issuesPage = new IssuesPage(page)
+    await navigate(page)
+    await issuesPage.navigateToIssues()
+    await page.click(ViewletSelectors.Table)
+
+    // 1) shouldShowAll OFF (default) — zero hits surface the card.
+    await issuesPage.searchIssueByName('!!!!')
+    await expect(issuesPage.searchEmptyStateCard()).toBeInViewport()
+    await expect(issuesPage.searchEmptyStateCard()).toContainText('!!!!')
+
+    // 2) shouldShowAll ON — the empty category headers stay visible and the
+    //    card is suppressed, because the explicit view option wins.
+    await issuesPage.openViewOptionsAndToggleShouldShowAll()
+    await expect(issuesPage.searchEmptyStateCard()).toHaveCount(0)
+    // Done / Cancelled only exist in the All mode, same as the
+    // 'check shouldShowAll option' test above.
+    await issuesPage.clickModelSelectorAll()
+    await issuesPage.verifyCategoryHeadersVisibility()
+
+    // 3) Toggling back restores the card — proves the option, not the search
+    //    state, is what suppressed it.
+    await issuesPage.openViewOptionsAndToggleShouldShowAll()
+    await expect(issuesPage.searchEmptyStateCard()).toBeInViewport()
   })
 })
 async function doSaveViewTest (
