@@ -16,8 +16,17 @@
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import { getClient } from '@hcengineering/presentation'
   import { Milestone } from '@hcengineering/tracker'
-  import { DatePresenter, EditBox, Label } from '@hcengineering/ui'
+  import {
+    DatePresenter,
+    EditBox,
+    getPlatformColor,
+    getPlatformColors,
+    Label,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { ColorsPopup } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import MilestoneStatusEditor from './MilestoneStatusEditor.svelte'
   import QueryIssuesList from '../issues/edit/QueryIssuesList.svelte'
@@ -35,10 +44,23 @@
   }
 
   async function changeStartDate (value: number | null | undefined): Promise<void> {
-    await client.update(object, { startDate: value ?? null })
+    const startDate = value ?? null
+    // Never persist an inverted range. If the new start is past the
+    // current target, pull the target forward to match (start === target).
+    if (startDate !== null && object.targetDate != null && startDate > object.targetDate) {
+      await client.update(object, { startDate, targetDate: startDate })
+      return
+    }
+    await client.update(object, { startDate })
   }
   async function changeTargetDate (value: number | null | undefined): Promise<void> {
     if (value === null || value === undefined) return
+    // Keep the range non-inverted — clamp the start back if it now sits
+    // after the target.
+    if (object.startDate != null && value < object.startDate) {
+      await client.update(object, { targetDate: value, startDate: value })
+      return
+    }
     await client.update(object, { targetDate: value })
   }
 
@@ -57,22 +79,47 @@
   )
   $: descriptionKey = client.getHierarchy().getAttribute(tracker.class.Component, 'description')
   let descriptionBox: AttachmentStyleBoxEditor
+
+  function hashFromId (id: string): number {
+    let h = 0
+    for (let i = 0; i < id.length; i++) h = ((h << 5) - h + id.charCodeAt(i)) | 0
+    return Math.abs(h)
+  }
+
+  $: effectiveColor = object.color ?? hashFromId(object._id) % getPlatformColors($themeStore.dark).length
+  $: swatchCss = getPlatformColor(effectiveColor, $themeStore.dark)
+  $: selectedName = getPlatformColors($themeStore.dark)[effectiveColor]?.name
+
+  function pickColor (ev: MouseEvent): void {
+    showPopup(
+      ColorsPopup,
+      { colors: getPlatformColors($themeStore.dark), selected: selectedName, columns: 8 },
+      ev.target as HTMLElement,
+      async (index: number | undefined) => {
+        if (typeof index !== 'number') return
+        await client.update(object, { color: index })
+      }
+    )
+  }
 </script>
 
-<EditBox
-  bind:value={rawLabel}
-  placeholder={tracker.string.MilestoneNamePlaceholder}
-  kind="large-style"
-  on:blur={async () => {
-    const trimmedLabel = rawLabel.trim()
+<div class="flex-row-center gap-1-5">
+  <EditBox
+    bind:value={rawLabel}
+    placeholder={tracker.string.MilestoneNamePlaceholder}
+    kind="large-style"
+    on:blur={async () => {
+      const trimmedLabel = rawLabel.trim()
 
-    if (trimmedLabel.length === 0) {
-      rawLabel = oldLabel
-    } else if (trimmedLabel !== object.label) {
-      await change('label', trimmedLabel)
-    }
-  }}
-/>
+      if (trimmedLabel.length === 0) {
+        rawLabel = oldLabel
+      } else if (trimmedLabel !== object.label) {
+        await change('label', trimmedLabel)
+      }
+    }}
+  />
+  <button type="button" class="color-swatch" style:background={swatchCss} on:click={pickColor} aria-label="Color" />
+</div>
 
 <div class="dates-row mt-4">
   <div class="date-cell">
@@ -148,5 +195,12 @@
     font-size: 0.85rem;
     color: var(--theme-darker-color);
     font-weight: 500;
+  }
+  .color-swatch {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--theme-button-border);
+    cursor: pointer;
   }
 </style>

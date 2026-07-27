@@ -168,7 +168,17 @@
     width: 100%;
     max-width: 100%;
   }
-  
+  &.width-resizable {
+    width: 48rem;
+    max-width: min(96vw, 80rem);
+    min-width: 28rem;
+    height: 36rem;
+    max-height: min(96vh, 60rem);
+    min-height: 16rem;
+    resize: both;
+    overflow: hidden;
+  }
+
   &.maxHeight { height: 22rem; }
   &.autoHeight {
     max-height: calc(100vh - 2rem);

@@ -51,6 +51,7 @@ import {
 } from '@hcengineering/model'
 import attachment from '@hcengineering/model-attachment'
 import core, { TAttachedDoc, TDoc, TStatus, TType } from '@hcengineering/model-core'
+import notification, { TCommonInboxNotification } from '@hcengineering/model-notification'
 import task, { TTask, TProject as TTaskProject } from '@hcengineering/model-task'
 import { getEmbeddedLabel, type IntlString } from '@hcengineering/platform'
 import tags, { type TagElement } from '@hcengineering/tags'
@@ -59,6 +60,8 @@ import {
   type ProjectTargetPreference,
   type Component,
   type DependencyKind,
+  type DependencyShiftedNotification,
+  type DependencyShiftRequest,
   type Issue,
   type IssueChildInfo,
   type IssueParentInfo,
@@ -73,8 +76,10 @@ import {
   type RelatedClassRule,
   type RelatedIssueTarget,
   type RelatedSpaceRule,
+  type ShiftedIssuePayload,
   type TimeReportDayType,
-  type TimeSpendReport
+  type TimeSpendReport,
+  type WorkingDaysConfig
 } from '@hcengineering/tracker'
 import tracker from './plugin'
 import { type TaskType } from '@hcengineering/task'
@@ -137,6 +142,9 @@ export class TProject extends TTaskProject implements Project {
 
   @Prop(Collection(tracker.class.RelatedIssueTarget), tracker.string.RelatedIssues)
     relatedIssueTargets!: number
+
+  @Prop(TypeRecord(), tracker.string.WorkingDaysConfig)
+    workingDaysConfig?: WorkingDaysConfig
 }
 /**
  * @public
@@ -242,6 +250,15 @@ export class TIssue extends TTask implements Issue {
   @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.DueDate)
   declare dueDate: Timestamp | null
 
+  // Soft deadline, independent of dueDate. Optional.
+  // When set, the Gantt renders a flag marker at this date and flags the
+  // issue as overdue when dueDate > deadline. Undefined for existing issues
+  // until the user opts in via the Issue editor (this change ships the
+  // inline ControlPanel field; a Gantt context-menu shortcut is a
+  // separate follow-up, see Out-of-scope section).
+  @Prop(TypeDate(DateRangeMode.DATETIME), tracker.string.Deadline)
+    deadline?: Timestamp | null
+
   @Prop(TypeRef(tracker.class.Milestone), tracker.string.Milestone, { icon: tracker.icon.Milestone })
   @Index(IndexKind.Indexed)
     milestone!: Ref<Milestone> | null
@@ -263,6 +280,19 @@ export class TIssue extends TTask implements Issue {
 
   @Prop(Collection(time.class.ToDo), getEmbeddedLabel('Action Items'))
     todos?: CollectionSize<ToDo>
+
+  /**
+   * Auto-Scheduling-Toggle.
+   *
+   * Optional property so existing issues stay on the default cascade
+   * behaviour with no migration. `@Hidden` keeps the field out of the
+   * generic filter/sort UI in `getFiltredKeys`; the dedicated toggle in
+   * `ControlPanel.svelte` is the supported entry point. Cascade-time
+   * checks live in `gantt/lib/scheduler.ts` (Step 5b filter).
+   */
+  @Prop(TypeString(), tracker.string.SchedulingMode)
+  @Hidden()
+    schedulingMode?: 'auto' | 'manual'
 }
 /**
  * @public
@@ -391,6 +421,9 @@ export class TComponent extends TDoc implements Component {
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
+  @Prop(TypeNumber(), tracker.string.Color)
+    color?: number
+
   declare space: Ref<Project>
 }
 
@@ -422,6 +455,9 @@ export class TMilestone extends TDoc implements Milestone {
 
   @Prop(TypeDate(), tracker.string.TargetDate)
     targetDate!: Timestamp
+
+  @Prop(TypeNumber(), tracker.string.Color)
+    color?: number
 
   declare space: Ref<Project>
 }
@@ -459,3 +495,64 @@ export class TClassicProjectTypeData extends TProject implements RolesAssignment
 @Mixin(tracker.mixin.IssueTypeData, tracker.class.Issue)
 @UX(getEmbeddedLabel('Issue'), tracker.icon.Issue)
 export class TIssueTypeData extends TIssue {}
+
+/**
+ * Notification on Dependency-Shift.
+ *
+ * Persisted model class for the cascade-shift bundle notification. Extends
+ * `CommonInboxNotification` so it inherits inbox/email/push routing for
+ * free; the cascade-specific payload lives in the (un-`@Prop`'d) fields
+ * which are still serialised as part of the Doc body — same pattern that
+ * `TReactionInboxNotification` uses for its `ref`/`emoji` fields.
+ *
+ * @public
+ */
+@Model(tracker.class.DependencyShiftedNotification, notification.class.CommonInboxNotification)
+export class TDependencyShiftedNotification extends TCommonInboxNotification implements DependencyShiftedNotification {
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+    triggerIssueId!: Ref<Issue>
+
+  @Prop(TypeString(), tracker.string.Issue)
+    triggerIssueIdentifier!: string
+
+  @Prop(TypeString(), tracker.string.Issue)
+    triggerIssueTitle!: string
+
+  triggerUserId!: AccountUuid
+
+  shiftedIssues!: ShiftedIssuePayload[]
+
+  @Prop(TypeString(), tracker.string.DependencyShifted)
+    cascadeToken!: string
+}
+
+/**
+ * Notification on Dependency-Shift.
+ *
+ * Short-lived signal doc (DOMAIN_TRACKER) a Gantt client writes into the
+ * project space after a cascade commit. The `OnDependencyShiftRequest` server
+ * trigger consumes it, dispatches notifications privileged, and removes it. It
+ * deliberately carries no `triggerUserId` — the trigger derives the author
+ * from `tx.modifiedBy` (anti-spoofing).
+ *
+ * @public
+ */
+@Model(tracker.class.DependencyShiftRequest, core.class.Doc, DOMAIN_TRACKER)
+export class TDependencyShiftRequest extends TDoc implements DependencyShiftRequest {
+  @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
+    triggerIssueId!: Ref<Issue>
+
+  @Prop(TypeString(), tracker.string.Issue)
+    triggerIssueIdentifier!: string
+
+  @Prop(TypeString(), tracker.string.Issue)
+    triggerIssueTitle!: string
+
+  @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
+    triggerIssueSpace!: Ref<Project>
+
+  shiftedIssues!: ShiftedIssuePayload[]
+
+  @Prop(TypeString(), tracker.string.DependencyShifted)
+    cascadeToken!: string
+}

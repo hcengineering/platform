@@ -19,15 +19,18 @@ describe('resultIssueCountStore owner-token gate', () => {
     releaseResultCountOwner(claimResultCountOwner())
   })
 
-  it('a new writer supersedes the previous owner', () => {
+  it('a new writer supersedes the previous owner and resets to the -1 sentinel', () => {
     const first = claimResultCountOwner()
     setResultCount(first, 5)
     expect(get(resultIssueCountStore)).toBe(5)
 
     const second = claimResultCountOwner()
+    // The claim itself resets to the pending sentinel, so the new owner never
+    // inherits the predecessor's stale count.
+    expect(get(resultIssueCountStore)).toBe(-1)
     // Proof of supersede: the first token can no longer write.
     setResultCount(first, 99)
-    expect(get(resultIssueCountStore)).toBe(5)
+    expect(get(resultIssueCountStore)).toBe(-1)
     // The second (current) token can.
     setResultCount(second, 7)
     expect(get(resultIssueCountStore)).toBe(7)
@@ -102,5 +105,46 @@ describe('resultIssueCountStore owner-token gate', () => {
     // Sanity: the primary owner remains authoritative for further writes.
     setResultCount(viewlet, 4)
     expect(get(resultIssueCountStore)).toBe(4)
+  })
+
+  it('gantt writer pattern: gated set, container reset, release restores sentinel', () => {
+    // Mirrors GanttView (PR-2): claim at init, write issues.length once the
+    // issue query settled, container resets on search change, release on destroy.
+    const gantt = claimResultCountOwner()
+    expect(get(resultIssueCountStore)).toBe(-1) // still loading → no write yet
+    setResultCount(gantt, 7) // issues.length — milestones excluded by the caller
+    expect(get(resultIssueCountStore)).toBe(7)
+    resetResultCount() // IssuesView reacts to a search/filter change
+    expect(get(resultIssueCountStore)).toBe(-1)
+    setResultCount(gantt, 0) // zero hits → empty-state card may show
+    expect(get(resultIssueCountStore)).toBe(0)
+    releaseResultCountOwner(gantt) // onDestroy
+    expect(get(resultIssueCountStore)).toBe(-1)
+  })
+
+  // Regression for the MED: List and GanttView count with DIFFERENT semantics.
+  // List with shouldShowSubIssues=false counts only top-level issues
+  // (`attachedTo:NoParent`), while GanttView counts its parent-query
+  // `issues.length` (milestones excluded). For a search that matches ONLY
+  // sub-issues, List reports 0 while Gantt reports >0. On a List→Gantt viewlet
+  // switch the incoming Gantt owner must NOT briefly inherit List's stale 0 —
+  // otherwise `shouldShowSearchEmptyState` (non-empty search text + count 0)
+  // would flash the zero-hit card before Gantt's first write lands. The claim
+  // reset guarantees the store sits at the pending sentinel (-1) in that gap.
+  it('List→Gantt switch with divergent counts does not strand the stale zero-hit count', () => {
+    // Owner A = List viewlet: a sub-issue-only search yields zero top-level hits.
+    const list = claimResultCountOwner()
+    setResultCount(list, 0)
+    expect(get(resultIssueCountStore)).toBe(0) // List would show the zero-hit card
+
+    // Owner B = Gantt viewlet claims on switch. The claim resets to the pending
+    // sentinel, so Gantt does NOT inherit List's stale 0 → no false empty-state
+    // flash while Gantt's query is still loading.
+    const gantt = claimResultCountOwner()
+    expect(get(resultIssueCountStore)).toBe(-1)
+
+    // Once Gantt's parent query settles it writes its own (divergent) count.
+    setResultCount(gantt, 3)
+    expect(get(resultIssueCountStore)).toBe(3)
   })
 })

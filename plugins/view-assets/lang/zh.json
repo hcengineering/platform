@@ -49,6 +49,7 @@
     "Editor": "编辑器",
     "MarkdownFormatting": "格式化",
     "CustomizeView": "自定义视图",
+    "ConfigureColumns": "配置列",
     "Filter": "筛选",
     "ClearFilters": "清除筛选",
     "FilterLessThan": "小于",

@@ -18,7 +18,8 @@ export interface IssueProps {
 
 export enum ViewletSelectors {
   Table = 'label[data-view*="List"]',
-  Board = 'label[data-view*="Board"]'
+  Board = 'label[data-view*="Board"]',
+  Gantt = 'label[data-view*="Gantt"]'
 }
 
 export const PRIORITIES = ['No priority', 'Urgent', 'High', 'Medium', 'Low']

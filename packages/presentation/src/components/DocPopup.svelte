@@ -52,7 +52,7 @@
   export let placeholder: IntlString = presentation.string.Search
   export let selectedObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
-  export let width: 'medium' | 'large' | 'full' | 'auto' = 'medium'
+  export let width: 'medium' | 'large' | 'full' | 'auto' | 'resizable' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'large'
 
   export let noSearchField: boolean = false
@@ -222,6 +222,7 @@
   class:full-width={width === 'full'}
   class:plainContainer={!shadows}
   class:width-40={width === 'large'}
+  class:width-resizable={width === 'resizable'}
   class:auto={width === 'auto'}
   class:embedded
   on:keydown={onKeydown}

@@ -49,6 +49,7 @@
     "Editor": "Editor",
     "MarkdownFormatting": "Formatierung",
     "CustomizeView": "Ansicht anpassen",
+    "ConfigureColumns": "Spalten konfigurieren",
     "Filter": "Filter",
     "ClearFilters": "Filter löschen",
     "FilterLessThan": "Weniger als",

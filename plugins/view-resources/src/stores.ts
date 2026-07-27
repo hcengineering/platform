@@ -49,10 +49,19 @@ let currentResultCountOwner: ResultCountOwner | undefined
  * Claim ownership of the result-count store. The returned token becomes the
  * current owner immediately, superseding any previous owner (whose subsequent
  * writes and releases turn into no-ops). Call at viewlet mount/init.
+ *
+ * The claim also resets the store to the `-1` "pending" sentinel, so the new
+ * owner starts from a pending measurement instead of inheriting the superseded
+ * predecessor's stale count. This matters when viewlets count differently
+ * (e.g. List's top-level `attachedTo:NoParent` count vs GanttView's parent-query
+ * `issues.length`): without the reset a search hitting only sub-issues would
+ * strand List's stale `0` across a List→Gantt switch and flash the zero-hit
+ * empty state until Gantt's first write lands.
  */
 export function claimResultCountOwner (): ResultCountOwner {
   const owner: ResultCountOwner = { id: Symbol('resultCountOwner') }
   currentResultCountOwner = owner
+  resultIssueCountWritable.set(-1)
   return owner
 }
 

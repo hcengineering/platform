@@ -16,6 +16,7 @@
 import activity, { type DocUpdateMessage } from '@hcengineering/activity'
 import core, {
   DOMAIN_MODEL_TX,
+  DOMAIN_TX,
   DOMAIN_STATUS,
   type Ref,
   type Status,
@@ -38,13 +39,20 @@ import { DOMAIN_SPACE } from '@hcengineering/model-core'
 import { DOMAIN_TASK, migrateDefaultStatusesBase } from '@hcengineering/model-task'
 import tags from '@hcengineering/tags'
 import task from '@hcengineering/task'
-import { type Issue, type IssueStatus, type Project, TimeReportDayType, trackerId } from '@hcengineering/tracker'
+import {
+  type Issue,
+  type IssueRelation,
+  type IssueStatus,
+  type Project,
+  TimeReportDayType,
+  trackerId
+} from '@hcengineering/tracker'
 import view, { type ViewOptionModel } from '@hcengineering/view'
 
 import { classicIssueTaskStatuses } from '.'
 import tracker from './plugin'
 import { DOMAIN_TRACKER } from './types'
-import { issuesOptions } from './viewlets'
+import { ganttViewOptions, issuesOptions } from './viewlets'
 
 async function createDefaultProject (tx: TxOperations): Promise<void> {
   const current = await tx.findOne(tracker.class.Project, {
@@ -178,12 +186,47 @@ export async function migrateAddStartDate (client: MigrationClient): Promise<voi
   )
 }
 
-// SEARCH_VIEW_OPTIONS (showQuickModeSelector / searchScope / searchHighlight)
-// are appended to issuesOptions(), which feeds the stored List (IssueList) and
-// Kanban (IssueKanban) viewlet docs. builder.createDoc is idempotent, so
-// existing workspaces never pick up the new `other` entries on upgrade; merge
-// the missing keys into both viewlets by `key`. Idempotent — a re-run (or a
-// partially-migrated workspace) is a no-op.
+// Visual polish adds four new ViewOptions to the IssueGantt
+// viewlet (ganttBarLabelLeft/Inside/Right + ganttQuickInfoOnClick).
+// builder.createDoc is idempotent, so existing workspaces don't pick
+// up the new entries on upgrade-workspace. Re-add the missing ones by
+// merging on `key`, preserving the user's groupBy/orderBy and any
+// already-stored entries. Idempotent — a re-run is a no-op.
+//
+// Mirrors models/card/src/migration.ts:addShowAllVersionsViewOption.
+async function addGanttPhase1ViewOptions (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+
+  const viewlets = await client.findAll(view.class.Viewlet, {
+    _id: tracker.viewlet.IssueGantt
+  })
+  if (viewlets.length === 0) return
+
+  const desiredOther = ganttViewOptions().other ?? []
+
+  for (const v of viewlets) {
+    const current = v.viewOptions ?? { groupBy: [], orderBy: [], other: [] }
+    const currentOther: ViewOptionModel[] = current.other ?? []
+    const existingKeys = new Set(currentOther.map((o) => o.key))
+    const missing = desiredOther.filter((o) => !existingKeys.has(o.key))
+    if (missing.length === 0) continue
+
+    await txOp.update(v, {
+      viewOptions: {
+        ...current,
+        other: [...currentOther, ...missing]
+      }
+    })
+  }
+}
+
+// SEARCH_VIEW_OPTIONS (showQuickModeSelector / searchScope /
+// searchHighlight) are appended to issuesOptions(), which feeds the stored
+// List (IssueList) and Kanban (IssueKanban) viewlet docs. As with the Gantt
+// viewlet, builder.createDoc is idempotent, so existing workspaces never pick
+// up the new `other` entries on upgrade. Merge the missing keys into both
+// viewlets by `key` — mirrors addGanttPhase1ViewOptions and is idempotent, so
+// a re-run (or a partially-migrated workspace) is a no-op.
 async function addSearchViewOptions (client: MigrationUpgradeClient): Promise<void> {
   const txOp = new TxOperations(client, core.account.System)
 
@@ -405,6 +448,66 @@ async function migrateIssueStatuses (client: MigrationClient): Promise<void> {
   )
 }
 
+/**
+ * Activity-Log Remove-Detail Fix.
+ *
+ * Legacy IssueRelation removals went through `ops.removeDoc`, which emits
+ * a bare TxRemoveDoc without parent-issue attachment. The activity
+ * pipeline therefore wrote a DocUpdateMessage whose attachedTo is the
+ * relation itself, never showing up in the issue's activity feed. This
+ * migration re-attaches such DUMs to their parent issue by looking up the
+ * original TxCreateDoc of the now-removed IssueRelation. Best-effort:
+ * when the create-tx is missing (db compaction) the DUM still gets
+ * `updateCollection='relations'` so the activity feed at least shows
+ * "removed dependency" without the target detail.
+ *
+ * Idempotent — once a DUM has Issue-side attachment + `updateCollection`,
+ * the predicate skips it on subsequent runs. The predicate is a local
+ * 4-LOC copy of `isBrokenRelationDum` in
+ * `plugins/tracker-resources/src/components/gantt/lib/relation-activity-migration.ts`
+ * (cannot import across package layers — models/tracker is below
+ * tracker-resources). The helper module is the one with unit tests.
+ */
+export async function migrateRelationActivityAttachment (client: MigrationClient): Promise<void> {
+  const issueClass = tracker.class.Issue
+  const dums = await client.find<DocUpdateMessage>(DOMAIN_ACTIVITY, {
+    _class: activity.class.DocUpdateMessage,
+    objectClass: tracker.class.IssueRelation,
+    action: 'remove'
+  })
+  if (dums.length === 0) return
+  for (const dum of dums) {
+    const isBroken = dum.attachedToClass !== issueClass || dum.updateCollection !== 'relations'
+    if (!isBroken) continue
+    // Find the create-tx for this relation. The relation objectId remains
+    // the same across the doc's whole life — that's the key we look up.
+    const createTxes = await client.find<TxCreateDoc<IssueRelation>>(
+      DOMAIN_TX,
+      {
+        _class: core.class.TxCreateDoc,
+        objectId: dum.objectId as Ref<IssueRelation>
+      },
+      { limit: 1 }
+    )
+    const createTx = createTxes[0]
+    const patch: Partial<DocUpdateMessage> = {}
+    if (createTx?.attachedTo !== undefined && createTx.attachedToClass !== undefined) {
+      patch.attachedTo = createTx.attachedTo
+      patch.attachedToClass = createTx.attachedToClass
+      patch.updateCollection = createTx.collection ?? 'relations'
+    } else {
+      // Placeholder: ensure the DUM at least shows up in the parent
+      // issue's feed by giving it the collection name; we leave
+      // attachedTo as-is (the runtime DocUpdateMessageObjectValue will
+      // still try buildRemovedDoc with objectId, which often succeeds
+      // even when the create-tx for the *DUM's* attachedTo is gone).
+      if (dum.updateCollection === 'relations') continue
+      patch.updateCollection = 'relations'
+    }
+    await client.update<DocUpdateMessage>(DOMAIN_ACTIVITY, { _id: dum._id }, patch)
+  }
+}
+
 export const trackerOperation: MigrateOperation = {
   async preMigrate (client: MigrationClient, logger: ModelLogger, mode): Promise<void> {
     await tryMigrate(mode, client, trackerId, [
@@ -444,6 +547,22 @@ export const trackerOperation: MigrateOperation = {
         state: 'gantt-add-startdate',
         mode: 'upgrade',
         func: migrateAddStartDate
+      },
+      {
+        // Phase-2 working-days calendar. The property is optional and
+        // additive — every existing Project keeps `workingDaysConfig =
+        // undefined` (legacy calendar-day semantics). The migration entry
+        // exists only so the tracker state-tracker registers the schema
+        // version bump; no data is touched.
+        state: 'gantt-add-working-days-config',
+        mode: 'upgrade',
+        func: async () => {}
+      },
+      {
+        // Activity-Log Remove-Detail Fix.
+        state: 'relation-activity-attached-v2',
+        mode: 'upgrade',
+        func: migrateRelationActivityAttachment
       }
     ])
   },
@@ -455,6 +574,10 @@ export const trackerOperation: MigrateOperation = {
           const tx = new TxOperations(client, core.account.System)
           await createDefaults(tx)
         }
+      },
+      {
+        state: 'add-gantt-phase1-view-options',
+        func: addGanttPhase1ViewOptions
       },
       {
         state: 'add-search-view-options',

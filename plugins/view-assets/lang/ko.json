@@ -46,6 +46,7 @@
         "Editor": "편집기",
         "MarkdownFormatting": "서식",
         "CustomizeView": "뷰 사용자 지정",
+        "ConfigureColumns": "열 구성",
         "Filter": "필터",
         "ClearFilters": "필터 지우기",
         "FilterLessThan": "미만",

@@ -40,7 +40,7 @@
     border-radius: var(--small-BorderRadius);
     box-shadow: var(--theme-popup-shadow);
     max-width: 480px;
-    /* Stack above underlying grid content that shows through when
+    /* Stack above the Gantt week headers / grid that show through when
        --theme-popup-color is partially transparent in custom themes. */
     backdrop-filter: blur(2px);
   }

@@ -46,6 +46,7 @@
     "Editor": "エディター",
     "MarkdownFormatting": "書式設定",
     "CustomizeView": "ビューをカスタマイズ",
+    "ConfigureColumns": "列を設定",
     "Filter": "フィルター",
     "ClearFilters": "フィルターをクリア",
     "FilterLessThan": "未満",

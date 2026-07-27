@@ -71,8 +71,42 @@ export class CommonTrackerPage extends CalendarPage {
 
   // Zero-hit search card. Rendered as an out-of-flow overlay centred on the
   // panel while the viewlet stays mounted and measurable, so it is on screen
-  // in List and Kanban alike — assert with toBeInViewport().
+  // in List, Kanban and Gantt alike — assert with toBeInViewport().
   searchEmptyStateCard = (): Locator => this.page.locator('.search-empty-state')
+  ganttRoot = (): Locator => this.page.locator('.gantt-root')
+  ganttTimeHeader = (): Locator => this.page.locator('.gantt-root svg.gantt-header')
+
+  // Gantt toolbar. The controls are lifted into the SpaceHeader's second row,
+  // where they compete with the search input, filter button and filter chips
+  // for width. Below roughly 2400 px the row used to overflow its own
+  // `overflow: hidden` container and pushed the trailing cluster off screen —
+  // present in the DOM, impossible to click. These locators exist so the
+  // viewport regression can be asserted with toBeInViewport() rather than
+  // toBeVisible(), which does NOT catch an element parked outside the window.
+  ganttToolbarCluster = (): Locator => this.page.locator('.gantt-tb-cluster')
+  // The "…" trigger is rendered in the frozen trailing group, NOT in the
+  // cluster: the cluster is the header row's shrink target and reaches
+  // clientWidth 0 on a phone-width panel, where a trigger inside it would be
+  // clipped and parked outside the viewport.
+  ganttToolbarOverflowButton = (): Locator => this.page.locator('.hulyHeader-buttonsGroup.extra .gantt-tb-overflow-btn')
+
+  ganttToolbarOverflowPopup = (): Locator => this.page.locator('.gantt-tb-overflow-popup')
+
+  // "More actions" opens a SelectPopup carrying save/load view and the two
+  // export entries. Asserted as an effect of the click, so the button is
+  // proven operable rather than merely positioned.
+  ganttMoreActionsMenu = (): Locator => this.page.locator('.selectPopup')
+  ganttMoreActionsMenuItem = (label: string): Locator =>
+    this.page.locator('.selectPopup button.menu-item', { hasText: label })
+
+  ganttFullscreenButton = (): Locator =>
+    this.page.locator('.hulyHeader-buttonsGroup.extra button[aria-label="Toggle fullscreen"]')
+
+  ganttMoreActionsButton = (): Locator =>
+    this.page.locator('.hulyHeader-buttonsGroup.extra button[aria-label="More actions"]')
+
+  ganttDrawerToggle = (): Locator =>
+    this.page.locator('.hulyHeader-buttonsGroup.extra button[aria-label="Open issue list"]')
 
   header = (): Locator =>
     this.page.locator('button.hulyBreadcrumb-container > span.hulyBreadcrumb-label', { hasText: 'Issues' })

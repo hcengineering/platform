@@ -22,13 +22,20 @@
   export let resultQuery: DocumentQuery<Doc> = {}
   /**
    * When true the consumer's `search` slot replaces the built-in
-   * SearchInput + FilterButton. Used by consumers that render their own
-   * search input (e.g. Tracker's SearchInputAdvanced) while keeping the
-   * search state owned here. Default false so other viewlets keep the
-   * standard search behaviour even when they forward an (otherwise empty)
-   * `search` slot upward.
+   * SearchInput + FilterButton. Used by IssuesView in Gantt mode to lift
+   * the gantt toolbar controls into row 2 alongside Filter + Lupe. Default
+   * false so other viewlets keep the standard search behaviour even when
+   * they forward an (otherwise empty) `search` slot upward.
    */
   export let overrideSearch: boolean = false
+  /**
+   * Forwarded to `Header`. Only set it together with `overrideSearch`: the
+   * search group becomes the row's shrink target and is then responsible for
+   * collapsing its own content (the Gantt toolbar does that via its "…"
+   * overflow popover). Default false — every other consumer keeps the
+   * unshrinkable search group it has today.
+   */
+  export let shrinkSearch: boolean = false
 
   let scroller: HTMLElement
 
@@ -39,11 +46,28 @@
   }
 </script>
 
+<!--
+  `hideExtra` must also account for `extra-trailing`: Header renders that
+  slot INSIDE its own `extra` group (see the `slot="extra"` fragment below),
+  so hiding the group would swallow the trailing cluster too. Svelte 4
+  registers `$$slots.extra` only for slot content that survives compilation —
+  a consumer fragment holding nothing but a comment (IssuesView's `extra`
+  slot) compiles away and yields `$$slots.extra === false`. With
+  `modeSelectorProps === undefined` (Gantt mode) that hid the whole group and
+  with it the Gantt toolbar's fullscreen / more-actions / phone-drawer
+  buttons. The condition is only ever WIDENED here: it can turn `hideExtra`
+  from true to false, and only for consumers that actually pass an
+  `extra-trailing` slot. Header's own `{#if $$slots.extra && !hideExtra}`
+  guards stay satisfied because forwarding a slot (`<slot name="extra" />`
+  inside the fragment below) always registers `extra` on the Header call
+  site, independently of what the outer consumer passes.
+-->
 <Header
   {adaptive}
   overflowExtra
+  {shrinkSearch}
   hideActions={!$$slots.actions}
-  hideExtra={!$$slots.extra && modeSelectorProps === undefined}
+  hideExtra={!$$slots.extra && !$$slots['extra-trailing'] && modeSelectorProps === undefined}
 >
   <svelte:fragment slot="beforeTitle">
     <ViewletSelector bind:viewlet bind:viewlets ignoreFragment viewletQuery={viewletQuery ?? { attachTo: _class }} />
@@ -63,11 +87,12 @@
 
   <svelte:fragment slot="search">
     {#if overrideSearch}
-      <!-- Consumer-driven override. Used by consumers that render their own
-           search input (e.g. Tracker's SearchInputAdvanced) alongside a
-           Filter button. The slot props expose the current search value + a
-           setter so the consumer can render its own SearchInput while keeping
-           the search state owned here. -->
+      <!-- Consumer-driven override. Used by IssuesView in Gantt mode to lift
+           the gantt toolbar controls (Group-by, Date-Nav, Zoom, Undo/Redo)
+           into the SpaceHeader's row 2, alongside Filter + SearchInput.
+           The slot props expose the current search value + a setter so the
+           consumer can render its own SearchInput while keeping the search
+           state owned here. -->
       <slot name="search" {search} setSearch={setSearchProp} />
     {:else}
       <SearchInput bind:value={search} collapsed />
@@ -92,5 +117,9 @@
     {#if modeSelectorProps !== undefined}
       <ModeSelector kind={'subtle'} props={modeSelectorProps} />
     {/if}
+    <!-- Trailing extra cluster. Lives AFTER the ModeSelector (All/Active/
+         Backlog) so consumer-supplied trailing icons (e.g. the Gantt
+         Hamburger + Fullscreen) stay at the far right of row 2. -->
+    <slot name="extra-trailing" />
   </svelte:fragment>
 </Header>

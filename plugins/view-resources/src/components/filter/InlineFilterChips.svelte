@@ -25,8 +25,8 @@
 
   export let _class: Ref<Class<Doc>> | undefined
   export let space: Ref<Space> | undefined
-  // Overflow collapsing + the 22rem width cap exist ONLY to keep a crowded
-  // constrained toolbar row from being pushed off-screen. In the below-header /
+  // Overflow collapsing + the 22rem width cap exist ONLY to keep the crowded
+  // Gantt toolbar row from being pushed off-screen. In the below-header /
   // list placement there is a full-width row available, so collapsing chips
   // into the "+N" popover just hides the active filter (and removes
   // div.filter-section from the DOM). `constrained` opts INTO the toolbar
@@ -178,8 +178,8 @@
 <!-- `empty` collapses the constrained placement away entirely. The fixed
      22rem below is a deliberate measurement base (see the note on the rule),
      but reserving it while there is not a single filter to show simply ate
-     352 px of a constrained toolbar row in the default state — the very space the
-     trailing controls cluster was being pushed out of. With no
+     352 px of the Gantt toolbar row in the default state — the very space the
+     Fullscreen / More-actions cluster was being pushed out of. With no
      filters there is nothing to measure and nothing to render, so the whole
      wrap (chips container plus the clear-all button, which is itself gated on
      a non-empty store) can go. -->
@@ -245,9 +245,10 @@
     flex: 0 1 auto;
   }
   /* Fixed cluster width — beyond this, the +N popover takes over. Only
-     applied in a constrained toolbar placement where chips would otherwise
-     push the trailing toolbar controls off-screen. The below-header/list
-     placement has a full-width row and must render every chip.
+     applied in the Gantt toolbar (constrained) where chips would otherwise
+     push the date nav, zoom, undo/redo, hamburger and fullscreen controls
+     off-screen. The below-header/list placement has a full-width row and
+     must render every chip.
 
      Use a FIXED width (not max-width) so the overflow measurement base
      stays constant across collapse cycles. With max-width the wrap was

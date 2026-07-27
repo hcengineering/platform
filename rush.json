@@ -591,6 +591,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/gantt",
+      "projectFolder": "packages/gantt",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/highlight",
       "projectFolder": "packages/highlight",
       "shouldPublish": true
