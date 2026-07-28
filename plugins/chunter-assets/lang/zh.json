@@ -132,6 +132,7 @@
     "ViewingArchivedChannel": "你正在查看已归档频道",
     "OpenChatInSidebar": "在侧边栏中打开聊天",
     "NoThreadsYet": "还没有线程。",
-    "SummarizeMessages": "总结讨论"
+    "SummarizeMessages": "总结讨论",
+    "MentionGrantsAccessHint": "A mention here will grant that person access to this item. You will confirm exactly who before sending."
   }
 }

@@ -132,6 +132,7 @@
     "ViewingArchivedChannel": "Stai visualizzando un canale archiviato",
     "OpenChatInSidebar": "Apri chat nella barra laterale",
     "NoThreadsYet": "Non ci sono ancora discussioni.",
-    "SummarizeMessages": "Riassumere la discussione"
+    "SummarizeMessages": "Riassumere la discussione",
+    "MentionGrantsAccessHint": "A mention here will grant that person access to this item. You will confirm exactly who before sending."
   }
 }

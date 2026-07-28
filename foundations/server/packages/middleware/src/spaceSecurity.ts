@@ -613,6 +613,27 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     return domain === 'tx' ? 'objectSpace' : domain === 'space' ? '_id' : 'space'
   }
 
+  // H5 (Option A, fail-closed): the collab-read bypasses in findAll drop the space
+  // filter and delegate the restriction to the adapter's collab OR-branch, which
+  // only exists in the Postgres adapter (see postgres/src/storage.ts addSecurity).
+  // On a backend without an equivalent clause (e.g. Mongo) dropping the space
+  // filter would leak docs across spaces. So the bypasses may only fire when the
+  // adapter serving this domain declares supportsCollaboratorSecurity. Unknown or
+  // unsupported backend => false => keep the normal space filter (no leak; the
+  // cross-space collab feature is simply inactive there).
+  private isCollabBackendSupported (domain: Domain): boolean {
+    const mgr = this.context.adapterManager
+    if (mgr === undefined) {
+      return false
+    }
+    try {
+      const adapter = mgr.getAdapterByName(mgr.getAdapterName(domain), false)
+      return adapter?.supportsCollaboratorSecurity === true
+    } catch {
+      return false
+    }
+  }
+
   override async findAll<T extends Doc>(
     ctx: MeasureContext<SessionData>,
     _class: Ref<Class<T>>,
@@ -630,7 +651,67 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
 
     let clientFilterSpaces: Set<Ref<Space>> | undefined
 
-    if (!isSystem(account, ctx) && account.role !== AccountRole.DocGuest && domain !== DOMAIN_MODEL) {
+    // When a class opts into collaborator-grants-read security AND the caller is a Guest/ReadOnlyGuest,
+    // we deliberately skip the middleware-level space filter. The Postgres adapter's `collabRes`
+    // OR-branch (see postgres/src/storage.ts, getSecurityClause) joins Collaborator records into the
+    // visibility check, so Guests can read individual docs they were added to as Collaborator even
+    // when they are not members of the owning Space. Filtering by space here would strip those docs
+    // before the adapter ever sees the query.
+    const collabSec =
+      domain !== DOMAIN_MODEL ? getClassCollaborators(this.context.modelDb, this.context.hierarchy, _class) : undefined
+    // H5 (fail-closed): a collab-read bypass drops the space filter and relies on
+    // the adapter's collab OR-branch to re-restrict visibility. That branch only
+    // exists on backends that declare supportsCollaboratorSecurity (Postgres /
+    // CockroachDB). On any other backend the bypass would leak across spaces, so we
+    // gate all three bypasses behind this single check. Unknown backend => false =>
+    // the normal space filter stays in place.
+    const collabBackendSupported = domain !== DOMAIN_MODEL && this.isCollabBackendSupported(domain)
+    // P2.2: per-doc collaborator grants must be effective for regular members,
+    // not just guests. The bypass therefore fires for every non-admin role
+    // (Admin already gets full visibility through the normal path; DocGuest stays
+    // excluded — it has its own guest handling). The backend-support gate above
+    // is preserved, so widening the roles never re-opens the Mongo cross-space
+    // leak (H5-A fail-closed): without an adapter collab-branch the bypass simply
+    // does not fire and the normal space filter stays in place.
+    // M-01: the original guest-scope collab-read applies to EVERY provideSecurity
+    // class; the P2.2 widening to regular member roles (User/Maintainer/Owner) is
+    // confined to classes that opt into grantable access (mentionsGrantAccess) —
+    // the same scope as the guestPermissions write-veto. Without this a regular
+    // member who is only a *structural* collaborator (createdBy/assignee) on a
+    // love/QMS doc in a space they are not a member of would newly gain read
+    // visibility (love and controlled-documents set provideSecurity but NOT
+    // mentionsGrantAccess; only tracker opts into grants).
+    const isGuestRole = account.role === AccountRole.Guest || account.role === AccountRole.ReadOnlyGuest
+    const collabReadBypass =
+      collabBackendSupported &&
+      (collabSec?.provideSecurity === true || collabSec?.provideAttachedSecurity === true) &&
+      account.role !== AccountRole.Admin &&
+      account.role !== AccountRole.DocGuest &&
+      (isGuestRole || collabSec?.mentionsGrantAccess === true)
+    // Self-Collaborator visibility: let the Postgres adapter's self-collab OR-branch
+    // (storage.ts, addSecurity) fire for any non-System caller when reading the
+    // Collaborator class itself. Required for queries like the tracker "Subscribed"
+    // tab `{collaborator: self, attachedToClass: Issue}`, which must surface the
+    // user's own subscriptions even on docs in non-member spaces.
+    const selfCollabBypass = collabBackendSupported && this.context.hierarchy.isDerived(_class, core.class.Collaborator)
+    // Containing-Space visibility for collab-only Guests: let the Postgres adapter's
+    // space-collab OR-branch surface Spaces that host docs the caller is a
+    // Collaborator on. Required so the project/space nav tree can list projects
+    // where the user is collab-only (no member status).
+    // P2.2: widened to all non-admin roles (see collabReadBypass) so the space/
+    // project nav tree can surface a private space that a regular member only
+    // reaches through a per-doc collaborator grant. Still backend-gated.
+    const spaceCollabBypass =
+      collabBackendSupported && isSpace && account.role !== AccountRole.Admin && account.role !== AccountRole.DocGuest
+
+    if (
+      !isSystem(account, ctx) &&
+      account.role !== AccountRole.DocGuest &&
+      domain !== DOMAIN_MODEL &&
+      !collabReadBypass &&
+      !selfCollabBypass &&
+      !spaceCollabBypass
+    ) {
       if (!isOwner(account, ctx) || !isSpace || !showArchived) {
         if (newQuery[field] !== undefined) {
           const res = await this.mergeQuery(ctx, account, newQuery[field], domain, isSpace, showArchived)

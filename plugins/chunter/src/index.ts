@@ -151,6 +151,7 @@ export default plugin(chunterId, {
   },
   string: {
     Reactions: '' as IntlString,
+    MentionGrantsAccessHint: '' as IntlString,
     EditUpdate: '' as IntlString,
     EditCancel: '' as IntlString,
     Comments: '' as IntlString,

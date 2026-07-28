@@ -469,6 +469,14 @@ export const DOMAIN_RELATION = 'relation' as Domain
 export const DOMAIN_COLLABORATOR = 'collaborator' as Domain
 
 /**
+ * Domain for AccessGroup and GroupGrant documents. Not the collaborator table
+ * (whose notNull columns attachedTo/collaborator do not apply here) — falls
+ * back to the postgres defaultSchema.
+ * @public
+ */
+export const DOMAIN_ACCESS_GROUP = 'access_group' as Domain
+
+/**
  * @public
  */
 export interface TransientConfiguration extends Class<Doc> {
@@ -1010,12 +1018,78 @@ export interface ClassCollaborators<T extends Doc> extends Doc {
   attachedTo: Ref<Class<T>>
   allFields?: boolean // for all (PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]) attributes
   fields: (keyof T)[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
-  provideSecurity?: boolean // If true, will provide security for collaborators
+  // If true, Collaborator status grants read visibility on the doc,
+  // bypassing space-membership. Writes are governed by the class's
+  // TxAccessLevel and any pre-commit middleware (see GuestPermissions).
+  provideSecurity?: boolean
   provideAttachedSecurity?: boolean // If true, will provide security for collaborators of attached doc
+  // If true, @-mentions in chat/activity messages on this doc auto-create
+  // Collaborator records (mention = explicit, disclosed grant). Has no
+  // effect unless provideSecurity is also true.
+  mentionsGrantAccess?: boolean
 }
+
+/**
+ * Provenance of a Collaborator grant. Distinguishes explicit, revocable
+ * access-grants from structural (fields-derived / notification / legacy)
+ * collaborators. `undefined` === structural collaborator — such records are
+ * NEVER touched by revocation logic.
+ * @public
+ */
+export type CollaboratorProvenance = 'mention' | 'manual' | 'group'
+
+/**
+ * Ordinal access-level of a grant: read < write < admin.
+ * v1 as string-enum; designed to be evolvable to a `Ref<Role>` of a per-issue
+ * role definition without a schema break — consumers compare via the
+ * accessLevel.ts helper (accessLevelRank / hasAtLeast), never by string
+ * equality, so the later switch stays a helper-only change.
+ * @public
+ */
+export type AccessLevel = 'read' | 'write' | 'admin'
 
 export interface Collaborator extends AttachedDoc {
   collaborator: AccountUuid
+  // Provenance of the grant. undefined === structural collaborator
+  // (fields-derived / notification / legacy) — never removed automatically.
+  grantedVia?: CollaboratorProvenance
+  grantedBy?: AccountUuid // actor account that triggered the grant
+  grantedByMessage?: Ref<Doc> // only when grantedVia === 'mention'
+  // only when grantedVia === 'group'; references the GroupGrant (not the group)
+  // so two grants of the same group on the same doc stay distinguishable.
+  grantedByGroup?: Ref<GroupGrant>
+  // Access level of this grant. undefined at structural records === no explicit
+  // grant (visibility comes from space membership). At grantedVia records:
+  // missing ⇒ interpreted as 'read' (fail-safe minimal).
+  level?: AccessLevel
+}
+
+/**
+ * A workspace-wide named group of accounts. Not a Space and not a security
+ * carrier by itself — it only becomes an access-grant once a GroupGrant
+ * references it on a secured doc, at which point a server trigger materializes
+ * one Collaborator per member (design section 2.2 / 2.8, G2 = materialized).
+ * @public
+ */
+export interface AccessGroup extends Doc {
+  name: string
+  description?: string
+  members: AccountUuid[]
+  owners: AccountUuid[] // may edit the group (membership / name)
+}
+
+/**
+ * A group access-grant attached to a secured doc (e.g. an Issue). The reconcile
+ * trigger materializes one `grantedVia: 'group'` Collaborator per group member,
+ * copying `level` onto each derived record. Unlike Collaborator records,
+ * `GroupGrant.level` is mutable (guarded) — the trigger propagates the new
+ * level to the derived collaborators.
+ * @public
+ */
+export interface GroupGrant extends AttachedDoc {
+  group: Ref<AccessGroup>
+  grantedBy: AccountUuid
+  level?: AccessLevel // default 'read'
 }
 
 /**

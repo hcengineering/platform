@@ -523,7 +523,17 @@ export function createModel (builder: Builder): void {
 
   builder.createDoc<ClassCollaborators<Issue>>(core.class.ClassCollaborators, core.space.Model, {
     attachedTo: tracker.class.Issue,
-    fields: ['createdBy', 'assignee']
+    fields: ['createdBy', 'assignee'],
+    // Collaborator status grants read visibility on the issue, bypassing
+    // project-space membership. Used so a user @-mentioned on an issue
+    // they are not a project member of can actually see and comment on it.
+    provideSecurity: true,
+    // @-mentions in chat/activity messages on an issue auto-create a
+    // Collaborator record (server-plugins/chunter-resources). Combined
+    // with provideSecurity above, the mentioned user gets explicit,
+    // disclosed read+comment access. Field writes remain blocked for
+    // collab-only guests by the GuestPermissions middleware veto.
+    mentionsGrantAccess: true
   })
 
   builder.mixin(tracker.class.Issue, core.class.Class, setting.mixin.Editable, {

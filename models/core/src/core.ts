@@ -14,6 +14,8 @@
 //
 
 import {
+  type AccessGroup,
+  type AccessLevel,
   type AccountUuid,
   type AnyAttribute,
   type ArrOf,
@@ -24,12 +26,15 @@ import {
   type ClassCollaborators,
   type ClassifierKind,
   type Collaborator,
+  type CollaboratorProvenance,
   type Collection,
+  type GroupGrant,
   type Configuration,
   type ConfigurationElement,
   type CustomSequence,
   type Doc,
   type Domain,
+  DOMAIN_ACCESS_GROUP,
   DOMAIN_BLOB,
   DOMAIN_COLLABORATOR,
   DOMAIN_CONFIGURATION,
@@ -64,12 +69,14 @@ import {
   type VersionableClass
 } from '@hcengineering/core'
 import {
+  ArrOf as ArrOfProp,
   Hidden,
   Index,
   Mixin as MMixin,
   Model,
   Prop,
   ReadOnly,
+  TypeAccountUuid,
   TypeBoolean,
   TypeFileSize,
   TypeIntlString,
@@ -438,11 +445,40 @@ export class TClassCollaborators extends TDoc implements ClassCollaborators<Doc>
   fields!: (keyof Doc)[]
   provideSecurity?: boolean
   provideAttachedSecurity?: boolean
+  mentionsGrantAccess?: boolean
 }
 
 @Model(core.class.Collaborator, core.class.Doc, DOMAIN_COLLABORATOR)
 export class TCollaborator extends TAttachedDoc implements Collaborator {
   collaborator!: AccountUuid
+  grantedVia?: CollaboratorProvenance
+  grantedBy?: AccountUuid
+  grantedByMessage?: Ref<Doc>
+  grantedByGroup?: Ref<GroupGrant> // P4: sharpened from Ref<Doc>
+  level?: AccessLevel
+}
+
+@Model(core.class.AccessGroup, core.class.Doc, DOMAIN_ACCESS_GROUP)
+export class TAccessGroup extends TDoc implements AccessGroup {
+  @Prop(TypeString(), core.string.Name)
+  @Index(IndexKind.FullText)
+    name!: string
+
+  @Prop(TypeString(), core.string.Description)
+    description?: string
+
+  @Prop(ArrOfProp(TypeAccountUuid()), core.string.Members)
+    members!: AccountUuid[]
+
+  @Prop(ArrOfProp(TypeAccountUuid()), core.string.Owners)
+    owners!: AccountUuid[]
+}
+
+@Model(core.class.GroupGrant, core.class.AttachedDoc, DOMAIN_ACCESS_GROUP)
+export class TGroupGrant extends TAttachedDoc implements GroupGrant {
+  group!: Ref<AccessGroup>
+  grantedBy!: AccountUuid
+  level?: AccessLevel
 }
 
 @MMixin(core.mixin.VersionableClass, core.class.Class)

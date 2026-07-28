@@ -25,6 +25,7 @@ import { serverActivityId } from '@hcengineering/server-activity'
 import { serverAiBotId } from '@hcengineering/server-ai-bot'
 import { serverAttachmentId } from '@hcengineering/server-attachment'
 import { serverCalendarId } from '@hcengineering/server-calendar'
+import { serverAccessGroupId } from '@hcengineering/server-access-group'
 import { serverCardId } from '@hcengineering/server-card'
 import { serverChunterId } from '@hcengineering/server-chunter'
 import { serverCollaborationId } from '@hcengineering/server-collaboration'
@@ -53,6 +54,7 @@ addLocation(serverCollaborationId, () => import('@hcengineering/server-collabora
 addLocation(serverContactId, () => import('@hcengineering/server-contact-resources'))
 addLocation(serverNotificationId, () => import('@hcengineering/server-notification-resources'))
 addLocation(serverChunterId, () => import('@hcengineering/server-chunter-resources'))
+addLocation(serverAccessGroupId, () => import('@hcengineering/server-access-group-resources'))
 addLocation(serverInventoryId, () => import('@hcengineering/server-inventory-resources'))
 addLocation(serverLeadId, () => import('@hcengineering/server-lead-resources'))
 addLocation(serverRecruitId, () => import('@hcengineering/server-recruit-resources'))

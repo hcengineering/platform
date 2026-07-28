@@ -249,6 +249,16 @@
     "ShowQRCode": "QR-Code anzeigen",
     "EnterVerificationCode": "Verifizierungscode eingeben",
     "OverrideAttribute": "Überschreibattribut",
-    "Required": "Pflichtfeld"
+    "Required": "Pflichtfeld",
+    "AccessGroups": "Zugriffsgruppen",
+    "AccessGroupsHint": "Benannte Personengruppen. Gewähre einer Gruppe Zugriff auf ein Issue und alle Mitglieder erhalten Zugriff; zukünftige Mitglieder erben ihn automatisch.",
+    "NewAccessGroup": "Neue Gruppe",
+    "AccessGroupName": "Gruppenname",
+    "AccessGroupDescription": "Beschreibung",
+    "DeleteAccessGroup": "Gruppe löschen",
+    "AccessGroupInUse": "Diese Gruppe gewährt noch Zugriff auf Issues. Entferne diese Grants, bevor du sie löschst.",
+    "NoAccessGroups": "Noch keine Zugriffsgruppen.",
+    "GroupOwners": "Eigentümer",
+    "GroupMembers": "Mitglieder"
   }
 }

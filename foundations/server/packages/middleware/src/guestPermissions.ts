@@ -8,8 +8,11 @@ import core, {
   type Account,
   AccountRole,
   type Class,
+  type Collaborator,
   type Doc,
   type ClassPermission,
+  getClassCollaborators,
+  hasAtLeast,
   type Permission,
   hasAccountRole,
   type MeasureContext,
@@ -121,6 +124,15 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
 
   async tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     const account = ctx.contextData.account
+
+    // C-02: the collab-only field-update / remove veto is level-aware and role-agnostic
+    // by construction — it passes space members and Maintainer+, and only vetoes a
+    // non-member who reaches the doc through a read-level grant on a PRIVATE space. It
+    // MUST run for every account, not just guests: it previously lived inside processTx,
+    // which the >= User early-return below skips, so the grant level went unenforced for
+    // regular users (a read-grant holder could edit fields).
+    await this.checkCollabOnlyGrantVeto(ctx, txes, account)
+
     if (hasAccountRole(account, AccountRole.User)) {
       this.invalidateCacheIfNeeded(txes)
       return await this.provideTx(ctx, txes)
@@ -157,7 +169,111 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
       } else if (cudTx.space !== core.space.DerivedTx && (await this.isForbiddenTx(ctx, cudTx, account))) {
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
+      // C-02: the collab-only field-update / remove veto moved to checkCollabOnlyGrantVeto,
+      // which runs for ALL roles at the top of tx(); it no longer lives in this guest-only
+      // path (the >= User early-return used to skip it).
     }
+  }
+
+  /**
+   * C-02: run the collab-only field-update / remove veto for EVERY account, not just the
+   * guest path. Recurses into TxApplyIf so a grant cannot be smuggled inside a batch.
+   */
+  private async checkCollabOnlyGrantVeto (
+    ctx: MeasureContext<SessionData>,
+    txes: Tx[],
+    account: Account
+  ): Promise<void> {
+    for (const tx of txes) {
+      await this.checkCollabOnlyGrantVetoForTx(ctx, tx, account)
+    }
+  }
+
+  private async checkCollabOnlyGrantVetoForTx (
+    ctx: MeasureContext<SessionData>,
+    tx: Tx,
+    account: Account
+  ): Promise<void> {
+    if (tx._class === core.class.TxApplyIf) {
+      for (const t of (tx as TxApplyIf).txes) {
+        await this.checkCollabOnlyGrantVetoForTx(ctx, t, account)
+      }
+      return
+    }
+    if (TxProcessor.isExtendsCUD(tx._class)) {
+      if (await this.isForbiddenCollabOnlyGuestFieldUpdate(ctx, tx as TxCUD<Doc>, account)) {
+        throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      }
+    }
+  }
+
+  /**
+   * Class-agnostic, level-aware veto for field updates / removes on docs whose
+   * class has opted into access-granting collaborators (provideSecurity: true,
+   * mentionsGrantAccess: true on the ClassCollaborators model entry).
+   *
+   * The caller is "collab-only" on the target doc when their only route to it is
+   * a per-doc Collaborator grant, i.e. they are NOT a space member and:
+   *   - they are a guest-tier account, OR
+   *   - they are a regular User and the space is PRIVATE (a public space is a
+   *     normal collaborative space reached without a grant → unchanged behavior).
+   * Workspace-privileged accounts (Maintainer+) and space members always pass.
+   *
+   * For a collab-only caller the grant LEVEL decides (P2.3, ordinal read<write<admin):
+   *   - TxUpdateDoc (field write): allowed only if the caller holds a Collaborator
+   *     record with level >= write on the doc (max over all their records);
+   *     a read-only grant (or no grant) is vetoed.
+   *   - TxRemoveDoc (L-RM): deleting the doc itself is reserved for space
+   *     members/owners and is vetoed regardless of grant level.
+   *   - Comments via chunter.class.ChatMessage keep flowing (createAccessLevel).
+   *
+   * L-GP fail-closed: an unresolvable space forbids. If the class has not opted
+   * in, this veto is a no-op (returns false).
+   */
+  private async isForbiddenCollabOnlyGuestFieldUpdate (
+    ctx: MeasureContext<SessionData>,
+    cudTx: TxCUD<Doc>,
+    account: Account
+  ): Promise<boolean> {
+    // L-RM: veto covers both field-updates AND removes.
+    if (cudTx._class !== core.class.TxUpdateDoc && cudTx._class !== core.class.TxRemoveDoc) return false
+
+    const classCollab = getClassCollaborators(this.context.modelDb, this.context.hierarchy, cudTx.objectClass)
+    if (classCollab?.provideSecurity !== true) return false
+    if (classCollab.mentionsGrantAccess !== true) return false
+
+    const space = (await this.findAll<Space>(ctx, core.class.Space, { _id: cudTx.objectSpace }))[0]
+    // L-GP: fail-closed — if the doc's space cannot be resolved we cannot prove
+    // the caller is a space member, so the veto must FORBID.
+    if (space === undefined) return true
+    if (space.members?.includes(account.uuid)) return false
+
+    // Non-member. Decide whether the caller is "collab-only" (subject to the veto).
+    const isGuest =
+      account.role === AccountRole.Guest ||
+      account.role === AccountRole.DocGuest ||
+      account.role === AccountRole.ReadOnlyGuest
+    if (!isGuest) {
+      // Workspace-privileged accounts keep broad authority (unchanged).
+      if (hasAccountRole(account, AccountRole.Maintainer)) return false
+      // A regular User is only collab-only on a PRIVATE space; on a public space
+      // they participate through normal visibility (no grant) → unchanged pass.
+      // Fail-closed: treat anything other than an explicit public flag as private.
+      if (!space.private) return false
+    }
+
+    // Collab-only caller. Field updates require level >= write; removes stay
+    // vetoed. A person may hold several records (e.g. mention:read + manual:write)
+    // — the highest level wins.
+    if (cudTx._class === core.class.TxUpdateDoc) {
+      const grants = await this.findAll<Collaborator>(ctx, core.class.Collaborator, {
+        attachedTo: cudTx.objectId,
+        collaborator: account.uuid
+      })
+      if (grants.some((g) => hasAtLeast(g.level, 'write'))) return false
+    }
+
+    return true
   }
 
   /**

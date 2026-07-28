@@ -11,8 +11,10 @@
     "svelte-check": "do-svelte-check",
     "_phase:svelte-check": "do-svelte-check",
     "build:watch": "compile ui",
+    "test": "jest --passWithNoTests --silent",
     "_phase:build": "compile ui",
     "_phase:format": "format src",
+    "_phase:test": "jest --passWithNoTests --silent",
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
@@ -57,6 +59,7 @@
     "@hcengineering/preference": "workspace:^0.7.0",
     "@hcengineering/presentation": "workspace:^0.7.0",
     "@hcengineering/text": "workspace:^0.7.19",
+    "@hcengineering/text-core": "workspace:^0.7.19",
     "@hcengineering/ui": "workspace:^0.7.0",
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/view-resources": "workspace:^0.7.0",

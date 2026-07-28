@@ -40,10 +40,10 @@ test.describe('Mentions issue tests', () => {
     await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
   })
 
-  test('When Change assigner user should be added as Collaborators', async ({ page }) => {
+  test('Assignee is granted structural access but is not shown as an additional grant', async () => {
     const mentionIssue: NewIssue = {
-      title: `When Change assigner user should be added as Collaborators-${generateId()}`,
-      description: 'When Change assigner user should be added as Collaborators description'
+      title: `Assignee structural access-${generateId()}`,
+      description: 'Assignee structural access description'
     }
 
     await issuesPage.clickModelSelectorAll()
@@ -57,8 +57,14 @@ test.describe('Mentions issue tests', () => {
       assignee: 'Dirak Kainin'
     })
     await issuesDetailsPage.checkActivityContentExist('Assignee set to Dirak Kainin')
-    await issuesDetailsPage.checkCollaboratorsCount('2 members')
-    await issuesDetailsPage.checkCollaborators(['Appleseed John', 'Dirak Kainin'])
+
+    // The IssueAccessPanel shows project members and explicit additional grants. The
+    // assignee is a legacy/structural collaborator (grantedVia == null): it stays
+    // access-relevant (enforced by CollaboratorGuardMiddleware, covered by the server
+    // guard tests) but is intentionally NOT rendered as a managed additional grant.
+    // This asserts that design decision and guards against a regression toward showing
+    // structural collaborators as grants.
+    await issuesDetailsPage.checkNotInAdditionalAccess('Dirak Kainin')
   })
 
   test('Check that the backlink shown in the Issue activity', async ({ page }) => {

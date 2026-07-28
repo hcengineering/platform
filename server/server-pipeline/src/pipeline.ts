@@ -20,6 +20,7 @@ import {
 import {
   ApplyTxMiddleware,
   BroadcastMiddleware,
+  CollaboratorGuardMiddleware,
   ConfigurationMiddleware,
   ContextNameMiddleware,
   DBAdapterInitMiddleware,
@@ -152,6 +153,7 @@ export function createServerPipeline (
         SpaceSecurityMiddleware.create(opt.adapterSecurity ?? false, ctx, context, next),
       SpacePermissionsMiddleware.create,
       GuestPermissionsMiddleware.create,
+      CollaboratorGuardMiddleware.create,
       ConfigurationMiddleware.create,
       ContextNameMiddleware.create,
       MarkDerivedEntryMiddleware.create,

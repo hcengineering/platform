@@ -249,6 +249,16 @@
     "ShowQRCode": "Afficher le code QR",
     "EnterVerificationCode": "Entrer le code de vérification",
     "OverrideAttribute": "Surcharger l'attribut",
-    "Required": "Requis"
+    "Required": "Requis",
+    "AccessGroups": "Access groups",
+    "AccessGroupsHint": "Named groups of people. Grant a group access to an issue and every member gains access; future members inherit it automatically.",
+    "NewAccessGroup": "New group",
+    "AccessGroupName": "Group name",
+    "AccessGroupDescription": "Description",
+    "DeleteAccessGroup": "Delete group",
+    "AccessGroupInUse": "This group still grants access to issues. Remove those grants before deleting it.",
+    "NoAccessGroups": "No access groups yet.",
+    "GroupOwners": "Owners",
+    "GroupMembers": "Members"
   }
 }

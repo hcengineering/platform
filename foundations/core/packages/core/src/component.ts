@@ -17,6 +17,7 @@ import { plugin } from '@hcengineering/platform'
 import type { BenchmarkDoc } from './benchmark'
 import type {
   Account,
+  AccessGroup,
   AccountUuid,
   AnyAttribute,
   ArrOf,
@@ -28,6 +29,7 @@ import type {
   ClassCollaborators,
   ClassPermission,
   Collaborator,
+  GroupGrant,
   Collection,
   Configuration,
   ConfigurationElement,
@@ -182,6 +184,8 @@ export default plugin(coreId, {
     CustomSequence: '' as Ref<Class<CustomSequence>>,
     ClassCollaborators: '' as Ref<Class<ClassCollaborators<Doc>>>,
     Collaborator: '' as Ref<Class<Collaborator>>,
+    AccessGroup: '' as Ref<Class<AccessGroup>>,
+    GroupGrant: '' as Ref<Class<GroupGrant>>,
     ModulePermissionGroup: '' as Ref<Class<ModulePermissionGroup>>
   },
   icon: {

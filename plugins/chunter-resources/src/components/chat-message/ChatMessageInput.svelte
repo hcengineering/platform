@@ -17,16 +17,30 @@
   import { Analytics } from '@hcengineering/analytics'
   import { AttachmentRefInput } from '@hcengineering/attachment-resources'
   import chunter, { ChatMessage, ChunterEvents, ThreadMessage } from '@hcengineering/chunter'
-  import { Class, Doc, generateId, getCurrentAccount, Ref, type CommitResult } from '@hcengineering/core'
+  import contact, { type Person } from '@hcengineering/contact'
+  import core, {
+    type AccountUuid,
+    Class,
+    Doc,
+    generateId,
+    getCurrentAccount,
+    Ref,
+    resolveMentionGrantTarget,
+    type Space,
+    type CommitResult
+  } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup, markupToJSON } from '@hcengineering/text'
+  import { extractReferences } from '@hcengineering/text-core'
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
-  import { ThrottledCaller } from '@hcengineering/ui'
+  import { showPopup, ThrottledCaller, Label } from '@hcengineering/ui'
   import { getSpace, editingMessageStore } from '@hcengineering/activity-resources'
 
   import { getChannelSpace } from '../../utils'
+  import { applyMentionGrantChoices } from '../../mentionGrants'
   import ChannelTypingInfo from '../ChannelTypingInfo.svelte'
+  import MentionGrantConfirm from './MentionGrantConfirm.svelte'
 
   export let object: Doc
   export let chatMessage: ChatMessage | undefined = undefined
@@ -126,47 +140,152 @@
     currentMessage.attachments = attachments
   }
 
-  async function handleCreate (event: CustomEvent, _id: Ref<ChatMessage>): Promise<void> {
+  // Inline "this mention grants access" indicator (M-G.5). Shown while typing
+  // whenever the target document is a grant target AND the current draft
+  // contains a non-denied person mention. The binding confirmation dialog
+  // (MentionGrantConfirm) remains the authoritative, fail-closed consent step
+  // before send; this is only an early, dezent heads-up.
+  let objectIsGrantTarget = false
+  $: void resolveMentionGrantTarget(object, (cls, q) => client.findAll(cls, q))
+    .then((t) => {
+      objectIsGrantTarget = t != null
+    })
+    .catch(() => {
+      objectIsGrantTarget = false
+    })
+
+  function hasGrantingMention (markup: string | undefined): boolean {
+    if (markup === undefined || markup === '' || isEmptyMarkup(markup)) return false
+    let node
     try {
+      node = markupToJSON(markup)
+    } catch {
+      return false
+    }
+    return extractReferences(node)
+      .filter(({ objectClass }) => hierarchy.isDerived(objectClass, contact.class.Person))
+      .some(({ grantsAccess }) => grantsAccess !== 'false')
+  }
+
+  $: showGrantWarning = objectIsGrantTarget && hasGrantingMention(inputContent)
+
+  /**
+   * Disclosure UX for the mention-grants-access flow. Resolves the set of NEW
+   * grantees (mentioned Persons not already in the grant-target space) and asks
+   * the actor to confirm/deselect each. Returns:
+   *   - null  => cancel (do not send)
+   *   - Map   => send; map is personId -> grant choice (true/false). Empty map
+   *              when there is nothing to disclose (send unchanged).
+   * The actual access grant happens server-side via the chunter trigger; this
+   * dialog only discloses + lets the actor opt specific people out.
+   */
+  async function resolveMentionGrantChoices (markup: string): Promise<Map<string, boolean> | null> {
+    if (markup === undefined || markup === '' || isEmptyMarkup(markup)) return new Map()
+    let node
+    try {
+      node = markupToJSON(markup)
+    } catch {
+      return new Map()
+    }
+    const references = extractReferences(node)
+    const mentionedPersonIds = references
+      .filter(({ objectClass }) => hierarchy.isDerived(objectClass, contact.class.Person))
+      .filter(({ grantsAccess }) => grantsAccess !== 'false') // V3c: already-denied refs need no disclosure
+      .map(({ objectId }) => objectId as Ref<Person>)
+    if (mentionedPersonIds.length === 0) return new Map()
+
+    const grantTarget = await resolveMentionGrantTarget(object, (cls, q) => client.findAll(cls, q))
+    if (grantTarget == null) return new Map()
+
+    const space = (await client.findAll<Space>(core.class.Space, { _id: grantTarget.space }))[0]
+    if (space === undefined) return new Map()
+    const members = new Set<AccountUuid>(space.members ?? [])
+
+    const persons = await client.findAll(contact.class.Person, { _id: { $in: mentionedPersonIds } })
+    const newGrantees = persons.filter((p) => p.personUuid != null && !members.has(p.personUuid as AccountUuid))
+    if (newGrantees.length === 0) return new Map()
+
+    const targetName: string = (grantTarget as any).name ?? (grantTarget as any).title ?? grantTarget._id
+    const spaceName: string = (space as any).name ?? space._id
+    const grantees = newGrantees.map((p) => ({ id: p._id, name: p.name ?? String(p.personUuid) }))
+
+    return await new Promise<Map<string, boolean> | null>((resolve) => {
+      showPopup(MentionGrantConfirm, { grantees, targetName, spaceName }, undefined, (res?: Map<string, boolean>) => {
+        resolve(res instanceof Map ? res : null)
+      })
+    })
+  }
+
+  // Runs the mention-grants disclosure for an outgoing/edited message and
+  // rewrites event.detail.message with the actor's per-grantee choices.
+  // Returns false if the actor cancelled (caller must abort the send).
+  async function prepareMentionGrantChoices (event: CustomEvent): Promise<boolean> {
+    const markup = event.detail?.message
+    const choices = await resolveMentionGrantChoices(typeof markup === 'string' ? markup : '')
+    if (choices === null) return false // actor cancelled
+    if (choices.size > 0 && typeof markup === 'string') {
+      event.detail.message = applyMentionGrantChoices(markup, choices)
+    }
+    return true
+  }
+
+  // Returns true if the message was sent, false if the actor cancelled the
+  // grant dialog or the send failed. The caller (onMessage) must only clear
+  // the draft/input on a true result, otherwise a cancelled grant dialog
+  // would lose the unsent comment.
+  async function handleCreate (event: CustomEvent, _id: Ref<ChatMessage>): Promise<boolean> {
+    try {
+      if (!(await prepareMentionGrantChoices(event))) return false
+
       const res = await createMessage(event, _id, `chunter.create.${_class} ${object._class}`)
 
       console.log(`create.${_class} measure`, res.serverTime, res.time)
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageCreated, { ok: res.result, objectId, objectClass: object._class })
+      return true
     } catch (err: any) {
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageCreated, { ok: false, objectId, objectClass: object._class })
       Analytics.handleError(err)
+      return false
     }
   }
 
-  async function handleEdit (event: CustomEvent): Promise<void> {
+  async function handleEdit (event: CustomEvent): Promise<boolean> {
     try {
+      if (!(await prepareMentionGrantChoices(event))) return false
+
       await editMessage(event)
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageEdited, { ok: true, objectId, objectClass: object._class })
+      return true
     } catch (err: any) {
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageEdited, { ok: false, objectId, objectClass: object._class })
       Analytics.handleError(err)
+      return false
     }
   }
 
   async function onMessage (event: CustomEvent): Promise<void> {
-    draftController.remove()
-    inputRef.removeDraft(false)
+    loading = true
 
+    let ok = false
     if (chatMessage !== undefined) {
-      loading = true
-      await handleEdit(event)
+      ok = await handleEdit(event)
     } else {
-      void handleCreate(event, _id)
+      ok = await handleCreate(event, _id)
       void deleteTypingInfo()
     }
 
-    // Remove draft from Local Storage
-    clear()
-    dispatch('submit', false)
+    // Only clear the input / drop the draft after a successful send or edit.
+    // A cancelled grant dialog (ok === false) must preserve the unsent comment.
+    if (ok) {
+      draftController.remove()
+      inputRef.removeDraft(false)
+      clear()
+      dispatch('submit', false)
+    }
     loading = false
   }
 
@@ -254,6 +373,24 @@
   onKeyDown={handleKeyDown}
 />
 
+{#if showGrantWarning}
+  <div class="grantHint overflow-label">
+    <Label label={chunter.string.MentionGrantsAccessHint} />
+  </div>
+{/if}
+
 {#if withTypingInfo}
   <ChannelTypingInfo {object} />
 {/if}
+
+<style lang="scss">
+  .grantHint {
+    margin-top: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--theme-warning-color);
+    border-left: 2px solid var(--theme-warning-color);
+    background-color: var(--theme-warning-background, transparent);
+    border-radius: 0.25rem;
+  }
+</style>

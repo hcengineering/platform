@@ -43,8 +43,9 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   readonly textRelated = (): Locator =>
     this.page.locator('//span[text()="Related"]/following-sibling::div[1]/div//span')
 
-  readonly buttonCollaborators = (): Locator =>
-    this.page.locator('//span[text()="Collaborators"]/following-sibling::div[1]/button')
+  readonly issueAccessPanel = (): Locator => this.page.locator('#issue-access-panel')
+  readonly issueAccessMembersToggle = (): Locator => this.page.locator('#issue-access-members .subsection-title')
+  readonly issueAccessAdditional = (): Locator => this.page.locator('#issue-access-additional')
 
   readonly buttonIssueOnSearchForIssueModal = (): Locator =>
     this.page.locator('div.popup div.tabs > div.tab:last-child')
@@ -186,15 +187,22 @@ export class IssuesDetailsPage extends CommonTrackerPage {
   }
 
   async checkCollaborators (names: Array<string>): Promise<void> {
-    await this.buttonCollaborators().click()
+    // The IssueAccessPanel shows project members (collapsed by default) and the
+    // explicit additional grants (always visible). Expand the members section so a
+    // project-member collaborator (e.g. the issue author) is rendered, then assert
+    // each expected name is present somewhere in the panel — members or grants.
+    await expect(this.issueAccessPanel()).toBeVisible()
+    await this.issueAccessMembersToggle().click()
     for (const name of names) {
-      await expect(this.stateHistoryDropdown(name)).toBeVisible()
+      await expect(this.issueAccessPanel().getByText(name).first()).toBeVisible()
     }
-    await this.inputTitle().click({ force: true })
   }
 
-  async checkCollaboratorsCount (count: string): Promise<void> {
-    await expect(this.buttonCollaborators()).toHaveText(count)
+  async checkNotInAdditionalAccess (name: string): Promise<void> {
+    // Assert a name is NOT rendered as a managed additional grant. Wait for the panel
+    // first so the absence is meaningful (not merely "not yet rendered").
+    await expect(this.issueAccessPanel()).toBeVisible()
+    await expect(this.issueAccessAdditional().getByText(name)).toHaveCount(0)
   }
 
   async addToDescription (description: string): Promise<void> {

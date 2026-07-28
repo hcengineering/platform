@@ -14,7 +14,7 @@
 //
 
 import { Analytics } from '@hcengineering/analytics'
-import {
+import core, {
   type Attribute,
   type Class,
   type Client,
@@ -517,7 +517,19 @@ export default async (): Promise<Resources> => ({
     ) => await getAllStates(query, onUpdate, queryId, attr, false),
     GetVisibleFilters: getVisibleFilters,
     IssueChatTitleProvider: getIssueChatTitle,
-    IsProjectJoined: async (project: Project) => project.members.includes(getCurrentAccount().uuid),
+    IsProjectJoined: async (project: Project) => {
+      const accountUuid = getCurrentAccount().uuid
+      if (project.members.includes(accountUuid)) return true
+      // Collab-only access: surface projects in the nav tree when the user is a
+      // Collaborator on any doc inside this project, even without space-membership.
+      // Backend security (postgres collabRes OR-branch + middleware bypass) limits
+      // what the user can actually open within the project.
+      const collab = await getClient().findOne(core.class.Collaborator, {
+        collaborator: accountUuid,
+        space: project._id
+      })
+      return collab !== undefined
+    },
     GetIssueStatusCategories: getIssueStatusCategories,
     SetComponentStore: setStore,
     ComponentFilterFunction: filterComponents,

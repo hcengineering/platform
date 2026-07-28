@@ -342,6 +342,19 @@ export function createModel (builder: Builder): void {
     setting.class.WorkspaceSettingCategory,
     core.space.Model,
     {
+      name: 'accessGroups',
+      label: setting.string.AccessGroups,
+      icon: setting.icon.Members,
+      component: setting.component.AccessGroups,
+      order: 1150,
+      role: AccountRole.Maintainer
+    },
+    'setting:ids:AccessGroups' as Ref<any>
+  )
+  builder.createDoc(
+    setting.class.WorkspaceSettingCategory,
+    core.space.Model,
+    {
       name: 'configuration',
       label: setting.string.Configure,
       icon: setting.icon.Setting,

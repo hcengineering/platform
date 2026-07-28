@@ -192,6 +192,7 @@ describe('GuestPermissionsMiddleware', () => {
         return a === b
       }
       ;(mw as any).context.hierarchy.classHierarchyMixin = () => undefined
+      ;(mw as any).context.hierarchy.getAncestors = () => []
     }
 
     it('allows create for covered class in any space (TxAccessLevel is irrelevant)', async () => {
@@ -276,6 +277,7 @@ describe('GuestPermissionsMiddleware', () => {
         if (b === core.class.Space) return false
         return a === b
       }
+      ;(mw as any).context.hierarchy.getAncestors = () => []
 
       const tx = makeCreateTx(UNCOVERED_CLASS, ALLOWED_SPACE)
       const ctx = makeCtx(makeAccount(AccountRole.Guest))
@@ -310,6 +312,7 @@ describe('GuestPermissionsMiddleware', () => {
         if (b === core.class.Space) return false
         return a === b
       }
+      ;(mw as any).context.hierarchy.getAncestors = () => []
 
       const tx = makeCreateTx(COVERED_CLASS, ALLOWED_SPACE)
       const ctx = makeCtx(makeAccount(AccountRole.Guest))
@@ -337,6 +340,7 @@ describe('GuestPermissionsMiddleware', () => {
         if (b === core.class.Space) return false
         return a === b
       }
+      ;(mw as any).context.hierarchy.getAncestors = () => []
 
       const tx = makeCreateTx(COVERED_CLASS, FORBIDDEN_SPACE)
       const ctx = makeCtx(makeAccount(AccountRole.Guest))
@@ -364,6 +368,7 @@ describe('GuestPermissionsMiddleware', () => {
         if (b === core.class.Space) return false
         return a === b
       }
+      ;(mw as any).context.hierarchy.getAncestors = () => []
     }
 
     it('allows guest to update document created by same account', async () => {
@@ -468,6 +473,7 @@ describe('GuestPermissionsMiddleware', () => {
         return a === b
       }
       ;(mw as any).context.hierarchy.classHierarchyMixin = () => undefined
+      ;(mw as any).context.hierarchy.getAncestors = () => []
 
       // First tx as guest should load cache
       const userCtx = makeCtx(makeAccount(AccountRole.User))
@@ -486,6 +492,178 @@ describe('GuestPermissionsMiddleware', () => {
       await mw.tx(userCtx, [settingsTx])
       // Cache should be cleared after settings update
       expect((mw as any).permissionsCache).toBeUndefined()
+    })
+  })
+
+  // ─── collab-only guest veto: fail-closed (L-GP) + covers remove (L-RM) ────────
+  describe('collab-only guest veto (mention-grants opt-in)', () => {
+    const ISSUE_CLASS = 'test:class:Issue' as Ref<Class<Doc>>
+    const ISSUE_SPACE = 'test:space:Issue' as Ref<Space>
+
+    // Build a middleware whose model opts ISSUE_CLASS into mention-grants
+    // (provideSecurity + mentionsGrantAccess). `space` controls what findAll
+    // returns for the doc's space (undefined => unresolvable); `grants` is what a
+    // Collaborator lookup returns for the caller on the target doc.
+    function makeCollabMw (space: Space | undefined, grants: any[] = []): GuestPermissionsMiddleware {
+      const mw = makeMiddleware(async (_ctx, _class) => {
+        if (_class === core.class.Collaborator) return grants
+        return space !== undefined ? [space] : []
+      })
+      ;(mw as any).context.hierarchy.getAncestors = (id: any) => [id]
+      ;(mw as any).context.hierarchy.isDerived = (a: any, b: any) => a === b
+      ;(mw as any).context.hierarchy.classHierarchyMixin = () => undefined
+      ;(mw as any).context.modelDb = {
+        findAllSync: (_class: any, _q: any) => [
+          { attachedTo: ISSUE_CLASS, provideSecurity: true, mentionsGrantAccess: true }
+        ]
+      }
+      return mw
+    }
+
+    // Spaces default to private: a non-member reaching an issue in a private space
+    // can only be there through a per-doc collaborator grant (the P2.2 capability),
+    // so it is subject to the level-aware write veto. Public spaces (private:false)
+    // are normal collaborative spaces where non-member members participate freely.
+    function makeSpace (members: any[], isPrivate = true): Space {
+      return { _id: ISSUE_SPACE, members, private: isPrivate } as any
+    }
+
+    function grant (level?: 'read' | 'write' | 'admin'): any {
+      return { collaborator: 'test:collab', level }
+    }
+
+    it('L-GP: fail-closed — unresolvable space forbids a guest field update', async () => {
+      const mw = makeCollabMw(undefined)
+      const guest = makeAccount(AccountRole.Guest)
+      const factory = new TxFactory('test:account:System' as PersonId)
+      const tx = factory.createTxUpdateDoc(ISSUE_CLASS, ISSUE_SPACE, generateId() as any, {})
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(guest), tx, guest)
+      expect(forbidden).toBe(true)
+    })
+
+    it('L-RM: collab-only guest TxRemoveDoc on opted-in doc is forbidden', async () => {
+      const guest = makeAccount(AccountRole.Guest)
+      const mw = makeCollabMw(makeSpace([])) // guest is NOT a space member
+      const factory = new TxFactory('test:account:System' as PersonId)
+      const tx = factory.createTxRemoveDoc(ISSUE_CLASS, ISSUE_SPACE, generateId() as any)
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(guest), tx, guest)
+      expect(forbidden).toBe(true)
+    })
+
+    it('space-member guest is NOT vetoed (update stays allowed)', async () => {
+      const guest = makeAccount(AccountRole.Guest)
+      const mw = makeCollabMw(makeSpace([guest.uuid]))
+      const factory = new TxFactory('test:account:System' as PersonId)
+      const tx = factory.createTxUpdateDoc(ISSUE_CLASS, ISSUE_SPACE, generateId() as any, {})
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(guest), tx, guest)
+      expect(forbidden).toBe(false)
+    })
+
+    it('non-member User on a PUBLIC space passes the veto (normal collaboration)', async () => {
+      // Public-space non-members reach the doc through ordinary space visibility,
+      // not a per-doc grant, so their existing access is preserved unchanged.
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([], false))
+      const factory = new TxFactory('test:account:System' as PersonId)
+      const tx = factory.createTxRemoveDoc(ISSUE_CLASS, ISSUE_SPACE, generateId() as any)
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(user), tx, user)
+      expect(forbidden).toBe(false)
+    })
+
+    // ─── P2.3: level-aware write enforcement (read blocks, write/admin allows) ──
+    function updateTx (): Tx {
+      const factory = new TxFactory('test:account:System' as PersonId)
+      return factory.createTxUpdateDoc(ISSUE_CLASS, ISSUE_SPACE, generateId() as any, {})
+    }
+    function removeTx (): Tx {
+      const factory = new TxFactory('test:account:System' as PersonId)
+      return factory.createTxRemoveDoc(ISSUE_CLASS, ISSUE_SPACE, generateId() as any)
+    }
+
+    it('P2.3: collab-only User with READ grant cannot update issue fields', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]), [grant('read')])
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(user), updateTx(), user)
+      expect(forbidden).toBe(true)
+    })
+
+    it('P2.3: collab-only User with WRITE grant CAN update issue fields', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]), [grant('write')])
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(user), updateTx(), user)
+      expect(forbidden).toBe(false)
+    })
+
+    it('P2.3: collab-only User with ADMIN grant CAN update issue fields', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]), [grant('admin')])
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(user), updateTx(), user)
+      expect(forbidden).toBe(false)
+    })
+
+    it('P2.3: multiple grants — max level wins (mention read + manual write allows)', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]), [grant('read'), grant('write')])
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(user), updateTx(), user)
+      expect(forbidden).toBe(false)
+    })
+
+    it('P2.3: collab-only User with NO grant cannot update (private space)', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]), [])
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(user), updateTx(), user)
+      expect(forbidden).toBe(true)
+    })
+
+    it('P2.3: collab-only User with WRITE grant still cannot REMOVE the issue', async () => {
+      // Deleting the doc is reserved for space members/owners; write/admin grants
+      // only free field updates, never a remove of the target doc itself.
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]), [grant('write')])
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(user), removeTx(), user)
+      expect(forbidden).toBe(true)
+    })
+
+    // ─── C-02: the veto must actually fire in the tx() pipeline for role >= User,
+    //     not only when the private method is called directly (the P2.3 tests above
+    //     bypassed tx() and so missed the >= User early-return that skipped the veto). ──
+    it('C-02: collab-only User with READ grant is blocked at tx() (pipeline-level)', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]), [grant('read')])
+      await expect(mw.tx(makeCtx(user), [updateTx()])).rejects.toThrow()
+    })
+
+    it('C-02: collab-only User with WRITE grant passes tx()', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([]), [grant('write')])
+      await expect(mw.tx(makeCtx(user), [updateTx()])).resolves.toBeDefined()
+    })
+
+    it('C-02: space member passes tx() field update (a member is never vetoed)', async () => {
+      const user = makeAccount(AccountRole.User)
+      const mw = makeCollabMw(makeSpace([user.uuid]), [grant('read')])
+      await expect(mw.tx(makeCtx(user), [updateTx()])).resolves.toBeDefined()
+    })
+
+    it('P2.3: collab-only Guest with READ grant still cannot update (regression)', async () => {
+      const guest = makeAccount(AccountRole.Guest)
+      const mw = makeCollabMw(makeSpace([]), [grant('read')])
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(guest), updateTx(), guest)
+      expect(forbidden).toBe(true)
+    })
+
+    it('P2.3: collab-only Guest with WRITE grant CAN update fields (level is role-independent)', async () => {
+      const guest = makeAccount(AccountRole.Guest)
+      const mw = makeCollabMw(makeSpace([]), [grant('write')])
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(guest), updateTx(), guest)
+      expect(forbidden).toBe(false)
+    })
+
+    it('P2.3: Maintainer non-member of a private space passes (workspace-privileged)', async () => {
+      const maint = makeAccount(AccountRole.Maintainer)
+      const mw = makeCollabMw(makeSpace([]), [])
+      const forbidden = await (mw as any).isForbiddenCollabOnlyGuestFieldUpdate(makeCtx(maint), updateTx(), maint)
+      expect(forbidden).toBe(false)
     })
   })
 })
