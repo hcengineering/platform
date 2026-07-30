@@ -941,6 +941,36 @@ export function doTrimHash (s: string | undefined): string | undefined {
   return s
 }
 
+/**
+ * Compares a per-domain digest reconstructed from a backup with a digest read from a live
+ * workspace and reports the difference from the backup's point of view.
+ *
+ * - `missing` — documents present in the backup but absent from the workspace.
+ * - `modified` — documents present in both, but with a different content hash (the workspace
+ *   version diverged from the backed-up one).
+ *
+ * Documents present in the workspace but not in the backup are intentionally not reported here:
+ * this check only answers "is everything from the backup present in the workspace", not the
+ * reverse.
+ * @public
+ */
+export function compareDomainDigest (
+  backupDigest: Map<BackupDocId, string>,
+  workspaceDigest: Map<BackupDocId, string>
+): { missing: BackupDocId[], modified: BackupDocId[] } {
+  const missing: BackupDocId[] = []
+  const modified: BackupDocId[] = []
+  for (const [id, hash] of backupDigest) {
+    const workspaceHash = workspaceDigest.get(id)
+    if (workspaceHash === undefined) {
+      missing.push(id)
+    } else if (doTrimHash(workspaceHash) !== doTrimHash(hash)) {
+      modified.push(id)
+    }
+  }
+  return { missing, modified }
+}
+
 export async function loadDigest (
   ctx: MeasureContext,
   storage: BackupStorage,

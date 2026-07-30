@@ -46,6 +46,7 @@ import {
   backupDownload,
   backupFind,
   checkBackupIntegrity,
+  checkWorkspaceBackup,
   compactBackup,
   createFileBackupStorage,
   createStorageBackupStorage,
@@ -1128,6 +1129,70 @@ export function devTool (
         }
       }
       await storageAdapter.close()
+    })
+
+  program
+    .command('backup-check-workspace <dirName> <workspace> [date]')
+    .description(
+      'Check whether all data from a backup is present in the workspace. Read-only: no data is added, removed or changed.'
+    )
+    .action(async (dirName: string, workspaceId: string, date: string | undefined) => {
+      await withAccountDatabase(async (db) => {
+        const { txes, dbUrl } = prepareTools()
+        const ws = await getWorkspace(db, workspaceId)
+        if (ws === null) {
+          throw new Error(`workspace ${workspaceId} not found`)
+        }
+
+        const wsIds = { uuid: ws.uuid, dataId: ws.dataId, url: ws.url ?? '' }
+        const storage = await createFileBackupStorage(dirName)
+        const workspaceStorage: StorageAdapter = buildStorageFromConfig(storageConfigFromEnv())
+
+        let pipeline: Pipeline | undefined
+        try {
+          pipeline = await createBackupPipeline(toolCtx, dbUrl, txes, {
+            externalStorage: workspaceStorage,
+            usePassedCtx: true
+          })(
+            toolCtx,
+            {
+              uuid: ws.uuid,
+              url: ws.url ?? '',
+              dataId: ws.dataId
+            },
+            createEmptyBroadcastOps(),
+            null
+          )
+          if (pipeline === undefined) {
+            toolCtx.error('failed to check, pipeline is undefined', { workspaceId })
+            process.exitCode = 1
+            return
+          }
+
+          const result = await checkWorkspaceBackup(toolCtx, pipeline, wsIds, storage, parseInt(date ?? '-1'))
+
+          console.log('')
+          for (const d of result.domains) {
+            const ok = d.missing.length === 0 && d.modified.length === 0
+            console.log(
+              `${ok ? 'OK  ' : 'FAIL'}  ${d.domain}: backup=${d.backupCount} workspace=${d.workspaceCount} missing=${d.missing.length} modified=${d.modified.length}`
+            )
+          }
+          console.log('')
+          if (result.ok) {
+            console.log('OK: workspace contains all data from backup')
+          } else {
+            console.log('FAILED: workspace is missing data present in the backup')
+            process.exitCode = 1
+          }
+        } catch (err: any) {
+          toolCtx.error('failed to check workspace against backup', { err, workspaceId })
+          process.exitCode = 1
+        } finally {
+          await pipeline?.close()
+          await workspaceStorage?.close()
+        }
+      })
     })
 
   program
