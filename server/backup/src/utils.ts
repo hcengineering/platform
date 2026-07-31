@@ -976,10 +976,7 @@ export function compareDomainDigest (
  * (e.g. S3/minio/datalake), as opposed to just the blob metadata record in a domain.
  * @public
  */
-export function findMissingBlobs (
-  backupBlobIds: Iterable<BackupDocId>,
-  existingBlobIds: Set<string>
-): BackupDocId[] {
+export function findMissingBlobs (backupBlobIds: Iterable<BackupDocId>, existingBlobIds: Set<string>): BackupDocId[] {
   const missing: BackupDocId[] = []
   for (const id of backupBlobIds) {
     if (!existingBlobIds.has(id as string)) {
