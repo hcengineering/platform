@@ -18,13 +18,17 @@ export const rtfExtractor: DocumentExtractor = {
   async extract (fileName: string, type: string, data): Promise<string> {
     const htmlText = await withTempFile('content.rtf', data, async (distFileName, tempDir) => {
       return await new Promise<string>((resolve, reject) => {
-        exec(`unrtf --nopict --html "${distFileName}"`, { encoding: 'utf-8', cwd: tempDir }, (error, stdout, stderr) => {
-          if (error != null) {
-            reject(new Error(`Error ${JSON.stringify(error)} ${stderr}`))
-          } else {
-            resolve(stdout)
+        exec(
+          `unrtf --nopict --html "${distFileName}"`,
+          { encoding: 'utf-8', cwd: tempDir },
+          (error, stdout, stderr) => {
+            if (error != null) {
+              reject(new Error(`Error ${JSON.stringify(error)} ${stderr}`))
+            } else {
+              resolve(stdout)
+            }
           }
-        })
+        )
       })
     })
 
