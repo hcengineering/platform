@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { compareDomainDigest } from '../utils'
+import { compareDomainDigest, findMissingBlobs } from '../utils'
 
 describe('compareDomainDigest', () => {
   it('reports nothing when workspace fully matches backup', () => {
@@ -61,5 +61,23 @@ describe('compareDomainDigest', () => {
   it('returns an empty result for an empty backup digest', () => {
     const workspace = new Map([['doc1', 'hash1']])
     expect(compareDomainDigest(new Map(), workspace)).toEqual({ missing: [], modified: [] })
+  })
+})
+
+describe('findMissingBlobs', () => {
+  it('returns nothing when every backup blob exists in storage', () => {
+    expect(findMissingBlobs(['blob1', 'blob2'], new Set(['blob1', 'blob2', 'blob3']))).toEqual([])
+  })
+
+  it('reports backup blobs absent from storage', () => {
+    expect(findMissingBlobs(['blob1', 'blob2'], new Set(['blob1']))).toEqual(['blob2'])
+  })
+
+  it('reports all backup blobs when storage is empty', () => {
+    expect(findMissingBlobs(['blob1', 'blob2'], new Set())).toEqual(['blob1', 'blob2'])
+  })
+
+  it('returns nothing for an empty list of backup blobs', () => {
+    expect(findMissingBlobs([], new Set(['blob1']))).toEqual([])
   })
 })

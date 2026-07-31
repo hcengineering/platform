@@ -971,6 +971,24 @@ export function compareDomainDigest (
   return { missing, modified }
 }
 
+/**
+ * Finds blob ids that are recorded in a backup but do not exist in the workspace's blob storage
+ * (e.g. S3/minio/datalake), as opposed to just the blob metadata record in a domain.
+ * @public
+ */
+export function findMissingBlobs (
+  backupBlobIds: Iterable<BackupDocId>,
+  existingBlobIds: Set<string>
+): BackupDocId[] {
+  const missing: BackupDocId[] = []
+  for (const id of backupBlobIds) {
+    if (!existingBlobIds.has(id as string)) {
+      missing.push(id)
+    }
+  }
+  return missing
+}
+
 export async function loadDigest (
   ctx: MeasureContext,
   storage: BackupStorage,

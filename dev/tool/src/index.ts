@@ -1178,6 +1178,9 @@ export function devTool (
               `${ok ? 'OK  ' : 'FAIL'}  ${d.domain}: backup=${d.backupCount} workspace=${d.workspaceCount} missing=${d.missing.length} modified=${d.modified.length}`
             )
           }
+          console.log(
+            `${result.blobs.ok ? 'OK  ' : 'FAIL'}  blobs (storage): total=${result.blobs.total} missing=${result.blobs.missing.length}`
+          )
           console.log('')
           if (result.ok) {
             console.log('OK: workspace contains all data from backup')
