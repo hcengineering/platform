@@ -37,6 +37,7 @@
     border-radius: 1.5rem;
     height: 1.5rem;
     padding: 0.25rem 0.625rem;
+    -webkit-user-select: none;
     user-select: none;
 
     .label {

@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, Ref } from '@hcengineering/core'
+  import core, { AnyAttribute, Class, Doc, generateId, Ref, RefTo } from '@hcengineering/core'
   import { getAttributeEditor, getAttributePresenterClass, getClient } from '@hcengineering/presentation'
-  import { Process } from '@hcengineering/process'
+  import { Process, SlotModel } from '@hcengineering/process'
   import { AnySvelteComponent } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getContext } from '../../utils'
@@ -44,14 +44,44 @@
     dispatch('change', { value, object })
   }
 
+  let attribute: AnyAttribute | undefined
+
   $: value = object[objectKey ?? key]
 
   $: slot = process.requiredSlots?.[key] as any
-  $: attribute = slot
-    ? ({ name: key, label: slot.label, _id: key, type: slot } as any)
-    : hierarchy.getAttribute(_class, key)
-  $: presenterClass = getAttributePresenterClass(hierarchy, attribute.type)
-  $: context = getContext(client, process, presenterClass.attrClass, presenterClass.category, attribute._id, true)
+
+  function getAttr (_class: Ref<Class<Doc>>, key: string, slot: SlotModel | undefined): AnyAttribute | undefined {
+    if (slot !== undefined) return { name: key, label: slot.label, _id: key, type: slot } as any
+    const attr = hierarchy.findAttribute(_class, key)
+    if (attr !== undefined) return attr
+    if (key === '') return mockAttribute(_class)
+    return undefined
+  }
+
+  function mockAttribute (_class: Ref<Class<Doc>>): AnyAttribute {
+    const type: RefTo<Doc> = {
+      label: core.string.Ref,
+      _class: core.class.RefTo,
+      to: _class
+    }
+    return {
+      attributeOf: _class,
+      name: '',
+      type,
+      _id: generateId(),
+      space: core.space.Model,
+      modifiedOn: 0,
+      modifiedBy: core.account.System,
+      _class: core.class.Attribute,
+      label: core.string.Object
+    }
+  }
+  $: attribute = getAttr(_class, key, slot)
+  $: presenterClass = attribute && getAttributePresenterClass(hierarchy, attribute.type)
+  $: context =
+    attribute &&
+    presenterClass &&
+    getContext(client, process, presenterClass.attrClass, presenterClass.category, attribute._id, true)
 
   let editor: AnySvelteComponent | undefined
 
@@ -64,19 +94,21 @@
   $: getBaseEditor(_class, key)
 </script>
 
-<ProcessAttribute
-  {process}
-  {context}
-  {editor}
-  {attribute}
-  {presenterClass}
-  {value}
-  masterTag={process.masterTag}
-  {allowRemove}
-  {allowArray}
-  {forbidValue}
-  on:remove
-  on:change={(e) => {
-    onChange(e.detail)
-  }}
-/>
+{#if attribute && presenterClass && context}
+  <ProcessAttribute
+    {process}
+    {context}
+    {editor}
+    {attribute}
+    {presenterClass}
+    {value}
+    masterTag={process.masterTag}
+    {allowRemove}
+    {allowArray}
+    {forbidValue}
+    on:remove
+    on:change={(e) => {
+      onChange(e.detail)
+    }}
+  />
+{/if}

@@ -204,6 +204,7 @@
 
   & > * {
     pointer-events: none;
+    -webkit-user-select: none;
     user-select: none;
     -webkit-user-drag: none;
   }
@@ -1220,6 +1221,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     user-select: none;
+    -webkit-user-select: none;
   }
   .ac-header__counter {
     flex-shrink: 0;
@@ -1241,6 +1243,7 @@
     -webkit-line-clamp: 2;
     line-clamp: 2;
     user-select: none;
+    -webkit-user-select: none;
   }
 
   .ac-header__icon-button {
@@ -1319,6 +1322,7 @@
       color: var(--dark-color);
       cursor: pointer;
       user-select: none;
+      -webkit-user-select: none;
 
       &.selected {
         border-top: .125rem solid transparent;
@@ -1764,6 +1768,7 @@
     color: var(--theme-dark-color);
     box-shadow: inset 0 -1px 0 0 var(--theme-table-border-color);
     user-select: none;
+    -webkit-user-select: none;
     // z-index: 5;
 
     &.sortable { cursor: pointer; }
@@ -2015,6 +2020,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     user-select: none;
+    -webkit-user-select: none;
 
     min-width: 0;
     font-size: .75rem;
@@ -2101,6 +2107,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     user-select: none;
+    -webkit-user-select: none;
     min-width: 0;
 
     &.selected { color: var(--caption-color); }
