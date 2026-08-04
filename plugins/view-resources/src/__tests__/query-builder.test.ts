@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { DocumentQuery, Doc } from '@hcengineering/core'
 import type { Filter, FilterMode } from '@hcengineering/view'
-import { makeFilterQuery } from './query-builder'
+import { makeFilterQuery } from '../filter/query-builder'
 
 const mockResult = async (filter: Filter): Promise<{ $in: unknown }> => ({ $in: filter.value })
 const mockResolveResource = jest.fn(async () => mockResult)

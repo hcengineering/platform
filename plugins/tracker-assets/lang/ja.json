@@ -277,17 +277,17 @@
     "ForbidCreateProjectPermission": "プロジェクト作成禁止",
     "ForbidCreateProjectPermissionDescription": "ユーザーが新しいプロジェクトを作成することを禁止します",
     "AllowCreatingIssues": "イシューの作成を許可",
-    "ModeSelectorDisabledByFilter": "Status is controlled by an active filter. Remove the status filter to use this shortcut.",
-    "ShowQuickModeSelector": "Quick filter: All / Active / Backlog",
-    "SearchScopeLabel": "Search in…",
-    "SearchScopeTitle": "Title only",
-    "SearchScopeTitleDescription": "Title + Description",
-    "SearchScopeAll": "Title + Description + Comments",
-    "SearchHighlight": "Highlight search matches",
-    "SearchEmptyTitle": "No issues found for \"{query}\"",
-    "SearchEmptyActiveFilters": "Active filters: {filters}",
-    "SearchEmptyClearFilters": "Search without filters",
-    "SearchEmptyAllProjects": "Search in all projects"
+    "ModeSelectorDisabledByFilter": "ステータスはアクティブなフィルターで制御されています。このショートカットを使用するにはステータスフィルターを解除してください。",
+    "ShowQuickModeSelector": "クイックフィルター：すべて / アクティブ / バックログ",
+    "SearchScopeLabel": "検索対象…",
+    "SearchScopeTitle": "タイトルのみ",
+    "SearchScopeTitleDescription": "タイトル + 説明",
+    "SearchScopeAll": "タイトル + 説明 + コメント",
+    "SearchHighlight": "検索結果をハイライト表示",
+    "SearchEmptyTitle": "\"{query}\" に一致するイシューが見つかりません",
+    "SearchEmptyActiveFilters": "アクティブなフィルター：{filters}",
+    "SearchEmptyClearFilters": "フィルターなしで検索",
+    "SearchEmptyAllProjects": "すべてのプロジェクトを検索"
   },
   "status": {}
 }

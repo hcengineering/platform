@@ -29,7 +29,7 @@
   import { BuildModelKey, ViewOptionModel, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { SelectionFocusProvider } from '../../selection'
-  import { resultIssueCountStore } from '../../stores'
+  import { claimResultCountOwner, releaseResultCountOwner, setResultCount } from '../../stores'
   import { buildConfigLookup } from '../../utils'
   import { getResultOptions, getResultQuery } from '../../viewOptions'
   import ListCategories from './ListCategories.svelte'
@@ -56,6 +56,18 @@
   export let listProvider: SelectionFocusProvider
   export let singleCategoryLimit: number | undefined = undefined
   export let readonly: boolean = false
+  // Opt-in participation in the shared result-count protocol, evaluated once at
+  // mount. Defaults to `false` so the only List instance that touches the count
+  // store is the one that explicitly opts in — the PRIMARY tracker viewlet
+  // (ListView passes `true`). Every other List mount stays out by default:
+  // embedded sub-issues / related issues in an issue panel, card-panel children,
+  // process extensions, and any future embedding. An embedded List that claimed
+  // the owner token would supersede the primary list's token, then release it on
+  // close — stranding the primary list with a dead token whose future writes are
+  // no-ops, so the zero-hit card could never render again. Default-out keeps the
+  // primary viewlet the sole owner and makes new embeddings safe without having
+  // to remember to opt out.
+  export let reportResultCount: boolean = false
 
   const limiter = new RateLimiter(10)
 
@@ -66,17 +78,21 @@
   let fastDocs: Doc[] = []
   let slowDocs: Doc[] = []
 
-  // Every viewlet writes its result-count into the shared
-  // resultIssueCountStore so IssuesView's SearchEmptyState card can render
-  // when search has no matches. queryReady is RE-armed false on every
-  // query change (`$: queryReady = false` below) so a stale count from a
-  // previous query never lingers as truth — without this reset the
-  // SearchEmptyState card could remain stuck on `0` after a successful
-  // search produced new results.
+  // The opted-in PRIMARY viewlet writes its result-count into the shared
+  // result-count store (via the owner-token gate) so IssuesView's SearchEmptyState
+  // card can render when search has no matches. We claim ownership at init so a
+  // viewlet torn down after us can no longer clobber our count, and release on
+  // destroy. Instances that leave `reportResultCount` at its default (`false`)
+  // get no owner and never touch the gate — see the prop comment above.
+  // queryReady is RE-armed false on every query change (`$: queryReady = false`
+  // below) so a stale count from a previous query never lingers as truth —
+  // without this reset the SearchEmptyState card could remain stuck on `0`
+  // after a successful search produced new results.
+  const resultCountOwner = reportResultCount ? claimResultCountOwner() : undefined
   let queryReady = false
-  $: if (queryReady) resultIssueCountStore.set(docs.length)
+  $: if (queryReady && resultCountOwner !== undefined) setResultCount(resultCountOwner, docs.length)
   onDestroy(() => {
-    resultIssueCountStore.set(-1)
+    if (resultCountOwner !== undefined) releaseResultCountOwner(resultCountOwner)
   })
 
   $: orderBy = viewOptions.orderBy

@@ -15,6 +15,7 @@
     filterStore,
     rawSearchTextStore,
     resultIssueCountStore,
+    resetResultCount,
     searchHighlightEnabledStore,
     shouldShowSearchEmptyState
   } from '@hcengineering/view-resources'
@@ -94,7 +95,10 @@
   $: {
     void searchEncoded
     void $filterStore
-    resultIssueCountStore.set(-1)
+    // Reset to the pending sentinel without surrendering the viewlet's
+    // ownership — the mounted viewlet stays authoritative and re-populates the
+    // count once its new query resolves.
+    resetResultCount()
   }
 
   // Empty-state is shown only when the user has typed something AND the

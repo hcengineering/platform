@@ -19,6 +19,7 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  fullTextSearchFields,
   MeasureContext,
   Ref,
   SearchOptions,
@@ -323,11 +324,14 @@ class ElasticAdapter implements FullTextAdapter {
     // `query_string` (which would throw a parsing exception and surface as
     // zero hits). Anything else falls back to `simple_query_string` for full
     // backwards compatibility.
-    // KEEP IN SYNC with packages/ui SearchInputAdvanced.encoder.ts
-    // ES_NATIVE_FIELDS (and vice versa). The client only emits a `field:value`
-    // clause for a field it believes the server recognises; if the two lists
-    // drift, a client-routed clause hits a field the adapter does not treat as
-    // query_string and silently fails to parse.
+    // The recognised field set is the shared `fullTextSearchFields` constant
+    // from @hcengineering/core — the same list the client encoder derives its
+    // ES_NATIVE_FIELDS from, so the two can never drift. The client only emits
+    // a `field:value` clause for a field it believes the server recognises; a
+    // drift would let a client-routed clause hit a field the adapter does not
+    // treat as query_string and silently fail to parse. The per-field boost
+    // weights below (`searchTitle^3`, …) are a query-syntax detail of this
+    // adapter and intentionally stay local, not part of the shared list.
     //
     // SECURITY: `query_string` lets a raw `field:value` clause target
     // ANY indexed field (e.g. `space:<id>`, `modifiedBy:<id>`, `attachedTo:<id>`),
@@ -348,8 +352,14 @@ class ElasticAdapter implements FullTextAdapter {
     //      result filter and never reaches the client — no content or existence
     //      oracle. Checked against the server-pipeline middleware order.
     //
-    const KNOWN_FIELD_RE =
-      /(^|\s)(searchTitle|searchShortTitle|identifier|description\.plain|comments\.message|fulltextSummary)\s*:/i
+    // Escape EVERY regex metacharacter in each field name, not just `.`. The
+    // current fields contain only `.`, so behaviour is unchanged today, but a
+    // future field name carrying another metacharacter would otherwise silently
+    // corrupt the alternation.
+    const KNOWN_FIELD_RE = new RegExp(
+      `(^|\\s)(${fullTextSearchFields.map((f) => f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\s*:`,
+      'i'
+    )
     const usesQueryString = KNOWN_FIELD_RE.test(raw)
     const queryBlock: any = usesQueryString
       ? {

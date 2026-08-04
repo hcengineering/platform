@@ -1,4 +1,4 @@
-import { splitHighlightSegments } from './HighlightedText.helpers'
+import { splitHighlightSegments } from '../components/HighlightedText.helpers'
 
 describe('splitHighlightSegments', () => {
   it('returns single segment when query is empty', () => {

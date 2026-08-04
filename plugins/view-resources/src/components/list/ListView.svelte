@@ -82,6 +82,7 @@
   >
     <List
       bind:this={list}
+      reportResultCount={true}
       {_class}
       {space}
       {query}

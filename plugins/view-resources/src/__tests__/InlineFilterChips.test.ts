@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { computeOverflow } from './InlineFilterChips.svelte.helpers'
+import { computeOverflow } from '../components/filter/InlineFilterChips.svelte.helpers'
 
 describe('computeOverflow', () => {
   it('shows all chips when container is wide enough', () => {

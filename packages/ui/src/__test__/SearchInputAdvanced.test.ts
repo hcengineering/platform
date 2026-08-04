@@ -1,5 +1,5 @@
-import { encodeSearch } from './SearchInputAdvanced.encoder'
-import { propSyncValue } from './SearchInputAdvanced.sync'
+import { encodeSearch } from '../components/SearchInputAdvanced.encoder'
+import { propSyncValue } from '../components/SearchInputAdvanced.sync'
 
 describe('encodeSearch', () => {
   // ─── No prefix: bare-term scope expansion ───────────────────────────────

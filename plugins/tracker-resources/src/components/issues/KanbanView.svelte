@@ -60,7 +60,9 @@
     Menu,
     noCategory,
     openDoc,
-    resultIssueCountStore,
+    claimResultCountOwner,
+    releaseResultCountOwner,
+    setResultCount,
     SelectDirection,
     setGroupByValues,
     showMenu,
@@ -144,15 +146,16 @@
   // Category information only
   let tasks: DocWithRank[] = []
 
-  // Feed the shared result-count store so IssuesView can show
-  // its SearchEmptyState card when the user's search yields zero hits.
-  // The count is written from the same fast-query callback that sets the
-  // data source (see docsQuery below), not reactively off `tasks` — the old
-  // coupling read `tasks` (fast + lagging slow query) while gating on a flag
-  // set by the fast query alone, so a stale slow-query result could skew the
-  // count right after a search changed.
+  // Feed the shared result-count store (via the owner-token gate) so IssuesView
+  // can show its SearchEmptyState card when the user's search yields zero hits.
+  // We claim ownership at init and release on destroy; the count is written
+  // from the same fast-query callback that sets the data source (see docsQuery
+  // below), not reactively off `tasks` — the old coupling read `tasks` (fast +
+  // lagging slow query) while gating on a flag set by the fast query alone, so
+  // a stale slow-query result could skew the count right after a search changed.
+  const resultCountOwner = claimResultCountOwner()
   onDestroy(() => {
-    resultIssueCountStore.set(-1)
+    releaseResultCountOwner(resultCountOwner)
   })
 
   $: groupByDocs = groupBy(tasks, groupByKey, categories)
@@ -183,7 +186,7 @@
     (res) => {
       fastDocs = res
       fastQueryIds = new Set(res.map((it) => it._id))
-      resultIssueCountStore.set(res.length)
+      setResultCount(resultCountOwner, res.length)
     },
     { ...categoryQueryOptions, limit: 1000 }
   )

@@ -275,17 +275,17 @@
     "Extensions": "Uzantılar",
     "UnsetParentIssue": "Üst sorunu kaldır",
     "AllowCreatingIssues": "Sorun oluşturmaya izin ver",
-    "ModeSelectorDisabledByFilter": "Status is controlled by an active filter. Remove the status filter to use this shortcut.",
-    "ShowQuickModeSelector": "Quick filter: All / Active / Backlog",
-    "SearchScopeLabel": "Search in…",
-    "SearchScopeTitle": "Title only",
-    "SearchScopeTitleDescription": "Title + Description",
-    "SearchScopeAll": "Title + Description + Comments",
-    "SearchHighlight": "Highlight search matches",
-    "SearchEmptyTitle": "No issues found for \"{query}\"",
-    "SearchEmptyActiveFilters": "Active filters: {filters}",
-    "SearchEmptyClearFilters": "Search without filters",
-    "SearchEmptyAllProjects": "Search in all projects"
+    "ModeSelectorDisabledByFilter": "Durum, aktif bir filtre tarafından denetleniyor. Bu kısayolu kullanmak için durum filtresini kaldırın.",
+    "ShowQuickModeSelector": "Hızlı filtre: Tümü / Aktif / Backlog",
+    "SearchScopeLabel": "Şurada ara…",
+    "SearchScopeTitle": "Yalnızca başlık",
+    "SearchScopeTitleDescription": "Başlık + açıklama",
+    "SearchScopeAll": "Başlık + açıklama + yorumlar",
+    "SearchHighlight": "Arama eşleşmelerini vurgula",
+    "SearchEmptyTitle": "\"{query}\" için sorun bulunamadı",
+    "SearchEmptyActiveFilters": "Aktif filtreler: {filters}",
+    "SearchEmptyClearFilters": "Filtresiz ara",
+    "SearchEmptyAllProjects": "Tüm projelerde ara"
   },
   "status": {}
 }

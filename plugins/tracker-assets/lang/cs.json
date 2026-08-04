@@ -284,17 +284,17 @@
     "ForbidCreateProjectPermission": "Zakázat vytvoření projektu",
     "ForbidCreateProjectPermissionDescription": "Zakazuje uživatelům vytvářet nové projekty",
     "AllowCreatingIssues": "Povolit vytváření úkolů",
-    "ModeSelectorDisabledByFilter": "Status is controlled by an active filter. Remove the status filter to use this shortcut.",
-    "ShowQuickModeSelector": "Quick filter: All / Active / Backlog",
-    "SearchScopeLabel": "Search in…",
-    "SearchScopeTitle": "Title only",
-    "SearchScopeTitleDescription": "Title + Description",
-    "SearchScopeAll": "Title + Description + Comments",
-    "SearchHighlight": "Highlight search matches",
-    "SearchEmptyTitle": "No issues found for \"{query}\"",
-    "SearchEmptyActiveFilters": "Active filters: {filters}",
-    "SearchEmptyClearFilters": "Search without filters",
-    "SearchEmptyAllProjects": "Search in all projects"
+    "ModeSelectorDisabledByFilter": "Stav je řízen aktivním filtrem. Chcete-li použít tuto zkratku, odstraňte filtr stavu.",
+    "ShowQuickModeSelector": "Rychlý filtr: Vše / Aktivní / Návrhy",
+    "SearchScopeLabel": "Hledat v…",
+    "SearchScopeTitle": "Pouze název",
+    "SearchScopeTitleDescription": "Název + popis",
+    "SearchScopeAll": "Název + popis + komentáře",
+    "SearchHighlight": "Zvýraznit shody hledání",
+    "SearchEmptyTitle": "Pro „{query}\" nebyly nalezeny žádné úkoly",
+    "SearchEmptyActiveFilters": "Aktivní filtry: {filters}",
+    "SearchEmptyClearFilters": "Hledat bez filtrů",
+    "SearchEmptyAllProjects": "Hledat ve všech projektech"
   },
   "status": {}
 }

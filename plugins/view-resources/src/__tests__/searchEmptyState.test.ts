@@ -1,4 +1,4 @@
-import { shouldShowSearchEmptyState, shouldShowEmptyState } from './searchEmptyState'
+import { shouldShowSearchEmptyState, shouldShowEmptyState } from '../searchEmptyState'
 
 describe('shouldShowEmptyState', () => {
   it('returns true when search has text and no results', () => {

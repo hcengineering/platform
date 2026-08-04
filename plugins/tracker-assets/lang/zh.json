@@ -294,17 +294,17 @@
     "ForbidCreateProjectPermission": "禁止创建项目",
     "ForbidCreateProjectPermissionDescription": "禁止用户创建新项目",
     "AllowCreatingIssues": "允许创建问题",
-    "ModeSelectorDisabledByFilter": "Status is controlled by an active filter. Remove the status filter to use this shortcut.",
-    "ShowQuickModeSelector": "Quick filter: All / Active / Backlog",
-    "SearchScopeLabel": "Search in…",
-    "SearchScopeTitle": "Title only",
-    "SearchScopeTitleDescription": "Title + Description",
-    "SearchScopeAll": "Title + Description + Comments",
-    "SearchHighlight": "Highlight search matches",
-    "SearchEmptyTitle": "No issues found for \"{query}\"",
-    "SearchEmptyActiveFilters": "Active filters: {filters}",
-    "SearchEmptyClearFilters": "Search without filters",
-    "SearchEmptyAllProjects": "Search in all projects"
+    "ModeSelectorDisabledByFilter": "状态由活动筛选器控制。移除状态筛选器以使用此快捷方式。",
+    "ShowQuickModeSelector": "快速筛选：全部 / 活跃 / 积压",
+    "SearchScopeLabel": "搜索范围…",
+    "SearchScopeTitle": "仅标题",
+    "SearchScopeTitleDescription": "标题 + 描述",
+    "SearchScopeAll": "标题 + 描述 + 评论",
+    "SearchHighlight": "高亮显示搜索匹配项",
+    "SearchEmptyTitle": "未找到与 \"{query}\" 匹配的问题",
+    "SearchEmptyActiveFilters": "活动筛选器：{filters}",
+    "SearchEmptyClearFilters": "不使用筛选器搜索",
+    "SearchEmptyAllProjects": "在所有项目中搜索"
   },
   "status": {}
 }

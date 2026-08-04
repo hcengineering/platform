@@ -277,17 +277,17 @@
     "ForbidCreateProjectPermission": "Proibir criação de projeto",
     "ForbidCreateProjectPermissionDescription": "Proíbe os usuários de criar novos projetos",
     "AllowCreatingIssues": "Permitir criar problemas",
-    "ModeSelectorDisabledByFilter": "Status is controlled by an active filter. Remove the status filter to use this shortcut.",
-    "ShowQuickModeSelector": "Quick filter: All / Active / Backlog",
-    "SearchScopeLabel": "Search in…",
-    "SearchScopeTitle": "Title only",
-    "SearchScopeTitleDescription": "Title + Description",
-    "SearchScopeAll": "Title + Description + Comments",
-    "SearchHighlight": "Highlight search matches",
-    "SearchEmptyTitle": "No issues found for \"{query}\"",
-    "SearchEmptyActiveFilters": "Active filters: {filters}",
-    "SearchEmptyClearFilters": "Search without filters",
-    "SearchEmptyAllProjects": "Search in all projects"
+    "ModeSelectorDisabledByFilter": "O estado é controlado por um filtro ativo. Remova o filtro de estado para usar este atalho.",
+    "ShowQuickModeSelector": "Filtro rápido: Todos / Ativos / Atraso",
+    "SearchScopeLabel": "Procurar em…",
+    "SearchScopeTitle": "Apenas título",
+    "SearchScopeTitleDescription": "Título + descrição",
+    "SearchScopeAll": "Título + descrição + comentários",
+    "SearchHighlight": "Realçar correspondências da procura",
+    "SearchEmptyTitle": "Nenhum problema encontrado para \"{query}\"",
+    "SearchEmptyActiveFilters": "Filtros ativos: {filters}",
+    "SearchEmptyClearFilters": "Procurar sem filtros",
+    "SearchEmptyAllProjects": "Procurar em todos os projetos"
   },
   "status": {}
 }

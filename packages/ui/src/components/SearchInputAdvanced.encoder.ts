@@ -28,6 +28,8 @@
  * a prefix is only aliased (transformation 1), never wrapped (transformation
  * 2). This matches user intent — they specified a field explicitly.
  */
+import { fullTextSearchFields } from '@hcengineering/core'
+
 export type SearchScope = 'title' | 'title-description' | 'all'
 
 /** Map user-friendly prefixes to ES field names. */
@@ -38,21 +40,16 @@ const PREFIX_ALIAS: Record<string, string> = {
 }
 
 /**
- * Allowed ES-native fields users may type directly.
+ * Allowed native full-text fields users may type directly.
  *
- * KEEP IN SYNC with elastic/src/adapter.ts KNOWN_FIELD_RE (and vice versa).
- * Both sides must carry the identical field set so the client only routes a
- * `field:value` clause to query_string when the server-side adapter also
- * recognises that field; otherwise the clause silently fails to parse.
+ * Derived from the shared {@link fullTextSearchFields} constant in
+ * `@hcengineering/core` — the single source of truth also consumed by the
+ * server-side full-text adapter (elastic/src/adapter.ts KNOWN_FIELD_RE). The
+ * client only routes a `field:value` clause to a field-targeted query when the
+ * adapter recognises the same field, so deriving both from one list means the
+ * two can never drift apart.
  */
-const ES_NATIVE_FIELDS = new Set([
-  'searchTitle',
-  'searchShortTitle',
-  'identifier',
-  'description.plain',
-  'comments.message',
-  'fulltextSummary'
-])
+const ES_NATIVE_FIELDS = new Set(fullTextSearchFields)
 /** Lowercase → canonical lookup so mixed-case ES-native prefixes normalise. */
 const ES_NATIVE_CANON = new Map([...ES_NATIVE_FIELDS].map((f) => [f.toLowerCase(), f]))
 const USER_PREFIX_KEYS = new Set(Object.keys(PREFIX_ALIAS))
@@ -127,7 +124,20 @@ function escapeForQueryString (s: string): string {
  * query_string would re-parse the inner `:` as another field-targeted
  * clause, blowing up the entire query.
  */
-const PREFIX_VALUE_RESERVED_RE = /[+!(){}[\]^"~\\/:&|<>=]/
+/**
+ * Character-class body (the part inside `[...]`) of the reserved set above.
+ * Single source of truth so the `.test()` check and the `.replace()` escaper
+ * can never diverge. Two distinct RegExp objects are built from it below: a
+ * global one is required for `.replace()` (escape every occurrence) while a
+ * non-global one is used for `.test()` — the same object must NOT serve both,
+ * because a global regexp carries a stateful `lastIndex` across `.test()`
+ * calls and would intermittently miss matches.
+ */
+const PREFIX_VALUE_RESERVED_CHARS = '+!(){}[\\]^"~\\\\/:&|<>='
+/** Non-global: safe for repeated `.test()` (no `lastIndex` carry-over). */
+const PREFIX_VALUE_RESERVED_RE = new RegExp(`[${PREFIX_VALUE_RESERVED_CHARS}]`)
+/** Global: escape every reserved char in a `.replace()` pass. */
+const PREFIX_VALUE_RESERVED_RE_G = new RegExp(`[${PREFIX_VALUE_RESERVED_CHARS}]`, 'g')
 
 /**
  * Single-pass tokenizer for the prefix-routed encode path.
@@ -334,10 +344,10 @@ function renderToken (tok: Token): string {
       // even though mid-token '-' is tolerant. Escape the leading minus
       // explicitly so the orphan token stays a literal term.
       if (tok.raw.startsWith('-')) {
-        return '\\-' + tok.raw.slice(1).replace(/[+!(){}[\]^"~\\/:&|<>=]/g, '\\$&')
+        return '\\-' + tok.raw.slice(1).replace(PREFIX_VALUE_RESERVED_RE_G, '\\$&')
       }
       if (!PREFIX_VALUE_RESERVED_RE.test(tok.raw)) return tok.raw
-      return tok.raw.replace(/[+!(){}[\]^"~\\/:&|<>=]/g, '\\$&')
+      return tok.raw.replace(PREFIX_VALUE_RESERVED_RE_G, '\\$&')
     }
   }
 }

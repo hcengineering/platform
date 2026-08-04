@@ -196,7 +196,16 @@ export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from '
 
 export * from './filter'
 export { makeFilterQuery } from './filter/query-builder'
-export { resultIssueCountStore, rawSearchTextStore, searchHighlightEnabledStore } from './stores'
+export {
+  resultIssueCountStore,
+  rawSearchTextStore,
+  searchHighlightEnabledStore,
+  claimResultCountOwner,
+  setResultCount,
+  releaseResultCountOwner,
+  resetResultCount
+} from './stores'
+export type { ResultCountOwner } from './stores'
 export { default as SearchEmptyState } from './components/SearchEmptyState.svelte'
 export { shouldShowEmptyState, shouldShowSearchEmptyState } from './searchEmptyState'
 export * from './icons'
