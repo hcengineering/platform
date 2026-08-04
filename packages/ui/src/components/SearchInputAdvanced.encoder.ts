@@ -28,7 +28,7 @@
  * a prefix is only aliased (transformation 1), never wrapped (transformation
  * 2). This matches user intent — they specified a field explicitly.
  */
-import { fullTextSearchFields } from '@hcengineering/core'
+import { escapeRegExp, fullTextSearchFields } from '@hcengineering/core'
 
 export type SearchScope = 'title' | 'title-description' | 'all'
 
@@ -63,8 +63,9 @@ const USER_PREFIX_KEYS = new Set(Object.keys(PREFIX_ALIAS))
  */
 function buildKnownPrefixRe (): RegExp {
   const fields = [...USER_PREFIX_KEYS, ...ES_NATIVE_FIELDS]
-    // escape dots in `description.plain`, `comments.message`
-    .map((f) => f.replace(/\./g, '\\.'))
+    // Full regex escaping (shared with the server adapter via core) so a future
+    // field with any regex metacharacter cannot silently corrupt the alternation.
+    .map((f) => escapeRegExp(f))
     .join('|')
   return new RegExp(`(^|\\s)(${fields})\\s*:`, 'gi')
 }

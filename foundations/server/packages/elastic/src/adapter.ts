@@ -19,6 +19,7 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  escapeRegExp,
   fullTextSearchFields,
   MeasureContext,
   Ref,
@@ -357,7 +358,7 @@ class ElasticAdapter implements FullTextAdapter {
     // future field name carrying another metacharacter would otherwise silently
     // corrupt the alternation.
     const KNOWN_FIELD_RE = new RegExp(
-      `(^|\\s)(${fullTextSearchFields.map((f) => f.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\s*:`,
+      `(^|\\s)(${fullTextSearchFields.map((f) => escapeRegExp(f)).join('|')})\\s*:`,
       'i'
     )
     const usesQueryString = KNOWN_FIELD_RE.test(raw)

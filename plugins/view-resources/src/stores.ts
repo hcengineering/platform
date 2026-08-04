@@ -2,18 +2,19 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 // SPDX-License-Identifier: EPL-2.0
 //
-import { writable } from 'svelte/store'
+import { writable, type Readable } from 'svelte/store'
 
 /**
  * Latest result-count from whichever viewlet is currently mounted.
  * Sentinel `-1` = "no current measurement" so consumers stay in their
  * default branch during teardown / route changes.
  *
- * READ PATH: consumers (IssuesView's SearchEmptyState) subscribe to this store
- * directly and unchanged. WRITE PATH: writers must go through the owner-token
- * gate below — never call `.set()` on this store from a viewlet directly.
+ * The writable is module-private; the public export is a `Readable` so the
+ * owner-token gate below is the ONLY write path. Consumers (IssuesView's
+ * SearchEmptyState) subscribe to the read-only store directly and unchanged.
  */
-export const resultIssueCountStore = writable<number>(-1)
+const resultIssueCountWritable = writable<number>(-1)
+export const resultIssueCountStore: Readable<number> = resultIssueCountWritable
 
 /**
  * Owner-token gate for {@link resultIssueCountStore}.
@@ -61,7 +62,7 @@ export function claimResultCountOwner (): ResultCountOwner {
  */
 export function setResultCount (owner: ResultCountOwner, count: number): void {
   if (owner !== currentResultCountOwner) return
-  resultIssueCountStore.set(count)
+  resultIssueCountWritable.set(count)
 }
 
 /**
@@ -73,7 +74,7 @@ export function setResultCount (owner: ResultCountOwner, count: number): void {
 export function releaseResultCountOwner (owner: ResultCountOwner): void {
   if (owner !== currentResultCountOwner) return
   currentResultCountOwner = undefined
-  resultIssueCountStore.set(-1)
+  resultIssueCountWritable.set(-1)
 }
 
 /**
@@ -85,7 +86,7 @@ export function releaseResultCountOwner (owner: ResultCountOwner): void {
  * whatever the current owner is.
  */
 export function resetResultCount (): void {
-  resultIssueCountStore.set(-1)
+  resultIssueCountWritable.set(-1)
 }
 
 /**
