@@ -13,12 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Ref, Space } from '@hcengineering/core'
+  import { getCurrentAccount, Ref, Space } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { Project } from '@hcengineering/tracker'
   import { IconWithEmoji } from '@hcengineering/presentation'
-  import { getPlatformColorDef, getPlatformColorForTextDef, themeStore, type Action } from '@hcengineering/ui'
+  import { getPlatformColorDef, getPlatformColorForTextDef, themeStore, tooltip, type Action } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import tracker from '../../plugin'
   import { NavLink, TreeNode } from '@hcengineering/view-resources'
   import { SpacesNavModel, SpecialNavModel } from '@hcengineering/workbench'
   import { SpecialElement } from '@hcengineering/workbench-resources'
@@ -33,7 +34,20 @@
 
   let specials: SpecialNavModel[] = []
 
-  async function updateSpecials (model: SpacesNavModel, space: Project): Promise<void> {
+  // Hide non-Issues specials (Components / Milestones / Templates) on
+  // collab-only projects — the user has read on individual issues via
+  // Collaborator records but no membership in the project itself, so
+  // those sub-views would be empty and confusing. The Issues sub-view
+  // stays because the postgres adapter's collab-OR-branch surfaces the
+  // doc-level visibility there.
+  // V1: guard against space.members being null/undefined — Huly's sample
+  // projects + auto-templated projects can ship without an explicit members
+  // array (the DB stores NULL). Without the ?? [], `null.includes(...)` throws
+  // and isCollabOnlyProject silently becomes undefined → the filter never
+  // fires and the badge + sub-node hide silently break.
+  $: isCollabOnlyProject = !(space.members ?? []).includes(getCurrentAccount().uuid)
+
+  async function updateSpecials (model: SpacesNavModel, space: Project, collabOnly: boolean): Promise<void> {
     const newSpecials: SpecialNavModel[] = []
     for (const sp of model.specials ?? []) {
       let shouldAdd = true
@@ -43,6 +57,19 @@
           shouldAdd = await visibleIf([space])
         }
       }
+      // Filter to Issues only when the caller is not a member; everything
+      // else (Components / Milestones / Templates) would render as an
+      // empty list and clutter the tree.
+      // SCOPE LIMIT (V1): only `tracker.class.Issue` opts into mentions-
+      // grant-access today (see models/tracker/src/index.ts). If another
+      // tracker class later sets ClassCollaborators.provideSecurity = true
+      // + grants its own Collaborator edges, this hard-coded `'issues'`
+      // check will hide that class's sub-view for collab-only Guests.
+      // Make the check class- or special-driven before flipping the
+      // second opt-in.
+      if (shouldAdd && collabOnly && sp.id !== 'issues') {
+        shouldAdd = false
+      }
       if (shouldAdd) {
         newSpecials.push(sp)
       }
@@ -50,8 +77,11 @@
     specials = newSpecials
   }
 
+  // V1: re-derive specials whenever isCollabOnlyProject flips too — otherwise
+  // the user being added to / removed from the project mid-session keeps the
+  // sub-views (Components / Milestones / Templates) stale until a reload.
   $: if (model != null) {
-    void updateSpecials(model, space)
+    void updateSpecials(model, space, isCollabOnlyProject)
   }
   $: visible =
     (!deselect && currentSpace !== undefined && currentSpecial !== undefined && space._id === currentSpace) ||
@@ -59,44 +89,90 @@
 </script>
 
 {#if specials}
-  <TreeNode
-    _id={space?._id}
-    icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (space?.icon ?? model?.icon)}
-    iconProps={space?.icon === view.ids.IconWithEmoji
-      ? { icon: space.color }
-      : {
-          fill:
-            space.color !== undefined && typeof space.color !== 'string'
-              ? getPlatformColorDef(space.color, $themeStore.dark).icon
-              : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
-        }}
-    title={space.name}
-    type={'nested'}
-    highlighted={space._id === currentSpace}
-    {visible}
-    actions={() => getActions(space)}
-    {forciblyСollapsed}
-  >
-    {#each specials as special}
-      <NavLink space={space._id} special={special.id}>
-        <SpecialElement
-          indent
-          label={special.label}
-          icon={special.icon}
-          selected={deselect ? false : currentSpace === space._id && special.id === currentSpecial}
-        />
-      </NavLink>
-    {/each}
-
-    <svelte:fragment slot="visible">
-      {#if visible}
-        {@const item = specials.find((sp) => sp.id === currentSpecial && currentSpace === space._id)}
-        {#if item}
-          <NavLink space={space._id} special={item.id}>
-            <SpecialElement indent label={item.label} icon={item.icon} selected forciblyСollapsed />
+  {#if isCollabOnlyProject}
+    <div use:tooltip={{ label: tracker.string.SharedWithYouTooltip }}>
+      <TreeNode
+        _id={space?._id}
+        icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (space?.icon ?? model?.icon)}
+        iconProps={space?.icon === view.ids.IconWithEmoji
+          ? { icon: space.color, opacity: 0.6 }
+          : {
+              fill:
+                space.color !== undefined && typeof space.color !== 'string'
+                  ? getPlatformColorDef(space.color, $themeStore.dark).icon
+                  : getPlatformColorForTextDef(space.name, $themeStore.dark).icon,
+              opacity: 0.6
+            }}
+        title={space.name}
+        type={'nested'}
+        highlighted={space._id === currentSpace}
+        {visible}
+        actions={() => getActions(space)}
+        {forciblyСollapsed}
+      >
+        {#each specials as special}
+          <NavLink space={space._id} special={special.id}>
+            <SpecialElement
+              indent
+              label={special.label}
+              icon={special.icon}
+              selected={deselect ? false : currentSpace === space._id && special.id === currentSpecial}
+            />
           </NavLink>
+        {/each}
+
+        <svelte:fragment slot="visible">
+          {#if visible}
+            {@const item = specials.find((sp) => sp.id === currentSpecial && currentSpace === space._id)}
+            {#if item}
+              <NavLink space={space._id} special={item.id}>
+                <SpecialElement indent label={item.label} icon={item.icon} selected forciblyСollapsed />
+              </NavLink>
+            {/if}
+          {/if}
+        </svelte:fragment>
+      </TreeNode>
+    </div>
+  {:else}
+    <TreeNode
+      _id={space?._id}
+      icon={space?.icon === view.ids.IconWithEmoji ? IconWithEmoji : (space?.icon ?? model?.icon)}
+      iconProps={space?.icon === view.ids.IconWithEmoji
+        ? { icon: space.color }
+        : {
+            fill:
+              space.color !== undefined && typeof space.color !== 'string'
+                ? getPlatformColorDef(space.color, $themeStore.dark).icon
+                : getPlatformColorForTextDef(space.name, $themeStore.dark).icon
+          }}
+      title={space.name}
+      type={'nested'}
+      highlighted={space._id === currentSpace}
+      {visible}
+      actions={() => getActions(space)}
+      {forciblyСollapsed}
+    >
+      {#each specials as special}
+        <NavLink space={space._id} special={special.id}>
+          <SpecialElement
+            indent
+            label={special.label}
+            icon={special.icon}
+            selected={deselect ? false : currentSpace === space._id && special.id === currentSpecial}
+          />
+        </NavLink>
+      {/each}
+
+      <svelte:fragment slot="visible">
+        {#if visible}
+          {@const item = specials.find((sp) => sp.id === currentSpecial && currentSpace === space._id)}
+          {#if item}
+            <NavLink space={space._id} special={item.id}>
+              <SpecialElement indent label={item.label} icon={item.icon} selected forciblyСollapsed />
+            </NavLink>
+          {/if}
         {/if}
-      {/if}
-    </svelte:fragment>
-  </TreeNode>
+      </svelte:fragment>
+    </TreeNode>
+  {/if}
 {/if}

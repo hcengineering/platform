@@ -1010,8 +1010,15 @@ export interface ClassCollaborators<T extends Doc> extends Doc {
   attachedTo: Ref<Class<T>>
   allFields?: boolean // for all (PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]) attributes
   fields: (keyof T)[] // PersonId | Ref<Employee> | PersonId[] | Ref<Employee>[]
-  provideSecurity?: boolean // If true, will provide security for collaborators
+  // If true, Collaborator status grants read visibility on the doc,
+  // bypassing space-membership. Writes are governed by the class's
+  // TxAccessLevel and any pre-commit middleware (see GuestPermissions).
+  provideSecurity?: boolean
   provideAttachedSecurity?: boolean // If true, will provide security for collaborators of attached doc
+  // If true, @-mentions in chat/activity messages on this doc auto-create
+  // Collaborator records (mention = explicit, disclosed grant). Has no
+  // effect unless provideSecurity is also true.
+  mentionsGrantAccess?: boolean
 }
 
 export interface Collaborator extends AttachedDoc {

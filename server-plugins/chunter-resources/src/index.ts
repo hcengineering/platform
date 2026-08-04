@@ -37,7 +37,9 @@ import core, {
   TxUpdateDoc,
   UserStatus,
   getClassCollaborators,
-  type MeasureContext
+  resolveMentionGrantTarget,
+  type MeasureContext,
+  type Collaborator
 } from '@hcengineering/core'
 import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
 import { getMetadata, IntlString, translate } from '@hcengineering/platform'
@@ -187,6 +189,7 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
   const references = extractReferences(node)
   const mentionedPersons = references
     .filter(({ objectClass }) => control.hierarchy.isDerived(objectClass, contact.class.Person))
+    .filter(({ grantsAccess }) => grantsAccess !== 'false') // V3c: skip explicitly-denied mentions
     .map(({ objectId }) => objectId as Ref<Person>)
   const employees =
     mentionedPersons.length > 0
@@ -208,31 +211,163 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
     }
   }
 
-  const classCollab = (
-    await control.findAll(control.ctx, core.class.ClassCollaborators, { attachedTo: targetDoc._class })
+  // Resolve the Doc the mention-Collaborator records should land on.
+  //   - targetDoc has provideSecurity:true && mentionsGrantAccess:true:
+  //     helper returns targetDoc itself → grants access on that doc.
+  //   - targetDoc unprotected, but its attachedTo chain reaches an opted-in
+  //     ancestor (e.g. ThreadMessage → ChatMessage → Issue): helper returns
+  //     that ancestor → grants access on the Issue, not the thread.
+  //   - nothing in the chain is opted in: helper returns null.
+  // The grant-target branch writes Collaborator on the resolved doc and
+  // dedups against THAT doc's collaborator list (not against targetDoc's,
+  // which is the wrong basis when targetDoc is a child like ThreadMessage).
+  const grantTarget = await resolveMentionGrantTarget(targetDoc, (cls, q, o) => control.findAll(control.ctx, cls, q, o))
+  const targetClassCollab = (
+    await control.findAll(control.ctx, core.class.ClassCollaborators, { attachedTo: targetDoc._class }, { limit: 1 })
   )[0]
-  if (classCollab?.provideSecurity !== true) {
+  const isProtectedTarget = targetClassCollab?.provideSecurity === true
+
+  if (grantTarget != null) {
+    const grantCollabs = (
+      await control.findAll<Collaborator>(control.ctx, core.class.Collaborator, {
+        attachedTo: grantTarget._id
+      })
+    ).map((c) => c.collaborator)
+
+    // Dedup basis = committed collaborators on grantTarget UNION Collaborator
+    // TxCreateDoc already queued in `res` for this same grantTarget (e.g. the
+    // seed block above, or a prior loop iteration). Scoped to grantTarget._id so
+    // seed txes attached to a child doc (ThreadMessage/message) never suppress a
+    // grant on the resolved ancestor. The in-loop `granted.add` also collapses
+    // the real self-mention duplicate — collaboratorsFromMessage carries the
+    // author uuid twice (once as Employee, once as `account`).
+    const granted = new Set<AccountUuid>(grantCollabs)
+    for (const t of res) {
+      if (t._class === core.class.TxCreateDoc && (t as TxCUD<Doc>).objectClass === core.class.Collaborator) {
+        const attrs = (t as TxCreateDoc<Collaborator>).attributes
+        if (attrs.attachedTo === grantTarget._id) {
+          granted.add(attrs.collaborator)
+        }
+      }
+    }
+
+    for (const collab of collaboratorsFromMessage) {
+      if (granted.has(collab)) {
+        continue
+      }
+      granted.add(collab)
+      res.push(
+        control.txFactory.createTxCreateDoc(core.class.Collaborator, grantTarget.space, {
+          attachedTo: grantTarget._id,
+          attachedToClass: grantTarget._class,
+          collaborator: collab,
+          collection: 'collaborators'
+        })
+      )
+    }
+  } else if (!isProtectedTarget) {
+    // Legacy notification-routing path: targetDoc is not provideSecurity,
+    // so Collaborator records here are purely for notification fan-out
+    // (today's behavior for Channels, DirectMessages, etc.).
     for (const collab of collaboratorsFromMessage) {
       if (currentCollaborators.includes(collab)) {
         continue
       }
-
-      const tx = control.txFactory.createTxCreateDoc(core.class.Collaborator, targetDoc.space, {
-        attachedTo: targetDoc._id,
-        attachedToClass: targetDoc._class,
-        collaborator: collab,
-        collection: 'collaborators'
-      })
-
-      res.push(tx)
+      res.push(
+        control.txFactory.createTxCreateDoc(core.class.Collaborator, targetDoc.space, {
+          attachedTo: targetDoc._id,
+          attachedToClass: targetDoc._class,
+          collaborator: collab,
+          collection: 'collaborators'
+        })
+      )
     }
   }
+  // Else: protected target without mentionsGrantAccess (QMS / Love today)
+  // → no-op, preserving pre-PR behavior for those classes.
 
   if (account != null && isChannel && !(targetDoc as Channel).members.includes(account)) {
     res.push(...joinChannel(control, targetDoc as Channel, account))
   }
 
   return res
+}
+
+// V3d: self-contained grant helper used ONLY by OnChatMessageUpdated.
+// Do NOT refactor OnChatMessageCreated to call this — the create path is live-tested
+// and must remain provably unchanged. The ~25-line overlap is intentional.
+async function applyMentionGrants (ctx: MeasureContext, message: ChatMessage, control: TriggerControl): Promise<Tx[]> {
+  if (message.modifiedBy === core.account.System) return []
+  const mixin = getClassCollaborators(control.modelDb, control.hierarchy, message.attachedToClass)
+  if (mixin === undefined) return []
+
+  const targetDoc = (await control.findAll(ctx, message.attachedToClass, { _id: message.attachedTo }, { limit: 1 }))[0]
+  if (targetDoc === undefined) return []
+
+  const node = markupToJSON(message.message)
+  const references = extractReferences(node)
+  const mentionedPersons = references
+    .filter(({ objectClass }) => control.hierarchy.isDerived(objectClass, contact.class.Person))
+    .filter(({ grantsAccess }) => grantsAccess !== 'false') // V3c
+    .map(({ objectId }) => objectId as Ref<Person>)
+  // V3d is "a newly-added mention grants access". With no granting mention there
+  // is nothing to do — return early so a plain text edit never re-runs grant
+  // machinery, and the author is NOT re-added as a collaborator on every edit.
+  if (mentionedPersons.length === 0) return []
+  const employees = await control.findAll(ctx, contact.mixin.Employee, {
+    _id: { $in: mentionedPersons as Ref<Employee>[] }
+  })
+  // Update path grants ONLY the mentioned employees (not the author — the
+  // author was already added at create time; the create path is unchanged).
+  const collaboratorsFromMessage = employees.map((it) => it.personUuid).filter(notEmpty)
+  if (collaboratorsFromMessage.length === 0) return []
+
+  const grantTarget = await resolveMentionGrantTarget(targetDoc, (cls, q, o) => control.findAll(control.ctx, cls, q, o))
+  if (grantTarget == null) return [] // update-grant only applies to opted-in (protected) targets
+
+  const grantCollabs = (
+    await control.findAll<Collaborator>(control.ctx, core.class.Collaborator, { attachedTo: grantTarget._id })
+  ).map((c) => c.collaborator)
+
+  // Same dedup discipline as the create path: a Set seeded from the committed
+  // collaborators, updated in-loop so a person mentioned more than once within one
+  // edit (two refs resolving to the same account) can never emit two identical
+  // Collaborator txes. Unlike the create path, the author is not appended here, so a
+  // self-mention alone is not a duplicate source in this path.
+  const granted = new Set<AccountUuid>(grantCollabs)
+  const res: Tx[] = []
+  for (const collab of collaboratorsFromMessage) {
+    if (granted.has(collab)) continue // add-only: skip existing
+    granted.add(collab)
+    res.push(
+      control.txFactory.createTxCreateDoc(core.class.Collaborator, grantTarget.space, {
+        attachedTo: grantTarget._id,
+        attachedToClass: grantTarget._class,
+        collaborator: collab,
+        collection: 'collaborators'
+      })
+    )
+  }
+  return res
+}
+
+async function OnChatMessageUpdated (ctx: MeasureContext, tx: TxCUD<Doc>, control: TriggerControl): Promise<Tx[]> {
+  const actualTx = tx as TxUpdateDoc<ChatMessage>
+  // Only act when the message body changed (a new mention may have been added).
+  if (actualTx.operations.message === undefined) return []
+
+  const current = (await control.findAll(ctx, tx.objectClass, { _id: tx.objectId }, { limit: 1 }))[0] as
+    | ChatMessage
+    | undefined
+  if (current === undefined) return []
+
+  // Apply the update to the stored doc so the message text AND the actor
+  // (modifiedBy) reflect THIS edit — not the original author. applyMentionGrants
+  // guards on message.modifiedBy === System, so it must see the edit actor.
+  // Add-only: we grant for all currently-mentioned people; existing grants dedup
+  // to no-ops, and we never remove (Collaborator has no provenance to remove by).
+  const message = TxProcessor.updateDoc2Doc({ ...current }, actualTx)
+  return await applyMentionGrants(ctx, message, control)
 }
 
 async function ChatNotificationsHandler (txes: TxCUD<Doc>[], control: TriggerControl): Promise<Tx[]> {
@@ -321,6 +456,12 @@ export async function ChunterTrigger (txes: TxCUD<Doc>[], control: TriggerContro
       control.hierarchy.isDerived(tx.objectClass, chunter.class.ChatMessage)
     ) {
       res.push(...(await control.ctx.with('OnChatMessageCreated', {}, (ctx) => OnChatMessageCreated(ctx, tx, control))))
+    }
+    if (
+      tx._class === core.class.TxUpdateDoc &&
+      control.hierarchy.isDerived(tx.objectClass, chunter.class.ChatMessage)
+    ) {
+      res.push(...(await control.ctx.with('OnChatMessageUpdated', {}, (ctx) => OnChatMessageUpdated(ctx, tx, control))))
     }
   }
   return res

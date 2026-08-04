@@ -293,7 +293,8 @@
     "UnsetParentIssue": "Übergeordnete Aufgabe entfernen",
     "ForbidCreateProjectPermission": "Projekterstellung verbieten",
     "ForbidCreateProjectPermissionDescription": "Verbietet Benutzern das Erstellen neuer Projekte",
-    "AllowCreatingIssues": "Erstellen von Aufgaben erlauben"
+    "AllowCreatingIssues": "Erstellen von Aufgaben erlauben",
+    "SharedWithYouTooltip": "Du hast nur Zugriff auf einzelne Issues; du bist kein Mitglied dieses Projekts"
   },
   "status": {}
 }

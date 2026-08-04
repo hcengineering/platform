@@ -293,7 +293,8 @@
     "UnsetParentIssue": "Unset parent issue",
     "ForbidCreateProjectPermission": "Forbid create project",
     "ForbidCreateProjectPermissionDescription": "Forbid users creating new projects",
-    "AllowCreatingIssues": "Allow creating issues"
+    "AllowCreatingIssues": "Allow creating issues",
+    "SharedWithYouTooltip": "You have access to specific issues only; you are not a member of this project"
   },
   "status": {}
 }
