@@ -997,10 +997,6 @@ export async function findPersonBySocialKey (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { extra } = decodeTokenVerbose(ctx, token)
-
-  verifyAllowedServices(['tool', 'workspace', 'aibot', ...integrationServices], extra)
-
   const socialId = await db.socialId.findOne({ key: socialString })
 
   if (socialId == null) {

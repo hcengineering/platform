@@ -40,6 +40,7 @@ import {
   createIntegration,
   deleteIntegration,
   deleteIntegrationSecret,
+  findPersonBySocialKey,
   getIntegration,
   getIntegrationSecret,
   listIntegrations,
@@ -1601,5 +1602,97 @@ describe('upsertSubscription', () => {
         providerData: subscriptionData.providerData
       })
     )
+  })
+})
+
+describe('findPersonBySocialKey', () => {
+  const mockCtx = {} as unknown as MeasureContext
+  const mockBranding = null
+  const mockToken = 'test-token'
+
+  function makeMockDb (socialId: { personUuid: string } | null, accountUuid: string | null = null): AccountDB {
+    return {
+      socialId: {
+        findOne: jest.fn().mockResolvedValue(socialId)
+      },
+      account: {
+        findOne: jest.fn().mockResolvedValue(accountUuid === null ? null : { uuid: accountUuid })
+      }
+    } as unknown as AccountDB
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('allows a regular user token (no service claim) to look up by social key', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: 'user-uuid'
+    })
+    const mockDb = makeMockDb({ personUuid: 'looked-up-person' })
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:alice@example.com'
+    })
+
+    expect(result).toBe('looked-up-person')
+    expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ key: 'email:alice@example.com' })
+  })
+
+  test('still rejects empty socialString', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: 'user-uuid'
+    })
+    const mockDb = makeMockDb(null)
+
+    await expect(
+      findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, { socialString: '' })
+    ).rejects.toThrow(/BadRequest/)
+  })
+
+  test('returns undefined when social key is not found', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: 'user-uuid'
+    })
+    const mockDb = makeMockDb(null)
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:missing@example.com'
+    })
+
+    expect(result).toBeUndefined()
+  })
+
+  test('with requireAccount=true returns the account uuid when the person has one', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: 'user-uuid'
+    })
+    const mockDb = makeMockDb({ personUuid: 'person-uuid' }, 'account-uuid')
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:alice@example.com',
+      requireAccount: true
+    })
+
+    expect(result).toBe('account-uuid')
+  })
+
+  test('with requireAccount=true returns undefined when the person has no account', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: 'user-uuid'
+    })
+    const mockDb = makeMockDb({ personUuid: 'person-uuid' }, null)
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:alice@example.com',
+      requireAccount: true
+    })
+
+    expect(result).toBeUndefined()
   })
 })
