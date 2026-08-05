@@ -999,7 +999,7 @@ export class PostgresAccountDB implements AccountDB {
         operationSql = pendingUpgradeSql
         break
       case 'all':
-        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql})`
+        operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql} OR ${deletingSql})`
         break
       case 'all+backup':
         operationSql = `(${pendingCreationSql} OR ${pendingUpgradeSql} OR ${migrationSql} OR ${archivingSql} OR ${restoringSql} OR ${deletingSql})`
@@ -1015,8 +1015,6 @@ export class PostgresAccountDB implements AccountDB {
     }
     whereChunks.push(operationSql)
 
-    // TODO: support returning pending deletion workspaces when we will actually want
-    // to clear them with the worker.
     whereChunks.push("s.mode <> 'manual-creation'")
     whereChunks.push('(s.processing_attempts IS NULL OR s.processing_attempts <= 3)')
     whereChunks.push(`(s.last_processing_time IS NULL OR s.last_processing_time < $${values.length + 1})`)

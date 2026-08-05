@@ -740,7 +740,7 @@ export class MongoAccountDB implements AccountDB {
         operationQuery = { $or: pendingUpgradeQuery }
         break
       case 'all':
-        operationQuery = { $or: [...pendingCreationQuery, ...pendingUpgradeQuery] }
+        operationQuery = { $or: [...pendingCreationQuery, ...pendingUpgradeQuery, ...deletingQuery] }
         break
       case 'all+backup':
         operationQuery = {
