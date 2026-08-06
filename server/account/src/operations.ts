@@ -45,6 +45,7 @@ import {
   type Token
 } from '@hcengineering/server-token'
 
+import { randomUUID } from 'crypto'
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
@@ -2675,6 +2676,169 @@ async function deleteMailbox (
   ctx.info('Mailbox deleted', { mailbox, account })
 }
 
+// ── API Token Management ────────────────────────────────────────────
+
+const MAX_TOKENS_PER_ACCOUNT = 100
+
+/**
+ * API tokens carry the full rights of their account, so letting one manage tokens
+ * would make a leaked token self-renewing: it could mint a fresh token with a new
+ * expiry, or revoke the tokens its owner would use to cut it off. Token management
+ * stays with an interactive session.
+ */
+function verifyNotApiToken (extra: Record<string, any> | undefined): void {
+  if (extra?.apiTokenId !== undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+}
+
+/**
+ * Creates a new API token for the authenticated user.
+ * @param params.name Human-readable token name (1–255 chars)
+ * @param params.workspaceUuid Target workspace — user must have access
+ * @param params.expiryDays Token validity period (1–365 days)
+ * @returns Token ID, signed JWT, and expiration timestamp (ms)
+ * @throws BadRequest if validation fails
+ * @throws Forbidden if user lacks workspace access
+ */
+async function createApiToken (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    name: string
+    workspaceUuid: WorkspaceUuid
+    expiryDays: number
+  }
+): Promise<{ id: string, token: string, expiresOn: number }> {
+  const { name, workspaceUuid, expiryDays } = params
+
+  if (
+    name == null ||
+    typeof name !== 'string' ||
+    name.trim() === '' ||
+    name.trim().length > 255 ||
+    workspaceUuid == null
+  ) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (typeof expiryDays !== 'number' || !Number.isFinite(expiryDays)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const days = Math.floor(expiryDays)
+  if (days < 1 || days > 365) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  verifyNotApiToken(extra)
+
+  // Verify the user has access to this workspace and is at least a User (not a guest)
+  const role = await db.getWorkspaceRole(account, workspaceUuid)
+  if (role == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  verifyAllowedRole(role, AccountRole.User, extra)
+
+  // Enforce per-account token limit. Revoked and expired tokens are kept for the
+  // audit trail, so counting them would eventually lock out anyone who rotates.
+  const now = Date.now()
+  const existingTokens = await db.apiToken.find({ accountUuid: account })
+  const usableTokens = existingTokens.filter((it) => !it.revoked && it.expiresOn > now)
+  if (usableTokens.length >= MAX_TOKENS_PER_ACCOUNT) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const expiresOn = now + days * 86400000
+  const expSec = Math.floor(expiresOn / 1000)
+
+  const id = randomUUID()
+  const apiToken = generateToken(account, workspaceUuid, { apiTokenId: id }, undefined, { exp: expSec })
+
+  await db.apiToken.insertOne({
+    id,
+    accountUuid: account,
+    name,
+    workspaceUuid,
+    createdOn: now,
+    expiresOn,
+    revoked: false
+  })
+
+  ctx.info('API token created', { id, account, workspaceUuid, days })
+  return { id, token: apiToken, expiresOn }
+}
+
+/**
+ * Lists all API tokens for the authenticated user across all workspaces.
+ * Includes workspace names resolved from workspace UUIDs.
+ */
+async function listApiTokens (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<
+  Array<{
+    id: string
+    name: string
+    workspaceUuid: WorkspaceUuid
+    workspaceName: string
+    createdOn: number
+    expiresOn: number
+    revoked: boolean
+  }>
+  > {
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  verifyNotApiToken(extra)
+
+  const tokens = await db.apiToken.find({ accountUuid: account })
+  const wsUuids = [...new Set(tokens.map((t) => t.workspaceUuid))]
+  const workspaces = await db.workspace.find({ uuid: { $in: wsUuids } as any })
+  const wsMap = new Map(workspaces.map((w) => [w.uuid, w.name ?? w.url]))
+
+  return tokens.map((t) => ({
+    id: t.id,
+    name: t.name,
+    workspaceUuid: t.workspaceUuid,
+    workspaceName: wsMap.get(t.workspaceUuid) ?? t.workspaceUuid,
+    createdOn: t.createdOn,
+    expiresOn: t.expiresOn,
+    revoked: t.revoked
+  }))
+}
+
+/**
+ * Revokes one of the caller's own API tokens. The record is kept so the token
+ * stays visible as revoked rather than silently disappearing.
+ */
+async function revokeApiToken (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { tokenId: string }
+): Promise<void> {
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  verifyNotApiToken(extra)
+  const { tokenId } = params
+
+  // Scoped to the caller's own tokens, which is the only authority revoking needs.
+  // Deliberately no workspace role check: leaving a workspace must not strand a
+  // credential its owner can no longer revoke.
+  const existing = await db.apiToken.findOne({ id: tokenId, accountUuid: account })
+  if (existing == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  await db.apiToken.update({ id: tokenId }, { revoked: true })
+
+  ctx.info('API token revoked', { id: tokenId, account })
+}
+
 async function exchangeGuestToken (
   ctx: MeasureContext,
   db: AccountDB,
@@ -3454,6 +3618,9 @@ export type AccountMethods =
   | 'hasWorkspacePermission'
   | 'getWorkspacePermissions'
   | 'getWorkspaceUsersWithPermission'
+  | 'createApiToken'
+  | 'listApiTokens'
+  | 'revokeApiToken'
 
 /**
  * @public
@@ -3520,6 +3687,11 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     hasWorkspacePermission: wrap(hasWorkspacePermission),
     getWorkspacePermissions: wrap(getWorkspacePermissions),
     getWorkspaceUsersWithPermission: wrap(getWorkspaceUsersWithPermission),
+
+    /* API TOKENS */
+    createApiToken: wrap(createApiToken),
+    listApiTokens: wrap(listApiTokens),
+    revokeApiToken: wrap(revokeApiToken),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),
