@@ -23,6 +23,7 @@ export const codeBlockOptions: CodeBlockOptions = {
   tabSize: undefined,
   exitOnArrowDown: true,
   exitOnTripleEnter: true,
+  exitOnArrowUp: true,
   HTMLAttributes: {
     class: 'proseCodeBlock'
   }
