@@ -115,9 +115,10 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
 
       let isLoading = false
       const updateLoadingState = (loading: boolean): void => {
-        if (isLoading === loading) return
+        const pos = getPos()
+        if (pos === undefined || isLoading === loading) return
+
         isLoading = loading
-        const pos = typeof getPos === 'function' ? getPos() : 0
         setLoadingState(editor.view, pos, loading)
       }
 

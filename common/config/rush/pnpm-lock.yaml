@@ -3592,88 +3592,88 @@ importers:
         specifier: workspace:^0.7.19
         version: link:../text-core
       '@tiptap/core':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/pm@3.32.0)
       '@tiptap/extension-blockquote':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-bold':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-code':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-code-block':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-document':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-hard-break':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-heading':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-highlight':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-horizontal-rule':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-italic':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-link':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-list':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-mention':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)(@tiptap/suggestion@3.32.0(@floating-ui/dom@1.8.0)(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0))
       '@tiptap/extension-paragraph':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-strike':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-subscript':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-superscript':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-table':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-text':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-text-align':
-        specifier: ~3.23.5
-        version: 3.23.6(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
+        specifier: ~3.29.2
+        version: 3.29.2(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-text-style':
-        specifier: ~3.23.5
-        version: 3.23.6(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
+        specifier: ~3.29.2
+        version: 3.29.2(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-typography':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-underline':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extensions':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/pm':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0
       '@tiptap/starter-kit':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0
       '@tiptap/suggestion':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@floating-ui/dom@1.8.0)(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       fast-equals:
         specifier: ^5.2.2
@@ -17193,7 +17193,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../workbench-resources
       '@tiptap/core':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/pm@3.32.0)
       fast-equals:
         specifier: ^5.2.2
@@ -18054,7 +18054,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../workbench
       '@tiptap/core':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/pm@3.32.0)
       effector:
         specifier: ~22.8.7
@@ -19237,7 +19237,7 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../workbench
       '@tiptap/core':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/pm@3.32.0)
       fast-equals:
         specifier: ^5.2.2
@@ -27637,10 +27637,10 @@ importers:
         specifier: workspace:^0.7.0
         version: link:../../packages/ui
       '@tiptap/core':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/pm@3.32.0)
       '@tiptap/pm':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0
     devDependencies:
       '@hcengineering/platform-rig':
@@ -27816,70 +27816,70 @@ importers:
         specifier: ^3.4.4
         version: 3.4.4(bufferutil@4.1.0)(utf-8-validate@6.0.6)(y-protocols@1.0.7(yjs@13.6.32))(yjs@13.6.32)
       '@tiptap/core':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/pm@3.32.0)
       '@tiptap/extension-bubble-menu':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-code':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-code-block':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-code-block-lowlight':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/extension-code-block@3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)(highlight.js@11.12.0)(lowlight@3.3.0)
       '@tiptap/extension-collaboration':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)(@tiptap/y-tiptap@3.0.10(prosemirror-model@1.25.12)(prosemirror-state@1.4.4)(prosemirror-view@1.42.6)(y-protocols@1.0.7(yjs@13.6.32))(yjs@13.6.32))(yjs@13.6.32)
       '@tiptap/extension-collaboration-caret':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)(@tiptap/y-tiptap@3.0.10(prosemirror-model@1.25.12)(prosemirror-state@1.4.4)(prosemirror-view@1.42.6)(y-protocols@1.0.7(yjs@13.6.32))(yjs@13.6.32))
       '@tiptap/extension-hard-break':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-heading':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-highlight':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-link':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-list':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-mathematics':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)(katex@0.16.47)
       '@tiptap/extension-subscript':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-superscript':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-table':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/extension-text-align':
-        specifier: ~3.23.5
-        version: 3.23.6(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
+        specifier: ~3.29.2
+        version: 3.29.2(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-typography':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extension-underline':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))
       '@tiptap/extensions':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       '@tiptap/pm':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0
       '@tiptap/starter-kit':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0
       '@tiptap/y-tiptap':
         specifier: ^3.0.3
@@ -35792,10 +35792,10 @@ importers:
         specifier: ^3.4.4
         version: 3.4.4(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)(y-prosemirror@1.3.7(prosemirror-model@1.25.12)(prosemirror-state@1.4.4)(prosemirror-view@1.42.6)(y-protocols@1.0.7(yjs@13.6.32))(yjs@13.6.32))(yjs@13.6.32)
       '@tiptap/core':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/pm@3.32.0)
       '@tiptap/html':
-        specifier: ^3.23.5
+        specifier: ^3.29.2
         version: 3.32.0(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))(@tiptap/pm@3.32.0)
       body-parser:
         specifier: ^1.20.3
@@ -43397,15 +43397,15 @@ packages:
       '@tiptap/core': 3.32.0
       '@tiptap/pm': 3.32.0
 
-  '@tiptap/extension-text-align@3.23.6':
-    resolution: {integrity: sha512-pE+gDmvnrSMWHADDnDSzaO7YUi9kOywQkyrqZ9bEPLddZred7ICoJ4NtD2DqLjDSur+HijaJuByResWb78c6FA==}
+  '@tiptap/extension-text-align@3.29.2':
+    resolution: {integrity: sha512-205FF87zjUEh79n6dgVy9SMj1P+rNserHMqPd8lF7YS2TOWikXPG4PFuQHWXXCYzaCvQXAiATSAyPXXmUWUvaQ==}
     peerDependencies:
-      '@tiptap/core': 3.23.6
+      '@tiptap/core': 3.29.2
 
-  '@tiptap/extension-text-style@3.23.6':
-    resolution: {integrity: sha512-Auasgj469wkQ5ip+Zi2gaRzvqxx9qKG58+1mkT8yPE3QAGnOIg/AaKyQ7pTV77UyL3FHvLnU+KsWCad+qcobww==}
+  '@tiptap/extension-text-style@3.29.2':
+    resolution: {integrity: sha512-aQad9V9ROaEi3hE4g5z9wQ6lv5FSnzlnWFMVJxRjNlwXgm7H0fymxb4rGfca+pAwYkiRwpKYh1LatpJw2ECQAA==}
     peerDependencies:
-      '@tiptap/core': 3.23.6
+      '@tiptap/core': 3.29.2
 
   '@tiptap/extension-text@3.32.0':
     resolution: {integrity: sha512-sF0jIK67IHdZMnzv2mz5vPTyK7R0ui6/YZgFg+/bLnFCNmweVAoYcHZLlC7ISRnwu0mqJr+epNtzJepY1ZDCjg==}
@@ -53660,11 +53660,11 @@ snapshots:
       '@tiptap/core': 3.32.0(@tiptap/pm@3.32.0)
       '@tiptap/pm': 3.32.0
 
-  '@tiptap/extension-text-align@3.23.6(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))':
+  '@tiptap/extension-text-align@3.29.2(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))':
     dependencies:
       '@tiptap/core': 3.32.0(@tiptap/pm@3.32.0)
 
-  '@tiptap/extension-text-style@3.23.6(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))':
+  '@tiptap/extension-text-style@3.29.2(@tiptap/core@3.32.0(@tiptap/pm@3.32.0))':
     dependencies:
       '@tiptap/core': 3.32.0(@tiptap/pm@3.32.0)
 

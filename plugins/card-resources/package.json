@@ -71,7 +71,7 @@
     "@hcengineering/contact": "workspace:^0.7.0",
     "@hcengineering/integration": "workspace:^0.7.0",
     "@hcengineering/workbench": "workspace:^0.7.0",
-    "@tiptap/core": "^3.23.5",
+    "@tiptap/core": "^3.29.2",
     "@hcengineering/platform": "workspace:^0.7.20",
     "@hcengineering/model": "workspace:^0.7.17",
     "@hcengineering/card": "workspace:^0.7.0",
