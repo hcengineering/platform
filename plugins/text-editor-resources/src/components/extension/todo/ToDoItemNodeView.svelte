@@ -27,7 +27,9 @@
   function handleSelectionUpdate (): void {
     const selection = editor.state.selection
     const pos = selection.$anchor.pos
-    const start = getPos() ?? 0
+    const start = getPos()
+    if (start === undefined) return
+
     const end = node.firstChild != null ? start + node.firstChild.nodeSize + 1 : start + node.nodeSize
     focused = pos >= start && pos < end
   }

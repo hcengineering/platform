@@ -38,8 +38,9 @@
   let element: HTMLElement
   let editor: Editor
 
-  let _decoration = DecorationSet.empty
   let oldContent: MarkupNode | undefined
+
+  const diffPluginKey = new PluginKey<DecorationSet>('diffs')
 
   $: ydocCopy = copyYdoc(ydoc)
 
@@ -54,13 +55,7 @@
     const r = calculateDecorations(editor, oldContent, createYdocDocument(editor.schema, ydoc, field))
     if (r !== undefined) {
       oldContent = r.oldContent
-      _decoration = r.decorations
-    }
-  }
-
-  const updateDecorations = (): void => {
-    if (editor?.schema !== undefined && comparedYdoc !== undefined) {
-      updateEditor(editor, comparedYdoc, comparedField)
+      editor.view.dispatch(editor.view.state.tr.setMeta(diffPluginKey, r.decorations))
     }
   }
 
@@ -68,11 +63,17 @@
     addProseMirrorPlugins () {
       return [
         new Plugin({
-          key: new PluginKey('diffs'),
+          key: diffPluginKey,
+          state: {
+            init: () => DecorationSet.empty,
+            apply (tr, value) {
+              const next = tr.getMeta(diffPluginKey)
+              return next !== undefined ? next : value
+            }
+          },
           props: {
-            decorations () {
-              updateDecorations()
-              return _decoration
+            decorations (state) {
+              return diffPluginKey.getState(state)
             }
           }
         })
