@@ -5,9 +5,9 @@
   import { createEventDispatcher } from 'svelte'
   import { writable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
-  import type { Issue, IssueRelation, Milestone, WorkingDaysConfig } from '@hcengineering/tracker'
+  import type { Issue, IssueRelation, Milestone } from '@hcengineering/tracker'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
-  import { type LayoutMode, type TimeScale } from '@hcengineering/gantt'
+  import { type LayoutMode, type TimeScale, type WorkingCalendar } from '@hcengineering/gantt'
   import { type BarLabelSlot } from './lib/bar-labels'
   import { filterVisibleRows } from './lib/layout'
   import GanttBar from './GanttBar.svelte'
@@ -68,6 +68,12 @@
   // milestonesById is a lookup of full Milestone docs (keyed by _id) used
   // to build the DragTarget payload when a milestone bar is clicked.
   export let editableIssueIds = new Set<string>()
+  // Date-mutation affordances (body drag, edge resize, sidebar unschedule grip)
+  // are gated separately from `editableIssueIds` so the all-projects view can be
+  // read-only for calendar-dependent edits while KEEPING selection, the context
+  // menu, the manual date-picker and dependency/connector actions. Defaults true
+  // so embedded/preview call-sites that don't wire it stay fully interactive.
+  export let dateMutable = true
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
   export let focusedIssueId: string | null = null
   export let selectedIssueId: string | null = null
@@ -95,7 +101,7 @@
   // days treated as working). When set, every non-working day in the
   // viewport receives a low-alpha background fill so the user sees at a
   // glance which days the scheduler will skip.
-  export let workingDaysConfig: WorkingDaysConfig | undefined = undefined
+  export let workingDaysConfig: WorkingCalendar | undefined = undefined
   /** Layout mode for mobile-friendly rendering. */
   export let layoutMode: LayoutMode = 'desktop'
   /** Bulk-select: set of selected issue id strings for co-drag highlighting. */
@@ -364,6 +370,7 @@
                 {timeScale}
                 statusCategory={null}
                 editable={isEditable(ms._id)}
+                {dateMutable}
                 focused={isFocused(ms._id)}
                 selected={isSelected(ms._id)}
                 {activeDrag}
@@ -404,6 +411,7 @@
               summaryRange={summaryFor(row)}
               statusCategory={statusCategoryFor(row.issue)}
               editable={isEditable(row.issue._id)}
+              {dateMutable}
               focused={isFocused(row.issue._id)}
               selected={isSelected(row.issue._id)}
               multiSelected={multiSelectedIssueIds.has(String(row.issue._id))}
@@ -562,7 +570,7 @@
     already does, cannot help in the middle of a curve). Only the selected bar
     ever has handles, so this layer holds at most one pair.
   -->
-  {#if resizeHandles !== null}
+  {#if dateMutable && resizeHandles !== null}
     <g class="resize-handle-overlay" transform="translate(0, {milestoneStripHeight})">
       <GanttBarResizeHandles
         x={resizeHandles.x}

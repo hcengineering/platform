@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { Issue, IssueRelation, WorkingDaysConfig } from '@hcengineering/tracker'
+import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
-import { fsAnchor, ssAnchor, ffAnchor, sfAnchor } from '@hcengineering/gantt'
+import { type WorkingCalendar, fsAnchor, ssAnchor, ffAnchor, sfAnchor } from '@hcengineering/gantt'
 import { detectCycle } from './scheduler'
 
 /**
@@ -46,7 +46,7 @@ export function computeBulkDeltaBounds (
   memberIds: ReadonlySet<Ref<Issue>>,
   allIssues: readonly Issue[],
   relations: readonly IssueRelation[],
-  workingDays?: WorkingDaysConfig
+  workingDays?: WorkingCalendar
 ): BulkDeltaBounds {
   // Cyclic-graph bail-out (see header). Mirrors simulateCascade's pre-flight check.
   if (detectCycle(relations as IssueRelation[]) !== null) {

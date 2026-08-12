@@ -35,6 +35,11 @@
   export let showStatus: boolean = true
   export let hoveredRowId: string | null = null
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
+  // Date-mutation gate. When false (all-projects view: no single-project
+  // calendar, so scheduling is read-only) the unschedule drag-grip is hidden.
+  // Row selection/navigation is unaffected. Defaults true so preview/test
+  // mounts keep the grip.
+  export let dateMutable: boolean = true
   export let relations: IssueRelation[] = []
   export let showPredecessors: boolean = false
   /**
@@ -505,7 +510,7 @@
               </span>
             {/if}
           {:else if row.issue !== null}
-            {#if row.issue.startDate === null && row.issue.dueDate === null}
+            {#if dateMutable && row.issue.startDate === null && row.issue.dueDate === null}
               <!-- svelte-ignore a11y-no-static-element-interactions a11y-no-noninteractive-element-interactions -->
               <span
                 class="drag-grip"

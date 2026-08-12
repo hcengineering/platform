@@ -94,12 +94,7 @@ function readNumber (issue: Issue, col: SidebarColumnKey): number {
 function readDate (issue: Issue, col: SidebarColumnKey): number | null {
   if (col === 'startDate') return issue.startDate ?? null
   if (col === 'dueDate') return issue.dueDate ?? null
-  if (col === 'deadline') {
-    // No native `deadline` field on Issue — preserve the
-    // hook for a future model addition, until then it sorts as all-null.
-    const anyIssue = issue as unknown as { deadline?: number | null }
-    return anyIssue.deadline ?? null
-  }
+  if (col === 'deadline') return issue.deadline ?? null
   return null
 }
 

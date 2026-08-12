@@ -40,7 +40,7 @@
   import presentation, { IconWithEmoji, Card, createQuery, getClient } from '@hcengineering/presentation'
   import task, { ProjectType, TaskType } from '@hcengineering/task'
   import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
-  import { IssueStatus, Project, TimeReportDayType, TrackerEvents } from '@hcengineering/tracker'
+  import { IssueStatus, Project, TimeReportDayType, TrackerEvents, WorkingDaysConfig } from '@hcengineering/tracker'
   import {
     Button,
     Component,
@@ -60,6 +60,8 @@
 
   import tracker from '../../plugin'
   import StatusSelector from '../issues/StatusSelector.svelte'
+  import { workingDaysUpdate } from '../gantt/lib/working-days-editor'
+  import WorkingDaysEditor from './WorkingDaysEditor.svelte'
 
   export let project: Project | undefined = undefined
   export let namePlaceholder: string = ''
@@ -83,6 +85,10 @@
   let projectsIdentifiers = new Set<string>()
   let isSaving = false
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
+  // Flat copy: the editor mutates the object; the query-cache doc stays
+  // untouched until save.
+  let workingDaysConfig: WorkingDaysConfig | undefined =
+    project?.workingDaysConfig !== undefined ? { ...project.workingDaysConfig } : undefined
   let rolesAssignment: RolesAssignment | undefined
 
   let typeId: Ref<ProjectType> | undefined = project?.type
@@ -135,6 +141,7 @@
       color,
       defaultIssueStatus: defaultStatus ?? ('' as Ref<IssueStatus>),
       defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay,
+      workingDaysConfig,
       autoJoinForRoles: normalizeAutoJoinForRoles(autoJoinForRoles)
     }
   }
@@ -183,6 +190,17 @@
     }
     if (projectData.defaultTimeReportDay !== project?.defaultTimeReportDay) {
       update.defaultTimeReportDay = projectData.defaultTimeReportDay
+    }
+    // Unit-tested in lib/__tests__/working-days-editor.test.ts: no-op on
+    // equality, $unset on disable (never write undefined/null), full config
+    // otherwise.
+    const wdUpdate = workingDaysUpdate(projectData.workingDaysConfig, project?.workingDaysConfig)
+    if (wdUpdate !== undefined) {
+      if ('$unset' in wdUpdate) {
+        update.$unset = wdUpdate.$unset
+      } else {
+        update.workingDaysConfig = wdUpdate.workingDaysConfig
+      }
     }
     if (projectData.autoJoin !== project?.autoJoin) {
       update.autoJoin = projectData.autoJoin
@@ -510,6 +528,14 @@
           size={'large'}
         />
       {/if}
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={tracker.string.WorkingDaysTitle} />
+        <span><Label label={tracker.string.WorkingDaysDescription} /></span>
+      </div>
+      <WorkingDaysEditor bind:value={workingDaysConfig} />
     </div>
 
     <div class="antiGrid-row">

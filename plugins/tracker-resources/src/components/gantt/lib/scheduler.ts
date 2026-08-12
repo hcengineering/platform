@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { Issue, IssueRelation, WorkingDaysConfig } from '@hcengineering/tracker'
+import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 import type { PrimaryEdit, CascadeShift, SimulateResult } from './types'
 import {
+  type WorkingCalendar,
   fsAnchor,
   ssAnchor,
   ffAnchor,
@@ -23,7 +24,7 @@ const DAY_MS = 86_400_000
  * Schedule arithmetic helper — kept for callers that need raw calendar-day
  * math (e.g. summary aggregates). The cascade scheduler itself now routes
  * through the per-kind anchor helpers in `working-days.ts`, which respect
- * the optional WorkingDaysConfig.
+ * the optional WorkingCalendar.
  */
 export function addScheduleDays (t: number, days: number): number {
   return t + days * DAY_MS
@@ -186,7 +187,7 @@ export function simulateCascade (
   allIssues: Issue[],
   relations: IssueRelation[],
   canEdit: (ref: Ref<Issue>) => boolean,
-  options?: { maxIterations?: number, workingDays?: WorkingDaysConfig }
+  options?: { maxIterations?: number, workingDays?: WorkingCalendar }
 ): SimulateResult {
   const cfg = options?.workingDays
   // Step 0: pre-flight cycle check on the relation graph itself.

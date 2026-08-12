@@ -29077,6 +29077,9 @@ importers:
       '@hcengineering/gantt':
         specifier: workspace:^0.7.0
         version: link:../../packages/gantt
+      '@hcengineering/hr':
+        specifier: workspace:^0.7.0
+        version: link:../hr
       '@hcengineering/kanban':
         specifier: workspace:^0.7.0
         version: link:../../packages/kanban

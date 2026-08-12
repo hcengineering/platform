@@ -80,11 +80,32 @@ export interface WorkingDaysConfig {
    *   Mon–Fri   = 0b0011111 = 31
    *   Mon–Sat   = 0b0111111 = 63
    *   All days  = 0b1111111 = 127
+   *
+   * Holiday DATES are intentionally NOT stored in this config: they come
+   * from the HR calendar (`hr.class.PublicHoliday`) of the department
+   * selected via `holidayDepartment` (plus all ancestor departments) and
+   * are resolved by the Gantt adapter in tracker-resources — see review
+   * #10992 (avoid duplicating the HR holiday concept per project).
    */
   weekdayMask: number
 
-  /** Holidays as UTC-midnight timestamps. Order is irrelevant; duplicates allowed. */
-  holidays: Timestamp[]
+  /**
+   * Optional HR department whose public-holiday calendar applies to this
+   * project. Semantics mirror hr-resources' schedule view: the department's
+   * own holidays PLUS those of all ancestor departments count as
+   * non-working.
+   *
+   * `undefined` means "company-wide": only the root department's calendar
+   * (`hr.ids.Head` in the hr plugin) is used. A stale ref to a deleted
+   * department falls back to the root as well — never to a union across
+   * departments.
+   *
+   * Typed as an opaque `Ref<Doc>` on purpose: the tracker declaration
+   * package must not depend on the optional hr module (model-optional
+   * runtime integration). The precise `Ref<Department>` typing lives in
+   * tracker-resources, which already depends on the hr declaration package.
+   */
+  holidayDepartment?: Ref<Doc>
 }
 
 /**
@@ -746,6 +767,10 @@ const pluginState = plugin(trackerId, {
     WorkingDaysWeekday: '' as IntlString,
     WorkingDaysHolidays: '' as IntlString,
     WorkingDaysNotConfigured: '' as IntlString,
+    WorkingDaysEnable: '' as IntlString,
+    WorkingDaysDepartment: '' as IntlString,
+    WorkingDaysCompanyWide: '' as IntlString,
+    WorkingDaysAtLeastOneDay: '' as IntlString,
     WorkingDayMon: '' as IntlString,
     WorkingDayTue: '' as IntlString,
     WorkingDayWed: '' as IntlString,

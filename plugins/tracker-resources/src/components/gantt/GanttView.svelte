@@ -26,6 +26,7 @@
     type WorkingDaysConfig,
     IssuePriority
   } from '@hcengineering/tracker'
+  import hr from '@hcengineering/hr'
   import { type TagElement } from '@hcengineering/tags'
   import { type Person } from '@hcengineering/contact'
   import tags from '@hcengineering/tags'
@@ -40,8 +41,8 @@
     ffAnchor,
     sfAnchor,
     DebouncedRecompute,
-    setConfirming,
-    isConfirming,
+    createConfirmGate,
+    type WorkingCalendar,
     createFlashStore,
     flashIssues,
     reduce,
@@ -56,12 +57,36 @@
     MIN_PPD,
     computeAdaptivePxPerDay,
     computeCanvasRenderWidth,
-    computeCanvasViewportWidth
+    computeCanvasViewportWidth,
+    extractGanttSavedView,
+    isBarColorMode,
+    isoDateForTimestamp,
+    mergeGanttSavedView,
+    timestampForIsoDate,
+    type GanttSavedViewOptions,
+    DEFAULT_COLUMNS,
+    clampWidth,
+    computeTotalWidth,
+    parseWidths,
+    type SidebarColumnKey,
+    createTreeExpandStore,
+    type TreeExpandStore,
+    dropdownSelectionForPxPerDay,
+    visibleDaysFromPxPerDay,
+    pxPerDayFromVisibleDays,
+    MIN_VISIBLE_DAYS,
+    MAX_VISIBLE_DAYS,
+    type DropdownSelection,
+    initial as pinchInitial,
+    reducePinch,
+    computePxPerDayFromRatio,
+    type PinchState
   } from '@hcengineering/gantt'
   import { sendDependencyShiftedNotifications } from './lib/dependency-shift-send'
   import { toggleSelection, selectRange, selectAll, clearSelection } from './lib/bulk-selection'
   import { computeBulkDeltaBounds } from './lib/bulk-boundary'
   import { computeCriticalPath } from './lib/critical-path'
+  import { CalendarStateMachine, type CalendarSnapshot, type MutationTicket } from './lib/calendar-state'
   import type {
     CriticalPathResult,
     PrimaryEdit,
@@ -125,31 +150,6 @@
   import GanttHeader from './GanttHeader.svelte'
   import GanttSaveViewPopup from './GanttSaveViewPopup.svelte'
   import GanttSidebar from './GanttSidebar.svelte'
-  import {
-    extractGanttSavedView,
-    isBarColorMode,
-    isoDateForTimestamp,
-    mergeGanttSavedView,
-    timestampForIsoDate,
-    type GanttSavedViewOptions,
-    DEFAULT_COLUMNS,
-    clampWidth,
-    computeTotalWidth,
-    parseWidths,
-    type SidebarColumnKey,
-    createTreeExpandStore,
-    type TreeExpandStore,
-    dropdownSelectionForPxPerDay,
-    visibleDaysFromPxPerDay,
-    pxPerDayFromVisibleDays,
-    MIN_VISIBLE_DAYS,
-    MAX_VISIBLE_DAYS,
-    type DropdownSelection,
-    initial as pinchInitial,
-    reducePinch,
-    computePxPerDayFromRatio,
-    type PinchState
-  } from '@hcengineering/gantt'
   import { filterGanttFilteredViews } from './lib/saved-views'
   import { cycleSort, comparatorFor, parseSortState, type GanttSortState } from './lib/sidebar-sort'
   import { GROUP_BY_KEYS, type GroupByKey } from './lib/group-by'
@@ -622,7 +622,7 @@
   }
 
   // 200 ms debounced recompute on issues / relations / toggle / cfg change.
-  $: scheduleCpRecompute(issues, relations, showCriticalPath, showSlackColumn, workingDaysCfg)
+  $: scheduleCpRecompute(issues, relations, showCriticalPath, showSlackColumn, effectiveCalendar)
 
   function setZoom (z: ZoomLevel): void {
     zoom = z
@@ -1014,22 +1014,90 @@
     getCurrentAccount().uuid as unknown as string
   )
 
+  // Instance-scoped drag-commit confirmation gate — one per mounted
+  // GanttView, so parallel Gantt views never block each other (PR review).
+  const confirmGate = createConfirmGate()
+
   // Phase-2 working-days calendar. `undefined` keeps legacy calendar-day
-  // semantics; an explicit config (week mask + holidays) makes the scheduler
-  // and critical-path treat lag/slack in working days and paints non-working
-  // days in the canvas background.
-  let workingDaysCfg: WorkingDaysConfig | undefined = undefined
-  $: if (space !== undefined) {
-    projectQuery.query(
-      tracker.class.Project,
-      { _id: space as Ref<Project> },
-      (res: Project[]) => {
-        workingDaysCfg = res[0]?.workingDaysConfig
-      },
-      { limit: 1 }
-    )
-  } else {
-    workingDaysCfg = undefined
+  // semantics; an explicit config (per-project weekday mask) makes the
+  // scheduler and critical-path treat lag/slack in working days and paints
+  // non-working days in the canvas background. Holiday DATES are not stored
+  // per project: they come from the HR calendar of the department selected
+  // in the config — the department's own holidays plus those of all
+  // ancestor departments, mirroring hr-resources' ScheduleView semantics.
+  // No department configured means "company-wide" (root department only);
+  // a stale ref falls back to the root as well (review #10992).
+  //
+  // Model-optional runtime integration: only the declaration package
+  // `@hcengineering/hr` is imported statically; whether the HR *model* is
+  // installed is probed via hierarchy.hasClass at runtime. Without the
+  // model the calendar is ready with an empty holiday list (no throw).
+  // HR is subscribed only while a project opted in via `workingDaysConfig`
+  // (legacy mode stays holiday-free by design). No date-window filter: the
+  // scheduler/CPM work on the full issue span, not just the visible
+  // viewport, and holiday sets are small (deduped).
+  //
+  // All load/switch state lives in CalendarStateMachine (lib/calendar-state
+  // .ts, unit-tested with fake queries): synchronous reset + generation
+  // bump on every project switch, stale-callback rejection, and the
+  // mutation tickets that guard every persist site below.
+  const ganttClient = getClient()
+  const hrModelPresent = ganttClient.getHierarchy().hasClass(hr.class.PublicHoliday)
+  const hrHolidayQuery = createQuery()
+  const hrDepartmentQuery = createQuery()
+
+  let calSnapshot: CalendarSnapshot = { ready: false, mutable: false, cfg: undefined, holidays: [] }
+  // The active mutation's ticket. Captured at the three mutation entry
+  // points, cleared on project switch. Only one calendar-dependent
+  // mutation can be active at a time (single activeDrag state machine;
+  // shiftFocused enters synchronously), so one slot suffices.
+  let activeMutationTicket: MutationTicket | null = null
+
+  const calendarState = new CalendarStateMachine(
+    { project: projectQuery, departments: hrDepartmentQuery, holidays: hrHolidayQuery },
+    hrModelPresent,
+    { project: tracker.class.Project, department: hr.class.Department, holiday: hr.class.PublicHoliday },
+    hr.ids.Head,
+    (snap) => {
+      // Component-scope assignment → Svelte reactivity.
+      calSnapshot = snap
+    },
+    () => {
+      // Synchronous cancellation on project switch: an in-flight drag or an
+      // open confirmation popup belongs to the previous project. Release
+      // the preview and drop the ticket; a still-open popup's callback then
+      // aborts via mutationStillCurrent().
+      activeMutationTicket = null
+      activeDrag.set({ kind: 'idle' })
+    }
+  )
+  $: calendarState.setSpace(space as Ref<Project> | undefined)
+  // Calendar-dependent mutations may only START when a concrete project's
+  // calendar is loaded. The all-projects view is read-only for
+  // drag/resize/cascade/auto-schedule (no single project calendar); display
+  // still renders via effectiveCalendar, and manual context-menu date-picks
+  // (which take no mutation ticket) stay available.
+  $: calendarMutable = calSnapshot.mutable
+
+  // The single calendar every consumer (scheduler, CPM, canvas paint)
+  // sees. Deliberately `undefined` until the gate opens: a half-loaded
+  // calendar (weekday mask without holidays) must never reach painting or
+  // scheduling math — that was the load-race in the previous revision.
+  let effectiveCalendar: WorkingCalendar | undefined = undefined
+  $: effectiveCalendar =
+    calSnapshot.ready && calSnapshot.cfg !== undefined
+      ? { weekdayMask: calSnapshot.cfg.weekdayMask, holidays: calSnapshot.holidays }
+      : undefined
+
+  /**
+   * Stale-mutation guard for every persist site and every async
+   * confirmation callback: ready must still hold, the generation captured
+   * at mutation start must be unchanged, and the space being written to
+   * must belong to the currently displayed project (see
+   * CalendarStateMachine.isTicketCurrent).
+   */
+  function mutationStillCurrent (targetSpace?: Ref<Project>): boolean {
+    return activeMutationTicket !== null && calendarState.isTicketCurrent(activeMutationTicket, targetSpace)
   }
 
   $: issueDocQuery = (
@@ -1544,7 +1612,7 @@
     _relations: IssueRelation[],
     _show: boolean,
     _showSlack: boolean,
-    _cfg: WorkingDaysConfig | undefined
+    _cfg: WorkingCalendar | undefined
   ): void {
     // Slack is an OUTPUT of the same forward/backward pass that produces the
     // critical set, but it is a separate piece of information: "how far can
@@ -1573,7 +1641,7 @@
       return
     }
     cpDirtyTimer.schedule(() => {
-      cpResult = computeCriticalPath(issues, relations, workingDaysCfg)
+      cpResult = computeCriticalPath(issues, relations, _cfg)
       if (cpResult.cycle && Date.now() - lastCpCycleNotifiedAt > 60_000) {
         lastCpCycleNotifiedAt = Date.now()
         void (async () => {
@@ -1679,6 +1747,13 @@
       focusedIssueId = id
       return
     }
+    // Ready-gate: no calendar-dependent mutation (drag/resize/bulk-drag)
+    // may start before the calendar is initially loaded — a fast drag could
+    // otherwise persist dates computed from a half-loaded calendar.
+    if (!calendarMutable) return
+    // Generation capture: every persist and every async confirmation
+    // callback of this mutation re-validates against this ticket.
+    activeMutationTicket = calendarState.beginMutation()
     // Capture origin dates at the dispatch boundary so the doc-
     // agnostic reducer doesn't need to know which field on target.doc to
     // read. Milestone uses targetDate, Issue uses dueDate.
@@ -1709,7 +1784,7 @@
           new Set(memberIssues.map((i) => i._id)),
           issues,
           relations,
-          workingDaysCfg
+          effectiveCalendar
         )
         coDrag = {
           members: memberIssues.map((i) => ({
@@ -1909,7 +1984,7 @@
     // freeze at the position the user released the bar. Without this
     // gate, every pointermove call into the reducer kept moving the
     // preview while the popup was visible (hover-bug).
-    if (isConfirming()) return
+    if (confirmGate.isConfirming()) return
     // While connector-drawing, dispatch mousemove-connector with
     // svg-local cursorPx + the issue under the cursor. Coordinate frame
     // matches barRects (computed in GanttCanvas) so the live bezier
@@ -1949,7 +2024,7 @@
     // `dragging-body`, opening a second popup on top of the first
     // (double-popup bug). The popup's own resolve handler is the single
     // exit point that releases the gate and decides commit/cancel.
-    if (isConfirming()) return
+    if (confirmGate.isConfirming()) return
     const state = $activeDrag
     if (state.kind === 'connector-drawing') {
       activeDrag.set({ kind: 'idle' })
@@ -2127,14 +2202,14 @@
     // button's mouseup re-fires handleCanvasPointerUp, opening a second
     // popup (double-popup bug). The flag is cleared inside the resolve
     // path below so any code path out of the popup releases the gate.
-    setConfirming(true)
+    confirmGate.setConfirming(true)
     return await new Promise<boolean>((resolve) => {
       showPopup(
         GanttConfirmCommitPopup,
         { issue: state.target.doc, kind, newStart, newDue },
         'top',
         (result: boolean | undefined) => {
-          setConfirming(false)
+          confirmGate.setConfirming(false)
           resolve(result === true)
         }
       )
@@ -2290,6 +2365,13 @@
     // direct violations, otherwise filter-hidden relations are invisible
     // to the warning banner.
     const allInSpace = await client.findAll(tracker.class.Issue, { space }, { projection: dragCommitProjection })
+    // Stale-mutation guard after the await: a project switch during the
+    // fetch must abort before anything persists (generation captured at
+    // mutation start, bumped synchronously on every switch).
+    if (!mutationStillCurrent(space)) {
+      activeDrag.set({ kind: 'idle' })
+      return
+    }
     const allByRef = new Map<Ref<Issue>, Issue>()
     for (const i of allInSpace) allByRef.set(i._id, i)
 
@@ -2304,6 +2386,13 @@
         await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
       }
       const undoEntry = buildDateUndoEntry(primaryEdits, [])
+      // Commit-point guard: the awaited ops.update() calls above are the
+      // last suspension points before the write — a project switch while
+      // they were awaited must abort HERE, right before ops.commit().
+      if (!mutationStillCurrent(space)) {
+        activeDrag.set({ kind: 'idle' })
+        return
+      }
       const result = await ops.commit()
       if (!result.result) {
         const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
@@ -2346,12 +2435,19 @@
     // it short-circuits to `true` without any query (same result as before).
     const canEditMap = await canEditIssuesBatch(allInSpace)
 
+    // Re-check after the second await (permission batch), immediately
+    // before the simulation reads effectiveCalendar.
+    if (!mutationStillCurrent(space)) {
+      activeDrag.set({ kind: 'idle' })
+      return
+    }
+
     const result: SimulateResult = simulateCascade(
       primaryEdits,
       allInSpace,
       relations,
       (ref) => canEditMap.get(ref) ?? false,
-      { workingDays: workingDaysCfg }
+      { workingDays: effectiveCalendar }
     )
 
     switch (result.kind) {
@@ -2371,7 +2467,7 @@
           // commit → idle on success, cancel → idle on dismiss.
           // gate pointer input + handleCanvasPointerUp re-entry
           // while the cascade popup is up (bulk-drag hover-bug / double-popup).
-          setConfirming(true)
+          confirmGate.setConfirming(true)
           showPopup(
             ConfirmCascadePopup,
             {
@@ -2382,8 +2478,10 @@
             },
             'middle',
             (ok: boolean) => {
-              setConfirming(false)
-              if (!ok) {
+              confirmGate.setConfirming(false)
+              // Async confirmation callback: the popup may have been open
+              // across a project switch — re-validate the ticket.
+              if (!ok || !mutationStillCurrent(space)) {
                 activeDrag.set({ kind: 'idle' })
                 return
               }
@@ -2397,19 +2495,19 @@
         if (legacyConfirmKind !== 'none') {
           const pe = primaryEdits[0]
           // same gate around the single-issue legacy popup.
-          setConfirming(true)
+          confirmGate.setConfirming(true)
           const ok = await new Promise<boolean>((resolve) => {
             showPopup(
               GanttConfirmCommitPopup,
               { issue: pe.issue, kind: legacyConfirmKind, newStart: pe.newStart, newDue: pe.newDue },
               'top',
               (r: boolean | undefined) => {
-                setConfirming(false)
+                confirmGate.setConfirming(false)
                 resolve(r === true)
               }
             )
           })
-          if (!ok) {
+          if (!ok || !mutationStillCurrent(space)) {
             activeDrag.set({ kind: 'idle' })
             return
           }
@@ -2420,6 +2518,11 @@
           await ops.update(pe.issue, { startDate: pe.newStart, dueDate: pe.newDue })
         }
         const undoEntry = buildDateUndoEntry(result.primary, [])
+        // Commit-point guard after the awaited update loop.
+        if (!mutationStillCurrent(space)) {
+          activeDrag.set({ kind: 'idle' })
+          return
+        }
         const r = await ops.commit()
         if (!r.result) {
           const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
@@ -2444,7 +2547,7 @@
         // confirm so the bar transitions cleanly to its new server-state,
         // or idle-on-cancel so the bar springs back to its original dates.
         // gate pointer input + handleCanvasPointerUp re-entry.
-        setConfirming(true)
+        confirmGate.setConfirming(true)
         showPopup(
           ConfirmCascadePopup,
           {
@@ -2455,8 +2558,10 @@
           },
           'middle',
           (ok: boolean) => {
-            setConfirming(false)
-            if (!ok) {
+            confirmGate.setConfirming(false)
+            // Async confirmation callback: the popup may have been open
+            // across a project switch — re-validate the ticket.
+            if (!ok || !mutationStillCurrent(space)) {
               activeDrag.set({ kind: 'idle' })
               return
             }
@@ -2543,6 +2648,9 @@
      */
     cascadeScope: string = 'gantt-cascade-commit'
   ): Promise<void> {
+    // Defensive early abort: every caller re-checks, and the commit-point
+    // guard below re-validates once more right before ops.commit().
+    if (!mutationStillCurrent(primary[0]?.issue.space)) return
     const client = getClient()
     const cascadeToken = newCascadeToken(cascadeScope)
     const ops = client.apply(undefined, cascadeToken)
@@ -2553,6 +2661,11 @@
       await ops.update(sh.issue, { startDate: sh.newStart, dueDate: sh.newDue })
     }
     const undoEntry = buildDateUndoEntry(primary, shifts)
+    // Commit-point guard (pairs with the early abort at the top of this
+    // function): the update loops above are awaited — re-check right
+    // before the write. Callers release the preview in their .finally(),
+    // so a plain return suffices here.
+    if (!mutationStillCurrent(primary[0]?.issue.space)) return
     const r = await ops.commit()
     if (!r.result) {
       const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
@@ -2607,13 +2720,13 @@
     const lag = r.lag ?? 0
     switch (r.kind) {
       case 'finish-to-start':
-        return fsAnchor(predDue, lag, workingDaysCfg) <= succStart
+        return fsAnchor(predDue, lag, effectiveCalendar) <= succStart
       case 'start-to-start':
-        return ssAnchor(predStart, lag, workingDaysCfg) <= succStart
+        return ssAnchor(predStart, lag, effectiveCalendar) <= succStart
       case 'finish-to-finish':
-        return ffAnchor(predDue, lag, workingDaysCfg) <= succDue
+        return ffAnchor(predDue, lag, effectiveCalendar) <= succDue
       case 'start-to-finish':
-        return sfAnchor(predStart, lag, workingDaysCfg) <= succDue
+        return sfAnchor(predStart, lag, effectiveCalendar) <= succDue
     }
   }
 
@@ -2631,6 +2744,12 @@
     // clicked the drag-grip and released without moving) must NOT silently
     // schedule the issue to "today".
     if (state.kind === 'dragging-unscheduled' && !state.hasCanvasTarget) return
+    // Stale-mutation guard: pointer-up commits run async work before
+    // persisting — a project switch in between must abort.
+    if (!mutationStillCurrent(state.target.doc.space)) {
+      activeDrag.set({ kind: 'idle' })
+      return
+    }
     const altKey = event?.altKey === true
     const client = getClient()
 
@@ -2643,6 +2762,14 @@
     if (state.target.kind === 'milestone') {
       const ops = client.apply('gantt-drag')
       await commitMilestoneDrag(state, state.target, ops)
+      // Commit-point guard: commitMilestoneDrag awaits ops.update() and a
+      // client.findAll() — a switch during those suspensions must abort
+      // before the batch is sent. Dropping an uncommitted apply-batch
+      // needs no cleanup.
+      if (!mutationStillCurrent(state.target.doc.space)) {
+        activeDrag.set({ kind: 'idle' })
+        return
+      }
       const r = await ops.commit()
       if (!r.result) {
         const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
@@ -2661,6 +2788,11 @@
       const before = { startDate: doc.startDate ?? null, dueDate: doc.dueDate ?? null }
       const after = { startDate: (state as any).previewStart as number, dueDate: (state as any).previewEnd as number }
       await commitIssueDrag(state, state.target, ops)
+      // Commit-point guard: commitIssueDrag awaits ops.update()/findAll().
+      if (!mutationStillCurrent(doc.space)) {
+        activeDrag.set({ kind: 'idle' })
+        return
+      }
       const r = await ops.commit()
       if (!r.result) {
         const t = await translate(tracker.string.GanttDragFailed, {}, undefined)
@@ -2875,6 +3007,10 @@
   }
 
   function handleRowDragStart (e: CustomEvent<{ issue: Issue, cursorX: number }>): void {
+    // Ready-gate: dropping an unscheduled issue writes dates — blocked
+    // until the calendar is initially loaded.
+    if (!calendarMutable) return
+    activeMutationTicket = calendarState.beginMutation()
     activeDrag.update((s) =>
       reduce(
         s,
@@ -2912,15 +3048,24 @@
   }
 
   async function shiftFocused (days: number): Promise<void> {
+    // Ready-gate: keyboard shifts run the cascade scheduler — blocked until
+    // the calendar is initially loaded.
+    if (!calendarMutable) return
     if (focusedIssueId === null) return
     const i = scheduledIssues.find((it) => String(it._id) === focusedIssueId)
     if (i?.startDate == null || i.dueDate == null) return
     if (!editableIssueIds.has(focusedIssueId)) return
+    // Capture the mutation ticket only once the preconditions have passed and
+    // the mutation is actually about to begin — capturing before the early
+    // returns would leave a dangling ticket when no mutation starts.
+    activeMutationTicket = calendarState.beginMutation()
     const allInSpace = await getClient().findAll(
       tracker.class.Issue,
       { space: i.space },
       { projection: dragCommitProjection }
     )
+    // Stale-mutation guard after the await — before any edit is built.
+    if (!mutationStillCurrent(i.space)) return
     // All date arithmetic routes through addScheduleDays so the Phase-2
     // working-calendar swap stays a single integration point.
     const primaryEdits: PrimaryEdit[] = [
@@ -3941,6 +4086,7 @@
             {showStatus}
             {hoveredRowId}
             {activeDrag}
+            dateMutable={calendarMutable}
             relations={displayedRelations}
             {showPredecessors}
             {issueIdentifiers}
@@ -3994,6 +4140,7 @@
               {hoveredRowId}
               {statusCategoryMap}
               editableIssueIds={phoneReadOnly ? new Set() : editableIssueIds}
+              dateMutable={calendarMutable}
               {layoutMode}
               {activeDrag}
               {focusedIssueId}
@@ -4009,7 +4156,7 @@
               violatedRelations={cpResult.violatedRelations}
               cpSlack={cpResult.slack}
               {showCriticalPath}
-              workingDaysConfig={workingDaysCfg}
+              workingDaysConfig={effectiveCalendar}
               {barLabelLeft}
               {barLabelInside}
               {barLabelRight}

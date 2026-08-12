@@ -33,6 +33,16 @@ const DAY_MS = 86_400_000
  * `tracker.action.SetDueDate` is already registered as a model action and is
  * surfaced by Menu.svelte's auto-resolution; we do not add a local twin here.
  */
+// Intentionally NOT calendar-gated (review #10992): this path performs no
+// scheduling/holiday arithmetic — it writes exactly the day the user picked
+// (snapToUtcMidnight) and, on first scheduling, a plain one-day bar
+// (dueDate = startDate + DAY_MS). The working-days calendar never feeds
+// into these values, so a half-loaded calendar cannot corrupt them. The
+// same holds for the model action tracker.action.SetDueDate surfaced by
+// Menu.svelte. If this module ever starts computing dates THROUGH the
+// working-days calendar (the schedule-day helpers or the effective
+// calendar), it must adopt the ready-gate + generation guard from
+// GanttView.
 export function openSetStartDate (issue: Issue, anchor: PopupAlignment | undefined): void {
   const client = getClient()
   showPopup(

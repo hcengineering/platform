@@ -37,6 +37,13 @@
   // highlight check below; it still works for both Issue and Milestone _id
   // values.
   export let editable: boolean = false
+  // Date-mutation gate, threaded separately from `editable`. When false (the
+  // all-projects view has no single-project calendar, so date edits are
+  // read-only) the body drag-arm and the edge resize affordance are suppressed
+  // and the grab/grabbing cursor is withheld, but selection (click), the
+  // context menu and the dependency connector stay fully active. Defaults true
+  // so isolated / preview mounts keep the legacy behaviour.
+  export let dateMutable: boolean = true
   export let activeDrag: Writable<DragState> = writable({ kind: 'idle' })
   export let issueRef: Ref<Issue> | Ref<Milestone> | undefined = undefined
   export let dragTarget: DragTarget | undefined = undefined
@@ -159,6 +166,11 @@
       // onBarPointerDown so the Item 5 (Bulk-Drag) pan-suppression keeps
       // working.
       if (selected) evt.stopPropagation()
+      // Date-mutation read-only: never arm a drag/resize. The pointerdown is
+      // still swallowed for a selected bar (above) so the canvas doesn't pan,
+      // but click-selection (onBarClick) and the context menu keep firing —
+      // pointerdown does not select, the subsequent click does.
+      if (!dateMutable) return
       if (!editable || dragTarget === undefined) return
       if (evt.button !== 0) return
       const action: 'drag' | 'resize' = edge === 'body' ? 'drag' : 'resize'
@@ -408,6 +420,7 @@
         height={barH}
         fill="transparent"
         class="summary-hit"
+        class:date-mutable={dateMutable}
         class:selected={selected || multiSelected}
         class:active-drag={isThisBarActive || coDragMember !== undefined}
         role="button"
@@ -482,6 +495,7 @@
       stroke-dasharray={isViolated ? '4 2' : 'none'}
       class="bar"
       class:editable
+      class:date-mutable={dateMutable}
       class:active-drag={isThisBarActive || coDragMember !== undefined}
       class:focused
       class:selected={selected || multiSelected}
@@ -676,16 +690,18 @@
   /*
    * Cursor state machine:
    *   editable, not selected → pointer  (single click marks the bar)
-   *   editable + selected    → grab     (click-and-hold pans the canvas)
+   *   editable + selected    → grab     (click-and-hold starts a body drag)
    *   mid-drag               → grabbing (legacy/sidebar explicit drags)
+   * grab/grabbing require `.date-mutable`: when date edits are read-only the
+   * bar still selects (pointer), but nothing advertises a drag.
    */
   .bar.editable {
     cursor: pointer;
   }
-  .bar.editable.selected {
+  .bar.editable.date-mutable.selected {
     cursor: grab;
   }
-  .bar.editable.active-drag {
+  .bar.editable.date-mutable.active-drag {
     cursor: grabbing;
   }
   /* `.bar-resize-handle` styling moved with the markup into
@@ -724,10 +740,10 @@
   :global(svg.gantt-canvas .summary-hit) {
     cursor: pointer;
   }
-  :global(svg.gantt-canvas .summary-hit.selected) {
+  :global(svg.gantt-canvas .summary-hit.date-mutable.selected) {
     cursor: grab;
   }
-  :global(svg.gantt-canvas .summary-hit.active-drag) {
+  :global(svg.gantt-canvas .summary-hit.date-mutable.active-drag) {
     cursor: grabbing;
   }
   :global(svg.gantt-canvas .summary-hit.selected),

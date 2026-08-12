@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { Issue, IssueRelation, WorkingDaysConfig } from '@hcengineering/tracker'
+import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 import type { CriticalPathResult } from './types'
 import { detectCycle } from './scheduler'
 import {
+  type WorkingCalendar,
   fsAnchor,
   ssAnchor,
   ffAnchor,
@@ -47,7 +48,7 @@ interface Bound {
  * fall back to legacy calendar-day arithmetic when `cfg` is undefined and
  * apply the +1-day FS rule consistently with the cascade scheduler.
  */
-function forwardBound (rel: IssueRelation, predES: number, predEF: number, cfg: WorkingDaysConfig | undefined): Bound {
+function forwardBound (rel: IssueRelation, predES: number, predEF: number, cfg: WorkingCalendar | undefined): Bound {
   const lag = rel.lag ?? 0
   switch (rel.kind) {
     case 'finish-to-start':
@@ -68,7 +69,7 @@ function forwardBound (rel: IssueRelation, predES: number, predEF: number, cfg: 
  *
  * Mirrors {@link forwardBound} via the reverse anchor helpers.
  */
-function backwardBound (rel: IssueRelation, succLS: number, succLF: number, cfg: WorkingDaysConfig | undefined): Bound {
+function backwardBound (rel: IssueRelation, succLS: number, succLF: number, cfg: WorkingCalendar | undefined): Bound {
   const lag = rel.lag ?? 0
   switch (rel.kind) {
     case 'finish-to-start':
@@ -139,7 +140,7 @@ function topoSort (issues: ScheduledIssue[], relations: IssueRelation[]): Schedu
 export function computeCriticalPath (
   issues: Issue[],
   relations: IssueRelation[],
-  workingDays?: WorkingDaysConfig
+  workingDays?: WorkingCalendar
 ): CriticalPathResult {
   const cfg = workingDays
 

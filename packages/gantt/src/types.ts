@@ -45,9 +45,10 @@ export interface GanttItem {
 }
 
 /**
- * Working-days calendar. Field-for-field structurally identical to the
- * tracker's `WorkingDaysConfig`, so a tracker config value is assignable to
- * this type without a conversion.
+ * Working-days calendar the engine schedules against: a weekday bitmask plus
+ * a list of UTC-midnight holiday timestamps. Neutral, domain-agnostic — the
+ * tracker adapter builds a value of this shape from a project's weekday mask
+ * and the workspace HR calendar and threads it in.
  */
 export interface WorkingCalendar {
   /**

@@ -3,37 +3,47 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import { isConfirming, setConfirming, resetConfirmGate } from '../confirm-gate'
+import { createConfirmGate } from '../confirm-gate'
 
 describe('confirm-gate', () => {
-  beforeEach(() => {
-    resetConfirmGate()
-  })
-
-  it('defaults to false on first read', () => {
-    expect(isConfirming()).toBe(false)
+  it('starts not confirming', () => {
+    expect(createConfirmGate().isConfirming()).toBe(false)
   })
 
   it('returns true after setConfirming(true)', () => {
-    setConfirming(true)
-    expect(isConfirming()).toBe(true)
+    const gate = createConfirmGate()
+    gate.setConfirming(true)
+    expect(gate.isConfirming()).toBe(true)
   })
 
   it('returns false after setConfirming(false)', () => {
-    setConfirming(true)
-    setConfirming(false)
-    expect(isConfirming()).toBe(false)
+    const gate = createConfirmGate()
+    gate.setConfirming(true)
+    gate.setConfirming(false)
+    expect(gate.isConfirming()).toBe(false)
   })
 
-  it('idempotent set true', () => {
-    setConfirming(true)
-    setConfirming(true)
-    expect(isConfirming()).toBe(true)
+  it('is idempotent for repeated setConfirming(true)', () => {
+    const gate = createConfirmGate()
+    gate.setConfirming(true)
+    gate.setConfirming(true)
+    expect(gate.isConfirming()).toBe(true)
   })
 
-  it('reset helper clears the flag', () => {
-    setConfirming(true)
-    resetConfirmGate()
-    expect(isConfirming()).toBe(false)
+  it('scopes state per instance — two gates are independent', () => {
+    // Regression guard for the review finding on PR #10992: with the old
+    // module-scope flag, a confirm popup in one mounted GanttView froze
+    // pointer input in every other mounted GanttView.
+    const a = createConfirmGate()
+    const b = createConfirmGate()
+
+    a.setConfirming(true)
+    expect(a.isConfirming()).toBe(true)
+    expect(b.isConfirming()).toBe(false)
+
+    b.setConfirming(true)
+    a.setConfirming(false)
+    expect(a.isConfirming()).toBe(false)
+    expect(b.isConfirming()).toBe(true)
   })
 })

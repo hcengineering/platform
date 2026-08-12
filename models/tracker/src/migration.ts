@@ -553,7 +553,13 @@ export const trackerOperation: MigrateOperation = {
         // additive — every existing Project keeps `workingDaysConfig =
         // undefined` (legacy calendar-day semantics). The migration entry
         // exists only so the tracker state-tracker registers the schema
-        // version bump; no data is touched.
+        // version bump; no data is touched. Note: the config stores only the
+        // weekday mask — holidays come from the workspace-level HR calendar
+        // (`hr.class.PublicHoliday`), never from per-project data.
+        // The optional `holidayDepartment` inside the config is additive as
+        // well: the config is stored as a plain record (TypeRecord), so no
+        // schema change and no data migration is needed. Missing or stale
+        // department refs fall back to the company root at read time.
         state: 'gantt-add-working-days-config',
         mode: 'upgrade',
         func: async () => {}

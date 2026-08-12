@@ -17,28 +17,32 @@
  *      pointerup to window, which re-entered handleCanvasPointerUp while
  *      activeDrag was still in `dragging-body` — opening a second popup.
  *
- * This module is a tiny module-scope flag. GanttView toggles it on
- * before showing a confirmation popup and off when the popup resolves.
- * The pointer handlers consult {@link isConfirming} to short-circuit.
+ * Each GanttView creates its own gate via {@link createConfirmGate} —
+ * the flag is instance-scoped, so two Gantt views mounted at the same
+ * time (e.g. two workspace tabs rendered in one JS context) cannot block
+ * each other's drag input. The component toggles the gate on before
+ * showing a confirmation popup and off when the popup resolves; the
+ * pointer handlers consult `isConfirming` to short-circuit.
  *
- * The flag is module-scope (not store-based) on purpose — there is only
- * ever one drag in flight, the consumer is GanttView, and the flag is
- * always set/cleared inside the same async commit path. A Svelte store
- * would force a reactive cycle through `$:` blocks for a guard that
- * needs to be read synchronously inside event handlers.
+ * A plain closure (not a Svelte store) on purpose — the flag is always
+ * set/cleared inside the same async commit path and must be readable
+ * synchronously inside event handlers; a store would force a reactive
+ * cycle through `$:` blocks for a guard that never drives markup.
  */
 
-let confirming = false
-
-export function setConfirming (value: boolean): void {
-  confirming = value
+/** Per-GanttView drag-commit confirmation gate. */
+export interface ConfirmGate {
+  setConfirming: (value: boolean) => void
+  isConfirming: () => boolean
 }
 
-export function isConfirming (): boolean {
-  return confirming
-}
-
-/** Test-only — reset flag between specs so a leaked-true doesn't bleed. */
-export function resetConfirmGate (): void {
-  confirming = false
+/** Create an independent gate. One per mounted GanttView. */
+export function createConfirmGate (): ConfirmGate {
+  let confirming = false
+  return {
+    setConfirming: (value: boolean): void => {
+      confirming = value
+    },
+    isConfirming: (): boolean => confirming
+  }
 }
