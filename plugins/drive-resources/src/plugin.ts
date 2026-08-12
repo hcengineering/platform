@@ -22,6 +22,7 @@ export default mergeIds(driveId, drive, {
     CreateFolder: '' as IntlString,
     UploadFile: '' as IntlString,
     Download: '' as IntlString,
+    DownloadAsArchive: '' as IntlString,
     Upload: '' as IntlString,
     EditDrive: '' as IntlString,
     Rename: '' as IntlString,

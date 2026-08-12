@@ -19,6 +19,7 @@
     "ContentType": "Тип содержимого",
     "LastModified": "Последнее изменение",
     "Download": "Скачать",
+    "DownloadAsArchive": "Скачать архивом",
     "Upload": "Загрузить",
     "CreateDrive": "Создать диск",
     "CreateFolder": "Создать папку",

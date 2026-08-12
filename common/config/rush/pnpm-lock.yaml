@@ -20361,6 +20361,9 @@ importers:
       fast-equals:
         specifier: ^5.2.2
         version: 5.3.2
+      fflate:
+        specifier: ^0.8.2
+        version: 0.8.3
       svelte:
         specifier: ^4.2.20
         version: 4.2.20
@@ -47614,6 +47617,9 @@ packages:
   fecha@4.2.3:
     resolution: {integrity: sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==}
 
+  fflate@0.8.3:
+    resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
+
   file-api@0.10.4:
     resolution: {integrity: sha512-RVBXJGmsnQxokdpy264pmsdBjbUuxE6QT2xxhOrO2pzwTetbTNoWVFgkONFWmopm5mellsXrQIQhMY9fjufi9g==}
 
@@ -59263,6 +59269,8 @@ snapshots:
       pend: 1.2.0
 
   fecha@4.2.3: {}
+
+  fflate@0.8.3: {}
 
   file-api@0.10.4:
     dependencies:

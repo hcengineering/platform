@@ -42,6 +42,7 @@ import GridView from './components/GridView.svelte'
 import MoveResource from './components/MoveResource.svelte'
 import ResourcePresenter from './components/ResourcePresenter.svelte'
 
+import { downloadFolderArchive } from './archive'
 import { getDriveLink, getFileLink, getFolderLink, resolveLocation } from './navigation'
 import { restoreFileVersion, showCreateFolderPopup, showRenameResourcePopup } from './utils'
 
@@ -123,6 +124,10 @@ async function DownloadFile (doc: WithLookup<File> | Array<WithLookup<File>>): P
       link.click()
     }
   }
+}
+
+async function DownloadFolder (doc: Folder | Folder[]): Promise<void> {
+  await downloadFolderArchive(doc)
 }
 
 async function DriveLinkProvider (doc: Doc): Promise<Location> {
@@ -285,6 +290,7 @@ export default async (): Promise<Resources> => ({
     CreateRootFolder,
     EditDrive,
     DownloadFile,
+    DownloadFolder,
     RenameFile,
     RenameFolder,
     RestoreFileVersion

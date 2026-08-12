@@ -85,6 +85,7 @@ export default mergeIds(driveId, drive, {
     CreateRootFolder: '' as Ref<Action>,
     EditDrive: '' as Ref<Action>,
     DownloadFile: '' as Ref<Action>,
+    DownloadFolder: '' as Ref<Action>,
     DeleteFile: '' as Ref<Action>,
     DeleteFolder: '' as Ref<Action>,
     RenameFile: '' as Ref<Action>,
@@ -97,6 +98,7 @@ export default mergeIds(driveId, drive, {
     CreateRootFolder: '' as ViewAction,
     EditDrive: '' as ViewAction,
     DownloadFile: '' as ViewAction,
+    DownloadFolder: '' as ViewAction,
     RenameFile: '' as ViewAction,
     RenameFolder: '' as ViewAction,
     RestoreFileVersion: '' as ViewAction

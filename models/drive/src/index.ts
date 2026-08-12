@@ -511,6 +511,24 @@ function defineFolder (builder: Builder): void {
   createAction(
     builder,
     {
+      action: drive.actionImpl.DownloadFolder,
+      label: drive.string.DownloadAsArchive,
+      icon: drive.icon.Download,
+      category: drive.category.Drive,
+      input: 'none',
+      target: drive.class.Folder,
+      context: {
+        mode: ['context', 'browser'],
+        application: drive.app.Drive,
+        group: 'tools'
+      }
+    },
+    drive.action.DownloadFolder
+  )
+
+  createAction(
+    builder,
+    {
       action: drive.actionImpl.RenameFolder,
       label: drive.string.Rename,
       icon: view.icon.Edit,

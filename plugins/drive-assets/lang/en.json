@@ -19,6 +19,7 @@
     "ContentType": "Content type",
     "LastModified": "Last Modified",
     "Download": "Download",
+    "DownloadAsArchive": "Download as archive",
     "Upload": "Upload",
     "CreateDrive": "Create Drive",
     "CreateFolder": "Create Folder",
