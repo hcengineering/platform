@@ -45,6 +45,13 @@
   export let object: Event
   $: readOnly = isReadOnly(object)
 
+  // The fields below are a one-time snapshot of the document, but `object` is a live
+  // prop that the surrounding query re-assigns whenever the event changes on the
+  // server. saveEvent must diff the editor state against the snapshot it was seeded
+  // from, not against the live document, or an untouched field is written back with
+  // its stale value and clobbers whatever another client just wrote.
+  const initial: Event = { ...object }
+
   let title = object.title
 
   const defaultDuration = 60 * 60 * 1000
@@ -79,46 +86,46 @@
       return
     }
     const update: DocumentUpdate<Event> = {}
-    if (object.title !== title) {
+    if (initial.title !== title) {
       update.title = title.trim()
     }
-    if (object.description !== description) {
+    if (initial.description !== description) {
       update.description = description.trim()
     }
-    if (object.visibility !== visibility) {
+    if (initial.visibility !== visibility) {
       update.visibility = visibility
     }
-    if (object.calendar !== _calendar) {
+    if (initial.calendar !== _calendar) {
       update.calendar = _calendar
     }
-    if (object.location !== location) {
+    if (initial.location !== location) {
       update.location = location
     }
-    if (object.timeZone !== timeZone) {
+    if (initial.timeZone !== timeZone) {
       update.timeZone = timeZone
     }
-    if (allDay !== object.allDay) {
+    if (allDay !== initial.allDay) {
       update.date = allDay ? saveUTC(startDate) : startDate
       update.dueDate = allDay ? saveUTC(dueDate) : dueDate
       update.allDay = allDay
     } else {
-      if (object.date !== startDate) {
+      if (initial.date !== startDate) {
         update.date = allDay ? saveUTC(startDate) : startDate
       }
-      if (object.dueDate !== dueDate) {
+      if (initial.dueDate !== dueDate) {
         update.dueDate = allDay ? saveUTC(dueDate) : dueDate
       }
     }
-    if (!deepEqual(object.participants, participants)) {
+    if (!deepEqual(initial.participants, participants)) {
       update.participants = participants
     }
-    if (!deepEqual(object.externalParticipants, externalParticipants)) {
+    if (!deepEqual(initial.externalParticipants, externalParticipants)) {
       update.externalParticipants = externalParticipants
     }
-    if (!deepEqual(object.reminders, reminders)) {
+    if (!deepEqual(initial.reminders, reminders)) {
       update.reminders = reminders
     }
-    if (rules !== (object as ReccuringEvent).rules) {
+    if (rules !== (initial as ReccuringEvent).rules) {
       ;(update as DocumentUpdate<ReccuringEvent>).rules = rules
     }
 
