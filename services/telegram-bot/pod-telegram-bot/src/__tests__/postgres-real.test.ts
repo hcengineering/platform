@@ -46,7 +46,7 @@ jest.setTimeout(90000)
 
 describe('PostgresDB compatibility tests', () => {
   // Use environment variables or default to localhost databases
-  const cockroachDB: string = process.env.DB_URL ?? 'postgresql://root@localhost:26257/defaultdb?sslmode=disable'
+  const cockroachDB: string = process.env.DB_URL ?? 'postgresql://root@localhost:26258/defaultdb?sslmode=disable'
   const postgresDB: string = process.env.POSTGRES_URL ?? 'postgresql://postgres:postgres@localhost:5433/postgres'
 
   let crDbUri = cockroachDB
