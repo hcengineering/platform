@@ -15,18 +15,30 @@
 -->
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import core, { Class, Doc, Ref, SearchResultDoc, SortingOrder, type VersionableDoc } from '@hcengineering/core'
+  import core, {
+    Class,
+    Doc,
+    Ref,
+    SearchResultDoc,
+    SortingOrder,
+    type Tx,
+    type TxWorkspaceEvent,
+    type VersionableDoc,
+    WorkspaceEvent
+  } from '@hcengineering/core'
   import { getResource, translate } from '@hcengineering/platform'
   import presentation, {
+    addTxListener,
     getClient,
     reduceCalls,
+    removeTxListener,
     searchFor,
     SearchResult,
     type SearchItem
   } from '@hcengineering/presentation'
   import { Label, ListView, resizeObserver, Submenu } from '@hcengineering/ui'
   import view, { type ReferenceVersion, type ReferenceVersionsProvider } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { getReferenceLabel, getReferenceObject } from './extension/reference'
 
   import MentionVersionPopup from './MentionVersionPopup.svelte'
@@ -223,6 +235,27 @@
     }
   })
   $: void updateItems(query)
+
+  // The fulltext index is written asynchronously, so a document created moments ago
+  // is routinely missing from the first 'mention' search. Re-run the query when the
+  // server broadcasts that indexing advanced, the same way ActionsPopup does.
+  function txListener (txes: Tx[]): void {
+    if (
+      txes.some(
+        (it) =>
+          it._class === core.class.TxWorkspaceEvent && (it as TxWorkspaceEvent).event === WorkspaceEvent.IndexingUpdate
+      )
+    ) {
+      void updateItems(query)
+    }
+  }
+
+  onMount(() => {
+    addTxListener(txListener)
+    return () => {
+      removeTxListener(txListener)
+    }
+  })
 </script>
 
 {#if (items.length === 0 && query !== '') || items.length > 0}
