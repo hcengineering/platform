@@ -114,8 +114,9 @@ export async function getCommonNotificationTxes (
 
   const res: Tx[] = []
   const notifyContexts = await control.findAll(ctx, notification.class.DocNotifyContext, { objectId: attachedTo })
+  const types = (notifyResult.get(notification.providers.InboxNotificationProvider) ?? []).map((it) => it._id)
 
-  await pushInboxNotifications(
+  const notificationTx = await pushInboxNotifications(
     ctx,
     control,
     res,
@@ -128,10 +129,19 @@ export async function getCommonNotificationTxes (
     data,
     _class,
     modifiedOn,
-    [],
+    types,
     true,
     tx
   )
+
+  if (notificationTx !== undefined) {
+    const current: AvailableProvidersCache = control.contextCache.get(AvailableProvidersCacheKey) ?? new Map()
+    const providers = Array.from(notifyResult.keys())
+    if (providers.length > 0) {
+      current.set(notificationTx.objectId, providers)
+      control.contextCache.set(AvailableProvidersCacheKey, current)
+    }
+  }
 
   return res
 }
