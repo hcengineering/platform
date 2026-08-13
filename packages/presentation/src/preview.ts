@@ -90,6 +90,12 @@ function blobToSrcSet (blob: Ref<Blob>, width: number | undefined, height: numbe
 }
 
 export function getPreviewThumbnail (file: string, width: number, height: number, dpr?: number): string {
+  // Absolute URLs pass through unchanged, same as getFileUrl (blobToSrcSet
+  // guards on '://' too but returns '' — a thumbnail src wants the passthrough)
+  if (file.includes('://')) {
+    return file
+  }
+
   return getImagePreviewUrl(
     encodeURIComponent(getCurrentWorkspaceUuid()),
     encodeURIComponent(file),
