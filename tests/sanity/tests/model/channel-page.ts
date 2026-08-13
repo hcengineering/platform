@@ -109,7 +109,10 @@ export class ChannelPage extends CommonPage {
     for (let i = 0; i < 3; i++) {
       try {
         await this.inputMessage().fill(`@${message}`)
-        await this.selectMention(message, categoryName)
+        // An explicit timeout is required: the suite sets no `actionTimeout`, so the
+        // default click would wait out the whole test timeout and the retries below
+        // would never run.
+        await this.mentionPopupListItem(message, categoryName).first().click({ timeout: 5000 })
         break
       } catch (error: any) {
         if (i === 2) {
