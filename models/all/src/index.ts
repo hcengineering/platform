@@ -28,7 +28,7 @@ import contact, { contactId, createModel as contactModel } from '@hcengineering/
 import { createModel as coreModel } from '@hcengineering/model-core'
 import { desktopDownloadsId, createModel as desktopDownloadsModel } from '@hcengineering/model-desktop-downloads'
 import { desktopPreferencesId, createModel as desktopPreferencesModel } from '@hcengineering/model-desktop-preferences'
-import { driveId, createModel as driveModel } from '@hcengineering/model-drive'
+import drive, { driveId, createModel as driveModel } from '@hcengineering/model-drive'
 import gmail, { gmailId, createModel as gmailModel } from '@hcengineering/model-gmail'
 import { guestId, createModel as guestModel } from '@hcengineering/model-guest'
 import hr, { hrId, createModel as hrModel } from '@hcengineering/model-hr'
@@ -413,7 +413,23 @@ export default function buildModel (): Builder {
         classFilter: defaultFilter
       }
     ],
-    [driveModel, driveId],
+    // Without a config entry classFilter is undefined, which makes DISABLED_FEATURES=drive
+    // strip drive's ENTIRE client model — class definitions included — and every consumer
+    // that still resolves a drive class (Inbox DocNotifyContexts, the recorder save flow,
+    // doc embeds of drive files) throws out of Hierarchy.getClass/getDomain. Filtering to
+    // the two doc classes drive actually contributes to the shared UI surfaces hides the
+    // app and its search categories while leaving the classes intact.
+    [
+      driveModel,
+      driveId,
+      {
+        label: drive.string.Drive,
+        enabled: true,
+        beta: false,
+        icon: drive.icon.DriveApplication,
+        classFilter: [workbench.class.Application, presentation.class.ObjectSearchCategory]
+      }
+    ],
     [
       documentsModel,
       documentsId,
