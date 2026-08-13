@@ -120,6 +120,9 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
       let handle: EmbedNodeViewHandle | undefined
 
       void providerPromise
+        .catch((err): undefined => {
+          console.warn('Failed to build embed view', err)
+        })
         .then((view) => {
           view = view ?? StubEmbedNodeView
           handle = view(editor, root, getPos)

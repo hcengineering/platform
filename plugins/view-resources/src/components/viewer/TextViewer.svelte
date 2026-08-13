@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { getFileUrl } from '@hcengineering/presentation'
-  import { Loading, Scroller } from '@hcengineering/ui'
+  import presentation, { getFileUrl } from '@hcengineering/presentation'
+  import { Label, Loading, Scroller } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
@@ -24,22 +24,36 @@
   $: void fetchFile(value, name)
 
   let loading = true
+  let error = false
   let text: string | undefined = undefined
 
   async function fetchFile (value: Ref<Blob>, name: string): Promise<void> {
     loading = true
+    error = false
 
-    const src = getFileUrl(value, name)
-    const res = await fetch(src)
-    text = await res.text()
-
-    loading = false
+    try {
+      const src = getFileUrl(value, name)
+      const res = await fetch(src)
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`)
+      }
+      text = await res.text()
+    } catch (err) {
+      console.warn('Failed to fetch file', err)
+      error = true
+    } finally {
+      loading = false
+    }
   }
 </script>
 
 {#if loading}
   <div class="flex-center w-full h-full clear-mins">
     <Loading />
+  </div>
+{:else if error}
+  <div class="flex-center w-full h-full clear-mins">
+    <Label label={presentation.string.FailedToPreview} />
   </div>
 {:else}
   <div class="container h-full w-full" class:fit>

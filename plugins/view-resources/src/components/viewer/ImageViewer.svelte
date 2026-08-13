@@ -14,8 +14,8 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref, type BlobMetadata } from '@hcengineering/core'
-  import { DrawingBoard, getBlobRef, imageSizeToRatio } from '@hcengineering/presentation'
-  import { Loading } from '@hcengineering/ui'
+  import presentation, { DrawingBoard, getBlobRef, imageSizeToRatio } from '@hcengineering/presentation'
+  import { Label, Loading } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
@@ -40,41 +40,55 @@
   $: height = imageHeight != null ? `min(${imageHeight}px, ${fit ? '100%' : '80vh'})` : '100%'
 
   let loading = true
+  let error = false
   function _setLoading (newState: boolean): void {
     loading = newState
     setLoading?.(loading)
   }
 
-  $: if (value !== undefined) _setLoading(true)
+  $: if (value !== undefined) {
+    error = false
+    _setLoading(true)
+  }
 </script>
 
 {#await getBlobRef(value, name) then blobRef}
-  {#if loading}
+  {#if error}
     <div class="flex-center w-full h-full clear-mins">
-      <Loading />
+      <Label label={presentation.string.FailedToPreview} />
     </div>
+  {:else}
+    {#if loading}
+      <div class="flex-center w-full h-full clear-mins">
+        <Loading />
+      </div>
+    {/if}
+    <DrawingBoard
+      {imageWidth}
+      {imageHeight}
+      {drawings}
+      {createDrawing}
+      active={drawingAvailable && !loading}
+      readonly={drawingAvailable && !drawingEditable}
+      class="flex-center clear-mins w-full h-full"
+      style={`max-width:${width};max-height:${height}`}
+    >
+      <img
+        on:load={() => {
+          _setLoading(false)
+        }}
+        on:error={() => {
+          error = true
+          _setLoading(false)
+        }}
+        class="object-contain mx-auto"
+        style:max-width={width}
+        style:max-height={height}
+        src={blobRef.src}
+        srcset={blobRef.srcset}
+        alt={name}
+        style:height={loading ? '0' : ''}
+      />
+    </DrawingBoard>
   {/if}
-  <DrawingBoard
-    {imageWidth}
-    {imageHeight}
-    {drawings}
-    {createDrawing}
-    active={drawingAvailable && !loading}
-    readonly={drawingAvailable && !drawingEditable}
-    class="flex-center clear-mins w-full h-full"
-    style={`max-width:${width};max-height:${height}`}
-  >
-    <img
-      on:load={() => {
-        _setLoading(false)
-      }}
-      class="object-contain mx-auto"
-      style:max-width={width}
-      style:max-height={height}
-      src={blobRef.src}
-      srcset={blobRef.srcset}
-      alt={name}
-      style:height={loading ? '0' : ''}
-    />
-  </DrawingBoard>
 {/await}
