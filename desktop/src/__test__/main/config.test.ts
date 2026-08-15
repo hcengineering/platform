@@ -2,7 +2,7 @@
 
 import { ConfigService } from '../main/config.service';
 import { Config } from '../main/config';
-import { expect } from 'chai'; // Import the expect function from chai
+import { expect } from 'chai';
 
 describe('Config Service', () => {
   let configService: ConfigService;
