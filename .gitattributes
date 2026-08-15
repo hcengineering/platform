@@ -7,3 +7,4 @@ npm-shrinkwrap.json merge=binary
 yarn.lock merge=binary
 DCO.md linguist-language=Markdown
 DCO linguist-language=Markdown
+*.md linguist-language=Markdown
