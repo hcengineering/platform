@@ -14,7 +14,13 @@ import type { WorkingCalendar } from './types'
 
 const DAY_MS = 86_400_000
 
-function utcMidnight (t: number): number {
+/**
+ * Canonical UTC-day normalizer: rounds a timestamp down to its UTC midnight.
+ * Exported for the scheduler's day-granular resize gate, which must classify
+ * a start move by calendar DAY rather than raw milliseconds (stored issues can
+ * reach the scheduler with a time-of-day on the cascade-commit path).
+ */
+export function utcMidnight (t: number): number {
   return Math.floor(t / DAY_MS) * DAY_MS
 }
 
@@ -95,6 +101,28 @@ export function workingDaysBetween (a: number, b: number, cfg: WorkingCalendar):
   while (cur <= end) {
     if (isWorkingDay(cur, cfg)) count++
     cur += DAY_MS
+  }
+  return count * sign
+}
+
+/**
+ * Signed working-day step count from `from` to `to`: counts working days in
+ * the half-open interval that excludes `from` and includes `to` (mirrored
+ * for `to < from`). Complements the inclusive {@link workingDaysBetween}.
+ * Invariant: `addWorkingDays(from, workingDayDelta(from, to, cfg), cfg)`
+ * equals `utcMidnight(to)` whenever `to` falls on a working day and `from`
+ * is UTC-midnight-normalized.
+ */
+export function workingDayDelta (from: number, to: number, cfg: WorkingCalendar): number {
+  const a = utcMidnight(from)
+  const b = utcMidnight(to)
+  if (a === b) return 0
+  const sign = b > a ? 1 : -1
+  const lo = Math.min(a, b) + (sign > 0 ? DAY_MS : 0)
+  const hi = Math.max(a, b) - (sign > 0 ? 0 : DAY_MS)
+  let count = 0
+  for (let cur = lo; cur <= hi; cur += DAY_MS) {
+    if (isWorkingDay(cur, cfg)) count++
   }
   return count * sign
 }

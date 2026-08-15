@@ -8,6 +8,9 @@ import type { Ref } from '@hcengineering/core'
 import type { PrimaryEdit, CascadeShift, SimulateResult } from './types'
 import {
   type WorkingCalendar,
+  addWorkingDays,
+  workingDayDelta,
+  utcMidnight,
   fsAnchor,
   ssAnchor,
   ffAnchor,
@@ -236,13 +239,27 @@ export function simulateCascade (
 
     // Outgoing: cur is predecessor of rel.target.
     const outgoing = bySource.get(cur) ?? []
-    // The start-delta of cur (vs its original start) is used to preserve
-    // the relative gap when pushing a successor. This ensures that if cur
-    // was itself shifted by N days (body-drag or cascaded), the successor
-    // also shifts by at least N days (floor: constraint minimum wins when
-    // the constraint requires a larger shift).
-    const origCurStart = issuesByRef.get(cur)?.startDate ?? curDates.start
+    // Gap preservation when pushing a successor: if cur itself was shifted,
+    // the successor should advance by at least as much, not merely enough to
+    // clear the constraint. Two measures feed the FS floor below:
+    //   * The raw ms start-delta drives ONLY the legacy floor
+    //     (cfg === undefined), which must stay byte-identical to today.
+    //   * In working-days mode the shift is translated into working days on
+    //     the DUE side: the FS constraint anchors on cur.due, so the gap to
+    //     preserve is cur.due -> succ.start (start- and due-side working-day
+    //     deltas diverge when the bar spans non-working days).
+    // The resize gate is DAY-granular, not raw-ms: stored issues reach the
+    // scheduler un-normalized on the commit path (client.findAll without
+    // toGanttDay), while primary edits are UI-normalized — a raw `=== 0`
+    // test would misclassify a pure due-resize of an issue that stores a
+    // time-of-day. Only a start-DAY move (body drag or cascaded shift) arms
+    // the floor; workingDayDelta normalizes its endpoints internally.
+    const origCur = issuesByRef.get(cur)
+    const origCurStart = origCur?.startDate ?? curDates.start
     const curStartDelta = curDates.start - origCurStart
+    const origCurDue = origCur?.dueDate ?? curDates.due
+    const startDayMoved = utcMidnight(curDates.start) !== utcMidnight(origCurStart)
+    const curDueDeltaWd = cfg === undefined || !startDayMoved ? 0 : workingDayDelta(origCurDue, curDates.due, cfg)
     for (const r of outgoing) {
       // Primary-set protection during BFS: a primary issue's dates are
       // authoritative — never let a cascade propagation overwrite them.
@@ -299,8 +316,19 @@ export function simulateCascade (
         // and SF anchor on the cur side that may not match the dragged
         // side, so gap preservation isn't a clean concept there — pure
         // snap is the intended semantics.
+        //
+        // In working-days mode the floor is measured due-side in working days
+        // and advanced over the calendar via addWorkingDays. The floor base is
+        // normalized: targetAnchor may carry a raw time-of-day on the commit
+        // path, and addWorkingDays preserves its input's time-of-day — without
+        // utcMidnight the floor could land off-midnight. The legacy branch
+        // stays byte-identical (raw ms floor, no normalization).
         const snap = requiredAnchor
-        const newAnchor = r.kind === 'finish-to-start' ? Math.max(snap, targetAnchor + curStartDelta) : snap
+        const gapFloor =
+          cfg === undefined
+            ? targetAnchor + curStartDelta
+            : addWorkingDays(utcMidnight(targetAnchor), curDueDeltaWd, cfg)
+        const newAnchor = r.kind === 'finish-to-start' ? Math.max(snap, gapFloor) : snap
         const delta = newAnchor - targetAnchor
         const newStart = targetAnchorIsStart ? newAnchor : targetDates.start + delta
         const newDue = targetAnchorIsStart ? targetDates.due + delta : newAnchor

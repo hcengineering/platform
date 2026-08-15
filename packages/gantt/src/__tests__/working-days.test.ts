@@ -8,6 +8,8 @@ import {
   nextWorkingDay,
   addWorkingDays,
   workingDaysBetween,
+  workingDayDelta,
+  utcMidnight,
   fsAnchor,
   ssAnchor,
   ffAnchor,
@@ -168,6 +170,60 @@ describe('workingDaysBetween', () => {
   it('counts a holiday as non-working', () => {
     const cfg: WorkingCalendar = { weekdayMask: 0b0011111, holidays: [WED] }
     expect(workingDaysBetween(MON, FRI, cfg)).toBe(4)
+  })
+})
+
+describe('workingDayDelta', () => {
+  it('Friday → next Monday = 1 working-day step (weekend skipped)', () => {
+    expect(workingDayDelta(FRI, MON2, cfgMonFri)).toBe(1)
+  })
+
+  it('Monday → previous Friday = -1 (signed, mirrored)', () => {
+    expect(workingDayDelta(MON2, FRI, cfgMonFri)).toBe(-1)
+  })
+
+  it('same working day at both endpoints = 0', () => {
+    expect(workingDayDelta(MON, MON, cfgMonFri)).toBe(0)
+  })
+
+  it('same non-working day (Saturday) at both endpoints = 0', () => {
+    expect(workingDayDelta(SAT, SAT, cfgMonFri)).toBe(0)
+  })
+
+  it('non-working start point: Saturday → next Monday = 1 (from excluded, to included)', () => {
+    expect(workingDayDelta(SAT, MON2, cfgMonFri)).toBe(1)
+  })
+
+  it('holiday in span: Mon → Wed with Tuesday a holiday = 1', () => {
+    const cfg: WorkingCalendar = { weekdayMask: 0b0011111, holidays: [TUE] }
+    expect(workingDayDelta(MON, WED, cfg)).toBe(1)
+  })
+
+  it('normalizes raw time-of-day inputs: Fri 09:00 → next Monday = 1', () => {
+    expect(workingDayDelta(FRI + 9 * 3600_000, MON2, cfgMonFri)).toBe(1)
+  })
+
+  it('roundtrip invariant: addWorkingDays(from, workingDayDelta(from, to)) === to', () => {
+    const pairs: Array<[number, number]> = [
+      [MON, FRI],
+      [FRI, MON2],
+      [MON, MON2],
+      [MON2, MON],
+      [MON2, FRI]
+    ]
+    for (const [from, to] of pairs) {
+      expect(addWorkingDays(from, workingDayDelta(from, to, cfgMonFri), cfgMonFri)).toBe(to)
+    }
+  })
+})
+
+describe('utcMidnight', () => {
+  it('rounds a time-of-day down to its UTC midnight', () => {
+    expect(utcMidnight(Date.UTC(2026, 4, 15, 9))).toBe(Date.UTC(2026, 4, 15))
+  })
+
+  it('is idempotent on values already at UTC midnight', () => {
+    expect(utcMidnight(MON)).toBe(MON)
   })
 })
 
