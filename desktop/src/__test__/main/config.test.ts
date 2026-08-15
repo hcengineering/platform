@@ -14,13 +14,15 @@ describe('Config Service', () => {
   });
 
   it('should return the config', () => {
-    expect(configService.getConfig()).to.be.an('object');
-    expect(configService.getConfig()).to.deep.equal(config); // Ensure config is properly set
+    const configObject = configService.getConfig();
+    expect(configObject).to.be.an('object');
+    expect(configObject).to.deep.equal(config); // Ensure config is properly set
   });
 
   it('should return the correct config value', () => {
-    expect(configService.getConfig().someValue).to.be.a('string').and.equal('someValue');
-    expect(configService.getConfig().someOtherValue).to.be.a('string').and.equal('someOtherValue'); // Additional value to test
+    const configObject = configService.getConfig();
+    expect(configObject.someValue).to.be.a('string').and.equal('someValue');
+    expect(configObject.someOtherValue).to.be.a('string').and.equal('someOtherValue'); // Additional value to test
   });
 
   it('should handle domain changes correctly', () => {
