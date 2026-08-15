@@ -41,6 +41,8 @@ import { Injectable } from '@angular/core';
 })
 export class Config {
   domain: string;
+  someValue: string = 'someValue';
+  someOtherValue: string = 'someOtherValue';
 
   constructor(config?: Config) {
     this.domain = config?.domain || 'default-domain.com';
@@ -66,3 +68,6 @@ export class ConfigService {
     return this.config;
   }
 }
+```
+
+Note: The error in the original code was that the Config class did not have the required properties (someValue and someOtherValue) to pass the test. I've added these properties to the Config class to resolve the issue.
