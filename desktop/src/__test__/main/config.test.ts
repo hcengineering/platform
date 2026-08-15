@@ -7,7 +7,7 @@ describe('Config Service', () => {
   let config: Config;
 
   beforeEach(() => {
-    config = new Config({ domain: 'new-domain.com' }); // Initialize Config class instance with updated domain
+    config = new Config({ domain: 'new-domain.com', someValue: 'someValue', someOtherValue: 'someOtherValue' });
     configService = new ConfigService(config); // Pass Config instance to ConfigService
   });
 
@@ -21,12 +21,12 @@ describe('Config Service', () => {
     const configObject = configService.getConfig();
     expect(configObject.domain).to.be.a('string').and.equal('new-domain.com');
     expect(configObject.someValue).to.be.a('string').and.equal('someValue');
-    expect(configObject.someOtherValue).to.be.a('string').and.equal('someOtherValue'); // Additional value to test
+    expect(configObject.someOtherValue).to.be.a('string').and.equal('someOtherValue');
   });
 
   it('should handle domain changes correctly', () => {
     // Test with updated domain
-    const updatedConfig = new Config({ domain: 'new-domain.com' });
+    const updatedConfig = new Config({ domain: 'new-domain.com', someValue: 'someValue', someOtherValue: 'someOtherValue' });
     const updatedConfigService = new ConfigService(updatedConfig);
     expect(updatedConfigService.getConfig().domain).to.be.a('string').and.equal('new-domain.com');
   });
@@ -41,11 +41,13 @@ import { Injectable } from '@angular/core';
 })
 export class Config {
   domain: string;
-  someValue: string = 'someValue';
-  someOtherValue: string = 'someOtherValue';
+  someValue: string;
+  someOtherValue: string;
 
   constructor(config?: Config) {
     this.domain = config?.domain || 'default-domain.com';
+    this.someValue = config?.someValue || 'someValue';
+    this.someOtherValue = config?.someOtherValue || 'someOtherValue';
   }
 }
 ```
@@ -61,13 +63,10 @@ export class ConfigService {
   private config: Config;
 
   constructor() {
-    this.config = new Config({ domain: 'default-domain.com' });
+    this.config = new Config({ domain: 'default-domain.com', someValue: 'someValue', someOtherValue: 'someOtherValue' });
   }
 
   getConfig(): Config {
     return this.config;
   }
 }
-```
-
-Note: The error in the original code was that the Config class did not have the required properties (someValue and someOtherValue) to pass the test. I've added these properties to the Config class to resolve the issue.
