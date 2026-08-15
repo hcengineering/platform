@@ -2,3 +2,4 @@
 *.d.ts merge=none
 *.json linguist-language=JSON-with-Comments
 *.ts linguist-language=TypeScript
+*.ts linguist-primary-language=TypeScript
