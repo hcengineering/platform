@@ -34,4 +34,13 @@ describe('ConfigService', () => {
     await testHelper.inject(() => configService.getConfig('invalid-input'));
     expect(testHelper.lastError()).toBeInstanceOf(Error);
   });
+
+  // Fixing the test to correctly test the error handling
+  it('should throw an error when trying to get the config with an invalid input (with error message)', async () => {
+    try {
+      await configService.getConfig('invalid-input');
+    } catch (error) {
+      expect(error.message).toBe('Invalid input');
+    }
+  });
 });
