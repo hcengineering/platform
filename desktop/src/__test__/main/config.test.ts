@@ -1,11 +1,11 @@
 // Regression test suite
 
 import { ConfigService } from '../main/config.service';
-import { Config } from '../main/config'; // Added import for Config class
+import { Config } from '../main/config';
 
 describe('Config Service', () => {
   let configService: ConfigService;
-  let config: Config; // Added variable for Config class instance
+  let config: Config;
 
   beforeEach(() => {
     config = new Config(); // Initialize Config class instance
