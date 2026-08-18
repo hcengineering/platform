@@ -1606,18 +1606,63 @@ describe('upsertSubscription', () => {
 })
 
 describe('findPersonBySocialKey', () => {
-  const mockCtx = {} as unknown as MeasureContext
+  const mockCtx = {
+    warn: jest.fn(),
+    error: jest.fn()
+  } as unknown as MeasureContext
   const mockBranding = null
   const mockToken = 'test-token'
+  const callerAccount = 'caller-account' as AccountUuid
+  const callerWorkspace = 'ws-1' as WorkspaceUuid
+  const otherWorkspace = 'ws-2' as WorkspaceUuid
 
-  function makeMockDb (socialId: { personUuid: string } | null, accountUuid: string | null = null): AccountDB {
+  function makeMockDb (options: {
+    socialId?: { personUuid: string } | null
+    targetAccountUuid?: string | null
+    callerWorkspaces?: WorkspaceUuid[]
+    targetWorkspaces?: WorkspaceUuid[]
+  }): AccountDB {
+    const socialId = options.socialId ?? null
+    const targetAccountUuid = options.targetAccountUuid ?? null
+    const callerWorkspaces = options.callerWorkspaces ?? []
+    const targetWorkspaces = options.targetWorkspaces ?? []
+
+    const allWorkspaces: Record<string, WorkspaceUuid[]> = {
+      [callerAccount]: callerWorkspaces,
+      ...(targetAccountUuid != null ? { [targetAccountUuid]: targetWorkspaces } : {})
+    }
+
+    const accountFindOne = jest.fn().mockImplementation(async (query: { uuid: AccountUuid }) => {
+      if (query.uuid === targetAccountUuid) {
+        return { uuid: targetAccountUuid }
+      }
+      return null
+    })
+
+    const getAccountWorkspaces = jest.fn().mockImplementation(async (accountId: AccountUuid) => {
+      const ws = allWorkspaces[accountId] ?? []
+      return ws.map((uuid) => ({
+        uuid,
+        status: { mode: 'active' as any },
+        name: 'ws',
+        url: 'ws',
+        branding: null,
+        location: 'local',
+        region: 'local',
+        createdBy: callerAccount,
+        createdOn: 0,
+        billingAccount: null
+      } as any))
+    })
+
     return {
       socialId: {
         findOne: jest.fn().mockResolvedValue(socialId)
       },
       account: {
-        findOne: jest.fn().mockResolvedValue(accountUuid === null ? null : { uuid: accountUuid })
-      }
+        findOne: accountFindOne
+      },
+      getAccountWorkspaces
     } as unknown as AccountDB
   }
 
@@ -1625,27 +1670,12 @@ describe('findPersonBySocialKey', () => {
     jest.clearAllMocks()
   })
 
-  test('allows a regular user token (no service claim) to look up by social key', async () => {
-    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-      extra: { authMethod: 'password' },
-      account: 'user-uuid'
-    })
-    const mockDb = makeMockDb({ personUuid: 'looked-up-person' })
-
-    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
-      socialString: 'email:alice@example.com'
-    })
-
-    expect(result).toBe('looked-up-person')
-    expect(mockDb.socialId.findOne).toHaveBeenCalledWith({ key: 'email:alice@example.com' })
-  })
-
   test('still rejects empty socialString', async () => {
     ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
       extra: { authMethod: 'password' },
-      account: 'user-uuid'
+      account: callerAccount
     })
-    const mockDb = makeMockDb(null)
+    const mockDb = makeMockDb({})
 
     await expect(
       findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, { socialString: '' })
@@ -1655,9 +1685,9 @@ describe('findPersonBySocialKey', () => {
   test('returns undefined when social key is not found', async () => {
     ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
       extra: { authMethod: 'password' },
-      account: 'user-uuid'
+      account: callerAccount
     })
-    const mockDb = makeMockDb(null)
+    const mockDb = makeMockDb({ socialId: null })
 
     const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
       socialString: 'email:missing@example.com'
@@ -1666,31 +1696,190 @@ describe('findPersonBySocialKey', () => {
     expect(result).toBeUndefined()
   })
 
-  test('with requireAccount=true returns the account uuid when the person has one', async () => {
+  test('service token can look up any social key without a workspace check', async () => {
     ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
-      extra: { authMethod: 'password' },
-      account: 'user-uuid'
+      extra: { service: 'tool' }
     })
-    const mockDb = makeMockDb({ personUuid: 'person-uuid' }, 'account-uuid')
+    const mockDb = makeMockDb({
+      socialId: { personUuid: 'looked-up-account' },
+      targetAccountUuid: 'looked-up-account',
+      callerWorkspaces: [],
+      targetWorkspaces: []
+    })
 
     const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
-      socialString: 'email:alice@example.com',
-      requireAccount: true
+      socialString: 'email:alice@example.com'
     })
 
-    expect(result).toBe('account-uuid')
+    expect(result).toBe('looked-up-account')
+    expect(mockDb.getAccountWorkspaces).not.toHaveBeenCalled()
   })
 
-  test('with requireAccount=true returns undefined when the person has no account', async () => {
+  test('admin token can look up any social key without a workspace check', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { admin: 'true' },
+      account: callerAccount
+    })
+    const mockDb = makeMockDb({
+      socialId: { personUuid: 'looked-up-account' },
+      targetAccountUuid: 'looked-up-account'
+    })
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:alice@example.com'
+    })
+
+    expect(result).toBe('looked-up-account')
+    expect(mockDb.getAccountWorkspaces).not.toHaveBeenCalled()
+  })
+
+  test('user token returns the person when caller and target share an active workspace', async () => {
     ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
       extra: { authMethod: 'password' },
-      account: 'user-uuid'
+      account: callerAccount
     })
-    const mockDb = makeMockDb({ personUuid: 'person-uuid' }, null)
+    const mockDb = makeMockDb({
+      socialId: { personUuid: 'looked-up-account' },
+      targetAccountUuid: 'looked-up-account',
+      callerWorkspaces: [callerWorkspace],
+      targetWorkspaces: [callerWorkspace]
+    })
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:alice@example.com'
+    })
+
+    expect(result).toBe('looked-up-account')
+    expect(mockDb.getAccountWorkspaces).toHaveBeenCalledWith(callerAccount)
+    expect(mockDb.getAccountWorkspaces).toHaveBeenCalledWith('looked-up-account')
+  })
+
+  test('user token returns undefined when caller and target share no active workspace', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: callerAccount
+    })
+    const mockDb = makeMockDb({
+      socialId: { personUuid: 'looked-up-account' },
+      targetAccountUuid: 'looked-up-account',
+      callerWorkspaces: [callerWorkspace],
+      targetWorkspaces: [otherWorkspace]
+    })
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:alice@example.com'
+    })
+
+    expect(result).toBeUndefined()
+  })
+
+  test('user token returns undefined when caller has no active workspaces', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: callerAccount
+    })
+    const mockDb = makeMockDb({
+      socialId: { personUuid: 'looked-up-account' },
+      targetAccountUuid: 'looked-up-account',
+      callerWorkspaces: [],
+      targetWorkspaces: [callerWorkspace]
+    })
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:alice@example.com'
+    })
+
+    expect(result).toBeUndefined()
+  })
+
+  test('user token returns undefined when the target person has no account', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: callerAccount
+    })
+    const mockDb = makeMockDb({
+      socialId: { personUuid: 'orphan-person' },
+      targetAccountUuid: null,
+      callerWorkspaces: [callerWorkspace]
+    })
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:alice@example.com'
+    })
+
+    expect(result).toBeUndefined()
+    expect(mockDb.getAccountWorkspaces).not.toHaveBeenCalled()
+  })
+
+  test('user token with requireAccount=true returns the account uuid when shared workspace exists', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: callerAccount
+    })
+    const mockDb = makeMockDb({
+      socialId: { personUuid: 'looked-up-account' },
+      targetAccountUuid: 'looked-up-account',
+      callerWorkspaces: [callerWorkspace],
+      targetWorkspaces: [callerWorkspace]
+    })
 
     const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
       socialString: 'email:alice@example.com',
       requireAccount: true
+    })
+
+    expect(result).toBe('looked-up-account')
+  })
+
+  test('user token with requireAccount=true returns undefined when no shared workspace', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: callerAccount
+    })
+    const mockDb = makeMockDb({
+      socialId: { personUuid: 'looked-up-account' },
+      targetAccountUuid: 'looked-up-account',
+      callerWorkspaces: [callerWorkspace],
+      targetWorkspaces: [otherWorkspace]
+    })
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:alice@example.com',
+      requireAccount: true
+    })
+
+    expect(result).toBeUndefined()
+  })
+
+  test('user token throws Forbidden when the token has no account claim', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' }
+    })
+    const mockDb = makeMockDb({
+      socialId: { personUuid: 'looked-up-account' }
+    })
+
+    await expect(
+      findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+        socialString: 'email:alice@example.com'
+      })
+    ).rejects.toThrow(/Forbidden/)
+  })
+
+  test('user token does not leak the existence of a non-shared person (no diff vs missing key)', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      extra: { authMethod: 'password' },
+      account: callerAccount
+    })
+    const mockDb = makeMockDb({
+      socialId: { personUuid: 'looked-up-account' },
+      targetAccountUuid: 'looked-up-account',
+      callerWorkspaces: [callerWorkspace],
+      targetWorkspaces: [otherWorkspace]
+    })
+
+    const result = await findPersonBySocialKey(mockCtx, mockDb, mockBranding, mockToken, {
+      socialString: 'email:alice@example.com'
     })
 
     expect(result).toBeUndefined()
