@@ -108,6 +108,8 @@ export interface MigrationClient {
   create: <T extends Doc>(domain: Domain, doc: T | T[]) => Promise<void>
   delete: <T extends Doc>(domain: Domain, _id: Ref<T>) => Promise<void>
   deleteMany: <T extends Doc>(domain: Domain, query: DocumentQuery<T>) => Promise<void>
+  // Check the physical storage domain, including legacy domains no longer present in the active model.
+  domainExists: (domain: Domain) => Promise<boolean>
 
   hierarchy: Hierarchy
   model: ModelDb
