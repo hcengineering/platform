@@ -18107,6 +18107,9 @@ importers:
       '@hcengineering/text-editor-resources':
         specifier: workspace:^0.7.0
         version: link:../text-editor-resources
+      '@hcengineering/text-markdown':
+        specifier: workspace:^0.7.21
+        version: link:../../foundations/core/packages/text-markdown
       '@hcengineering/ui':
         specifier: workspace:^0.7.0
         version: link:../../packages/ui
