@@ -89,7 +89,15 @@ export default mergeIds(taskId, task, {
     RenameStatus: '' as IntlString,
     UpdateTasksStatusRequest: '' as IntlString,
     TaskTypes: '' as IntlString,
-    Collections: '' as IntlString
+    Collections: '' as IntlString,
+    BaseMixin: '' as IntlString,
+    BaseMixinDescription: '' as IntlString,
+    NoBaseMixin: '' as IntlString,
+    CreateNew: '' as IntlString,
+    CloneExisting: '' as IntlString,
+    CloneTaskTypes: '' as IntlString,
+    SelectTaskTypesToClone: '' as IntlString,
+    NoTaskTypesAvailable: '' as IntlString
   },
   status: {
     AssigneeRequired: '' as IntlString
