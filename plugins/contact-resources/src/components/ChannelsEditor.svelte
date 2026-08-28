@@ -18,9 +18,10 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonKind, ButtonSize, closeTooltip, showPopup } from '@hcengineering/ui'
 
-  import { Channel, ChannelProvider } from '@hcengineering/contact'
+  import { Channel, ChannelProvider, type Person } from '@hcengineering/contact'
   import { restrictionStore } from '@hcengineering/view-resources'
   import contact from '../plugin'
+  import { canEditPersonContactDetails } from '../utils'
   import ChannelsDropdown from './ChannelsDropdown.svelte'
 
   export let attachedTo: Ref<Doc>
@@ -37,6 +38,7 @@
   export let restricted: Ref<ChannelProvider>[] = []
 
   let channels: Channel[] = []
+  let attachedPerson: Person | undefined = undefined
 
   const query = createQuery()
   $: attachedTo &&
@@ -50,17 +52,38 @@
       }
     )
 
+  const personQuery = createQuery()
+  $: if (attachedClass === contact.class.Person) {
+    personQuery.query(
+      contact.class.Person,
+      {
+        _id: attachedTo as Ref<Person>
+      },
+      (res) => {
+        attachedPerson = res[0]
+      }
+    )
+  } else {
+    personQuery.unsubscribe()
+    attachedPerson = undefined
+  }
+
+  $: effectiveEditable =
+    attachedClass === contact.class.Person
+      ? editable && attachedPerson !== undefined && canEditPersonContactDetails(attachedPerson)
+      : editable
+
   const client = getClient()
 
   async function remove (value: Channel | AttachedData<Channel>): Promise<void> {
-    if (!editable) return
+    if (!effectiveEditable) return
     if ('_id' in value) {
       await client.remove(value)
     }
   }
 
   async function saveHandler (value: Channel | AttachedData<Channel>): Promise<void> {
-    if (!editable) return
+    if (!effectiveEditable) return
     if ('_id' in value) {
       await client.update(value, {
         value: value.value
@@ -89,7 +112,7 @@
   {size}
   {length}
   {integrations}
-  {editable}
+  editable={effectiveEditable}
   {restricted}
   {shape}
   {focusIndex}
