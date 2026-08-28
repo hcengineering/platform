@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>4C Shade Console — G-DESIGN Prototypes</title>
+<style>
+:root{
+  --bg:#0A0D13;--surface-1:#0F131B;--surface-2:#151A24;--surface-3:#1C2230;--surface-4:#232B3B;
+  --border:#242C3A;--border-2:#313B4D;
+  --ink-1:#EAEEF6;--ink-2:#AEB8CC;--ink-3:#727E93;--ink-4:#4B5567;
+  --accent:#37CFBD;--accent-hover:#4ADED0;--accent-fg:#04120F;--accent-weak:rgba(55,207,189,.14);--accent-line:rgba(55,207,189,.38);
+  --spectral:linear-gradient(90deg,#8B7CF0 0%,#4EC5E0 52%,#37CFBD 100%);
+  --prism:#8B7CF0;--prism-weak:rgba(139,124,240,.16);
+  --claude:#E0785B;--claude-weak:rgba(224,120,91,.16);
+  --gemini:#5B9DF9;--gemini-weak:rgba(91,157,249,.16);
+  --human:#AEB8CC;--human-weak:rgba(174,184,204,.12);
+  --ok:#46C98A;--warn:#E7B54B;--risk:#E8894A;--crit:#E86A6A;--info:#5B9DF9;
+  --r-1:6px;--r-2:10px;--r-3:14px;--r-pill:999px;
+  --shadow-2:0 12px 40px -14px rgba(0,0,0,.7);
+  --font-sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI Variable Display","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code","Roboto Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:
+    radial-gradient(1100px 500px at 78% -8%,rgba(139,124,240,.10),transparent 60%),
+    radial-gradient(900px 480px at 10% 0%,rgba(55,207,189,.07),transparent 55%),
+    var(--bg);
+  color:var(--ink-1);font-family:var(--font-sans);font-size:14px;line-height:22px;-webkit-font-smoothing:antialiased;min-height:100vh}
+.mono{font-family:var(--font-mono)}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1060px;margin:0 auto;padding:56px 28px 72px}
+
+/* header */
+.head{display:flex;align-items:center;gap:13px;margin-bottom:6px}
+.mark{width:34px;height:34px;border-radius:9px;background:var(--spectral);box-shadow:0 0 0 1px rgba(255,255,255,.10) inset,var(--shadow-2)}
+.head h1{font-size:15px;font-weight:600;margin:0;letter-spacing:.02em}
+.head .pill{margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--accent);background:var(--accent-weak);border:1px solid var(--accent-line);border-radius:var(--r-pill);padding:4px 12px}
+.hero{margin:26px 0 10px}
+.hero h2{font-size:38px;line-height:1.08;font-weight:600;letter-spacing:-.02em;margin:0 0 14px;max-width:19ch;text-wrap:balance}
+.hero h2 .g{background:var(--spectral);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{font-size:15.5px;color:var(--ink-2);max-width:64ch;margin:0}
+.hero p b{color:var(--ink-1);font-weight:600}
+.metastrip{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 4px}
+.ms{font-size:11.5px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-pill);padding:5px 12px}
+.ms i{font-style:normal;color:var(--ink-4)}
+
+.sechead{display:flex;align-items:center;gap:10px;margin:44px 0 16px}
+.sechead .lb{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.sechead .rule{flex:1;height:1px;background:var(--border)}
+
+/* prototype cards */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-3);overflow:hidden;display:flex;flex-direction:column;transition:transform .1s ease,box-shadow .12s ease,border-color .12s}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow-2);border-color:var(--border-2)}
+.thumb{height:104px;position:relative;border-bottom:1px solid var(--border);overflow:hidden;background:var(--surface-1)}
+.thumb .num{position:absolute;top:10px;left:12px;font-family:var(--font-mono);font-size:11px;color:var(--ink-3)}
+.cbody{padding:15px 16px 17px;display:flex;flex-direction:column;flex:1}
+.cbody h3{margin:0 0 5px;font-size:15.5px;font-weight:600}
+.cbody p{margin:0 0 14px;font-size:12.8px;color:var(--ink-3);line-height:19px;flex:1}
+.cbody .go{align-self:flex-start;font-size:12.5px;font-weight:600;color:var(--accent-fg);background:var(--accent);border-radius:var(--r-1);padding:7px 14px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tag{font-size:10.5px;font-weight:600;color:var(--ink-2);background:var(--surface-3);border:1px solid var(--border);border-radius:var(--r-pill);padding:2px 8px}
+
+/* mini thumbnail motifs (pure CSS, no assets) */
+.tb-fleet{display:flex;gap:6px;padding:14px 12px 0}
+.tb-fleet .c{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;height:74px;padding:6px}
+.tb-fleet .c .bar{height:4px;border-radius:2px;margin-bottom:4px}
+.tb-fleet .c.p .bar{background:var(--prism)}.tb-fleet .c.cl .bar{background:var(--claude)}.tb-fleet .c.g .bar{background:var(--gemini)}
+.tb-fleet .c .ln{height:5px;border-radius:2px;background:var(--surface-4);margin-bottom:4px}
+.tb-fleet .c .ln.s{width:60%}
+
+.tb-gate{display:flex;align-items:center;gap:0;padding:34px 14px 0;overflow:hidden}
+.tb-gate .n{flex:0 0 auto;border:1px solid var(--accent-line);border-radius:4px;padding:5px 8px;font-family:var(--font-mono);font-size:9px;color:var(--ink-1);background:var(--surface-2)}
+.tb-gate .n.pend{border-style:dashed;border-color:var(--border-2);color:var(--ink-4)}
+.tb-gate .e{flex:0 0 16px;height:2px;background:var(--spectral)}
+.tb-gate .e.off{background:var(--border-2)}
+
+.tb-brain{padding:14px 12px 0;display:flex;gap:8px}
+.tb-brain .col1{flex:1.3;display:flex;flex-direction:column;gap:5px}
+.tb-brain .col1 .ln{height:5px;border-radius:2px;background:var(--surface-4)}
+.tb-brain .col1 .ln.hl{background:var(--accent-weak);box-shadow:inset 0 0 0 1px var(--accent-line)}
+.tb-brain .col2{flex:1;display:flex;flex-direction:column;gap:5px}
+.tb-brain .col2 .chipm{height:16px;border-radius:4px;background:var(--surface-2);border:1px solid var(--border)}
+.tb-brain .col2 .chipm.a{border-color:var(--accent-line)}
+
+/* backbone + docs */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-2);padding:18px 18px}
+.panel h4{margin:0 0 8px;font-size:13.5px}
+.panel p{margin:0 0 10px;font-size:12.8px;color:var(--ink-3);line-height:19px}
+.doclink{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--border);border-radius:var(--r-1);margin-top:8px;font-size:12.5px;color:var(--ink-2)}
+.doclink .mono{color:var(--ink-1)}
+.doclink .arw{margin-left:auto;color:var(--ink-4)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:2px}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2)}
+.legend i{width:9px;height:9px;border-radius:50%}
+.oq{margin:10px 0 0;padding-left:18px;color:var(--ink-3);font-size:12.8px}
+.oq li{margin:5px 0}.oq li b{color:var(--ink-2);font-family:var(--font-mono);font-size:11.5px}
+.foot{margin-top:44px;padding-top:18px;border-top:1px solid var(--border);color:var(--ink-4);font-size:11.5px;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <span class="mark"></span>
+    <h1>4C SHADE · Console</h1>
+    <span class="pill">G-DESIGN · design pass · Track A</span>
+  </div>
+
+  <div class="hero">
+    <h2>Autonomous delivery you can <span class="g">prove</span> and stand behind.</h2>
+    <p>The console is an <b>instrument, not a hype surface</b>: agent-native, artifact-first, with gates and full requirement→deploy traceability as first-class objects. These three clickable mockups prototype the <b>differentiating surfaces</b> — the ones no generic agent-manager (Cursor / GitHub / Antigravity) has. Backbone screens (tracker / docs / QMS) stay Huly's UI under a Shade overlay and are deliberately not redesigned.</p>
+    <div class="metastrip">
+      <span class="ms"><i>agents ·</i> Prism <b style="color:var(--prism)">●</b> · Claude <b style="color:var(--claude)">●</b> · Gemini <b style="color:var(--gemini)">●</b></span>
+      <span class="ms"><i>gates ·</i> G-DESIGN · G-LOCK · G-PUSH · G-CLIENT · G-MONEY</span>
+      <span class="ms"><i>offline ·</i> opens via file:// · no network</span>
+    </div>
+  </div>
+
+  <div class="sechead"><span class="lb">Prototyped surfaces · click to open</span><span class="rule"></span></div>
+  <div class="grid">
+
+    <a class="card" href="agent-fleet.html">
+      <div class="thumb"><span class="num">01</span>
+        <div class="tb-fleet">
+          <div class="c cl"><div class="bar"></div><div class="ln"></div><div class="ln s"></div></div>
+          <div class="c g"><div class="bar"></div><div class="ln"></div><div class="ln s"></div></div>
+          <div class="c p"><div class="bar"></div><div class="ln"></div><div class="ln s"></div></div>
+        </div>
+      </div>
+      <div class="cbody">
+        <div class="tags"><span class="tag">mission-control</span><span class="tag">artifact-first</span></div>
+        <h3>Agent Fleet</h3>
+        <p>See and steer every parallel agent thread grouped by state; review the plan, diff and test evidence right on the card.</p>
+        <span class="go">Open prototype →</span>
+      </div>
+    </a>
+
+    <a class="card" href="gate-traceability.html">
+      <div class="thumb"><span class="num">02</span>
+        <div class="tb-gate">
+          <div class="n">REQ</div><div class="e"></div>
+          <div class="n">SPEC</div><div class="e off"></div>
+          <div class="n pend">CODE</div><div class="e off"></div>
+          <div class="n pend">TEST</div>
+        </div>
+      </div>
+      <div class="cbody">
+        <div class="tags"><span class="tag">gates-as-objects</span><span class="tag">audit ledger</span></div>
+        <h3>Gate &amp; Traceability Cockpit</h3>
+        <p>The 5 gates as objects, the requirement↔spec↔code↔test↔deploy spine, an immutable who-approved-what ledger, and a live domain-expert sign-off.</p>
+        <span class="go">Open prototype →</span>
+      </div>
+    </a>
+
+    <a class="card" href="second-brain.html">
+      <div class="thumb"><span class="num">03</span>
+        <div class="tb-brain">
+          <div class="col1"><div class="ln"></div><div class="ln hl"></div><div class="ln"></div><div class="ln hl"></div><div class="ln"></div></div>
+          <div class="col2"><div class="chipm a"></div><div class="chipm"></div><div class="chipm a"></div><div class="chipm"></div></div>
+        </div>
+      </div>
+      <div class="cbody">
+        <div class="tags"><span class="tag">conversation→spec</span><span class="tag">provenance</span></div>
+        <h3>Second-Brain Intake</h3>
+        <p>Expert conversation → cited requirements, work-items and specs, each traceable back to the exact spoken span that created it.</p>
+        <span class="go">Open prototype →</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="sechead"><span class="lb">Design system &amp; scope</span><span class="rule"></span></div>
+  <div class="two">
+    <div class="panel">
+      <h4>One system · dark-committed "Shade"</h4>
+      <p>All three prototypes are driven by the same token set — cool blue-slate ground, one luminous cyan-teal accent, and a single spectral motif (violet→cyan→teal) reserved for the Prism coordinator and the traceability spine. Monospace carries every traceable ID (chain-of-custody as typography).</p>
+      <div class="legend">
+        <span><i style="background:var(--accent)"></i>accent</span>
+        <span><i style="background:var(--prism)"></i>Prism</span>
+        <span><i style="background:var(--claude)"></i>Claude</span>
+        <span><i style="background:var(--gemini)"></i>Gemini</span>
+        <span><i style="background:var(--ok)"></i>pass</span>
+        <span><i style="background:var(--warn)"></i>awaiting</span>
+        <span><i style="background:var(--crit)"></i>blocked</span>
+      </div>
+      <div class="doclink">◫ tokens &amp; component specs · <span class="mono">docs/4c-shade/design/DESIGN.md</span><span class="arw">↗</span></div>
+      <div class="doclink">◫ screen inventory &amp; flows · <span class="mono">docs/4c-shade/design/UI-UX-MAP.md</span><span class="arw">↗</span></div>
+    </div>
+    <div class="panel">
+      <h4>Backbone = Huly UI + Shade overlay <span style="color:var(--ink-4);font-weight:400">(not redesigned)</span></h4>
+      <p>Tracker, Documents, Controlled-doc QMS specs and Test Management keep Huly's existing screens. The Shade "overlay" is tokens only — top bar, rail, accent, status/gate chips — plus wiring the spec lifecycle (Draft→Effective) to <span class="mono" style="color:var(--ink-2)">G-LOCK</span>.</p>
+      <h4 style="margin-top:14px">Open questions for the gate</h4>
+      <ul class="oq">
+        <li><b>OQ-1</b> Ship a light mode in v1, or commit fully to dark?</li>
+        <li><b>OQ-3</b> Design Prism's single-chat-over-fleet now, or keep board-first for v1?</li>
+        <li><b>OQ-4</b> Are all 5 gates mandatory per item, or configurable per workspace?</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>4C Shade · product console · design-first / G-DESIGN</span>
+    <span style="margin-left:auto" class="mono">placeholder data — generic software-delivery, no client specifics</span>
+  </div>
+</div>
+</body>
+</html>

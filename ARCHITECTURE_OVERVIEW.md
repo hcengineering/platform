@@ -1,8 +1,10 @@
-# Huly Platform Architecture Overview
+# HH Shade / 4C Shade Architecture Overview
+
+> HH Shade is a fork of the Huly Platform; this document describes the shared platform backbone that HH Shade / 4C Shade runs on. The service map, ports, and env vars below are the upstream Huly architecture and remain accurate for this fork.
 
 ## Service Overview
 
-The Huly platform consists of **30+ microservices** working together in a distributed architecture. Services are organized into functional layers for core business logic, data storage, real-time communication, media processing, and supporting features.
+The platform consists of **30+ microservices** working together in a distributed architecture. Services are organized into functional layers for core business logic, data storage, real-time communication, media processing, and supporting features.
 
 ### Core Backend Services
 
