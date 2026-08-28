@@ -15,13 +15,13 @@
 //
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { Attachment } from '@hcengineering/attachment'
   import { AttachmentPresenter, AttachmentStyledBox } from '@hcengineering/attachment-resources'
   import { generateId, Ref, Space } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { Button, EditBox, IconAttachment, tooltip } from '@hcengineering/ui'
-  import { DocumentCategory } from '@hcengineering/controlled-documents'
+  import { DocumentCategory, DocumentSpace } from '@hcengineering/controlled-documents'
 
   import IconWarning from './icons/IconWarning.svelte'
   import documents from '../plugin'
@@ -37,9 +37,18 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   let descriptionBox: AttachmentStyledBox
+  let spaceExists = true
+
+  onMount(async () => {
+    const spaceDoc = await client.findOne(documents.class.DocumentSpace, { _id: space as Ref<DocumentSpace> })
+    spaceExists = spaceDoc !== undefined
+    if (!spaceExists) {
+      console.error(`Document space ${space} not found. Category cannot be created.`)
+    }
+  })
 
   async function handleOkAction (): Promise<void> {
-    if (isCodeWrong || isTitleWrong) {
+    if (isCodeWrong || isTitleWrong || !spaceExists) {
       return
     }
     const op = client.apply()
@@ -61,7 +70,7 @@
 
   let existingCategories: string[] = []
   let existingCodes: string[] = []
-  $: void client.findAll(documents.class.DocumentCategory, {}).then((cats) => {
+  $: void client.findAll(documents.class.DocumentCategory, { space }).then((cats) => {
     existingCategories = cats.map((cat) => cat.title)
     existingCodes = cats.map((cat) => cat.code)
   })
@@ -82,7 +91,7 @@
 <Card
   label={documents.string.CreateDocumentCategory}
   okAction={handleOkAction}
-  canSave={!isCodeWrong && !isTitleWrong}
+  canSave={!isCodeWrong && !isTitleWrong && spaceExists}
   hideAttachments={attachments.size === 0}
   on:close={() => {
     dispatch('close')
