@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { getAiBotAccountEmail } from '@hcengineering/ai-bot'
 import core, {
   type MeasureContext,
   type Tx,
@@ -27,8 +28,6 @@ import {
   type TxMiddlewareResult,
   type PipelineContext
 } from '@hcengineering/server-core'
-
-export const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'
 
 /**
  * @public
@@ -49,7 +48,7 @@ export class IdentityMiddleware extends BaseMiddleware implements Middleware {
   tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     const account = ctx.contextData.account
 
-    if (account.uuid === systemAccountUuid || account.fullSocialIds.some((it) => it.value === aiBotAccountEmail)) {
+    if (account.uuid === systemAccountUuid || account.fullSocialIds.some((it) => it.value === getAiBotAccountEmail())) {
       // TODO: We need to enhance allowed list in case of user service, on behalf of user activities.
 
       // We pass for system accounts and services.
