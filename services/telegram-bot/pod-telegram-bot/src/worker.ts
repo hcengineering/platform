@@ -23,6 +23,7 @@ import { ActivityMessage } from '@hcengineering/activity'
 import {
   ChannelId,
   ChannelRecord,
+  ForumTopicRecord,
   IntegrationInfo,
   MessageRecord,
   PlatformFileInfo,
@@ -143,6 +144,34 @@ export class PlatformWorker {
     return await wsClient.getFiles(message)
   }
 
+  async getChannelInfoForMessage (
+    workspace: WorkspaceUuid,
+    account: AccountUuid,
+    messageId: Ref<ActivityMessage>
+  ): Promise<{ channelId: Ref<ChunterSpace>, channelName: string } | undefined> {
+    const wsClient = await WorkspaceClient.create(workspace, account, this.ctx, this.storage)
+    const channel = await wsClient.getChannelForActivityMessage(messageId)
+    if (channel === undefined) return undefined
+    const channelName = await this.getChannelName(wsClient, channel, account)
+    return { channelId: channel._id, channelName }
+  }
+
+  async getForumTopic (
+    workspace: WorkspaceUuid,
+    account: AccountUuid,
+    channelId: Ref<ChunterSpace>
+  ): Promise<ForumTopicRecord | undefined> {
+    return await this.db.getForumTopic(workspace, account, channelId)
+  }
+
+  async saveForumTopic (record: Omit<ForumTopicRecord, 'createdAt'>): Promise<void> {
+    await this.db.insertForumTopic(record)
+  }
+
+  async getForumTopicByThread (forumChatId: number, topicId: number): Promise<ForumTopicRecord | undefined> {
+    return await this.db.getForumTopicByThread(forumChatId, topicId)
+  }
+
   async updateTelegramUsername (personId: PersonId, telegramUsername: string): Promise<void> {
     await getAccountClient(serviceToken()).updateSocialId(personId, telegramUsername)
   }
@@ -243,6 +272,37 @@ export class PlatformWorker {
     })
 
     return true
+  }
+
+  /**
+   * Looks up a channel by its Huly Ref (not the internal rowid), used by the forum-topic
+   * outbound path where we know the channel ref from the forum_topics table but don't
+   * have the corresponding channelsTable row cached.
+   */
+  async resolveChannelByRef (
+    workspace: WorkspaceUuid,
+    account: AccountUuid,
+    channelRef: Ref<ChunterSpace>
+  ): Promise<ChannelRecord | undefined> {
+    for (const cached of this.channelByRowId.values()) {
+      if (cached.workspace === workspace && cached.account === account && cached._id === channelRef) {
+        return cached
+      }
+    }
+
+    const client = await WorkspaceClient.create(workspace, account, this.ctx, this.storage)
+    const space = await client.findChunterSpace(channelRef)
+    if (space === undefined) return undefined
+
+    const name = await this.getChannelName(client, space, account)
+    return {
+      rowId: `forum:${channelRef}` as ChannelId,
+      workspace,
+      _id: space._id,
+      _class: space._class,
+      name,
+      account
+    }
   }
 
   async syncChannels (account: AccountUuid, workspace: WorkspaceUuid, onlyStarred: boolean): Promise<void> {
@@ -371,6 +431,7 @@ export class PlatformWorker {
     }
 
     const integration = integrations[0]
+    const forumChatId = this.getForumChatId(integrations)
 
     void this.limiter.add(integration.telegramId, async () => {
       const { full: fullMessage, short: shortMessage } = toTelegramHtml(record)
@@ -380,16 +441,36 @@ export class PlatformWorker {
           : []
       const tgMessageIds: number[] = []
 
-      if (files.length === 0) {
-        const message = await bot.telegram.sendMessage(integration.telegramId, fullMessage, {
-          parse_mode: 'HTML'
-        })
+      let targetChatId: number = integration.telegramId
+      let threadId: number | undefined
+      if (forumChatId !== undefined && record.messageId != null) {
+        const routed = await this.resolveForumTopic(
+          bot,
+          forumChatId,
+          workspace,
+          record.account,
+          record.messageId
+        )
+        if (routed !== undefined) {
+          targetChatId = forumChatId
+          threadId = routed
+        }
+      }
 
+      const baseExtra: Record<string, unknown> = { parse_mode: 'HTML' }
+      if (threadId !== undefined) baseExtra.message_thread_id = threadId
+
+      if (files.length === 0) {
+        const message = await bot.telegram.sendMessage(targetChatId, fullMessage, baseExtra as any)
         tgMessageIds.push(message.message_id)
       } else {
         const groups = toMediaGroups(files, fullMessage, shortMessage)
         for (const group of groups) {
-          const mediaGroup = await bot.telegram.sendMediaGroup(integration.telegramId, group)
+          const mediaGroup = await bot.telegram.sendMediaGroup(
+            targetChatId,
+            group,
+            threadId !== undefined ? ({ message_thread_id: threadId } as any) : undefined
+          )
           tgMessageIds.push(...mediaGroup.map((it) => it.message_id))
         }
       }
@@ -404,6 +485,63 @@ export class PlatformWorker {
         })
       }
     })
+  }
+
+  /**
+   * Returns the forum chat id stored on any of the user's integrations, or undefined
+   * if forum routing has not been configured via /setforum. Cleared values (null)
+   * are treated the same as unset.
+   */
+  getForumChatId (integrations: IntegrationInfo[]): number | undefined {
+    for (const integration of integrations) {
+      const raw = integration.data?.forumChatId
+      if (typeof raw === 'number' && Number.isFinite(raw)) return raw
+    }
+    return undefined
+  }
+
+  /**
+   * Looks up (or lazily creates) the Telegram forum topic that mirrors the Huly channel
+   * that owns this activity message. Returns the topic message_thread_id, or undefined
+   * if the channel cannot be resolved or topic creation fails.
+   */
+  async resolveForumTopic (
+    bot: Telegraf<TgContext>,
+    forumChatId: number,
+    workspace: WorkspaceUuid,
+    account: AccountUuid,
+    messageId: Ref<ActivityMessage>
+  ): Promise<number | undefined> {
+    let channelInfo: { channelId: Ref<ChunterSpace>, channelName: string } | undefined
+    try {
+      channelInfo = await this.getChannelInfoForMessage(workspace, account, messageId)
+    } catch (e) {
+      this.ctx.warn('Failed to resolve channel for forum topic', { error: e, messageId })
+      return undefined
+    }
+    if (channelInfo === undefined) return undefined
+
+    const existing = await this.db.getForumTopic(workspace, account, channelInfo.channelId)
+    if (existing !== undefined) return existing.topicId
+
+    try {
+      const created = await bot.telegram.createForumTopic(forumChatId, channelInfo.channelName)
+      await this.db.insertForumTopic({
+        workspace,
+        account,
+        channelId: channelInfo.channelId,
+        forumChatId,
+        topicId: created.message_thread_id
+      })
+      return created.message_thread_id
+    } catch (e) {
+      this.ctx.warn('Failed to create forum topic, falling back to DM', {
+        error: e,
+        forumChatId,
+        channelName: channelInfo.channelName
+      })
+      return undefined
+    }
   }
 
   async processWorkspaceSubscription (
