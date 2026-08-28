@@ -326,6 +326,19 @@ export class ModelDb extends MemDb {
   }
 
   addTxes (ctx: MeasureContext, txes: Tx[], clone: boolean): void {
+    // Per-TX orphan warnings were previously logged via ctx.warn at the
+    // browser console — one line per skipped TX, which on workspaces that
+    // have evolved through multiple model versions adds up to dozens of
+    // identical-looking warnings on every page load. The information is
+    // useful for operators diagnosing migration issues but not actionable
+    // for end-users, and noisy enough to drown out real warnings.
+    //
+    // Replace with a single coalesced summary at the end of the loop:
+    // count by tx-class and report once. The detailed per-orphan list is
+    // not emitted here since MeasureContext has no debug channel —
+    // operators who need it can re-enable a temporary dump via a local
+    // patch.
+    const orphans: Array<{ _id: Ref<Doc>, _class: string, objectId: Ref<Doc> }> = []
     for (const tx of txes) {
       switch (tx._class) {
         case core.class.TxCreateDoc:
@@ -338,11 +351,7 @@ export class ModelDb extends MemDb {
             this.updateDoc(cud.objectId, doc, cud)
             TxProcessor.updateDoc2Doc(doc, cud)
           } else {
-            ctx.warn('no document found, failed to apply model transaction, skipping', {
-              _id: tx._id,
-              _class: tx._class,
-              objectId: cud.objectId
-            })
+            orphans.push({ _id: tx._id, _class: tx._class, objectId: cud.objectId })
           }
           break
         }
@@ -350,7 +359,7 @@ export class ModelDb extends MemDb {
           try {
             this.delDoc((tx as TxRemoveDoc<Doc>).objectId)
           } catch (err: any) {
-            ctx.warn('no document found, failed to apply model transaction, skipping', {
+            orphans.push({
               _id: tx._id,
               _class: tx._class,
               objectId: (tx as TxRemoveDoc<Doc>).objectId
@@ -364,15 +373,24 @@ export class ModelDb extends MemDb {
             this.updateDoc(mix.objectId, doc, mix)
             TxProcessor.updateMixin4Doc(doc, mix)
           } else {
-            ctx.warn('no document found, failed to apply model transaction, skipping', {
-              _id: tx._id,
-              _class: tx._class,
-              objectId: mix.objectId
-            })
+            orphans.push({ _id: tx._id, _class: tx._class, objectId: mix.objectId })
           }
           break
         }
       }
+    }
+    if (orphans.length > 0) {
+      const byClass: Record<string, number> = {}
+      for (const o of orphans) byClass[o._class] = (byClass[o._class] ?? 0) + 1
+      // Single coalesced info line per addTxes call. The previous per-TX
+      // `ctx.warn` produced one console line per orphan on every page
+      // load. MeasureContext has no `debug` channel, so a deeper dump for
+      // diagnostics isn't available here — operators who need the per-TX
+      // list can re-enable it via a local patch.
+      ctx.info('skipped model transactions for orphan documents', {
+        total: orphans.length,
+        byClass
+      })
     }
   }
 
