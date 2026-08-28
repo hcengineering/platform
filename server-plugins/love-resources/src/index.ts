@@ -225,7 +225,7 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl):
           year: 'numeric'
         })
         .replace(',', ' at')
-      const tx = control.txFactory.createTxCreateDoc(
+      const innerTx = control.txFactory.createTxCreateDoc(
         love.class.MeetingMinutes,
         core.space.Workspace,
         {
@@ -237,6 +237,13 @@ async function roomJoinHandler (info: ParticipantInfo, control: TriggerControl):
           collection: 'meetings'
         },
         _id
+      )
+      const tx = control.txFactory.createTxCollectionCUD(
+        love.class.Room,
+        info.room,
+        core.space.Workspace,
+        'meetings',
+        innerTx
       )
       tx.space = core.space.Tx
       res.push(tx)
