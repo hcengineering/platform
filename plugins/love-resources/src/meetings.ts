@@ -85,6 +85,21 @@ export async function joinMeeting (room: Room): Promise<void> {
   await connectToMeeting(room)
 }
 
+/**
+ * Re-establish the call for a room this client is already recorded in.
+ *
+ * After a reload mid-call the ParticipantInfo still points at the room while
+ * no LiveKit session exists, so `joinMeeting` (which would knock again) is
+ * the wrong entry point: the person is already in, only the media is gone.
+ */
+export async function reconnectMeeting (room: Room): Promise<void> {
+  if (get(myInfo)?.room !== room._id) {
+    await joinMeeting(room)
+    return
+  }
+  await connectToMeeting(room)
+}
+
 export async function joinOrCreateMeetingByInvite (roomId: Ref<Room>): Promise<void> {
   if (currentMeetingRoom === roomId) return
 

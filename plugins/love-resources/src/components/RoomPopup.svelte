@@ -32,7 +32,7 @@
   import ShareScreenButton from './meeting/controls/ShareScreenButton.svelte'
   import LeaveRoomButton from './meeting/controls/LeaveRoomButton.svelte'
   import MeetingHeader from './meeting/MeetingHeader.svelte'
-  import { joinMeeting } from '../meetings'
+  import { joinMeeting, reconnectMeeting } from '../meetings'
 
   export let room: Room
 
@@ -53,8 +53,14 @@
 
   const dispatch = createEventDispatcher()
 
+  // A stale record (still "in" the room, but no LiveKit session - e.g. after
+  // a reload mid-call) must re-establish the media, not knock again.
   async function connect (): Promise<void> {
-    await joinMeeting(room)
+    if (joined) {
+      await reconnectMeeting(room)
+    } else {
+      await joinMeeting(room)
+    }
     dispatch('close')
   }
 
@@ -121,7 +127,8 @@
     {/if}
     {#if joined}
       <LeaveRoomButton {room} noLabel={false} size="medium" on:leave={() => dispatch('close')} />
-    {:else}
+    {/if}
+    {#if !joined || !$lkSessionConnected}
       <ModernButton
         icon={love.icon.EnterRoom}
         label={love.string.EnterRoom}
