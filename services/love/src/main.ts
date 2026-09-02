@@ -41,6 +41,7 @@ import { join } from 'path'
 import { saveLiveKitEgressBilling, updateLiveKitSessions } from './billing'
 import config from './config'
 import { getRecordingPreset } from './preset'
+import { parseRoomName, type PersonRef } from './rooms'
 import { getS3UploadParams, saveFile } from './storage'
 import { WorkspaceClient } from './workspaceClient'
 
@@ -138,6 +139,14 @@ export const main = async (): Promise<void> => {
       } else if (event.event === 'room_finished' && event.room !== undefined) {
         const { sid, name } = event.room
         ctx.info('webhook event', { event: event.event, room: { sid, name } })
+        await clearParticipants(ctx, name)
+        res.send()
+        return
+      } else if (event.event === 'participant_left' && event.room !== undefined && event.participant !== undefined) {
+        const { sid, name } = event.room
+        const { identity } = event.participant
+        ctx.info('webhook event', { event: event.event, room: { sid, name }, participant: identity })
+        await clearParticipants(ctx, name, identity as PersonRef)
         res.send()
         return
       }
@@ -309,6 +318,35 @@ const stopEgress = async (egressClient: EgressClient, roomName: string): Promise
   const egresses = await egressClient.listEgress({ active: true, roomName })
   for (const egress of egresses) {
     await egressClient.stopEgress(egress.egressId)
+  }
+}
+
+/**
+ * LiveKit has dropped a participant (or closed the room): the ParticipantInfo
+ * records that still place people in that room are stale, because only the
+ * person's own client writes them and that client is gone. Reset them so the
+ * room is not shown occupied forever and the person can join again.
+ */
+async function clearParticipants (ctx: MeasureContext, roomName: string, person?: PersonRef): Promise<void> {
+  const parsed = parseRoomName(roomName)
+  if (parsed === undefined) {
+    ctx.warn('unexpected LiveKit room name', { roomName })
+    return
+  }
+  try {
+    const client = await WorkspaceClient.create(parsed.workspace, ctx)
+    try {
+      const reset =
+        person !== undefined ? await client.leaveRoom(person, parsed.roomId) : await client.clearRoom(parsed.roomId)
+      if (reset > 0) {
+        ctx.info('reset stale participants', { room: parsed.roomId, person, reset })
+      }
+    } finally {
+      await client.close()
+    }
+  } catch (err: any) {
+    // The webhook must not fail over this: LiveKit would retry the event.
+    ctx.error('failed to reset stale participants', { roomName, person, error: err.message })
   }
 }
 

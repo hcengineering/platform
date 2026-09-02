@@ -24,10 +24,11 @@ import core, {
   type Blob
 } from '@hcengineering/core'
 import drive, { createFile } from '@hcengineering/drive'
-import love, { MeetingMinutes } from '@hcengineering/love'
+import love, { MeetingMinutes, type Room } from '@hcengineering/love'
 import { generateToken } from '@hcengineering/server-token'
 import { getClient } from './client'
 import { RecordingPreset } from './preset'
+import { type PersonRef, resetRoomParticipants } from './rooms'
 
 export class WorkspaceClient {
   private client!: TxOperations
@@ -52,6 +53,16 @@ export class WorkspaceClient {
     const client = await getClient(token)
     this.client = new TxOperations(client, core.account.System)
     return this.client
+  }
+
+  /** A participant LiveKit has dropped is no longer in the room. */
+  async leaveRoom (person: PersonRef, roomId: Ref<Room>): Promise<number> {
+    return await resetRoomParticipants(this.client, roomId, person)
+  }
+
+  /** The LiveKit room is gone: nobody is in it any more. */
+  async clearRoom (roomId: Ref<Room>): Promise<number> {
+    return await resetRoomParticipants(this.client, roomId)
   }
 
   async saveFile (
