@@ -43,7 +43,7 @@
       const [createdResult, assignedResult, userProjectResult] = await Promise.all([
         client.findAll(tracker.class.Issue, { createdBy: userId as PersonId }),
         client.findAll(tracker.class.Issue, { assignee: userId as any }),
-        client.findAll(task.class.Project, { members: [userId as AccountUuid] })
+        client.findAll(task.class.Project, { members: userId as AccountUuid })
       ])
       const createdIssues = Array.isArray(createdResult) ? createdResult : []
       const assignedIssues = Array.isArray(assignedResult) ? assignedResult : []

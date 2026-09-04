@@ -34,7 +34,7 @@
         loading = false
         return
       }
-      const result = await client.findAll(task.class.Project, { members: [userId as AccountUuid] })
+      const result = await client.findAll(task.class.Project, { members: userId as AccountUuid })
       projects = Array.isArray(result) ? result : []
     } catch (e) {
       error = String(e)
