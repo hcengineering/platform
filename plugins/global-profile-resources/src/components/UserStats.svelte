@@ -18,7 +18,7 @@
   import task from "@hcengineering/task"
   import tracker from "@hcengineering/tracker"
   import { Loading, Label } from "@hcengineering/ui"
-  import type { AccountUuid, PersonId } from "@hcengineering/core"
+  import type { AccountUuid } from "@hcengineering/core"
   import globalProfile from "@hcengineering/global-profile"
 
   export let userId: string
@@ -40,19 +40,15 @@
         loading = false
         return
       }
-      const [createdResult, assignedResult, userProjectResult] = await Promise.all([
-        client.findAll(tracker.class.Issue, { createdBy: userId as PersonId }),
-        client.findAll(tracker.class.Issue, { assignee: userId as any }),
+      const [allIssues, userProjects] = await Promise.all([
+        client.findAll(tracker.class.Issue, {}),
         client.findAll(task.class.Project, { members: userId as AccountUuid })
       ])
-      const createdIssues = Array.isArray(createdResult) ? createdResult : []
-      const assignedIssues = Array.isArray(assignedResult) ? assignedResult : []
-      const userProjects = Array.isArray(userProjectResult) ? userProjectResult : []
+      const projects = Array.isArray(userProjects) ? userProjects : []
 
       stats = [
-        { label: "Issues Created", count: createdIssues.length },
-        { label: "Issues Assigned", count: assignedIssues.length },
-        { label: "Projects", count: userProjects.length }
+        { label: "Total Issues", count: allIssues.length },
+        { label: "Projects", count: projects.length }
       ]
     } catch (e) {
       error = String(e)
