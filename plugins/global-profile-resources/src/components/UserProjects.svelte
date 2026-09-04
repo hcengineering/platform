@@ -16,8 +16,9 @@
   import { getClient } from "@hcengineering/presentation"
   import { type Project } from "@hcengineering/task"
   import task from "@hcengineering/task"
+  import contact from "@hcengineering/contact"
   import { Loading, Label } from "@hcengineering/ui"
-  import type { AccountUuid, PersonId } from "@hcengineering/core"
+  import type { AccountUuid, PersonUuid } from "@hcengineering/core"
   import globalProfile from "@hcengineering/global-profile"
 
   export let userId: string
@@ -34,7 +35,10 @@
         loading = false
         return
       }
-      const result = await client.findAll(task.class.Project, { members: userId as AccountUuid })
+      // Resolve AccountUuid from PersonUuid via Employee record
+      const employee = await client.findOne(contact.mixin.Employee, { personUuid: userId as AccountUuid })
+      const accountUuid: AccountUuid = (employee?.personUuid ?? userId) as AccountUuid
+      const result = await client.findAll(task.class.Project, { members: accountUuid })
       projects = Array.isArray(result) ? result : []
     } catch (e) {
       error = String(e)

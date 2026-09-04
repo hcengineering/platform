@@ -17,8 +17,9 @@
   import { type Project } from "@hcengineering/task"
   import task from "@hcengineering/task"
   import tracker from "@hcengineering/tracker"
+  import contact from "@hcengineering/contact"
   import { Loading, Label } from "@hcengineering/ui"
-  import type { AccountUuid, PersonId } from "@hcengineering/core"
+  import type { AccountUuid, PersonUuid } from "@hcengineering/core"
   import globalProfile from "@hcengineering/global-profile"
 
   export let userId: string
@@ -40,17 +41,21 @@
         loading = false
         return
       }
-      const [createdResult, assignedResult, userProjectResult] = await Promise.all([
-        client.findAll(tracker.class.Issue, { createdBy: userId as PersonId }),
-        client.findAll(tracker.class.Issue, { assignee: userId as any }),
-        client.findAll(task.class.Project, { members: userId as AccountUuid })
+      const person = await client.findOne(contact.class.Person, { personUuid: userId as PersonUuid })
+      const employee = await client.findOne(contact.mixin.Employee, { personUuid: userId as AccountUuid })
+      const accountUuid: AccountUuid = (employee?.personUuid ?? userId) as AccountUuid
+      const personRef = person?._id
+
+      const [assignedResult, userProjectResult] = await Promise.all([
+        personRef != null
+          ? client.findAll(tracker.class.Issue, { assignee: personRef })
+          : Promise.resolve([]),
+        client.findAll(task.class.Project, { members: accountUuid })
       ])
-      const createdIssues = Array.isArray(createdResult) ? createdResult : []
       const assignedIssues = Array.isArray(assignedResult) ? assignedResult : []
       const userProjects = Array.isArray(userProjectResult) ? userProjectResult : []
 
       stats = [
-        { label: "Issues Created", count: createdIssues.length },
         { label: "Issues Assigned", count: assignedIssues.length },
         { label: "Projects", count: userProjects.length }
       ]
