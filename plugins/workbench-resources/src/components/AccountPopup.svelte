@@ -170,9 +170,9 @@
         action: async () => {
           closePopup()
           const loc = getCurrentResolvedLocation()
-          loc.path[0] = 'user'
-          loc.path[1] = myUuid
-          loc.path.length = 2
+          loc.path[2] = 'user'
+          loc.path[3] = myUuid
+          loc.path.length = 4
           navigate(loc)
         }
       })

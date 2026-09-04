@@ -42,7 +42,9 @@
 
   let profile: PersonWithProfile | null = null
   const loc = getPlatformLocation()
-  const userId = loc.path[1] as PersonUuid
+  // Support both top-level (/user/<uuid>) and workspace-scoped (/workbench/<ws>/user/<uuid>) routes
+  const isWorkspaceContext = loc.path[0] !== 'user'
+  const userId = isWorkspaceContext ? (loc.path[3] as PersonUuid) : (loc.path[1] as PersonUuid)
   const accountClient = getAccountClient()
   let myAccount: AccountUuid | null = null
   let clientAvailable: boolean = false
