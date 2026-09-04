@@ -162,6 +162,21 @@
         }
       })
     }
+    if (hasAccountRole(account, AccountRole.User) && person?.personUuid) {
+      const myUuid = person.personUuid
+      actions.push({
+        icon: contact.icon.User,
+        label: workbench.string.ViewMyProfile,
+        action: async () => {
+          closePopup()
+          const loc = getCurrentResolvedLocation()
+          loc.path[0] = 'user'
+          loc.path[1] = myUuid
+          loc.path.length = 2
+          navigate(loc)
+        }
+      })
+    }
     actions.push(...getMenu(items, ['main']))
     if (hasAccountRole(account, AccountRole.User) && !isDisabled('invites') && canGenerateInviteLink) {
       actions.push({
