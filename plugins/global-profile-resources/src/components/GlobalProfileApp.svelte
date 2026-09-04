@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
+  import { getClient } from '@hcengineering/presentation'
 
   import {
     Button,
@@ -36,12 +37,15 @@
 
   import { getAvatarText, getDisplayName, getLocation, getAccountClient, getAvatarColorForId } from '../utils'
   import EditProfilePopup from './EditGlobalProfilePopup.svelte'
+  import UserProjects from "./UserProjects.svelte"
+  import UserStats from "./UserStats.svelte"
 
   let profile: PersonWithProfile | null = null
   const loc = getPlatformLocation()
   const userId = loc.path[1] as PersonUuid
   const accountClient = getAccountClient()
   let myAccount: AccountUuid | null = null
+  let clientAvailable: boolean = false
   let loading: boolean = false
   $: isMyProfile = myAccount != null && userId === myAccount
 
@@ -69,6 +73,13 @@
       }
 
       profile = await accountClient.getUserProfile(userId)
+
+      try {
+        const client = getClient()
+        clientAvailable = client != null
+      } catch {
+        clientAvailable = false
+      }
     } catch (e) {
       console.error(e)
     } finally {
@@ -173,6 +184,11 @@
           </div>
         {/if}
       </div>
+      {#if clientAvailable}
+        <UserProjects {userId} />
+        <UserStats {userId} />
+      {/if}
+
       <div class="avatarCtr">
         <div class="avatar" style:background-color={avatarColor.icon}>
           <div class="avatarText" style:color={avatarColor.iconText} data-name={avatarName.toLocaleUpperCase()} />

@@ -54,6 +54,10 @@ export default plugin(globalProfileId, {
     PrivateProfileDescription: '' as IntlString,
     AddBioPlaceholder: '' as IntlString,
     AddLocationPlaceholder: '' as IntlString,
-    ProfileNotAvailable: '' as IntlString
+    ProfileNotAvailable: '' as IntlString,
+    Projects: "" as IntlString,
+    NoProjects: "" as IntlString,
+    Stats: "" as IntlString,
+    NoStats: "" as IntlString
   }
 })

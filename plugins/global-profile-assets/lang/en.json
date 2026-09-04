@@ -24,6 +24,10 @@
     "PrivateProfileDescription": "Your profile is only visible to you",
     "AddBioPlaceholder": "Add a bio to tell others about yourself...",
     "AddLocationPlaceholder": "Add your location...",
-    "ProfileNotAvailable": "Profile not available"
+    "ProfileNotAvailable": "Profile not available",
+    "Projects": "Projects",
+    "NoProjects": "No projects found",
+    "Stats": "Stats",
+    "NoStats": "No stats available"
   }
 }
