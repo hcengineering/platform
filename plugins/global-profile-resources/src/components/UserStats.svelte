@@ -14,8 +14,12 @@
 <script lang="ts">
   import { onMount } from "svelte"
   import { getClient } from "@hcengineering/presentation"
+  import { type Project } from "@hcengineering/task"
+  import task from "@hcengineering/task"
   import tracker from "@hcengineering/tracker"
+  import contact from "@hcengineering/contact"
   import { Loading, Label } from "@hcengineering/ui"
+  import type { AccountUuid, PersonUuid } from "@hcengineering/core"
   import globalProfile from "@hcengineering/global-profile"
 
   export let userId: string
@@ -37,16 +41,23 @@
         loading = false
         return
       }
-      const [allIssues, allProjects] = await Promise.all([
-        client.findAll(tracker.class.Issue, {}),
-        client.findAll(tracker.class.Project, {})
+      const person = await client.findOne(contact.class.Person, { personUuid: userId as PersonUuid })
+      const employee = await client.findOne(contact.mixin.Employee, { personUuid: userId as AccountUuid })
+      const accountUuid: AccountUuid = (employee?.personUuid ?? userId) as AccountUuid
+      const personRef = person?._id
+
+      const [assignedResult, userProjectResult] = await Promise.all([
+        personRef != null
+          ? client.findAll(tracker.class.Issue, { assignee: personRef })
+          : Promise.resolve([]),
+        client.findAll(task.class.Project, { members: accountUuid })
       ])
-      const totalIssues = Array.isArray(allIssues) ? allIssues.length : 0
-      const totalProjects = Array.isArray(allProjects) ? allProjects.length : 0
+      const assignedIssues = Array.isArray(assignedResult) ? assignedResult : []
+      const userProjects = Array.isArray(userProjectResult) ? userProjectResult : []
 
       stats = [
-        { label: "Total Issues", count: totalIssues },
-        { label: "Projects", count: totalProjects }
+        { label: "Issues Assigned", count: assignedIssues.length },
+        { label: "Projects", count: userProjects.length }
       ]
     } catch (e) {
       error = String(e)
