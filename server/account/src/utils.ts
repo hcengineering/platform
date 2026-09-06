@@ -43,7 +43,13 @@ import otpGenerator from 'otp-generator'
 import { authenticator } from 'otplib'
 
 import { Analytics } from '@hcengineering/analytics'
-import { decodeTokenVerbose, generateToken, type PermissionsGrant, TokenError } from '@hcengineering/server-token'
+import {
+  decodeToken,
+  decodeTokenVerbose,
+  generateToken,
+  type PermissionsGrant,
+  TokenError
+} from '@hcengineering/server-token'
 import { MongoAccountDB } from './collections/mongo'
 import { PostgresAccountDB } from './collections/postgres/postgres'
 import { accountPlugin } from './plugin'
@@ -183,6 +189,26 @@ export function wrap (
     token?: string,
     meta?: Meta
   ): Promise<any> {
+    // The account is the source of truth for API token validity. Reject revoked
+    // or expired API tokens up front so every method (and any service that
+    // delegates token verification here) sees a consistent answer.
+    if (token != null && token !== '') {
+      const decoded = (() => {
+        try {
+          return decodeToken(token)
+        } catch {
+          return undefined
+        }
+      })()
+      const apiTokenId = decoded?.extra?.apiTokenId
+      if (apiTokenId !== undefined) {
+        const apiToken = await db.apiToken.findOne({ id: apiTokenId })
+        if (apiToken == null || apiToken.revoked || apiToken.expiresOn <= Date.now()) {
+          return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
+        }
+      }
+    }
+
     return await accountMethod(ctx, db, branding, token, { ...request.params }, meta)
       .then((result) => ({ id: request.id, result }))
       .catch((err: Error) => {

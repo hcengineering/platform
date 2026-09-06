@@ -33,10 +33,13 @@
   import MilestoneEditor from '../../milestones/MilestoneEditor.svelte'
   import AssigneeEditor from '../AssigneeEditor.svelte'
   import DueDateEditor from '../DueDateEditor.svelte'
+  import DeadlineEditor from '../DeadlineEditor.svelte'
   import PriorityEditor from '../PriorityEditor.svelte'
   import RelationEditor from '../RelationEditor.svelte'
+  import IssueDependenciesPanel from '../IssueDependenciesPanel.svelte'
   import StartDateEditor from '../StartDateEditor.svelte'
   import StatusEditor from '../StatusEditor.svelte'
+  import SchedulingModeEditor from '../SchedulingModeEditor.svelte'
   import notification from '@hcengineering/notification'
 
   export let issue: Issue
@@ -66,7 +69,9 @@
     'milestone',
     'relations',
     'blockedBy',
-    'identifier'
+    'identifier',
+    // Rendered via dedicated SchedulingModeEditor below.
+    'schedulingMode'
   ]
 
   let keys: KeyedAttribute[] = []
@@ -160,6 +165,8 @@
     <RelationEditor value={issue} type="relations" {readonly} disabled={$restrictionStore.disableNavigation} />
   {/if}
 
+  <IssueDependenciesPanel {issue} {readonly} />
+
   <span class="labelOnPanel">
     <Label label={tracker.string.Priority} />
   </span>
@@ -215,6 +222,16 @@
     <Label label={tracker.string.DueDate} />
   </span>
   <DueDateEditor value={issue} width={'100%'} editable={!readonly} />
+
+  <span class="labelOnPanel">
+    <Label label={tracker.string.Deadline} />
+  </span>
+  <DeadlineEditor value={issue} width={'100%'} editable={!readonly} />
+
+  <span class="labelOnPanel">
+    <Label label={tracker.string.SchedulingMode} />
+  </span>
+  <SchedulingModeEditor value={issue} width={'100%'} editable={!readonly} />
 
   {#if keys.length > 0}
     <div class="divider" />

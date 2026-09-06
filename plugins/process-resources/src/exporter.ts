@@ -276,7 +276,7 @@ export function exportProcess (proc: Process, withSlots: boolean = true): Export
     if (docIndex !== -1) docs[docIndex] = restProc
   }
 
-  return { docs: normalizeIds(docs), required }
+  return { docs: withSlots ? normalizeIds(docs) : docs, required }
 }
 
 // ─── Import API ──────────────────────────────────────────────────────────────

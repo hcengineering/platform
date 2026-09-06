@@ -107,6 +107,7 @@
     max-width: 40rem;
     background: var(--theme-popup-color);
     border-radius: 0.5rem;
+    -webkit-user-select: none;
     user-select: none;
     box-shadow: var(--theme-popup-shadow);
 

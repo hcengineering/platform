@@ -19,6 +19,8 @@ import {
   Class,
   Doc,
   DocumentQuery,
+  escapeRegExp,
+  fullTextSearchFields,
   MeasureContext,
   Ref,
   SearchOptions,
@@ -314,17 +316,80 @@ class ElasticAdapter implements FullTextAdapter {
     from: number | undefined
   ): Promise<IndexedDoc[]> {
     if (query.$search === undefined) return []
+    const raw = String(query.$search)
+    // Route field-targeted queries (e.g. `searchTitle:value`, `identifier:HULY-`,
+    // `comments.message:foo`) through `query_string` so ES can parse the
+    // field-targeted clauses and apply per-field boosts. Restrict the
+    // detector to the set of fields we actually index — typing a bare colon
+    // such as `POC: design review` or a URL must NOT silently route to
+    // `query_string` (which would throw a parsing exception and surface as
+    // zero hits). Anything else falls back to `simple_query_string` for full
+    // backwards compatibility.
+    // The recognised field set is the shared `fullTextSearchFields` constant
+    // from @hcengineering/core — the same list the client encoder derives its
+    // ES_NATIVE_FIELDS from, so the two can never drift. The client only emits
+    // a `field:value` clause for a field it believes the server recognises; a
+    // drift would let a client-routed clause hit a field the adapter does not
+    // treat as query_string and silently fail to parse. The per-field boost
+    // weights below (`searchTitle^3`, …) are a query-syntax detail of this
+    // adapter and intentionally stay local, not part of the shared list.
+    //
+    // SECURITY: `query_string` lets a raw `field:value` clause target
+    // ANY indexed field (e.g. `space:<id>`, `modifiedBy:<id>`, `attachedTo:<id>`),
+    // not just the `fields` whitelist below (that list only picks the DEFAULT
+    // fields for bare terms). This is intentionally NOT gated here because the
+    // hits this method returns are never authoritative results — they are only a
+    // candidate id-set. The two enclosing guards make field-targeting safe:
+    //   1. `workspaceId` is a hard `bool.must` term (see the request below), so
+    //      no clause can reach another workspace's documents.
+    //   2. Within the workspace, every consumer re-filters by space ACL. The
+    //      only caller is pods/fulltext `/api/v1/search` → FullTextMiddleware,
+    //      which sits BELOW SpaceSecurityMiddleware in the pipeline. That
+    //      middleware runs `provideFindAll({ _id: { $in: <these ids> }, ...q })`
+    //      where `q` still carries the space constraint SpaceSecurityMiddleware
+    //      injected upstream (or, in its >85%-allowed fast path, post-filters
+    //      the result via `clientFilterSpaces`). A forbidden-space doc surfaced
+    //      by a crafted `space:` clause is therefore dropped at the DB findAll /
+    //      result filter and never reaches the client — no content or existence
+    //      oracle. Checked against the server-pipeline middleware order.
+    //
+    // Escape EVERY regex metacharacter in each field name, not just `.`. The
+    // current fields contain only `.`, so behaviour is unchanged today, but a
+    // future field name carrying another metacharacter would otherwise silently
+    // corrupt the alternation.
+    const KNOWN_FIELD_RE = new RegExp(
+      `(^|\\s)(${fullTextSearchFields.map((f) => escapeRegExp(f)).join('|')})\\s*:`,
+      'i'
+    )
+    const usesQueryString = KNOWN_FIELD_RE.test(raw)
+    const queryBlock: any = usesQueryString
+      ? {
+          query_string: {
+            query: raw,
+            fields: [
+              'searchTitle^3',
+              'searchShortTitle^2',
+              'identifier^2',
+              'description.plain',
+              'comments.message^0.7',
+              'fulltextSummary'
+            ],
+            default_operator: 'AND',
+            allow_leading_wildcard: false
+          }
+        }
+      : {
+          simple_query_string: {
+            query: raw,
+            analyze_wildcard: true,
+            flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
+            default_operator: 'and'
+          }
+        }
     const request: any = {
       bool: {
         must: [
-          {
-            simple_query_string: {
-              query: query.$search,
-              analyze_wildcard: true,
-              flags: 'OR|PREFIX|PHRASE|FUZZY|NOT|ESCAPE',
-              default_operator: 'and'
-            }
-          },
+          queryBlock,
           {
             term: {
               workspaceId

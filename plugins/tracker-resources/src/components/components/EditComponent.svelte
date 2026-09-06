@@ -2,8 +2,9 @@
   import { AttachmentStyleBoxEditor } from '@hcengineering/attachment-resources'
   import { getClient, getDocRules } from '@hcengineering/presentation'
   import { Component } from '@hcengineering/tracker'
-  import { EditBox, Label } from '@hcengineering/ui'
+  import { EditBox, getPlatformColor, getPlatformColors, Label, showPopup, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher, onMount } from 'svelte'
+  import { ColorsPopup } from '@hcengineering/view-resources'
   import tracker from '../../plugin'
   import QueryIssuesList from '../issues/edit/QueryIssuesList.svelte'
 
@@ -30,23 +31,48 @@
 
   $: descriptionKey = client.getHierarchy().getAttribute(tracker.class.Component, 'description')
   let descriptionBox: AttachmentStyleBoxEditor
+
+  function hashFromId (id: string): number {
+    let h = 0
+    for (let i = 0; i < id.length; i++) h = ((h << 5) - h + id.charCodeAt(i)) | 0
+    return Math.abs(h)
+  }
+
+  $: effectiveColor = object.color ?? hashFromId(object._id) % getPlatformColors($themeStore.dark).length
+  $: swatchCss = getPlatformColor(effectiveColor, $themeStore.dark)
+  $: selectedName = getPlatformColors($themeStore.dark)[effectiveColor]?.name
+
+  function pickColor (ev: MouseEvent): void {
+    showPopup(
+      ColorsPopup,
+      { colors: getPlatformColors($themeStore.dark), selected: selectedName, columns: 8 },
+      ev.target as HTMLElement,
+      async (index: number | undefined) => {
+        if (typeof index !== 'number') return
+        await client.update(object, { color: index })
+      }
+    )
+  }
 </script>
 
-<EditBox
-  bind:value={rawLabel}
-  placeholder={tracker.string.Component}
-  disabled={rulesQuery?.disableEdit ?? false}
-  kind="large-style"
-  on:blur={() => {
-    const trimmedLabel = rawLabel.trim()
+<div class="flex-row-center gap-1-5">
+  <EditBox
+    bind:value={rawLabel}
+    placeholder={tracker.string.Component}
+    disabled={rulesQuery?.disableEdit ?? false}
+    kind="large-style"
+    on:blur={() => {
+      const trimmedLabel = rawLabel.trim()
 
-    if (trimmedLabel.length === 0) {
-      rawLabel = oldLabel
-    } else if (trimmedLabel !== object.label) {
-      change('label', trimmedLabel)
-    }
-  }}
-/>
+      if (trimmedLabel.length === 0) {
+        rawLabel = oldLabel
+      } else if (trimmedLabel !== object.label) {
+        change('label', trimmedLabel)
+      }
+    }}
+  />
+  <button type="button" class="color-swatch" style:background={swatchCss} on:click={pickColor} aria-label="Color" />
+</div>
 
 <div class="w-full mt-6">
   <AttachmentStyleBoxEditor
@@ -74,3 +100,13 @@
     </svelte:fragment>
   </QueryIssuesList>
 </div>
+
+<style lang="scss">
+  .color-swatch {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--theme-button-border);
+    cursor: pointer;
+  }
+</style>

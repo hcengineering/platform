@@ -124,6 +124,7 @@
         "ExecutionInitiator": "실행 시작자",
         "ExecutionStarted": "실행 시작됨",
         "Filter": "필터",
+        "AllMatchValue": "모든 일치 값",
         "FirstMatchValue": "첫 일치 값",
         "ConfigLabel": "프로세스 구성",
         "ConfigDescription": "워크플로와 비즈니스 프로세스를 자동화할 프로세스를 정의합니다.",

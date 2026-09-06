@@ -229,6 +229,10 @@ export interface IModeSelector<Mode extends string = string> {
   mode: Mode
   config: Array<[Mode, IntlString, object]>
   onChange: (mode: Mode) => void
+  /** When set, all mode buttons render in a disabled style and ignore clicks. */
+  disabled?: boolean
+  /** Tooltip shown on hover when `disabled` is true. */
+  disabledReason?: IntlString
 }
 
 /**

@@ -98,6 +98,7 @@
     background: var(--theme-popup-color);
     border-radius: 0.5rem;
     user-select: none;
+    -webkit-user-select: none;
     box-shadow: var(--theme-popup-shadow);
 
     .message {

@@ -50,8 +50,8 @@
       ? getEndDate(currentDate.getFullYear(), 11)
       : getEndDate(currentDate.getFullYear(), currentDate.getMonth())
 
-  $: departments = [department, ...getDescendants(department, descendants, new Set())]
-  $: staffIdsForOpenedDepartments = staff.filter((p) => departments.includes(p.department)).map((p) => p._id)
+  $: departmentMembers = new Set<Ref<Staff>>((departmentById.get(department)?.members ?? []) as Ref<Staff>[])
+  $: staffIdsForOpenedDepartments = staff.filter((p) => departmentMembers.has(p._id)).map((p) => p._id)
 
   const lq = createQuery()
   const typeQuery = createQuery()
@@ -81,23 +81,7 @@
 
   let employeeRequests = new Map<Ref<Staff>, Request[]>()
 
-  function getDescendants (
-    department: Ref<Department>,
-    descendants: Map<Ref<Department>, Department[]>,
-    visited: Set<string>
-  ): Ref<Department>[] {
-    const res = (descendants.get(department) ?? []).map((p) => p._id)
-    for (const department of res) {
-      const has = visited.has(department)
-      if (!has) {
-        visited.add(department)
-        res.push(...getDescendants(department, descendants, visited))
-      }
-    }
-    return res
-  }
-
-  let departmentStaff: Staff[]
+  let departmentStaff: Staff[] = []
   let editableList: Ref<Employee>[] = []
 
   function update (staffIdsForOpenedDepartments: Ref<Staff>[], startDate: Date, endDate: Date) {
@@ -136,14 +120,11 @@
   function pushChilds (
     department: Ref<Department>,
     departmentStaff: Staff[],
-    descendants: Map<Ref<Department>, Department[]>
+    departmentById: Map<Ref<Department>, Department>
   ): void {
-    const staff = departmentStaff.filter((p) => p.department === department)
+    const members = new Set<Ref<Staff>>((departmentById.get(department)?.members ?? []) as Ref<Staff>[])
+    const staff = departmentStaff.filter((p) => members.has(p._id))
     editableList.push(...staff.filter((p) => !editableList.includes(p._id)).map((p) => p._id))
-    const desc = descendants.get(department) ?? []
-    for (const des of desc) {
-      pushChilds(des._id, departmentStaff, descendants)
-    }
   }
 
   function isEditable (department: Department): boolean {
@@ -155,17 +136,17 @@
     department: Ref<Department>,
     departmentStaff: Staff[],
     descendants: Map<Ref<Department>, Department[]>
-  ) {
+  ): void {
     const dep = departmentById.get(department)
     if (dep === undefined) return
     if (isEditable(dep)) {
-      pushChilds(dep._id, departmentStaff, descendants)
+      pushChilds(dep._id, departmentStaff, departmentById)
     } else {
       const descendantDepartments = descendants.get(dep._id)
       if (descendantDepartments !== undefined) {
         for (const department of descendantDepartments) {
           if (isEditable(department)) {
-            pushChilds(department._id, departmentStaff, descendants)
+            pushChilds(department._id, departmentStaff, departmentById)
           } else {
             checkDepartmentEditable(departmentById, department._id, departmentStaff, descendants)
           }
@@ -178,7 +159,7 @@
     departmentById: Map<Ref<Department>, Department>,
     departmentStaff: Staff[],
     descendants: Map<Ref<Department>, Department[]>
-  ) {
+  ): void {
     editableList = [currentEmployee]
     checkDepartmentEditable(departmentById, hr.ids.Head, departmentStaff, descendants)
     editableList = editableList
@@ -186,15 +167,16 @@
 
   function updateStaff (
     staff: Staff[],
-    departments: Ref<Department>[],
+    staffIdsForOpenedDepartments: Ref<Staff>[],
     descendants: Map<Ref<Department>, Department[]>,
     departmentById: Map<Ref<Department>, Department>
-  ) {
-    departmentStaff = staff.filter((p) => departments.includes(p.department))
+  ): void {
+    const departmentMembers = new Set(staffIdsForOpenedDepartments)
+    departmentStaff = staff.filter((p) => departmentMembers.has(p._id))
     updateEditableList(departmentById, departmentStaff, descendants)
   }
 
-  $: updateStaff(staff, departments, descendants, departmentById)
+  $: updateStaff(staff, staffIdsForOpenedDepartments, descendants, departmentById)
 
   const reportQuery = createQuery()
 
@@ -287,7 +269,7 @@
     }
     return map
   }
-  let staffDepartmentMap = new Map()
+  let staffDepartmentMap = new Map<Ref<Staff>, Department[]>()
   $: void getDepartmentsForEmployee(departmentStaff).then((res) => {
     staffDepartmentMap = res
   })
@@ -295,18 +277,21 @@
   function getDepartmentHolidays (department: Ref<Department>): Date[] {
     const parents = ancestors.get(department) ?? []
 
-    const result = []
+    const result = new Map<string, Date>()
+    const addHoliday = (holiday: Date): void => {
+      result.set(`${holiday.getFullYear()}-${holiday.getMonth()}-${holiday.getDate()}`, holiday)
+    }
 
     // get own holidays
     const holidays = holidaysMap.get(department) ?? []
-    result.push(...holidays)
+    holidays.forEach(addHoliday)
 
     // get ancestor holidays
     for (const parent of parents) {
       const parentHolidays = holidaysMap.get(parent) ?? []
-      result.push(...parentHolidays)
+      parentHolidays.forEach(addHoliday)
     }
-    return result
+    return [...result.values()]
   }
 </script>
 

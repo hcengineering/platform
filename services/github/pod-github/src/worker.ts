@@ -643,6 +643,7 @@ export class GithubWorker implements IntegrationManager {
       ctx.info('get octokit', { account, recordId: record._id, workspace: this.workspace.uuid })
       if (!(await this.platform.checkRefreshToken(ctx, record))) {
         record.octokit = undefined
+        return undefined
       }
       if (record.octokit !== undefined) {
         return record.octokit

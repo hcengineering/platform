@@ -59,7 +59,7 @@
     {kind}
     size={'small'}
     {pressed}
-    tooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
+    tooltip={{ label: view.string.ConfigureColumns, direction: 'bottom' }}
     dataId={'btn-viewSetting'}
     bind:element={btn}
     on:click={clickHandler}

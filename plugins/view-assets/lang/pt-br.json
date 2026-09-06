@@ -46,6 +46,7 @@
     "Editor": "Editor",
     "MarkdownFormatting": "Formatação",
     "CustomizeView": "Personalizar visualização",
+    "ConfigureColumns": "Configurar colunas",
     "Filter": "Filtrar",
     "ClearFilters": "Limpar filtros",
     "FilterLessThan": "Menos que",
@@ -153,6 +154,9 @@
     "RoleLabel": "Cargo: {role}",
     "ForbidAttributeChanges": "Proibir alterações: ",
     "AllowAttributeChanges": "Permitir alterações: ",
-    "RelationshipTable": "Tabela de relacionamentos"
+    "RelationshipTable": "Tabela de relacionamentos",
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "Adicionar filtro",
+    "HiddenFilters": "Filtros ocultos"
   }
 }

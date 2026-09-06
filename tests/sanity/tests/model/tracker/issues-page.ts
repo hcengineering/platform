@@ -148,7 +148,11 @@ export class IssuesPage extends CommonTrackerPage {
   issueName = (name: string): Locator => this.page.locator(`text="${name}"`)
   issuesButton = (): Locator => this.page.locator('.antiPanel-navigator').locator('text="Issues"')
   viewButton = (): Locator => this.page.locator('button[data-id="btn-viewOptions"]')
-  orderingButton = (): Locator => this.page.locator('.ordering button')
+  // The View-Options popup now renders more than one `.ordering` button (the
+  // Order-by dropdown plus the new searchScope selector). Target the first,
+  // which is the Order-by control, to keep the locator unambiguous — same fix
+  // as tracker.utils.ts.
+  orderingButton = (): Locator => this.page.locator('.ordering button').first()
   modifiedDateMenuItem = (): Locator => this.page.locator('button.menu-item', { hasText: 'Modified date' })
   estimationContainer = (): Locator => this.page.locator('.estimation-container').first()
   addTimeReportButton = (): Locator => this.page.locator('button:has-text("Add time report")')
@@ -227,6 +231,9 @@ export class IssuesPage extends CommonTrackerPage {
 
   async clickOnSubIssues (): Promise<void> {
     await this.subIssues().click()
+    // Add-sub-issue now routes through the HierarchyAddPopup chooser;
+    // pick "Create new sub-issue" to open the CreateIssue form.
+    await this.page.locator('.hier-popup button', { hasText: 'Create new sub-issue' }).click()
   }
 
   async clickOnNewIssue (): Promise<void> {
@@ -381,10 +388,14 @@ export class IssuesPage extends CommonTrackerPage {
     for (let i = 0; i < tabs.length; i++) {
       await tabs[i].click()
       await this.page.waitForTimeout(3000)
+      // Scope to the actual result link, not the whole panel: on a zero-hit
+      // tab the SearchEmptyState card legitimately echoes the search term
+      // ("No issues found for <name>"), which a panel-wide text assertion would
+      // wrongly match.
       if (presence === checks[i]) {
-        await expect(this.issueListPanel()).toContainText(issueName)
+        await expect(this.issueAnchorByName(issueName)).toBeVisible()
       } else {
-        await expect(this.issueListPanel()).not.toContainText(issueName)
+        await expect(this.issueAnchorByName(issueName)).toHaveCount(0)
       }
     }
   }

@@ -30,9 +30,11 @@ import {
   Status,
   Timestamp,
   Type,
-  type Permission
+  type Permission,
+  type AccountUuid
 } from '@hcengineering/core'
 import { Asset, IntlString, Plugin, Resource, plugin } from '@hcengineering/platform'
+import { CommonInboxNotification } from '@hcengineering/notification'
 import { Preference } from '@hcengineering/preference'
 import { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
 import { ToDo } from '@hcengineering/time'
@@ -57,6 +59,57 @@ export interface IssueStatus extends Status {}
 
 /**
  * @public
+ *
+ * Working-days calendar configuration for a Project.
+ *
+ * When set, the Gantt scheduler and critical-path treat lag and slack in
+ * *working days* rather than calendar days; non-working days are rendered
+ * with a slight background tint in the Gantt canvas.
+ *
+ * Absence of this field (= `undefined`) is the legacy mode and means
+ * "every day is a working day" (calendar-days semantics). There is no
+ * silent migration — the user must opt in by setting this property
+ * explicitly.
+ */
+export interface WorkingDaysConfig {
+  /**
+   * Bitmask of active weekdays.
+   *
+   *   bit 0 = Mon, bit 1 = Tue, …, bit 5 = Sat, bit 6 = Sun.
+   *
+   *   Mon–Fri   = 0b0011111 = 31
+   *   Mon–Sat   = 0b0111111 = 63
+   *   All days  = 0b1111111 = 127
+   *
+   * Holiday DATES are intentionally NOT stored in this config: they come
+   * from the HR calendar (`hr.class.PublicHoliday`) of the department
+   * selected via `holidayDepartment` (plus all ancestor departments) and
+   * are resolved by the Gantt adapter in tracker-resources — see review
+   * #10992 (avoid duplicating the HR holiday concept per project).
+   */
+  weekdayMask: number
+
+  /**
+   * Optional HR department whose public-holiday calendar applies to this
+   * project. Semantics mirror hr-resources' schedule view: the department's
+   * own holidays PLUS those of all ancestor departments count as
+   * non-working.
+   *
+   * `undefined` means "company-wide": only the root department's calendar
+   * (`hr.ids.Head` in the hr plugin) is used. A stale ref to a deleted
+   * department falls back to the root as well — never to a union across
+   * departments.
+   *
+   * Typed as an opaque `Ref<Doc>` on purpose: the tracker declaration
+   * package must not depend on the optional hr module (model-optional
+   * runtime integration). The precise `Ref<Department>` typing lives in
+   * tracker-resources, which already depends on the hr declaration package.
+   */
+  holidayDepartment?: Ref<Doc>
+}
+
+/**
+ * @public
  */
 export interface Project extends TaskProject, IconProps {
   identifier: string // Project identifier
@@ -64,6 +117,11 @@ export interface Project extends TaskProject, IconProps {
   defaultIssueStatus?: Ref<IssueStatus>
   defaultAssignee?: Ref<Employee>
   defaultTimeReportDay: TimeReportDayType
+  /**
+   * Optional Gantt working-days calendar. See {@link WorkingDaysConfig}.
+   * `undefined` means "every day is a working day" (legacy behaviour).
+   */
+  workingDaysConfig?: WorkingDaysConfig
 }
 
 /**
@@ -189,6 +247,7 @@ export interface Milestone extends Doc {
 
   startDate: Timestamp | null // null = open-ended begin marker
   targetDate: Timestamp
+  color?: number
 }
 
 /**
@@ -210,6 +269,11 @@ export interface Issue extends Task {
   parents: IssueParentInfo[]
 
   startDate: Timestamp | null // for Gantt scheduling; null = unscheduled
+
+  // Soft deadline, independent of dueDate. The Gantt renders
+  // a flag marker at this date and flags the issue as overdue when
+  // dueDate > deadline. Undefined for issues that haven't opted in.
+  deadline?: Timestamp | null
 
   space: Ref<Project>
 
@@ -236,6 +300,113 @@ export interface Issue extends Task {
   }
 
   todos?: CollectionSize<ToDo>
+
+  /**
+   * Auto-Scheduling-Toggle.
+   *
+   * Controls whether the cascade scheduler in `gantt/lib/scheduler.ts`
+   * may shift this issue when a predecessor or successor is moved by
+   * the user. `'auto'` (or absent === default) means the issue is part
+   * of the cascade; `'manual'` means the user has pinned the dates and
+   * the cascade must never silently overwrite them. The user pin is
+   * reset only by an explicit toggle back to `'auto'`.
+   *
+   * Field is optional so existing issues (which were created before the
+   * toggle existed) keep their previous cascade behaviour 1:1 without
+   * any migration. The scheduler check is `=== 'manual'`, so `undefined`
+   * cleanly defaults to auto.
+   */
+  schedulingMode?: 'auto' | 'manual'
+}
+
+/**
+ * Notification on Dependency-Shift.
+ * One entry per shifted issue in a cascade bundle.
+ * @public
+ */
+export interface ShiftedIssuePayload {
+  issueId: Ref<Issue>
+  identifier: string
+  title: string
+  // No date/delta fields on purpose. The pre-shift dates are gone server-side
+  // by the time the cascade commit is observed, so any client-reported delta or
+  // "old" date would be unverifiable — it must never be shown as fact. The
+  // notification therefore states only *which* issues moved; the authentic new
+  // dates live on the issues themselves (server-derived) and are shown there.
+}
+
+/**
+ * Notification on Dependency-Shift.
+ * One bundle per recipient per cascade-commit.
+ * @public
+ */
+export interface DependencyShiftedNotification extends CommonInboxNotification {
+  triggerIssueId: Ref<Issue>
+  triggerIssueIdentifier: string
+  triggerIssueTitle: string
+  triggerUserId: AccountUuid
+  shiftedIssues: ShiftedIssuePayload[]
+  cascadeToken: string
+}
+
+/**
+ * Notification on Dependency-Shift.
+ *
+ * Short-lived signal doc a Gantt client writes into the *project* space it is
+ * already allowed to edit after a cascade commit. A server-side trigger
+ * (`OnDependencyShiftRequest`) reacts to its creation, resolves collaborators
+ * server-side (privileged, ACL-safe) and fans out one
+ * `DependencyShiftedNotification` per recipient — then removes this request.
+ *
+ * The doc intentionally carries NO `triggerUserId`: the trigger derives the
+ * originating account from `tx.modifiedBy` (anti-spoofing) so a client cannot
+ * forge the notification author.
+ * @public
+ */
+export interface DependencyShiftRequest extends Doc {
+  triggerIssueId: Ref<Issue>
+  triggerIssueIdentifier: string
+  triggerIssueTitle: string
+  triggerIssueSpace: Ref<Project>
+  shiftedIssues: ShiftedIssuePayload[]
+  cascadeToken: string
+}
+
+/**
+ * Notification on Dependency-Shift.
+ *
+ * Pure aggregation: group `ShiftedIssuePayload`s by recipient given a per-issue
+ * collaborator lookup. The `triggerUserId` is filtered out of every bundle so
+ * the account that initiated the cascade is never pinged about its own action
+ * (self-suppress). Side-effect free and client-free, so both the Gantt client
+ * (payload building) and the server trigger (dispatch) share one source of
+ * truth with no divergence.
+ * @public
+ */
+export function groupShiftsByRecipient (
+  triggerUserId: AccountUuid | undefined,
+  entries: ShiftedIssuePayload[],
+  collaboratorsByIssue: Map<Ref<Issue>, AccountUuid[]>
+): Map<AccountUuid, ShiftedIssuePayload[]> {
+  const result = new Map<AccountUuid, ShiftedIssuePayload[]>()
+
+  for (const entry of entries) {
+    const collaborators = collaboratorsByIssue.get(entry.issueId) ?? []
+    const seenForThisEntry = new Set<AccountUuid>()
+    for (const acc of collaborators) {
+      if (triggerUserId !== undefined && acc === triggerUserId) continue
+      if (seenForThisEntry.has(acc)) continue
+      seenForThisEntry.add(acc)
+      const bucket = result.get(acc)
+      if (bucket === undefined) {
+        result.set(acc, [entry])
+      } else {
+        bucket.push(entry)
+      }
+    }
+  }
+
+  return result
 }
 
 /**
@@ -385,6 +556,7 @@ export interface Component extends Doc {
   space: Ref<Project>
   comments: number
   attachments?: number
+  color?: number
 }
 
 /**
@@ -409,7 +581,9 @@ const pluginState = plugin(trackerId, {
     TypeEstimation: '' as Ref<Class<Type<number>>>,
     TypeRemainingTime: '' as Ref<Class<Type<number>>>,
     RelatedIssueTarget: '' as Ref<Class<RelatedIssueTarget>>,
-    ProjectTargetPreference: '' as Ref<Class<ProjectTargetPreference>>
+    ProjectTargetPreference: '' as Ref<Class<ProjectTargetPreference>>,
+    DependencyShiftedNotification: '' as Ref<Class<DependencyShiftedNotification>>,
+    DependencyShiftRequest: '' as Ref<Class<DependencyShiftRequest>>
   },
   mixin: {
     ClassicProjectTypeData: '' as Ref<Mixin<Project>>,
@@ -437,6 +611,7 @@ const pluginState = plugin(trackerId, {
     RelatedIssuesSection: '' as AnyComponent,
     RelatedIssueSelector: '' as AnyComponent,
     RelatedIssueTemplates: '' as AnyComponent,
+    IssueRelationPresenter: '' as AnyComponent,
     EditIssue: '' as AnyComponent,
     CreateIssue: '' as AnyComponent,
     ProjectPresenter: '' as AnyComponent,
@@ -496,6 +671,7 @@ const pluginState = plugin(trackerId, {
 
     TimeReport: '' as Asset,
     Estimation: '' as Asset,
+    Gantt: '' as Asset,
 
     // Project icons
     Home: '' as Asset,
@@ -553,12 +729,87 @@ const pluginState = plugin(trackerId, {
     RelatedIssues: '' as IntlString,
     Issue: '' as IntlString,
     IssueStartDate: '' as IntlString,
+    SetStartDate: '' as IntlString,
+    GanttDragFailed: '' as IntlString,
+    GanttDragNoPermission: '' as IntlString,
+    GanttDragValidation: '' as IntlString,
+    GanttDragConflict: '' as IntlString,
+    GanttResizingTooltip: '' as IntlString,
+    Hierarchy: '' as IntlString,
+    LinkExistingSubIssue: '' as IntlString,
+    LinkExistingParentIssue: '' as IntlString,
+    CreateNewSubIssue: '' as IntlString,
+    CreateNewParentIssue: '' as IntlString,
+    AddParentIssue: '' as IntlString,
+    AddSubIssue: '' as IntlString,
+    AddDependency: '' as IntlString,
+    AddPredecessor: '' as IntlString,
+    AddSuccessor: '' as IntlString,
+    AddPredecessorHint: '' as IntlString,
+    AddSuccessorHint: '' as IntlString,
+    SetParentIssueLabel: '' as IntlString,
+    GanttDragToSchedule: '' as IntlString,
+    GanttDurationTooltip: '' as IntlString,
+    GanttConfirmMove: '' as IntlString,
+    GanttConfirmResize: '' as IntlString,
+    GanttConfirmMoveTitle: '' as IntlString,
+    GanttConfirmResizeTitle: '' as IntlString,
+    GanttConfirmMoveBody: '' as IntlString,
+    GanttConfirmResizeBody: '' as IntlString,
+    GanttConfirmApply: '' as IntlString,
+    GanttAriaResizeStart: '' as IntlString,
+    GanttAriaResizeEnd: '' as IntlString,
     GanttDependency: '' as IntlString,
     GanttLag: '' as IntlString,
+    WorkingDaysConfig: '' as IntlString,
+    WorkingDaysTitle: '' as IntlString,
+    WorkingDaysDescription: '' as IntlString,
+    WorkingDaysWeekday: '' as IntlString,
+    WorkingDaysHolidays: '' as IntlString,
+    WorkingDaysNotConfigured: '' as IntlString,
+    WorkingDaysEnable: '' as IntlString,
+    WorkingDaysDepartment: '' as IntlString,
+    WorkingDaysCompanyWide: '' as IntlString,
+    WorkingDaysAtLeastOneDay: '' as IntlString,
+    WorkingDayMon: '' as IntlString,
+    WorkingDayTue: '' as IntlString,
+    WorkingDayWed: '' as IntlString,
+    WorkingDayThu: '' as IntlString,
+    WorkingDayFri: '' as IntlString,
+    WorkingDaySat: '' as IntlString,
+    WorkingDaySun: '' as IntlString,
     NewProject: '' as IntlString,
     UnsetParentIssue: '' as IntlString,
     ForbidCreateProjectPermission: '' as IntlString,
-    ForbidCreateProjectPermissionDescription: '' as IntlString
+    ForbidCreateProjectPermissionDescription: '' as IntlString,
+    SchedulingMode: '' as IntlString,
+    SchedulingModeAuto: '' as IntlString,
+    SchedulingModeManual: '' as IntlString,
+    SchedulingModeHint: '' as IntlString,
+    SchedulingModeTooltipAuto: '' as IntlString,
+    SchedulingModeTooltipManual: '' as IntlString,
+    GanttBarManualPinTooltip: '' as IntlString,
+    // Visual polish
+    Deadline: '' as IntlString,
+    BarLabelNone: '' as IntlString,
+    BarLabelTitle: '' as IntlString,
+    BarLabelIdentifier: '' as IntlString,
+    BarLabelAssignee: '' as IntlString,
+    BarLabelPriority: '' as IntlString,
+    BarLabelStatus: '' as IntlString,
+    BarLabelEstimation: '' as IntlString,
+    BarLabelProgress: '' as IntlString,
+    GanttBarLabelLeft: '' as IntlString,
+    GanttBarLabelInside: '' as IntlString,
+    GanttBarLabelRight: '' as IntlString,
+    GanttQuickInfoOnClick: '' as IntlString,
+    QuickInfoOpenFullEditor: '' as IntlString,
+    // Notification on Dependency-Shift.
+    DependencyShifted: '' as IntlString,
+    DependencyShiftedHeader: '' as IntlString,
+    DependencyShiftedMessage: '' as IntlString,
+    DependencyShiftedSubject: '' as IntlString,
+    Color: '' as IntlString
   },
   extensions: {
     IssueListHeader: '' as ComponentExtensionId,

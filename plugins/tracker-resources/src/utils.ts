@@ -301,6 +301,72 @@ export async function canEditIssue (issue?: Issue | WithLookup<Issue>): Promise<
   return collaborator !== undefined
 }
 
+/**
+ * Batched form of {@link canEditIssue}.
+ *
+ * Resolves edit-permission for many issues at once. Semantically identical to
+ * calling {@link canEditIssue} on each issue, but for guests it collapses the
+ * per-issue Collaborator `findOne` into a SINGLE `findAll` keyed by
+ * `attachedTo: { $in }` — turning the old O(n) round-trips into O(1).
+ *
+ * Decision order per issue matches {@link canEditIssue} exactly:
+ *   1. non-guest account  → `true` (no query at all)
+ *   2. guest & creator     → `true`
+ *   3. guest & collaborator → `true`
+ *   4. otherwise            → `false`
+ */
+export async function canEditIssuesBatch (issues: Issue[]): Promise<Map<Ref<Issue>, boolean>> {
+  const result = new Map<Ref<Issue>, boolean>()
+
+  const account = getCurrentAccount()
+  const isGuest =
+    account.role === AccountRole.Guest ||
+    account.role === AccountRole.DocGuest ||
+    account.role === AccountRole.ReadOnlyGuest
+
+  if (!isGuest) {
+    for (const issue of issues) result.set(issue._id, true)
+    return result
+  }
+
+  const client = getClient()
+  const collaborators = await client.findAll(core.class.Collaborator, {
+    attachedTo: { $in: issues.map((i) => i._id) },
+    collaborator: account.uuid
+  })
+  const collaboratorOf = new Set<string>(collaborators.map((c) => String(c.attachedTo)))
+  const socialIds = Array.isArray(account.socialIds) ? account.socialIds : []
+
+  for (const issue of issues) {
+    const isCreator = issue.createdBy !== undefined && socialIds.includes(issue.createdBy)
+    result.set(issue._id, isCreator || collaboratorOf.has(String(issue._id)))
+  }
+  return result
+}
+
+/**
+ * Mirrors {@link canEditIssue} for Milestones (Gantt edit-parity).
+ *
+ * This is deliberately ONLY a guest-role gate: it returns `true` for any
+ * non-guest account. It does NOT re-check space membership or per-doc ACL —
+ * that is already enforced upstream by the space-security layer (a milestone
+ * a user cannot see is never delivered to the client, so it can never reach
+ * this check). The function exists purely to strip edit affordances from the
+ * three guest roles in the Gantt UI; the server remains the authority on the
+ * actual write.
+ */
+export async function canEditMilestone (milestone?: Milestone): Promise<boolean> {
+  if (milestone === undefined) return false
+
+  const account = getCurrentAccount()
+  const isGuest =
+    account.role === AccountRole.Guest ||
+    account.role === AccountRole.DocGuest ||
+    account.role === AccountRole.ReadOnlyGuest
+
+  return !isGuest
+}
+
 export function getTimeReportDate (type: TimeReportDayType): number {
   const date = new Date(Date.now())
 

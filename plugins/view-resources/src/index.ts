@@ -182,6 +182,7 @@ export { default as ViewletClassSettings } from './components/ViewletClassSettin
 export { default as ViewletSelector } from './components/ViewletSelector.svelte'
 export { default as ViewletsSettingButton } from './components/ViewletsSettingButton.svelte'
 export { default as FilterButton } from './components/filter/FilterButton.svelte'
+export { default as InlineFilterChips } from './components/filter/InlineFilterChips.svelte'
 export { default as FilterRemovedNotification } from './components/filter/FilterRemovedNotification.svelte'
 export { default as PersonIdFilter } from './components/filter/PersonIdFilter.svelte'
 export { default as PersonIdFilterValuePresenter } from './components/filter/PersonIdFilterValuePresenter.svelte'
@@ -194,6 +195,19 @@ export { default as StatusRefPresenter } from './components/status/StatusRefPres
 export { canArchiveSpace, canDeleteObject, canDeleteSpace, canEditSpace } from './visibilityTester'
 
 export * from './filter'
+export { makeFilterQuery } from './filter/query-builder'
+export {
+  resultIssueCountStore,
+  rawSearchTextStore,
+  searchHighlightEnabledStore,
+  claimResultCountOwner,
+  setResultCount,
+  releaseResultCountOwner,
+  resetResultCount
+} from './stores'
+export type { ResultCountOwner } from './stores'
+export { default as SearchEmptyState } from './components/SearchEmptyState.svelte'
+export { shouldShowEmptyState, shouldShowSearchEmptyState } from './searchEmptyState'
 export * from './icons'
 export * from './middleware'
 export * from './objectIterator'

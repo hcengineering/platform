@@ -98,6 +98,7 @@
     font-size: 0.75rem;
     color: var(--dark-color);
     box-shadow: inset 0 -1px 0 0 var(--divider-color);
+    -webkit-user-select: none;
     user-select: none;
     z-index: 5;
     padding: 0.5rem 1.5rem;
