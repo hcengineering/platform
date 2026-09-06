@@ -215,6 +215,7 @@
       font-weight: 500;
       font-size: 1rem;
       color: var(--theme-caption-color);
+      -webkit-user-select: none;
       user-select: none;
       border-bottom: 1px solid var(--theme-divider-color);
     }

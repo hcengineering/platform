@@ -124,6 +124,7 @@
     "ExecutionInitiator": "Initiateur d'exécution",
     "ExecutionStarted": "Exécution démarrée",
     "Filter": "Filtrer",
+    "AllMatchValue": "Toutes les valeurs correspondantes",
     "FirstMatchValue": "Première valeur correspondante",
     "ConfigLabel": "Configuration des processus",
     "ConfigDescription": "Définissez des processus pour automatiser les flux de travail et les processus métier.",

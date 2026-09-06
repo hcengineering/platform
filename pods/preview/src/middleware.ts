@@ -66,6 +66,40 @@ export const withAuthorization = (req: RequestWithAuth, res: Response, next: Nex
   }
 }
 
+/**
+ * Validates blob route params and ensures the caller's token grants access to
+ * the workspace taken from the URL. Must run after `withAuthorization`, which
+ * guarantees a token is present.
+ */
+export const withBlob = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
+  try {
+    const workspace = req.params.workspace
+    const name = req.params.name
+
+    if (workspace === undefined || workspace === '') {
+      throw new HttpError(400, 'Missing workspace')
+    }
+    if (name === undefined || name === '') {
+      throw new HttpError(400, 'Missing blob name')
+    }
+
+    const token = req.token
+    if (token == null) {
+      throw new HttpError(401, 'Unauthorized')
+    }
+
+    const hasWorkspaceAccess =
+      (token.workspace as string) === workspace || token.account === systemAccountUuid || token.extra?.admin === 'true'
+    if (!hasWorkspaceAccess) {
+      throw new HttpError(401, 'Unauthorized')
+    }
+
+    next()
+  } catch (err: any) {
+    next(err)
+  }
+}
+
 export interface ErrorHandlerOptions {
   ctx: MeasureContext
 }

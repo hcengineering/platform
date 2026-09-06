@@ -49,6 +49,7 @@
     "Editor": "Editor",
     "MarkdownFormatting": "Formátování",
     "CustomizeView": "Přizpůsobit zobrazení",
+    "ConfigureColumns": "Konfigurovat sloupce",
     "Filter": "Filtr",
     "ClearFilters": "Vymazat filtry",
     "FilterLessThan": "Méně než",
@@ -158,6 +159,9 @@
     "RoleLabel": "Role: {role}",
     "ForbidAttributeChanges": "Zakázat změny: ",
     "AllowAttributeChanges": "Povolit změny: ",
-    "RelationshipTable": "Tabulka vztahů"
+    "RelationshipTable": "Tabulka vztahů",
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "Přidat filtr",
+    "HiddenFilters": "Skryté filtry"
   }
 }

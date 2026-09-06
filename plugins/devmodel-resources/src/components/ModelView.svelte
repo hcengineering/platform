@@ -78,6 +78,7 @@
     font-size: 0.75rem;
     color: var(--dark-color);
     box-shadow: inset 0 -1px 0 0 var(--trans-content-10);
+    -webkit-user-select: none;
     user-select: none;
   }
 

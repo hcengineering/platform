@@ -21,6 +21,7 @@
 <style lang="scss">
   .container {
     user-select: none;
+    -webkit-user-select: none;
     font-size: 14px;
     color: var(--theme-content-color);
     &.WARNING {

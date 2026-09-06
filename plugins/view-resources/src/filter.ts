@@ -36,19 +36,16 @@ export function setFilters (filters: Filter[]): void {
 export function removeFilter (i: number): void {
   const old = get(filterStore)
   old[i]?.onRemove?.()
-  old.splice(i, 1)
-  filterStore.set(old)
+  // Emit a fresh array rather than splicing in place, so reference-memo
+  // consumers (and reduceCalls queue coalescing) always see a new identity.
+  filterStore.set(old.filter((_, idx) => idx !== i))
 }
 
 export function updateFilter (filter: Filter): void {
   const old = get(filterStore)
   const index = old.findIndex((p) => p.index === filter.index)
-  if (index === -1) {
-    old.push(filter)
-  } else {
-    old[index] = filter
-  }
-  filterStore.set(old)
+  // Build a new array instead of mutating `old` in place.
+  filterStore.set(index === -1 ? [...old, filter] : old.map((p, idx) => (idx === index ? filter : p)))
 }
 
 export async function arrayAllResult (filter: Filter): Promise<ObjQueryType<any>> {

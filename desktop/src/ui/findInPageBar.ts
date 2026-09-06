@@ -358,6 +358,7 @@ const shadowStyles = `
   font-variant-numeric: tabular-nums;
   text-align: right;
   color: rgba(0, 0, 0, 0.52);
+  -webkit-user-select: none;
   user-select: none;
   flex-shrink: 0;
 }

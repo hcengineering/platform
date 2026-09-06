@@ -63,6 +63,44 @@ async function getOldDepartment (
   return lastDepartment
 }
 
+async function getOldDepartmentParent (
+  currentTx: TxUpdateDoc<Department>,
+  control: TriggerControl
+): Promise<Ref<Department> | undefined> {
+  const updateTxes = await control.findAll<TxUpdateDoc<Department>>(
+    control.ctx,
+    core.class.TxUpdateDoc,
+    {
+      objectId: currentTx.objectId,
+      objectClass: currentTx.objectClass
+    },
+    { sort: { modifiedOn: SortingOrder.Ascending } }
+  )
+
+  let parent: Ref<Department> | undefined
+
+  for (const tx of updateTxes) {
+    if (tx._id === currentTx._id) break
+    if (tx.operations.parent !== undefined) {
+      parent = tx.operations.parent
+    }
+  }
+
+  if (parent !== undefined) return parent
+
+  const createTxes = await control.findAll<TxCreateDoc<Department>>(
+    control.ctx,
+    core.class.TxCreateDoc,
+    {
+      objectId: currentTx.objectId,
+      objectClass: currentTx.objectClass
+    },
+    { sort: { modifiedOn: SortingOrder.Ascending } }
+  )
+
+  return createTxes[0]?.attributes.parent
+}
+
 async function buildHierarchy (_id: Ref<Department>, control: TriggerControl): Promise<Department[]> {
   const res: Department[] = []
   const ancestors = new Map<Ref<Department>, Ref<Department>>()
@@ -82,7 +120,7 @@ async function buildHierarchy (_id: Ref<Department>, control: TriggerControl): P
   }
 }
 
-function exlude (first: Ref<Department>[], second: Ref<Department>[]): Ref<Department>[] {
+function exclude (first: Ref<Department>[], second: Ref<Department>[]): Ref<Department>[] {
   const set = new Set(first)
   const res: Ref<Department>[] = []
   for (const department of second) {
@@ -96,16 +134,18 @@ function exlude (first: Ref<Department>[], second: Ref<Department>[]): Ref<Depar
 function getTxes (
   factory: TxFactory,
   employees: Ref<Employee>[],
-  added: Ref<Department>[],
+  added: Department[],
   removed?: Ref<Department>[]
 ): Tx[] {
   const pushTxes = added
     .map((dep) =>
-      employees.map((emp) =>
-        factory.createTxUpdateDoc(hr.class.Department, core.space.Workspace, dep, {
-          $push: { members: emp }
-        })
-      )
+      employees
+        .filter((emp) => !dep.members.includes(emp))
+        .map((emp) =>
+          factory.createTxUpdateDoc(hr.class.Department, core.space.Workspace, dep._id, {
+            $push: { members: emp }
+          })
+        )
     )
     .flat()
   if (removed === undefined) return pushTxes
@@ -146,18 +186,51 @@ export async function OnDepartmentStaff (txes: Tx[], control: TriggerControl): P
             )
           )
         }
+        continue
       }
-      const push = (await buildHierarchy(departmentId, control)).map((p) => p._id)
+      const push = await buildHierarchy(departmentId, control)
 
       if (lastDepartment === undefined) {
         result.push(...getTxes(control.txFactory, [employee], push))
       } else {
-        let removed = (await buildHierarchy(lastDepartment, control)).map((p) => p._id)
-        const added = exlude(removed, push)
-        removed = exlude(push, removed)
-        result.push(...getTxes(control.txFactory, [employee], added, removed))
+        const removedDepartments = await buildHierarchy(lastDepartment, control)
+        const removed = removedDepartments.map((p) => p._id)
+        const pushIds = push.map((p) => p._id)
+        const removedIds = exclude(pushIds, removed)
+        result.push(...getTxes(control.txFactory, [employee], push, removedIds))
       }
     }
+  }
+  return result
+}
+
+/**
+ * @public
+ */
+export async function OnDepartmentUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const result: Tx[] = []
+  for (const tx of txes) {
+    const ctx = tx as TxUpdateDoc<Department>
+    if (ctx.operations.parent === undefined) continue
+
+    const department = await control.findAll(control.ctx, hr.class.Department, { _id: ctx.objectId })
+    const currentDepartment = department[0]
+    if (currentDepartment === undefined) continue
+
+    const members = currentDepartment.members
+    if (members.length === 0) continue
+
+    const oldParent = await getOldDepartmentParent(ctx, control)
+    if (oldParent === ctx.operations.parent) continue
+
+    const newParent = currentDepartment.parent
+    const oldHierarchy = oldParent !== undefined ? await buildHierarchy(oldParent, control) : []
+    const newHierarchy = newParent !== undefined ? await buildHierarchy(newParent, control) : []
+
+    const newHierarchyIds = newHierarchy.map((p) => p._id)
+    const removed = oldHierarchy.filter((p) => !newHierarchyIds.includes(p._id)).map((p) => p._id)
+
+    result.push(...getTxes(control.txFactory, members, newHierarchy, removed))
   }
   return result
 }
@@ -233,29 +306,30 @@ export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<
  * @public
  */
 export async function OnEmployeeDeactivate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
-  const result: Tx[] = []
-  for (const tx of txes) {
-    if (core.class.TxMixin !== tx._class) {
-      continue
-    }
-    const ctx = tx as TxMixin<Person, Employee>
-    if (ctx.mixin !== contact.mixin.Employee || ctx.attributes.active !== false) {
-      continue
-    }
-    const employee = ctx.objectId as Ref<Employee>
-    const departments = await control.queryFind(control.ctx, hr.class.Department, {})
-    const removed = departments.filter((dep) => dep.members.some((p) => p === employee))
-    result.push(
-      ...getTxes(
-        control.txFactory,
-        [employee],
-        [],
-        removed.map((p) => p._id)
-      )
-    )
-  }
+  return []
+  // const result: Tx[] = []
+  // for (const tx of txes) {
+  //   if (core.class.TxMixin !== tx._class) {
+  //     continue
+  //   }
+  //   const ctx = tx as TxMixin<Person, Employee>
+  //   if (ctx.mixin !== contact.mixin.Employee || ctx.attributes.active !== false) {
+  //     continue
+  //   }
+  //   const employee = ctx.objectId as Ref<Employee>
+  //   const departments = await control.queryFind(control.ctx, hr.class.Department, {})
+  //   const removed = departments.filter((dep) => dep.members.some((p) => p === employee))
+  //   result.push(
+  //     ...getTxes(
+  //       control.txFactory,
+  //       [employee],
+  //       [],
+  //       removed.map((p) => p._id)
+  //     )
+  //   )
+  // }
 
-  return result
+  // return result
 }
 
 // TODO: why we need specific email notifications instead of using general flow?
@@ -438,6 +512,7 @@ export default async () => ({
     OnRequestUpdate,
     OnRequestRemove,
     OnDepartmentStaff,
+    OnDepartmentUpdate,
     OnDepartmentRemove,
     OnEmployeeDeactivate,
     OnPublicHolidayCreate

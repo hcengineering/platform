@@ -754,6 +754,33 @@ export interface FullTextSearchContext extends Doc {
 
 /**
  * @public
+ *
+ * The canonical set of document fields the full-text index exposes for
+ * `field:value` targeting in a `$search` query. This is the single source of
+ * truth shared by every layer that needs to know which prefixes are valid:
+ *
+ * - the client search-input encoder (which `field:` prefixes it may route to a
+ *   field-targeted query instead of leaving as a bare term), and
+ * - the full-text backend adapter (which fields it recognises as a
+ *   field-targeted clause vs. a plain query).
+ *
+ * Keeping it here — backend-agnostic, alongside {@link FullTextSearchContext} —
+ * means both sides derive from the same list, so the set can never drift out of
+ * sync between client and server. Storage-specific concerns (per-field boost
+ * weights, query syntax) stay in the respective adapter and are intentionally
+ * NOT part of this list.
+ */
+export const fullTextSearchFields: readonly string[] = [
+  'searchTitle',
+  'searchShortTitle',
+  'identifier',
+  'description.plain',
+  'comments.message',
+  'fulltextSummary'
+]
+
+/**
+ * @public
  */
 export interface ConfigurationElement extends Class<Doc> {
   // Title will be presented to owner.

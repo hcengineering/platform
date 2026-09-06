@@ -30,6 +30,7 @@
   .yesno-container {
     max-width: fit-content;
     user-select: none;
+    -webkit-user-select: none;
 
     span {
       width: 1.6rem;

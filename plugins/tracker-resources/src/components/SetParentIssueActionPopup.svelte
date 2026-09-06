@@ -22,7 +22,10 @@
   import IssueStatusIcon from './issues/IssueStatusIcon.svelte'
 
   export let value: Issue | AttachedData<Issue> | Issue[] | IssueDraft
-  export let width: 'medium' | 'large' | 'full' = 'large'
+  // Default stays 'large' so existing (non-Gantt) entry points keep their
+  // current sizing. Callers that benefit from a user-resizable popup — the
+  // Gantt hierarchy submenu — opt in explicitly via `width: 'resizable'`.
+  export let width: 'medium' | 'large' | 'full' | 'resizable' = 'large'
 
   const client = getClient()
   const dispatch = createEventDispatcher()

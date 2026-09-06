@@ -51,6 +51,7 @@
     height: 1.5rem;
     border-radius: 1.5rem;
     border: 1px solid var(--theme-button-border);
+    -webkit-user-select: none;
     user-select: none;
 
     .item {

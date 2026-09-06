@@ -63,6 +63,26 @@ export async function FirstMatchValue (
   }
 }
 
+export async function AllMatchValue (
+  value: any[],
+  props: Record<string, any>,
+  control: ProcessControl
+): Promise<any[] | undefined> {
+  if (value == null) {
+    return
+  }
+  if (!Array.isArray(value)) return value
+  const { _class, ...otherProps } = props
+  if (_class == null) return
+  if (value.length === 0) return
+  if (typeof value[0] === 'string') {
+    const docs = await control.client.findAll(_class, { _id: { $in: value } })
+    return matchQuery(docs, otherProps, core.class.Doc, control.client.getHierarchy(), true).map((p) => p._id)
+  } else if (typeof value[0] === 'object') {
+    return matchQuery(value, otherProps, core.class.Doc, control.client.getHierarchy(), true)
+  }
+}
+
 // #endregion
 
 // #region Array

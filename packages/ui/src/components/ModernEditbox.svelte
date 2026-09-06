@@ -300,6 +300,7 @@
         font-size 0.2s;
       pointer-events: none;
       user-select: none;
+      -webkit-user-select: none;
     }
     input:focus + .label,
     input:not(:placeholder-shown) + .label {

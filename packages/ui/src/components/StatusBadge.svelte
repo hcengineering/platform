@@ -15,6 +15,7 @@
 
 <style lang="scss">
   .container {
+    -webkit-user-select: none;
     user-select: none;
     color: var(--theme-content-color);
     &.OK {

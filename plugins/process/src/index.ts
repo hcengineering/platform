@@ -353,6 +353,7 @@ export default plugin(processId, {
     OnEvent: '' as Asset
   },
   function: {
+    AllMatchValue: '' as Ref<ProcessFunction>,
     FirstMatchValue: '' as Ref<ProcessFunction>,
     Filter: '' as Ref<ProcessFunction>,
     FirstValue: '' as Ref<ProcessFunction>,

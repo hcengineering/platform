@@ -77,7 +77,9 @@
 
   $: dragPersonId = dragPerson?._id
 
-  $: values = allEmployees.filter((it) => it.department === value._id && it._id !== dragPersonId)
+  $: members = new Set<Ref<Staff>>(value.members as Ref<Staff>[])
+  $: activeMembers = allEmployees.filter((it) => it.active && members.has(it._id))
+  $: values = activeMembers.filter((it) => it._id !== dragPersonId)
 
   $: dragging = value._id === dragOver?._id && dragPersonId !== undefined
 
@@ -120,7 +122,7 @@
         <div class="fs-title">
           {value.name}
         </div>
-        <Label label={hr.string.MemberCount} params={{ count: value.members.length }} />
+        <Label label={hr.string.MemberCount} params={{ count: activeMembers.length }} />
       </div>
       <PersonsPresenter value={values} bind:dragPerson showDragPerson={dragging} />
     </div>

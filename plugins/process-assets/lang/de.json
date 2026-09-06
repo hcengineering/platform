@@ -117,6 +117,7 @@
     "ExecutionInitiator": "Ausführungsinitiator",
     "ExecutionStarted": "Ausführung gestartet",
     "Filter": "Filter",
+    "AllMatchValue": "Alle passenden Werte",
     "FirstMatchValue": "Erster passender Wert",
     "ConfigLabel": "Prozesskonfiguration",
     "ConfigDescription": "Definieren Sie Prozesse, um Workflows und Geschäftsprozesse zu automatisieren.",

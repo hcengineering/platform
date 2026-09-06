@@ -43,6 +43,7 @@
   .checkbox-label {
     color: var(--global-primary-TextColor);
     user-select: none;
+    -webkit-user-select: none;
   }
   .checkbox {
     overflow: hidden;

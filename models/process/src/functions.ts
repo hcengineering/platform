@@ -190,6 +190,19 @@ export function defineFunctions (builder: Builder): void {
     core.space.Model,
     {
       of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.AllMatchValue,
+      type: 'reduce',
+      editor: process.transformEditor.FilterEditor
+    },
+    process.function.AllMatchValue
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
       category: undefined,
       label: process.string.FirstMatchValue,
       type: 'reduce',

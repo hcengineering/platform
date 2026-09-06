@@ -69,6 +69,7 @@
       font-weight: 500;
       color: var(--accent-color);
       pointer-events: none;
+      -webkit-user-select: none;
       user-select: none;
     }
 

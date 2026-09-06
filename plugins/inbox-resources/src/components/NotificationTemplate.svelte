@@ -25,6 +25,7 @@
     display: flex;
     flex-direction: column;
     cursor: pointer;
+    -webkit-user-select: none;
     user-select: none;
 
     &:first-child .marker {

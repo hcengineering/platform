@@ -88,6 +88,7 @@
     background-color: var(--theme-button-default);
     border: 1px solid var(--theme-button-border);
     border-radius: 1.5rem;
+    -webkit-user-select: none;
     user-select: none;
 
     &:hover {

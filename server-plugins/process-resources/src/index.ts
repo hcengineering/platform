@@ -85,6 +85,7 @@ import { FieldChangedRollback, ToDoCancellRollback, ToDoCloseRollback } from './
 import {
   Absolute,
   Add,
+  AllMatchValue,
   All,
   Append,
   Ceil,
@@ -819,6 +820,7 @@ export default async () => ({
     EmptyValue,
     ExecutionInitiator,
     ExecutionStarted,
+    AllMatchValue,
     FirstMatchValue,
     Filter,
     StringFromNumber,

@@ -410,6 +410,7 @@
       transition: top 200ms;
       pointer-events: none;
       user-select: none;
+      -webkit-user-select: none;
     }
 
     :global(.textInput),

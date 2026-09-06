@@ -117,6 +117,7 @@
     "ExecutionInitiator": "Iniciátor provedení",
     "ExecutionStarted": "Provedení spuštěno",
     "Filter": "Filtr",
+    "AllMatchValue": "Všechny odpovídající hodnoty",
     "FirstMatchValue": "První odpovídající hodnota",
     "ConfigLabel": "Konfigurace procesů",
     "ConfigDescription": "Definujte procesy pro automatizaci pracovních postupů a obchodních procesů.",

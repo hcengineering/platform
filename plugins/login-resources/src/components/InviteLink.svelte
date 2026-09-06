@@ -213,6 +213,7 @@
     max-width: 40rem;
     background: var(--popup-bg-color);
     border-radius: 1.25rem;
+    -webkit-user-select: none;
     user-select: none;
     box-shadow: var(--popup-shadow);
 

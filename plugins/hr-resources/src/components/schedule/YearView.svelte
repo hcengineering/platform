@@ -188,6 +188,7 @@
       line-height: 105%;
       color: var(--dark-color);
       border: none;
+      -webkit-user-select: none;
       user-select: none;
       cursor: pointer;
 
