@@ -30,7 +30,7 @@
     navigate
   } from '@hcengineering/ui'
   import { type ProfileWorkspaceData, PersonWithProfile } from '@hcengineering/account-client'
-  import { type AccountUuid, type PersonUuid } from '@hcengineering/core'
+  import core, { type AccountUuid, type PersonUuid } from '@hcengineering/core'
   import globalProfile from '@hcengineering/global-profile'
   import view from '@hcengineering/view'
   import { getMetadata, getResource } from '@hcengineering/platform'
@@ -88,12 +88,20 @@
             const loginInfo = await accountClient.selectWorkspace(ws.url)
             const wsClient = await clientFactory(loginInfo.token, loginInfo.endpoint)
 
-            const [projects, person] = await Promise.all([
+            const [projects, person, allStatuses] = await Promise.all([
               wsClient.findAll(task.class.Project, { members: accountUuid }),
-              wsClient.findOne(contact.class.Person, { personUuid: userId })
+              wsClient.findOne(contact.class.Person, { personUuid: userId }),
+              wsClient.findAll(core.class.Status, {})
             ])
 
-            const issues = person != null
+            const ongoingStatusIds = allStatuses
+              .filter((s: any) => s.category === task.statusCategory.Active || s.category === task.statusCategory.ToDo)
+              .map((s: any) => s._id)
+            const doneStatusIds = allStatuses
+              .filter((s: any) => s.category === task.statusCategory.Won)
+              .map((s: any) => s._id)
+
+            const allIssues = person != null
               ? await wsClient.findAll(tracker.class.Issue, { assignee: person._id })
               : []
 
@@ -107,7 +115,9 @@
                 name: (p as any).name ?? '',
                 description: (p as any).description ?? ''
               })),
-              issuesAssigned: issues.length
+              issuesAssigned: allIssues.length,
+              issuesOngoing: allIssues.filter((i: any) => ongoingStatusIds.includes(i.status)).length,
+              issuesCompleted: allIssues.filter((i: any) => doneStatusIds.includes(i.status)).length
             }]
           } catch (e) {
             console.error('Failed to load workspace data for', ws.url, e)
@@ -242,8 +252,12 @@
                 <div class="stat-label">Issues Assigned</div>
               </div>
               <div class="stat-card">
-                <div class="stat-count">{ws.projects.length}</div>
-                <div class="stat-label">Projects</div>
+                <div class="stat-count">{ws.issuesOngoing}</div>
+                <div class="stat-label">Ongoing</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-count">{ws.issuesCompleted}</div>
+                <div class="stat-label">Completed</div>
               </div>
             </div>
           </div>

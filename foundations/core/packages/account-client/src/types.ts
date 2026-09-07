@@ -207,6 +207,8 @@ export interface ProfileWorkspaceData {
   workspaceUrl: string
   projects: ProfileWorkspaceProject[]
   issuesAssigned: number
+  issuesOngoing: number
+  issuesCompleted: number
 }
 
 /**
