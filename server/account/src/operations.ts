@@ -45,21 +45,10 @@ import {
   type Token
 } from '@hcengineering/server-token'
 
-import core, {
-  TxOperations,
-  type WorkspaceIds
-} from '@hcengineering/core'
-import { wrapPipeline } from '@hcengineering/server-core'
-import { getServerPipeline } from '@hcengineering/server-pipeline'
-import { prepareTools } from '@hcengineering/server-tool'
-import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
 
 import { randomUUID } from 'crypto'
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
-import contact from '@hcengineering/contact'
-import task from '@hcengineering/task'
-import tracker from '@hcengineering/tracker'
 
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 import {
@@ -3567,59 +3556,18 @@ export async function getPersonWorkspaceData (
   const { personUuid } = params
   const { account } = decodeTokenVerbose(ctx, token)
 
-  // Get all workspaces for this user
+  // Get all workspaces for this user from the account DB
   const workspaces = await db.getAccountWorkspaces(account)
   const activeWorkspaces = workspaces.filter(
     (ws) => !isDeletingMode(ws.status.mode) && !ws.status.isDisabled
   )
 
-  const results: ProfileWorkspaceData[] = []
-
-  for (const ws of activeWorkspaces) {
-    try {
-      const wsIds: WorkspaceIds = {
-        uuid: ws.uuid,
-        url: ws.url,
-        dataId: ws.dataId
-      }
-
-      const { dbUrl } = prepareTools([])
-      const storageConfig = storageConfigFromEnv()
-      const storageAdapter = buildStorageFromConfig(storageConfig)
-
-      const pipeline = await getServerPipeline(ctx, [], dbUrl, wsIds, storageAdapter, {})
-      try {
-        const client = new TxOperations(wrapPipeline(ctx, pipeline, wsIds), core.account.ConfigUser)
-
-        const [projects, person] = await Promise.all([
-          client.findAll(task.class.Project, { members: account as any }),
-          client.findOne(contact.class.Person, { personUuid: personUuid as any })
-        ])
-
-        const issues = person != null
-          ? await client.findAll(tracker.class.Issue, { assignee: person._id })
-          : []
-
-        results.push({
-          workspaceName: (ws as any).name ?? (ws as any).url,
-          workspaceUrl: (ws as any).url,
-          projects: (projects as any[]).map((p) => ({
-            id: p._id,
-            name: p.name ?? '',
-            description: p.description ?? ''
-          })),
-          issuesAssigned: issues.length
-        })
-      } finally {
-        await pipeline.close()
-        await storageAdapter.close()
-      }
-    } catch (e) {
-      ctx.error('Error querying workspace for profile data', { workspace: ws.url, error: String(e) })
-    }
-  }
-
-  return results
+  return activeWorkspaces.map((ws) => ({
+    workspaceName: ws.name ?? ws.url,
+    workspaceUrl: ws.url,
+    projects: [],
+    issuesAssigned: 0
+  }))
 }
 
 export type AccountMethods =
