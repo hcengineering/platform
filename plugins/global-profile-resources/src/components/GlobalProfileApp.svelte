@@ -481,12 +481,16 @@
   }
 
   .stat-card {
+    flex: 1;
     background: var(--theme-button-default);
     border: 1px solid var(--theme-divider-color);
     border-radius: 0.5rem;
     padding: 1rem 1.5rem;
     text-align: center;
-    min-width: 8rem;
+    min-height: 5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .stat-count {
