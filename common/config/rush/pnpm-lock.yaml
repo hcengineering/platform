@@ -21000,6 +21000,9 @@ importers:
       '@hcengineering/account-client':
         specifier: workspace:^0.7.25
         version: link:../../foundations/core/packages/account-client
+      '@hcengineering/client':
+        specifier: workspace:^0.7.0
+        version: link:../../foundations/core/packages/client
       '@hcengineering/contact':
         specifier: workspace:^0.7.0
         version: link:../contact
@@ -35857,9 +35860,6 @@ importers:
       '@hcengineering/analytics':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/analytics
-      '@hcengineering/contact':
-        specifier: workspace:^0.7.0
-        version: link:../../plugins/contact
       '@hcengineering/core':
         specifier: workspace:^0.7.26
         version: link:../../foundations/core/packages/core
@@ -35887,15 +35887,6 @@ importers:
       '@hcengineering/server-token':
         specifier: workspace:^0.7.18
         version: link:../../foundations/core/packages/token
-      '@hcengineering/server-tool':
-        specifier: workspace:^0.7.0
-        version: link:../tool
-      '@hcengineering/task':
-        specifier: workspace:^0.7.0
-        version: link:../../plugins/task
-      '@hcengineering/tracker':
-        specifier: workspace:^0.7.0
-        version: link:../../plugins/tracker
       mongodb:
         specifier: ^6.16.0
         version: 6.20.0(gcp-metadata@5.3.0(encoding@0.1.13))(snappy@7.3.3)(socks@2.8.7)

@@ -77,7 +77,6 @@ import {
   type Query,
   type InviteInfo
 } from './types'
-import { type ProfileWorkspaceData } from '@hcengineering/account-client'
 import {
   addSocialIdBase,
   checkInvite,
@@ -3544,32 +3543,6 @@ export async function getWorkspaceUsersWithPermission (
   return await db.getWorkspaceUsersWithPermission(workspace, permission)
 }
 
-export async function getPersonWorkspaceData (
-  ctx: MeasureContext,
-  db: AccountDB,
-  branding: Branding | null,
-  token: string,
-  params: {
-    personUuid: PersonUuid
-  }
-): Promise<ProfileWorkspaceData[]> {
-  const { personUuid } = params
-  const { account } = decodeTokenVerbose(ctx, token)
-
-  // Get all workspaces for this user from the account DB
-  const workspaces = await db.getAccountWorkspaces(account)
-  const activeWorkspaces = workspaces.filter(
-    (ws) => !isDeletingMode(ws.status.mode) && !ws.status.isDisabled
-  )
-
-  return activeWorkspaces.map((ws) => ({
-    workspaceName: ws.name ?? ws.url,
-    workspaceUrl: ws.url,
-    projects: [],
-    issuesAssigned: 0
-  }))
-}
-
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -3637,7 +3610,6 @@ export type AccountMethods =
   | 'canMergeSpecifiedPersons'
   | 'mergeSpecifiedPersons'
   | 'setMyProfile'
-  | 'getPersonWorkspaceData'
   | 'getUserProfile'
   | 'getSubscriptions'
   | 'getSubscriptionById'
@@ -3709,7 +3681,6 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     canMergeSpecifiedPersons: wrap(canMergeSpecifiedPersons),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     setMyProfile: wrap(setMyProfile),
-    getPersonWorkspaceData: wrap(getPersonWorkspaceData),
     getUserProfile: wrap(getUserProfile),
     getSubscriptions: wrap(getSubscriptions),
     getSubscriptionById: wrap(getSubscriptionById),

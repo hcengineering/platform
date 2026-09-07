@@ -191,7 +191,7 @@ export type PersonWithProfile = Person & Omit<UserProfile, 'personUuid'>
 
 /**
  * @public
- * Workspace-level data for a person's profile, used by getPersonWorkspaceData RPC
+ * Workspace-level data for a person's profile, used by client-side cross-workspace aggregation
  */
 export interface ProfileWorkspaceProject {
   id: string

@@ -32,7 +32,11 @@
   import { type AccountUuid, type PersonUuid } from '@hcengineering/core'
   import globalProfile from '@hcengineering/global-profile'
   import view from '@hcengineering/view'
-  import { getMetadata } from '@hcengineering/platform'
+  import { getMetadata, getResource } from '@hcengineering/platform'
+  import client from '@hcengineering/client'
+  import task from '@hcengineering/task'
+  import tracker from '@hcengineering/tracker'
+  import contact from '@hcengineering/contact'
 
   import { getAvatarText, getDisplayName, getLocation, getAccountClient, getAvatarColorForId } from '../utils'
   import EditProfilePopup from './EditGlobalProfilePopup.svelte'
@@ -70,11 +74,46 @@
       }
 
       profile = await accountClient.getUserProfile(userId)
+
+      // Client-side cross-workspace aggregation
       try {
-        workspaceData = await accountClient.getPersonWorkspaceData(userId) ?? []
+        const workspaces = await accountClient.getUserWorkspaces()
+        const clientFactory = await getResource(client.function.GetClient)
+        const accountUuid = userId as unknown as AccountUuid
+
+        for (const ws of workspaces) {
+          try {
+            const loginInfo = await accountClient.selectWorkspace(ws.url)
+            const wsClient = await clientFactory(loginInfo.token, loginInfo.endpoint)
+
+            const [projects, person] = await Promise.all([
+              wsClient.findAll(task.class.Project, { members: accountUuid }),
+              wsClient.findOne(contact.class.Person, { personUuid: userId })
+            ])
+
+            const issues = person != null
+              ? await wsClient.findAll(tracker.class.Issue, { assignee: person._id })
+              : []
+
+            await wsClient.close()
+
+            workspaceData = [...workspaceData, {
+              workspaceName: ws.name,
+              workspaceUrl: ws.url,
+              projects: projects.map((p: any) => ({
+                id: p._id,
+                name: (p as any).name ?? '',
+                description: (p as any).description ?? ''
+              })),
+              issuesAssigned: issues.length
+            }]
+          } catch (e) {
+            console.error('Failed to load workspace data for', ws.url, e)
+            // Skip failed workspaces
+          }
+        }
       } catch (e) {
-        console.error('Failed to load workspace data', e)
-        workspaceData = []
+        console.error('Failed to load workspace list', e)
       }
     } catch (e) {
       console.error(e)

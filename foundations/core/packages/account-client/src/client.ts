@@ -51,7 +51,6 @@ import type {
   MailboxSecret,
   OtpInfo,
   PersonWithProfile,
-  ProfileWorkspaceData,
   ProviderInfo,
   RegionInfo,
   SocialId,
@@ -250,8 +249,6 @@ export interface AccountClient {
 
   setMyProfile: (profile: Partial<Omit<UserProfile, 'personUuid'>>) => Promise<void>
   getUserProfile: (personUuid?: PersonUuid) => Promise<PersonWithProfile | null>
-  getPersonWorkspaceData: (personUuid: PersonUuid) => Promise<ProfileWorkspaceData[]>
-
   getSubscriptions: (workspaceUuid?: WorkspaceUuid | undefined, activeOnly?: boolean) => Promise<Subscription[]>
   getSubscriptionByProviderId: (provider: string, providerSubscriptionId: string) => Promise<Subscription | null>
   getSubscriptionById: (subscriptionId: string) => Promise<Subscription | null>
@@ -1305,15 +1302,6 @@ class AccountClientImpl implements AccountClient {
   async getUserProfile (personUuid?: PersonUuid): Promise<PersonWithProfile | null> {
     return await this._rpc({
       method: 'getUserProfile',
-      params: {
-        personUuid
-      }
-    })
-  }
-
-  async getPersonWorkspaceData (personUuid: PersonUuid): Promise<ProfileWorkspaceData[]> {
-    return await this._rpc({
-      method: 'getPersonWorkspaceData',
       params: {
         personUuid
       }
