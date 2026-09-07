@@ -51,6 +51,7 @@ import type {
   MailboxSecret,
   OtpInfo,
   PersonWithProfile,
+  ProfileWorkspaceData,
   ProviderInfo,
   RegionInfo,
   SocialId,
