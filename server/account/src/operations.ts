@@ -45,9 +45,21 @@ import {
   type Token
 } from '@hcengineering/server-token'
 
+import {
+  TxOperations,
+  type WorkspaceIds
+} from '@hcengineering/core'
+import { wrapPipeline } from '@hcengineering/server-core'
+import { getServerPipeline } from '@hcengineering/server-pipeline'
+import { prepareTools } from '@hcengineering/server-tool'
+import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+
 import { randomUUID } from 'crypto'
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
+import task from '@hcengineering/task'
+import tracker from '@hcengineering/tracker'
+
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
 import {
   AccountEventType,
@@ -70,6 +82,7 @@ import {
   type LoginInfoRequestData,
   type Account,
   type PersonWithProfile,
+  type ProfileWorkspaceData,
   type Subscription,
   SubscriptionStatus,
   type Query,
@@ -3541,6 +3554,68 @@ export async function getWorkspaceUsersWithPermission (
   return await db.getWorkspaceUsersWithPermission(workspace, permission)
 }
 
+export async function getPersonWorkspaceData (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    personUuid: PersonUuid
+  }
+): Promise<ProfileWorkspaceData[]> {
+  const { personUuid } = params
+  const { account } = decodeTokenVerbose(ctx, token)
+
+  // Get all workspaces for this user
+  const workspaces = await db.getAccountWorkspaces(account)
+  const activeWorkspaces = workspaces.filter(
+    (ws) => !isDeletingMode(ws.status.mode) && !ws.status.isDisabled
+  )
+
+  const results: ProfileWorkspaceData[] = []
+
+  for (const ws of activeWorkspaces) {
+    try {
+      const wsIds: WorkspaceIds = {
+        uuid: ws.uuid,
+        url: ws.url,
+        dataId: ws.dataId
+      }
+
+      const { dbUrl } = prepareTools([])
+      const storageConfig = storageConfigFromEnv()
+      const storageAdapter = buildStorageFromConfig(storageConfig)
+
+      const pipeline = await getServerPipeline(ctx, [], dbUrl, wsIds, storageAdapter, {})
+      try {
+        const client = new TxOperations(wrapPipeline(ctx, pipeline, wsIds), systemAccountUuid)
+
+        const [projects, issues] = await Promise.all([
+          client.findAll(task.class.Project, { members: account as AccountUuid }),
+          client.findAll(tracker.class.Issue, { assignee: personUuid as any })
+        ])
+
+        results.push({
+          workspaceName: ws.name ?? ws.url,
+          workspaceUrl: ws.url,
+          projects: projects.map((p) => ({
+            id: p._id,
+            name: p.name,
+            description: p.description
+          })),
+          issuesAssigned: issues.length
+        })
+      } finally {
+        await pipeline.close()
+      }
+    } catch (e) {
+      ctx.error('Error querying workspace for profile data', { workspace: ws.url, error: String(e) })
+    }
+  }
+
+  return results
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -3608,6 +3683,7 @@ export type AccountMethods =
   | 'canMergeSpecifiedPersons'
   | 'mergeSpecifiedPersons'
   | 'setMyProfile'
+  | 'getPersonWorkspaceData'
   | 'getUserProfile'
   | 'getSubscriptions'
   | 'getSubscriptionById'
@@ -3679,6 +3755,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     canMergeSpecifiedPersons: wrap(canMergeSpecifiedPersons),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     setMyProfile: wrap(setMyProfile),
+    getPersonWorkspaceData: wrap(getPersonWorkspaceData),
     getUserProfile: wrap(getUserProfile),
     getSubscriptions: wrap(getSubscriptions),
     getSubscriptionById: wrap(getSubscriptionById),

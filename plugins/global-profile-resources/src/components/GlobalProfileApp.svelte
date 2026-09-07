@@ -14,7 +14,6 @@
 -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { getClient } from '@hcengineering/presentation'
 
   import {
     Button,
@@ -29,7 +28,7 @@
     getLocation as getPlatformLocation,
     Loading
   } from '@hcengineering/ui'
-  import { PersonWithProfile } from '@hcengineering/account-client'
+  import { type ProfileWorkspaceData, PersonWithProfile } from '@hcengineering/account-client'
   import { type AccountUuid, type PersonUuid } from '@hcengineering/core'
   import globalProfile from '@hcengineering/global-profile'
   import view from '@hcengineering/view'
@@ -37,15 +36,13 @@
 
   import { getAvatarText, getDisplayName, getLocation, getAccountClient, getAvatarColorForId } from '../utils'
   import EditProfilePopup from './EditGlobalProfilePopup.svelte'
-  import UserProjects from "./UserProjects.svelte"
-  import UserStats from "./UserStats.svelte"
 
   let profile: PersonWithProfile | null = null
   const loc = getPlatformLocation()
   const userId = loc.path[1] as PersonUuid
   const accountClient = getAccountClient()
   let myAccount: AccountUuid | null = null
-  let clientAvailable: boolean = false
+  let workspaceData: ProfileWorkspaceData[] = []
   let loading: boolean = false
   $: isMyProfile = myAccount != null && userId === myAccount
 
@@ -73,13 +70,7 @@
       }
 
       profile = await accountClient.getUserProfile(userId)
-
-      try {
-        const client = getClient()
-        clientAvailable = client != null
-      } catch {
-        clientAvailable = false
-      }
+      workspaceData = await accountClient.getPersonWorkspaceData(userId)
     } catch (e) {
       console.error(e)
     } finally {
@@ -184,9 +175,33 @@
           </div>
         {/if}
       </div>
-      {#if clientAvailable}
-        <UserProjects {userId} />
-        <UserStats {userId} />
+      {#if workspaceData.length > 0}
+        {#each workspaceData as ws}
+          <div class="workspace-section">
+            <div class="workspace-header">{ws.workspaceName}</div>
+            <div class="section-title">Projects</div>
+            {#if ws.projects.length === 0}
+              <div class="empty-text">No projects found</div>
+            {:else}
+              <div class="projects-list">
+                {#each ws.projects as p}
+                  <div class="project-item">{p.name}</div>
+                {/each}
+              </div>
+            {/if}
+            <div class="section-title">Stats</div>
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-count">{ws.issuesAssigned}</div>
+                <div class="stat-label">Issues Assigned</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-count">{ws.projects.length}</div>
+                <div class="stat-label">Projects</div>
+              </div>
+            </div>
+          </div>
+        {/each}
       {/if}
 
       <div class="avatarCtr">
@@ -357,6 +372,73 @@
         text-decoration: underline;
       }
     }
+  }
+
+  .workspace-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--theme-divider-color);
+  }
+
+  .workspace-header {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--theme-caption-color);
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--theme-content-color);
+    margin: 0.75rem 0 0.5rem 0;
+  }
+
+  .empty-text {
+    color: var(--theme-text-placeholder-color);
+    font-style: italic;
+    font-size: 0.875rem;
+  }
+
+  .projects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .project-item {
+    background: var(--theme-button-default);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: var(--theme-caption-color);
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+
+  .stats-grid {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .stat-card {
+    background: var(--theme-button-default);
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    min-width: 8rem;
+  }
+
+  .stat-count {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--theme-caption-color);
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: var(--theme-content-color);
   }
 
   .location {
