@@ -424,6 +424,7 @@
 
   .workspace-section {
     padding: 0 1.5rem 1.5rem 1.5rem;
+    margin-top: 2rem;
     border-top: 1px solid var(--theme-divider-color);
   }
 
