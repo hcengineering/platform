@@ -53,6 +53,7 @@
     "@hcengineering/server-client": "workspace:^0.7.16",
     "@hcengineering/task": "workspace:^0.7.0",
     "@hcengineering/tracker": "workspace:^0.7.0",
-    "@hcengineering/account-client": "workspace:^0.7.25"
+    "@hcengineering/account-client": "workspace:^0.7.25",
+    "@hcengineering/contact": "workspace:^0.7.0"
   }
 }

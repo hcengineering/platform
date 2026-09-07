@@ -57,6 +57,7 @@ import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/ser
 import { randomUUID } from 'crypto'
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
+import contact from '@hcengineering/contact'
 import task from '@hcengineering/task'
 import tracker from '@hcengineering/tracker'
 
@@ -3590,10 +3591,14 @@ export async function getPersonWorkspaceData (
       try {
         const client = new TxOperations(wrapPipeline(ctx, pipeline, wsIds), systemAccountUuid)
 
-        const [projects, issues] = await Promise.all([
+        const [projects, person] = await Promise.all([
           client.findAll(task.class.Project, { members: account as any }),
-          client.findAll(tracker.class.Issue, { assignee: personUuid as any })
+          client.findOne(contact.class.Person, { personUuid: personUuid as any })
         ])
+
+        const issues = person != null
+          ? await client.findAll(tracker.class.Issue, { assignee: person._id })
+          : []
 
         results.push({
           workspaceName: (ws as any).name ?? (ws as any).url,
@@ -3607,6 +3612,7 @@ export async function getPersonWorkspaceData (
         })
       } finally {
         await pipeline.close()
+        await storageAdapter.close()
       }
     } catch (e) {
       ctx.error('Error querying workspace for profile data', { workspace: ws.url, error: String(e) })
