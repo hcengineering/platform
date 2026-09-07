@@ -21036,6 +21036,9 @@ importers:
       '@hcengineering/view':
         specifier: workspace:^0.7.0
         version: link:../view
+      '@hcengineering/workbench':
+        specifier: workspace:^0.7.0
+        version: link:../workbench
       svelte:
         specifier: ^4.2.20
         version: 4.2.20

@@ -26,7 +26,8 @@
     Label,
     TooltipInstance,
     getLocation as getPlatformLocation,
-    Loading
+    Loading,
+    navigate
   } from '@hcengineering/ui'
   import { type ProfileWorkspaceData, PersonWithProfile } from '@hcengineering/account-client'
   import { type AccountUuid, type PersonUuid } from '@hcengineering/core'
@@ -35,7 +36,8 @@
   import { getMetadata, getResource } from '@hcengineering/platform'
   import client from '@hcengineering/client'
   import task from '@hcengineering/task'
-  import tracker from '@hcengineering/tracker'
+  import tracker, { trackerId } from '@hcengineering/tracker'
+  import { workbenchId } from '@hcengineering/workbench'
   import contact from '@hcengineering/contact'
 
   import { getAvatarText, getDisplayName, getLocation, getAccountClient, getAvatarColorForId } from '../utils'
@@ -229,7 +231,7 @@
             {:else}
               <div class="projects-list">
                 {#each ws.projects as p}
-                  <div class="project-item">{p.name}</div>
+                  <div class="project-item" on:click={() => navigate({ path: [workbenchId, ws.workspaceUrl, trackerId, p.id] })}>{p.name}</div>
                 {/each}
               </div>
             {/if}
@@ -466,6 +468,11 @@
     color: var(--theme-caption-color);
     font-weight: 500;
     font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .project-item:hover {
+    background: var(--theme-button-hovered);
   }
 
   .stats-grid {
