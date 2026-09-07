@@ -15,13 +15,9 @@
 import '@hcengineering/platform-rig/profiles/ui/svelte'
 import { type Resources } from '@hcengineering/platform'
 import GlobalProfileApp from './components/GlobalProfileApp.svelte'
-import UserProjects from './components/UserProjects.svelte'
-import UserStats from './components/UserStats.svelte'
 
 export default async (): Promise<Resources> => ({
   component: {
-    GlobalProfileApp,
-    UserProjects,
-    UserStats
+    GlobalProfileApp
   }
 })
