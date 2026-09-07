@@ -45,7 +45,7 @@ import {
   type Token
 } from '@hcengineering/server-token'
 
-import {
+import core, {
   TxOperations,
   type WorkspaceIds
 } from '@hcengineering/core'
@@ -3589,7 +3589,7 @@ export async function getPersonWorkspaceData (
 
       const pipeline = await getServerPipeline(ctx, [], dbUrl, wsIds, storageAdapter, {})
       try {
-        const client = new TxOperations(wrapPipeline(ctx, pipeline, wsIds), systemAccountUuid)
+        const client = new TxOperations(wrapPipeline(ctx, pipeline, wsIds), core.account.ConfigUser)
 
         const [projects, person] = await Promise.all([
           client.findAll(task.class.Project, { members: account as any }),
