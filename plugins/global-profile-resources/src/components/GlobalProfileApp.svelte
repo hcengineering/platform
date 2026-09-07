@@ -423,16 +423,12 @@
   }
 
   .workspace-section {
-    padding: 0 1.5rem 1.5rem 1.5rem;
+    padding: 1.5rem;
     margin-top: 2rem;
     border-top: 1px solid var(--theme-divider-color);
   }
 
-  .workspace-section:first-of-type {
-    padding-top: 1.5rem;
-  }
-
-  .workspace-section:last-of-type {
+    .workspace-section:last-of-type {
     padding-bottom: 4rem;
   }
 
