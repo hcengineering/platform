@@ -34,7 +34,6 @@
   import { logIn, logOut } from '@hcengineering/workbench-resources'
 
   import rating, { type PersonRating } from '@hcengineering/rating'
-  import task from '@hcengineering/task'
   import setting from '../plugin'
   import SocialIdsEditor from './socialIds/SocialIdsEditor.svelte'
 
@@ -110,25 +109,6 @@
         }
       }
     })
-  }
-
-  let projects: { name: string }[] = []
-  let assignedCount = 0
-
-  $: if ($myEmployeeStore != null) {
-    const accUuid = account.uuid
-    void (async () => {
-      try {
-        const [assigned, userProjects] = await Promise.all([
-          client.findAll(task.class.Task, { assignee: $myEmployeeStore._id }),
-          client.findAll(task.class.Project, { members: accUuid })
-        ])
-        assignedCount = assigned.length
-        projects = userProjects.map(p => ({ name: p.name }))
-      } catch (e) {
-        console.error(e)
-      }
-    })()
   }
 
   async function nameChange (): Promise<void> {
@@ -214,30 +194,6 @@
         <div class="separator" />
       {/if}
       <SocialIdsEditor rating={personRating} />
-
-      <div class="section-title">Projects</div>
-      {#if projects.length === 0}
-        <div class="empty-text">No projects found</div>
-      {:else}
-        <div class="projects-list">
-          {#each projects as p}
-            <div class="project-item">{p.name}</div>
-          {/each}
-        </div>
-      {/if}
-
-      <div class="section-title">Stats</div>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-count">{assignedCount}</div>
-          <div class="stat-label">Issues Assigned</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-count">{projects.length}</div>
-          <div class="stat-label">Projects</div>
-        </div>
-      </div>
-
       <div class="footer">
         <Button
           icon={setting.icon.Signout}
@@ -266,58 +222,6 @@
     margin: 1rem 0;
     height: 1px;
     background-color: var(--divider-color);
-  }
-
-  .section-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--theme-caption-color);
-    margin: 1.5rem 0 0.75rem 0;
-  }
-
-  .empty-text {
-    color: var(--theme-text-placeholder-color);
-    font-style: italic;
-  }
-
-  .projects-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .project-item {
-    background: var(--theme-button-default);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    color: var(--theme-caption-color);
-    font-weight: 500;
-  }
-
-  .stats-grid {
-    display: flex;
-    gap: 1rem;
-  }
-
-  .stat-card {
-    background: var(--theme-button-default);
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.5rem;
-    padding: 1rem 1.5rem;
-    text-align: center;
-    min-width: 8rem;
-  }
-
-  .stat-count {
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: var(--theme-caption-color);
-  }
-
-  .stat-label {
-    font-size: 0.875rem;
-    color: var(--theme-content-color);
   }
 
   .footer {
