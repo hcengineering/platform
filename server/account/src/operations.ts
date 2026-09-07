@@ -82,12 +82,12 @@ import {
   type LoginInfoRequestData,
   type Account,
   type PersonWithProfile,
-  type ProfileWorkspaceData,
   type Subscription,
   SubscriptionStatus,
   type Query,
   type InviteInfo
 } from './types'
+import { type ProfileWorkspaceData } from '@hcengineering/account-client'
 import {
   addSocialIdBase,
   checkInvite,
@@ -3591,17 +3591,17 @@ export async function getPersonWorkspaceData (
         const client = new TxOperations(wrapPipeline(ctx, pipeline, wsIds), systemAccountUuid)
 
         const [projects, issues] = await Promise.all([
-          client.findAll(task.class.Project, { members: account as AccountUuid }),
+          client.findAll(task.class.Project, { members: account as any }),
           client.findAll(tracker.class.Issue, { assignee: personUuid as any })
         ])
 
         results.push({
-          workspaceName: ws.name ?? ws.url,
-          workspaceUrl: ws.url,
-          projects: projects.map((p) => ({
+          workspaceName: (ws as any).name ?? (ws as any).url,
+          workspaceUrl: (ws as any).url,
+          projects: (projects as any[]).map((p) => ({
             id: p._id,
-            name: p.name,
-            description: p.description
+            name: p.name ?? '',
+            description: p.description ?? ''
           })),
           issuesAssigned: issues.length
         })
