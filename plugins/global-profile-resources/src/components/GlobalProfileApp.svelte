@@ -70,7 +70,12 @@
       }
 
       profile = await accountClient.getUserProfile(userId)
-      workspaceData = await accountClient.getPersonWorkspaceData(userId)
+      try {
+        workspaceData = await accountClient.getPersonWorkspaceData(userId) ?? []
+      } catch (e) {
+        console.error('Failed to load workspace data', e)
+        workspaceData = []
+      }
     } catch (e) {
       console.error(e)
     } finally {
@@ -202,6 +207,10 @@
             </div>
           </div>
         {/each}
+      {:else}
+        <div class="empty-section">
+          <div class="empty-text">No workspace data available</div>
+        </div>
       {/if}
 
       <div class="avatarCtr">
