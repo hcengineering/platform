@@ -1,8 +1,7 @@
 {
   "string": {
     "IdentificationColor": "Ayırt edici renk",
-    "ColorFromLogo": "Logodan",
-    "ColorResetAutomatic": "Otomatik renge sıfırla",
+    "ColorDefault": "Varsayılan",
     "ColorLogoUnavailable": "Simge yüklenemedi. Varsayılan sekme simgesi kullanılıyor.",
     "ColorSaveFailed": "Ayarlar kaydedilemedi. Lütfen tekrar deneyin.",
     "SyncWorkspaceLogo": "Logoyu tarayıcı sekmesiyle eşitle",

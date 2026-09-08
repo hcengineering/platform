@@ -1,8 +1,7 @@
 {
   "string": {
     "IdentificationColor": "Rozlišovací barva",
-    "ColorFromLogo": "Z loga",
-    "ColorResetAutomatic": "Obnovit automatickou barvu",
+    "ColorDefault": "Výchozí",
     "ColorLogoUnavailable": "Ikonu se nepodařilo načíst. Používá se výchozí ikona karty.",
     "ColorSaveFailed": "Nastavení se nepodařilo uložit. Zkuste to znovu.",
     "SyncWorkspaceLogo": "Synchronizovat logo s kartou prohlížeče",

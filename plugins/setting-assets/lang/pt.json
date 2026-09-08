@@ -1,8 +1,7 @@
 {
   "string": {
     "IdentificationColor": "Cor de identificação",
-    "ColorFromLogo": "Do logótipo",
-    "ColorResetAutomatic": "Repor cor automática",
+    "ColorDefault": "Predefinido",
     "ColorLogoUnavailable": "Não foi possível carregar o ícone. Está a ser utilizado o ícone predefinido do separador.",
     "ColorSaveFailed": "Não foi possível guardar as definições. Tente novamente.",
     "SyncWorkspaceLogo": "Sincronizar logótipo com o separador",

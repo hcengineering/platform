@@ -1,8 +1,7 @@
 {
   "string": {
     "IdentificationColor": "Identification color",
-    "ColorFromLogo": "From logo",
-    "ColorResetAutomatic": "Reset to automatic",
+    "ColorDefault": "Default",
     "ColorLogoUnavailable": "The icon could not be loaded. The default tab icon is used.",
     "ColorSaveFailed": "Could not save the settings. Please try again.",
     "SyncWorkspaceLogo": "Sync logo with browser tab",

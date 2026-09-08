@@ -1,8 +1,7 @@
 {
   "string": {
     "IdentificationColor": "Colore identificativo",
-    "ColorFromLogo": "Dal logo",
-    "ColorResetAutomatic": "Ripristina colore automatico",
+    "ColorDefault": "Predefinito",
     "ColorLogoUnavailable": "Impossibile caricare l’icona. Viene utilizzata l’icona predefinita della scheda.",
     "ColorSaveFailed": "Impossibile salvare le impostazioni. Riprova.",
     "SyncWorkspaceLogo": "Sincronizza logo con la scheda",

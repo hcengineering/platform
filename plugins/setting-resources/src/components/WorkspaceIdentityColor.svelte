@@ -70,7 +70,8 @@
       busy = false
       await tick()
       if (document.activeElement === document.body) {
-        if (focused?.isConnected === true) focused.focus()
+        if (focused instanceof HTMLButtonElement && focused.disabled) colorInput?.focus()
+        else if (focused?.isConnected === true) focused.focus()
         else if (focusLabel === 'workspace-sync-logo-label' || focusLabel === 'workspace-color-label') {
           document.querySelector<HTMLInputElement>(`label[aria-labelledby="${focusLabel}"] input`)?.focus()
         }
@@ -85,36 +86,37 @@
 </script>
 
 <div class="identity" aria-busy={busy}>
-    <div class="setting-row">
-      <span id="workspace-sync-logo-label"><Label label={setting.string.SyncWorkspaceLogo} /></span>
-      <div class="controls">
+  <div class="setting-row">
+    <span id="workspace-sync-logo-label"><Label label={setting.string.SyncWorkspaceLogo} /></span>
+    <div class="controls">
       {#key saveRevision}
         <Toggle on={syncLogo} disabled={!canEdit || busy} aria-labelledby="workspace-sync-logo-label"
           on:change={(event) => save({ syncWorkspaceLogo: event.detail })} />
       {/key}
-      </div>
     </div>
+  </div>
   <div class="setting-row">
     <span id="workspace-color-label"><Label label={setting.string.IdentificationColor} /></span>
     <div class="controls">
-    {#key saveRevision}
-      <Toggle on={showColor} disabled={!canEdit || busy} aria-labelledby="workspace-color-label"
-        on:change={(event) => save({ identificationColorEnabled: event.detail })} />
-    {/key}
-  {#if showColor}
-    <label class="color-picker" style:background={preview.color}>
-      <span class="sr-only"><Label label={setting.string.IdentificationColor} /></span>
-      <input bind:this={colorInput} type="color" value={preview.color} disabled={!canEdit || busy}
-        on:change={(event) => saveColor(event.currentTarget.value)} />
-    </label>
-    <code>{preview.color.toUpperCase()}</code>
-    {#if manualColor !== undefined}
-      <Button kind="link" size="small" label={setting.string.ColorResetAutomatic}
-        disabled={!canEdit || busy} on:click={() => saveColor(null)} />
-    {:else}
-      <span class="mode"><Label label={setting.string.ColorFromLogo} /></span>
-    {/if}
-  {/if}
+      {#key saveRevision}
+        <Toggle on={showColor} disabled={!canEdit || busy} aria-labelledby="workspace-color-label"
+          on:change={(event) => save({ identificationColorEnabled: event.detail })} />
+      {/key}
+      {#if showColor}
+        <div class="color-control" role="group" aria-labelledby="workspace-color-label">
+          <label class="color-value">
+            <span class="color-swatch" style:background={preview.color} />
+            <code>{preview.color.toUpperCase()}</code>
+            <span class="sr-only"><Label label={setting.string.IdentificationColor} /></span>
+            <input bind:this={colorInput} type="color" value={preview.color} disabled={!canEdit || busy}
+              on:change={(event) => saveColor(event.currentTarget.value)} />
+          </label>
+          <span class="color-reset">
+            <Button kind="ghost" size="small" label={setting.string.ColorDefault} padding="0 .5rem"
+              disabled={!canEdit || busy || manualColor === undefined} on:click={() => saveColor(null)} />
+          </span>
+        </div>
+      {/if}
     </div>
   </div>
   {#if imageError}<div class="error" role="status"><Label label={setting.string.ColorLogoUnavailable} /></div>{/if}
@@ -126,11 +128,34 @@
   .setting-row { display: grid; grid-template-columns: min(11rem, 45%) minmax(0, 1fr); align-items: center; gap: 0.75rem; min-height: 2rem; }
   .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; min-width: 0; }
   .setting-row :global(.toggle:focus-within) { outline: 2px solid var(--primary-button-outline); outline-offset: 3px; border-radius: 1rem; }
-  .color-picker { position: relative; width: 2rem; height: 2rem; border-radius: 0.5rem; border: 1px solid var(--theme-divider-color); overflow: hidden; }
-  .color-picker:focus-within { outline: 2px solid var(--theme-content-color); outline-offset: 3px; }
+  .color-control {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem;
+    border: 1px solid var(--theme-divider-color);
+    border-radius: 0.5rem;
+    max-width: 100%;
+  }
+  .color-value {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+    border-radius: 0.25rem;
+    min-width: 0;
+  }
+  .color-value:focus-within { outline: 2px solid var(--theme-content-color); outline-offset: 2px; }
+  .color-swatch {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.25rem;
+    box-shadow: inset 0 0 0 1px var(--theme-divider-color);
+  }
+  .color-reset { border-left: 1px solid var(--theme-divider-color); padding-left: 0.125rem; }
   input[type='color'] { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
   code { font-size: 0.8rem; }
-  .mode { color: var(--theme-content-color); font-size: 0.8125rem; }
   .error { color: var(--theme-error-color, #e05252); font-size: 0.8125rem; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 </style>

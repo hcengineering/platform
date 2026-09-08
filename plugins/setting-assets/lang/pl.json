@@ -1,8 +1,7 @@
 {
   "string": {
     "IdentificationColor": "Kolor identyfikacyjny",
-    "ColorFromLogo": "Z logo",
-    "ColorResetAutomatic": "Przywróć kolor automatyczny",
+    "ColorDefault": "Domyślny",
     "ColorLogoUnavailable": "Nie udało się wczytać ikony. Używana jest domyślna ikona karty.",
     "ColorSaveFailed": "Nie udało się zapisać ustawień. Spróbuj ponownie.",
     "SyncWorkspaceLogo": "Synchronizuj logo z kartą przeglądarki",
