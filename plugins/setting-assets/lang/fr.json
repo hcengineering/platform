@@ -1,5 +1,11 @@
 {
   "string": {
+    "IdentificationColor": "Couleur distinctive",
+    "ColorFromLogo": "Du logo",
+    "ColorResetAutomatic": "Rétablir la couleur automatique",
+    "ColorLogoUnavailable": "Impossible de charger l’icône. L’icône par défaut de l’onglet est utilisée.",
+    "ColorSaveFailed": "Impossible d’enregistrer les paramètres. Veuillez réessayer.",
+    "SyncWorkspaceLogo": "Synchroniser le logo avec l’onglet",
     "Setting": "Paramètre",
     "Spaces": "Espaces",
     "Integrations": "Intégrations",

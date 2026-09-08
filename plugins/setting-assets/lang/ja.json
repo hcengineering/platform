@@ -1,5 +1,11 @@
 {
   "string": {
+    "IdentificationColor": "識別色",
+    "ColorFromLogo": "ロゴから抽出",
+    "ColorResetAutomatic": "自動設定に戻す",
+    "ColorLogoUnavailable": "アイコンを読み込めませんでした。既定のタブアイコンを使用します。",
+    "ColorSaveFailed": "設定を保存できませんでした。もう一度お試しください。",
+    "SyncWorkspaceLogo": "ロゴをブラウザーのタブと同期",
     "Setting": "設定",
     "Spaces": "スペース",
     "Integrations": "連携",

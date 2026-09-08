@@ -165,6 +165,10 @@ export interface OfficeSettings extends Configuration {
  */
 export interface WorkspaceSetting extends Doc {
   icon?: Ref<Blob> | null
+  /** A manual colour override. Missing/null follows the current logo automatically. */
+  identificationColor?: string | null
+  syncWorkspaceLogo?: boolean
+  identificationColorEnabled?: boolean
 }
 
 export enum IntegrationError {
@@ -255,6 +259,12 @@ export default plugin(settingId, {
     Setting: '' as IntlString,
     Spaces: '' as IntlString,
     WorkspaceSettings: '' as IntlString,
+    IdentificationColor: '' as IntlString,
+    SyncWorkspaceLogo: '' as IntlString,
+    ColorFromLogo: '' as IntlString,
+    ColorResetAutomatic: '' as IntlString,
+    ColorLogoUnavailable: '' as IntlString,
+    ColorSaveFailed: '' as IntlString,
     Integrations: '' as IntlString,
     Support: '' as IntlString,
     Privacy: '' as IntlString,

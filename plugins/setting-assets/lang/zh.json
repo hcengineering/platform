@@ -1,5 +1,11 @@
 {
   "string": {
+    "IdentificationColor": "识别色",
+    "ColorFromLogo": "来自 Logo",
+    "ColorResetAutomatic": "恢复自动",
+    "ColorLogoUnavailable": "无法加载图标，已使用默认标签页图标。",
+    "ColorSaveFailed": "无法保存设置，请重试。",
+    "SyncWorkspaceLogo": "Logo 与标签页同步",
     "Setting": "设置",
     "Spaces": "空间",
     "Integrations": "集成",
