@@ -111,10 +111,11 @@ export async function renderWorkspaceIdentity (
   canvas.width = canvas.height = 32
   const context = canvas.getContext('2d')
   if (context === null) throw new Error('Canvas is unavailable')
-  const scale = Math.min(28 / image.naturalWidth, 28 / image.naturalHeight)
+  // Keep the full favicon footprint; the badge overlays the artwork without reserving space.
+  const scale = Math.min(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight)
   const width = image.naturalWidth * scale
   const height = image.naturalHeight * scale
-  context.drawImage(image, 1 + (28 - width) / 2, 1 + (28 - height) / 2, width, height)
+  context.drawImage(image, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height)
   if (options.showColor) {
     // At 16px this is a 5px marker. Dual edging works on light and dark browser chrome.
     context.beginPath()
