@@ -117,14 +117,13 @@ export async function renderWorkspaceIdentity (
   const height = image.naturalHeight * scale
   context.drawImage(image, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height)
   if (options.showColor) {
-    // At 16px this is a 5px marker. Dual edging works on light and dark browser chrome.
+    // Cut a transparent arc around the marker so the browser's own background separates it from the logo.
+    context.save()
+    context.globalCompositeOperation = 'destination-out'
     context.beginPath()
-    context.arc(25, 25, 6, 0, Math.PI * 2)
-    context.fillStyle = '#ffffff'
+    context.arc(25, 25, 7, 0, Math.PI * 2)
     context.fill()
-    context.strokeStyle = '#334155'
-    context.lineWidth = 0.75
-    context.stroke()
+    context.restore()
     context.beginPath()
     context.arc(25, 25, 4.75, 0, Math.PI * 2)
     context.fillStyle = color
