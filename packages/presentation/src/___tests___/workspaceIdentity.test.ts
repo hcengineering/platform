@@ -1,6 +1,55 @@
 // Copyright © 2026 Huly Contributors. Licensed under the Eclipse Public License, Version 2.0.
 
 import { mixLogoColor, normalizeIdentityColor, renderWorkspaceIdentity } from '../workspaceIdentity'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
+import { runInNewContext } from 'vm'
+
+describe('workspace favicon before application startup', () => {
+  const icon = 'data:image/png;base64,iVBORw0KGgo='
+  const template = readFileSync(resolve(__dirname, '../../../../dev/prod/src/index.ejs'), 'utf8')
+
+  function bootstrap (pathname: string, cached?: string, denied = false): { fallback: any, icons: any[] } {
+    const fallback = { href: '', dataset: { defaultHref: '/huly/favicon.ico' } }
+    const icons: any[] = []
+    const script = template.match(/<script id="workspace-favicon-bootstrap">([\s\S]*?)<\/script>/)?.[1]
+    expect(script).toBeDefined()
+    runInNewContext(script ?? '', {
+      location: { pathname },
+      localStorage: { getItem: (key: string) => {
+        if (denied) throw new Error('Storage denied')
+        return key === 'huly.workspace-favicon:/workbench/company-a' ? cached ?? null : null
+      } },
+      document: {
+        getElementById: () => fallback,
+        createElement: () => ({}),
+        head: { appendChild: (link: any) => icons.push(link) }
+      }
+    })
+    return { fallback, icons }
+  }
+
+  it('declares the cached PNG without assigning a fallback URL or starting the app', () => {
+    const { fallback, icons } = bootstrap('/workbench/company-a/tracker', icon)
+    expect(fallback.href).toBe('')
+    expect(icons).toEqual([expect.objectContaining({ id: 'workspace-favicon', href: icon })])
+  })
+
+  it('never uses another workspace icon or applies one to the login page', () => {
+    for (const pathname of ['/workbench/company-b', '/login']) {
+      const { fallback, icons } = bootstrap(pathname, icon)
+      expect(fallback.href).toBe('/huly/favicon.ico')
+      expect(icons).toHaveLength(0)
+    }
+  })
+
+  it('falls back safely when storage is denied or contains a non-PNG URL', () => {
+    for (const cached of ['https://other.example/icon.png', 'javascript:alert(1)', 'broken']) {
+      expect(bootstrap('/workbench/company-a', cached).fallback.href).toBe('/huly/favicon.ico')
+    }
+    expect(bootstrap('/workbench/company-a', icon, true).fallback.href).toBe('/huly/favicon.ico')
+  })
+})
 
 describe('workspace identification colour', () => {
   it('mixes colours in linear light', () => {

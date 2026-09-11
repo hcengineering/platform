@@ -43,10 +43,62 @@ export interface WorkspaceFaviconOptions {
 }
 
 const originalIcons = new WeakMap<Document, HTMLLinkElement[]>()
+const cacheRevisions = new WeakMap<Document, number>()
+const faviconCachePrefix = 'huly.workspace-favicon:'
+
+function faviconCacheKey (ownerDocument: Document): string | undefined {
+  const workspace = ownerDocument.location?.pathname.match(/^\/workbench\/[^/]+/)
+  return workspace != null ? faviconCachePrefix + workspace[0] : undefined
+}
+
+function readCachedFavicon (ownerDocument: Document, key?: string): string | undefined {
+  try {
+    const icon = key === undefined ? null : ownerDocument.defaultView?.localStorage.getItem(key)
+    if (icon != null && icon.length <= 16384 && /^data:image\/png;base64,[A-Za-z0-9+/]+=*$/.test(icon)) return icon
+  } catch {
+    // Storage denial must not prevent normal favicon updates.
+  }
+}
+
+function cacheFavicon (ownerDocument: Document, key: string | undefined, icon?: string): void {
+  if (key === undefined) return
+  try {
+    const storage = ownerDocument.defaultView?.localStorage
+    if (icon === undefined) storage?.removeItem(key)
+    else if (icon.length <= 16384) storage?.setItem(key, icon)
+  } catch {
+    // Quota exhaustion must not prevent normal favicon updates.
+  }
+}
+
+/** Remove local workspace artwork when signing out of this browser. @public */
+export function clearWorkspaceFaviconCache (ownerDocument: Document = document): void {
+  // Invalidate in-flight updates so they cannot repopulate the cache after logout.
+  cacheRevisions.set(ownerDocument, (cacheRevisions.get(ownerDocument) ?? 0) + 1)
+  try {
+    const storage = ownerDocument.defaultView?.localStorage
+    if (storage === undefined) return
+    for (let i = storage.length - 1; i >= 0; i--) {
+      const key = storage.key(i)
+      if (key?.startsWith(faviconCachePrefix) === true) storage.removeItem(key)
+    }
+  } catch {
+    // Signing out must also work when storage is unavailable.
+  }
+}
+
 function getOriginalIcons (ownerDocument: Document): HTMLLinkElement[] {
   let icons = originalIcons.get(ownerDocument)
   if (icons === undefined) {
     icons = Array.from(ownerDocument.head.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]:not(#workspace-favicon)'))
+      .map((icon) => {
+        // The initial page keeps fallback icons inert while a cached workspace icon is visible.
+        if (icon.dataset.defaultHref === undefined) return icon
+        const original = icon.cloneNode(true) as HTMLLinkElement
+        original.href = new URL(icon.dataset.defaultHref, ownerDocument.baseURI).href
+        delete original.dataset.defaultHref
+        return original
+      })
     originalIcons.set(ownerDocument, icons)
   }
   return icons
@@ -138,7 +190,9 @@ export function createWorkspaceFavicon (ownerDocument: Document = document): {
   dispose: () => void
 } {
   const defaults = getOriginalIcons(ownerDocument)
-  const link = ownerDocument.createElement('link')
+  const cacheKey = faviconCacheKey(ownerDocument)
+  const cacheRevision = cacheRevisions.get(ownerDocument) ?? 0
+  const link = ownerDocument.querySelector<HTMLLinkElement>('link#workspace-favicon') ?? ownerDocument.createElement('link')
   link.rel = 'icon'
   link.type = 'image/png'
   link.sizes.value = '32x32'
@@ -146,31 +200,45 @@ export function createWorkspaceFavicon (ownerDocument: Document = document): {
   let revision = 0
   let disposed = false
   let request: AbortController | undefined
+  function removeDefaultLinks (): void {
+    for (const icon of ownerDocument.head.querySelectorAll('link[rel~="icon"]:not(#workspace-favicon)')) icon.remove()
+  }
   function restore (): void {
     link.remove()
+    removeDefaultLinks()
     for (const original of defaults) {
       if (!original.isConnected) ownerDocument.head.appendChild(original)
     }
   }
+  const cached = readCachedFavicon(ownerDocument, cacheKey)
+  if (!link.isConnected && cached !== undefined) {
+    link.href = cached
+    removeDefaultLinks()
+    ownerDocument.head.appendChild(link)
+  }
   return {
     async update (logoUrl, color, options) {
-      if (disposed) return
+      if (disposed || cacheRevision !== (cacheRevisions.get(ownerDocument) ?? 0)) return
       const current = ++revision
       request?.abort()
       request = new AbortController()
       try {
         const result = await renderWorkspaceIdentity(logoUrl, color, request.signal,
           options === undefined ? undefined : { ...options, defaultIconUrl: getDefaultWorkspaceFaviconUrl(ownerDocument) })
-        if (disposed || current !== revision) return
+        if (disposed || current !== revision || faviconCacheKey(ownerDocument) !== cacheKey) return
+        if (cacheRevision !== (cacheRevisions.get(ownerDocument) ?? 0)) return
         if (result.favicon === undefined) {
+          cacheFavicon(ownerDocument, cacheKey)
           restore()
           return
         }
         link.href = result.favicon
-        for (const original of defaults) original.remove()
+        cacheFavicon(ownerDocument, cacheKey, result.favicon)
+        removeDefaultLinks()
         if (!link.isConnected) ownerDocument.head.appendChild(link)
       } catch {
-        if (!disposed && current === revision) restore()
+        // A transient load failure must not erase a valid icon restored during startup.
+        if (!disposed && current === revision && !link.isConnected) restore()
       }
     },
     dispose () {
