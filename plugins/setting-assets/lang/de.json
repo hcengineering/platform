@@ -1,5 +1,10 @@
 {
   "string": {
+    "IdentificationColor": "Erkennungsfarbe",
+    "ColorDefault": "Standard",
+    "ColorLogoUnavailable": "Das Symbol konnte nicht geladen werden. Das Standardsymbol des Tabs wird verwendet.",
+    "ColorSaveFailed": "Die Einstellungen konnten nicht gespeichert werden. Bitte erneut versuchen.",
+    "SyncWorkspaceLogo": "Logo mit Browser-Tab synchronisieren",
     "Setting": "Einstellung",
     "Spaces": "Bereiche",
     "Integrations": "Integrationen",

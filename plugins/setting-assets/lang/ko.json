@@ -1,5 +1,10 @@
 {
   "string": {
+    "IdentificationColor": "식별 색상",
+    "ColorDefault": "기본값",
+    "ColorLogoUnavailable": "아이콘을 불러올 수 없습니다. 기본 탭 아이콘을 사용합니다.",
+    "ColorSaveFailed": "설정을 저장할 수 없습니다. 다시 시도해 주세요.",
+    "SyncWorkspaceLogo": "로고를 브라우저 탭과 동기화",
     "Setting": "설정",
     "Spaces": "스페이스",
     "Integrations": "연동",

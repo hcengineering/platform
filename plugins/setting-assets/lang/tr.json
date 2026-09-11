@@ -1,5 +1,10 @@
 {
   "string": {
+    "IdentificationColor": "Ayırt edici renk",
+    "ColorDefault": "Varsayılan",
+    "ColorLogoUnavailable": "Simge yüklenemedi. Varsayılan sekme simgesi kullanılıyor.",
+    "ColorSaveFailed": "Ayarlar kaydedilemedi. Lütfen tekrar deneyin.",
+    "SyncWorkspaceLogo": "Logoyu tarayıcı sekmesiyle eşitle",
     "Setting": "Ayar",
     "Spaces": "Alanlar",
     "Integrations": "Entegrasyonlar",
