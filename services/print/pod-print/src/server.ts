@@ -260,8 +260,8 @@ export function createServer (
       if (req.query.format !== undefined && !['preview', 'html', 'pdf'].includes(req.query.format as string)) {
         throw new ApiError(400, 'Unsupported preview format')
       }
-      const format = (req.query.format === 'preview' || req.query.format === 'pdf') && config.GotenbergUrl !== ''
-        ? 'pdf' : 'html'
+      const format =
+        (req.query.format === 'preview' || req.query.format === 'pdf') && config.GotenbergUrl !== '' ? 'pdf' : 'html'
       if (req.query.format === 'pdf' && config.GotenbergUrl === '') {
         throw new ApiError(503, 'PDF document preview is not configured')
       }
@@ -272,7 +272,7 @@ export function createServer (
       if (convertStats === undefined) {
         const convert = async (): Promise<void> => {
           // Another request may have filled the cache while this job waited for the converter.
-          if (await storageAdapter.stat(ctx, wsUuid, convertId) !== undefined) return
+          if ((await storageAdapter.stat(ctx, wsUuid, convertId)) !== undefined) return
           const originalFile = await storageAdapter.read(ctx, wsUuid, file)
 
           if (originalFile === undefined) {
@@ -283,9 +283,10 @@ export function createServer (
           if (format === 'pdf' && input.length > maxDocumentBytes) {
             throw new ApiError(413, 'Document exceeds the 25 MiB preview limit')
           }
-          const output = format === 'pdf'
-            ? await ctx.with('convertToPdf', {}, () => convertToPdf(input, config.GotenbergUrl))
-            : Buffer.from(await ctx.with('convertToHtml', {}, () => convertToHtml(input)))
+          const output =
+            format === 'pdf'
+              ? await ctx.with('convertToPdf', {}, () => convertToPdf(input, config.GotenbergUrl))
+              : Buffer.from(await ctx.with('convertToHtml', {}, () => convertToHtml(input)))
           await storageAdapter.put(ctx, wsUuid, convertId, output, contentType, output.length)
         }
         if (format === 'pdf') {

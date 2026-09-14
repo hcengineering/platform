@@ -17,15 +17,18 @@ export function createPreviewQueue (maxPending = 4): {
   let active = false
 
   return {
-    run<T> (key: string, operation: () => Promise<T>): Promise<T> {
+    run<T>(key: string, operation: () => Promise<T>): Promise<T> {
       const existing = results.get(key)
       if (existing !== undefined) return existing as Promise<T>
       if (active && pending.length >= maxPending) {
         return Promise.reject(new ApiError(503, 'Document preview is busy. Please try again.'))
       }
-      let resolve!: (value: T) => void
-      let reject!: (reason: unknown) => void
-      const result = new Promise<T>((res, rej) => { resolve = res; reject = rej })
+      let resolveJob!: (value: T) => void
+      let rejectJob!: (reason: unknown) => void
+      const result = new Promise<T>((resolve, reject) => {
+        resolveJob = resolve
+        rejectJob = reject
+      })
       results.set(key, result)
       const start = (): void => {
         active = true
@@ -34,13 +37,18 @@ export function createPreviewQueue (maxPending = 4): {
           active = false
           pending.shift()?.()
         }
-        void Promise.resolve().then(operation).then((value) => {
-          finish()
-          resolve(value)
-        }, (error) => {
-          finish()
-          reject(error)
-        })
+        void Promise.resolve()
+          .then(operation)
+          .then(
+            (value) => {
+              finish()
+              resolveJob(value)
+            },
+            (error) => {
+              finish()
+              rejectJob(error)
+            }
+          )
       }
       if (active) pending.push(start)
       else start()
@@ -58,12 +66,15 @@ export async function convertToPdf (
   if (document.length > maxDocumentBytes) throw new ApiError(413, 'Document exceeds the 25 MiB preview limit')
   const maxOutput = options.maxOutputBytes ?? 50 * 1024 * 1024
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? 60000)
+  const timer = setTimeout(() => { controller.abort() }, options.timeoutMs ?? 60000)
   try {
     const body = new FormData()
     body.append('files', new Blob([new Uint8Array(document)]), 'document.docx')
     const response = await fetch(`${endpoint.replace(/\/+$/, '')}/forms/libreoffice/convert`, {
-      method: 'POST', body, signal: controller.signal, redirect: 'error'
+      method: 'POST',
+      body,
+      signal: controller.signal,
+      redirect: 'error'
     })
     if (!response.ok || response.headers.get('content-type')?.split(';')[0].trim() !== 'application/pdf') {
       await response.body?.cancel()

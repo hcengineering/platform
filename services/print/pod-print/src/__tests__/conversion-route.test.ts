@@ -1,33 +1,43 @@
 // Copyright © 2026 Huly Contributors.
 import { type Server } from 'http'
 
+import config from '../config'
+import { convertToPdf } from '../preview'
+import { createServer } from '../server'
+
 const mockStorage = { stat: jest.fn(), read: jest.fn(), put: jest.fn(), close: jest.fn() }
 const mockContext: { with: jest.Mock, error: jest.Mock } = {
-  with: jest.fn(async (_name, _attrs, operation) => await operation(mockContext)), error: jest.fn()
+  with: jest.fn(async (_name, _attrs, operation) => await Promise.resolve(operation(mockContext))),
+  error: jest.fn()
 }
-jest.mock('cors', () => () => (_req: unknown, _res: unknown, next: () => void) => next(), { virtual: true })
+jest.mock('cors', () => () => (_req: unknown, _res: unknown, next: () => void) => { next() }, { virtual: true })
 jest.mock('@hcengineering/api-client', () => ({}), { virtual: true })
 jest.mock('@hcengineering/core', () => ({ newMetrics: jest.fn() }), { virtual: true })
 jest.mock('@hcengineering/server-core', () => ({ initStatisticsContext: () => mockContext }), { virtual: true })
 jest.mock('@hcengineering/server-storage', () => ({ buildStorageFromConfig: () => mockStorage }), { virtual: true })
 jest.mock('@hcengineering/server-guest-resources', () => ({}), { virtual: true })
 jest.mock('@hcengineering/analytics-service', () => ({}), { virtual: true })
-jest.mock('@hcengineering/account-client', () => ({
-  getClient: (_url: string, token: string) => ({
-    getLoginInfoByToken: async () => token === 'invalid' ? {} : { workspace: token, workspaceDataId: token, workspaceUrl: token }
+jest.mock(
+  '@hcengineering/account-client',
+  () => ({
+    getClient: (_url: string, token: string) => ({
+      getLoginInfoByToken: async () =>
+        token === 'invalid' ? {} : { workspace: token, workspaceDataId: token, workspaceUrl: token }
+    }),
+    isWorkspaceLoginInfo: (info: any) => info.workspace !== undefined
   }),
-  isWorkspaceLoginInfo: (info: any) => info.workspace !== undefined
-}), { virtual: true })
-jest.mock('../config', () => ({ __esModule: true, default: { GotenbergUrl: 'http://converter', AccountsUrl: 'http://accounts' } }))
+  { virtual: true }
+)
+jest.mock('../config', () => ({
+  __esModule: true,
+  default: { GotenbergUrl: 'http://converter', AccountsUrl: 'http://accounts' }
+}))
 jest.mock('../print', () => ({}))
 jest.mock('../convert', () => ({ convertToHtml: jest.fn(async () => '<p>HTML</p>') }))
 jest.mock('../preview', () => ({
-  ...jest.requireActual('../preview'), convertToPdf: jest.fn(async () => Buffer.from('%PDF-fixture'))
+  ...jest.requireActual('../preview'),
+  convertToPdf: jest.fn(async () => Buffer.from('%PDF-fixture'))
 }))
-
-import config from '../config'
-import { convertToPdf } from '../preview'
-import { createServer } from '../server'
 
 describe('authenticated conversion route', () => {
   let server: Server
@@ -39,10 +49,14 @@ describe('authenticated conversion route', () => {
   const docx = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   beforeAll(async () => {
     const app = createServer({} as any, []).app
-    await new Promise<void>((resolve) => { server = app.listen(0, '127.0.0.1', resolve) })
+    await new Promise<void>((resolve) => {
+      server = app.listen(0, '127.0.0.1', resolve)
+    })
     base = `http://127.0.0.1:${(server.address() as any).port}`
   })
-  afterAll(async () => { await new Promise<void>((resolve) => server.close(() => resolve())) })
+  afterAll(async () => {
+    await new Promise<void>((resolve) => server.close(() => { resolve() }))
+  })
   beforeEach(() => {
     jest.clearAllMocks()
     cache.clear()
@@ -50,10 +64,13 @@ describe('authenticated conversion route', () => {
     sourceType = docx
     size = 12
     config.GotenbergUrl = 'http://converter'
-    mockStorage.stat.mockImplementation(async (_ctx, ws, id) => id === 'source'
-      ? { contentType: sourceType, etag, size } : cache.get(`${ws.uuid}/${id}`))
+    mockStorage.stat.mockImplementation(async (_ctx, ws, id) =>
+      id === 'source' ? { contentType: sourceType, etag, size } : cache.get(`${ws.uuid}/${id}`)
+    )
     mockStorage.read.mockResolvedValue([Buffer.from('document')])
-    mockStorage.put.mockImplementation(async (_ctx, ws, id, _bytes, contentType) => { cache.set(`${ws.uuid}/${id}`, { contentType }) })
+    mockStorage.put.mockImplementation(async (_ctx, ws, id, _bytes, contentType) => {
+      cache.set(`${ws.uuid}/${id}`, { contentType })
+    })
   })
   const request = async (query = '?format=preview', token = 'workspace-a'): Promise<Response> =>
     await fetch(`${base}/convert/source${query}`, { headers: { Authorization: `Bearer ${token}` } })
@@ -92,11 +109,16 @@ describe('authenticated conversion route', () => {
   it('completes HTML conversion while a PDF conversion is stalled', async () => {
     let releasePdf!: (value: Buffer) => void
     let markStarted!: () => void
-    const started = new Promise<void>((resolve) => { markStarted = resolve })
-    jest.mocked(convertToPdf).mockImplementationOnce(async () => await new Promise<Buffer>((resolve) => {
-      releasePdf = resolve
-      markStarted()
-    }))
+    const started = new Promise<void>((resolve) => {
+      markStarted = resolve
+    })
+    jest.mocked(convertToPdf).mockImplementationOnce(
+      async () =>
+        await new Promise<Buffer>((resolve) => {
+          releasePdf = resolve
+          markStarted()
+        })
+    )
     const pdf = request()
     await started
     let deadline: ReturnType<typeof setTimeout> | undefined
@@ -104,7 +126,7 @@ describe('authenticated conversion route', () => {
       const html = await Promise.race([
         request('?format=html'),
         new Promise<never>((_resolve, reject) => {
-          deadline = setTimeout(() => reject(new Error('HTML is blocked by PDF conversion')), 1000)
+          deadline = setTimeout(() => { reject(new Error('HTML is blocked by PDF conversion')) }, 1000)
         })
       ])
       expect(html.status).toBe(200)

@@ -56,11 +56,7 @@ export interface ConvertedPreview {
   contentType: 'application/pdf' | 'text/html'
 }
 
-export async function convertForPreview (
-  file: string,
-  token: string,
-  signal?: AbortSignal
-): Promise<ConvertedPreview> {
+export async function convertForPreview (file: string, token: string, signal?: AbortSignal): Promise<ConvertedPreview> {
   if (token === '') {
     throw new Error('Missing authentication token')
   }
