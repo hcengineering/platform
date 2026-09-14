@@ -5,6 +5,7 @@
     "DownloadAll": "Descargar todo",
     "PrintFailed": "Error al imprimir",
     "PrintSettings": "Print settings",
-    "LandscapeMode": "Landscape mode"
+    "LandscapeMode": "Landscape mode",
+    "Retry": "Reintentar"
   }
 }
