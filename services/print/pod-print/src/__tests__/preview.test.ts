@@ -86,7 +86,9 @@ describe('document preview', () => {
     jest.spyOn(globalThis, 'fetch').mockImplementation(
       async (_url, options) =>
         await new Promise((_resolve, reject) => {
-          options?.signal?.addEventListener('abort', () => { reject(new Error('aborted')) })
+          options?.signal?.addEventListener('abort', () => {
+            reject(new Error('aborted'))
+          })
         })
     )
     await expect(convertToPdf(Buffer.from('docx'), 'http://converter', { timeoutMs: 10 })).rejects.toMatchObject({

@@ -10,7 +10,13 @@ const mockContext: { with: jest.Mock, error: jest.Mock } = {
   with: jest.fn(async (_name, _attrs, operation) => await Promise.resolve(operation(mockContext))),
   error: jest.fn()
 }
-jest.mock('cors', () => () => (_req: unknown, _res: unknown, next: () => void) => { next() }, { virtual: true })
+jest.mock(
+  'cors',
+  () => () => (_req: unknown, _res: unknown, next: () => void) => {
+    next()
+  },
+  { virtual: true }
+)
 jest.mock('@hcengineering/api-client', () => ({}), { virtual: true })
 jest.mock('@hcengineering/core', () => ({ newMetrics: jest.fn() }), { virtual: true })
 jest.mock('@hcengineering/server-core', () => ({ initStatisticsContext: () => mockContext }), { virtual: true })
@@ -55,7 +61,11 @@ describe('authenticated conversion route', () => {
     base = `http://127.0.0.1:${(server.address() as any).port}`
   })
   afterAll(async () => {
-    await new Promise<void>((resolve) => server.close(() => { resolve() }))
+    await new Promise<void>((resolve) =>
+      server.close(() => {
+        resolve()
+      })
+    )
   })
   beforeEach(() => {
     jest.clearAllMocks()
@@ -126,7 +136,9 @@ describe('authenticated conversion route', () => {
       const html = await Promise.race([
         request('?format=html'),
         new Promise<never>((_resolve, reject) => {
-          deadline = setTimeout(() => { reject(new Error('HTML is blocked by PDF conversion')) }, 1000)
+          deadline = setTimeout(() => {
+            reject(new Error('HTML is blocked by PDF conversion'))
+          }, 1000)
         })
       ])
       expect(html.status).toBe(200)

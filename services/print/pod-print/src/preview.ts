@@ -66,7 +66,9 @@ export async function convertToPdf (
   if (document.length > maxDocumentBytes) throw new ApiError(413, 'Document exceeds the 25 MiB preview limit')
   const maxOutput = options.maxOutputBytes ?? 50 * 1024 * 1024
   const controller = new AbortController()
-  const timer = setTimeout(() => { controller.abort() }, options.timeoutMs ?? 60000)
+  const timer = setTimeout(() => {
+    controller.abort()
+  }, options.timeoutMs ?? 60000)
   try {
     const body = new FormData()
     body.append('files', new Blob([new Uint8Array(document)]), 'document.docx')
