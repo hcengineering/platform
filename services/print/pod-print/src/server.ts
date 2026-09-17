@@ -33,6 +33,7 @@ import { join } from 'path'
 
 import config from './config'
 import { convertToHtml } from './convert'
+import { convertToPdf, createPreviewQueue, getPreviewId, maxDocumentBytes } from './preview'
 import { ApiError } from './error'
 import { PrintOptions, print, validKinds, validPageOrientations } from './print'
 import { withMeasureContext } from './middleware'
@@ -177,6 +178,7 @@ export function createServer (
   allowedHostnames: string[]
 ): { app: Express, close: () => void } {
   const storageAdapter = buildStorageFromConfig(storageConfig)
+  const pdfPreviewQueue = createPreviewQueue()
   const measureCtx = initStatisticsContext('print', {
     factory: () =>
       createOpenTelemetryMetricsContext(
@@ -255,29 +257,48 @@ export function createServer (
         throw new ApiError(400, `File of this type (${stat.contentType}) cannot be converted`)
       }
 
-      const convertId = getConvertId(file, stat.etag)
+      if (req.query.format !== undefined && !['preview', 'html', 'pdf'].includes(req.query.format as string)) {
+        throw new ApiError(400, 'Unsupported preview format')
+      }
+      const format =
+        (req.query.format === 'preview' || req.query.format === 'pdf') && config.GotenbergUrl !== '' ? 'pdf' : 'html'
+      if (req.query.format === 'pdf' && config.GotenbergUrl === '') {
+        throw new ApiError(503, 'PDF document preview is not configured')
+      }
+      const contentType = format === 'pdf' ? 'application/pdf' : 'text/html'
+      const convertId = getPreviewId(file, stat.etag, format)
       const convertStats = await storageAdapter.stat(ctx, wsUuid, convertId)
 
       if (convertStats === undefined) {
-        const originalFile = await storageAdapter.read(ctx, wsUuid, file)
+        const convert = async (): Promise<void> => {
+          // Another request may have filled the cache while this job waited for the converter.
+          if ((await storageAdapter.stat(ctx, wsUuid, convertId)) !== undefined) return
+          const originalFile = await storageAdapter.read(ctx, wsUuid, file)
 
-        if (originalFile === undefined) {
-          throw new ApiError(404, `File ${file} not found`)
+          if (originalFile === undefined) {
+            throw new ApiError(404, `File ${file} not found`)
+          }
+
+          const input = Buffer.concat(originalFile as any)
+          if (format === 'pdf' && input.length > maxDocumentBytes) {
+            throw new ApiError(413, 'Document exceeds the 25 MiB preview limit')
+          }
+          const output =
+            format === 'pdf'
+              ? await ctx.with('convertToPdf', {}, () => convertToPdf(input, config.GotenbergUrl))
+              : Buffer.from(await ctx.with('convertToHtml', {}, () => convertToHtml(input)))
+          await storageAdapter.put(ctx, wsUuid, convertId, output, contentType, output.length)
         }
-
-        const htmlRes = await ctx.with('convertToHtml', {}, () => convertToHtml(Buffer.concat(originalFile as any)))
-
-        if (htmlRes === undefined) {
-          throw new ApiError(400, 'Failed to convert')
+        if (format === 'pdf') {
+          if (stat.size > maxDocumentBytes) throw new ApiError(413, 'Document exceeds the 25 MiB preview limit')
+          await pdfPreviewQueue.run(JSON.stringify([wsUuid.uuid, wsUuid.dataId, convertId]), convert)
+        } else {
+          await convert()
         }
-
-        const htmlBuf = Buffer.from(htmlRes)
-
-        await storageAdapter.put(ctx, wsUuid, convertId, htmlBuf, 'text/html', htmlBuf.length)
       }
 
       res.contentType('application/json')
-      res.send({ id: convertId })
+      res.send({ id: convertId, contentType })
     })
   )
 
@@ -349,8 +370,4 @@ export function listen (e: Express, port: number, host?: string): Server {
   }
 
   return host !== undefined ? e.listen(port, host, cb) : e.listen(port, cb)
-}
-
-function getConvertId (file: string, etag: string): string {
-  return `${file}@${etag.replaceAll('"', '')}`
 }

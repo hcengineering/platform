@@ -13,6 +13,7 @@ export interface Config {
   FrontUrl: string
   AllowedHostnames: string[]
   PuppeteerArgs: string[]
+  GotenbergUrl: string
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -27,7 +28,8 @@ const config: Config = (() => {
     AccountsUrl: process.env.ACCOUNTS_URL,
     FrontUrl: process.env.FRONT_URL,
     AllowedHostnames: allowedHostnames == null ? [] : allowedHostnames.split(','),
-    PuppeteerArgs: puppeteerArgs.split(',')
+    PuppeteerArgs: puppeteerArgs.split(','),
+    GotenbergUrl: process.env.GOTENBERG_URL ?? ''
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

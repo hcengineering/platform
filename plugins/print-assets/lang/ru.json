@@ -5,6 +5,7 @@
     "DownloadAll": "Скачать все",
     "PrintFailed": "Ошибка печати",
     "PrintSettings": "Настройки печати",
-    "LandscapeMode": "Ландшафтный режим"
+    "LandscapeMode": "Ландшафтный режим",
+    "Retry": "Повторить"
   }
 }

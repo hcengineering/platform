@@ -51,12 +51,51 @@ export async function printToPDF (link: string, token: string, options?: PrintTo
   return res.id
 }
 
+export interface ConvertedPreview {
+  id: string
+  contentType: 'application/pdf' | 'text/html'
+}
+
+export async function convertForPreview (file: string, token: string, signal?: AbortSignal): Promise<ConvertedPreview> {
+  if (token === '') {
+    throw new Error('Missing authentication token')
+  }
+
+  const url = new URL(`${getPrintBaseURL()}/convert/${file}`)
+  url.searchParams.set('format', 'preview')
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json'
+    },
+    signal
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => undefined)
+    throw new Error(`Failed to convert preview: ${error?.message ?? response.status}`)
+  }
+
+  const result = await response.json()
+  if (typeof result?.id !== 'string' || result.id.trim() === '') {
+    throw new Error('Invalid preview response')
+  }
+  const contentType = result.contentType === undefined ? 'text/html' : result.contentType
+  if (contentType !== 'application/pdf' && contentType !== 'text/html') {
+    throw new Error('Invalid preview response')
+  }
+
+  return { id: result.id, contentType }
+}
+
 export async function convertToHTML (file: string, token: string): Promise<string> {
   if (token === '') {
     return ''
   }
 
   const url: URL = new URL(`${getPrintBaseURL()}/convert/${file}`)
+  url.searchParams.set('format', 'html')
 
   const response = await fetch(url, {
     method: 'GET',
