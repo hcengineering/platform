@@ -1,5 +1,10 @@
 {
   "string": {
+    "IdentificationColor": "Color identificativo",
+    "ColorDefault": "Predeterminado",
+    "ColorLogoUnavailable": "No se pudo cargar el icono. Se usa el icono predeterminado de la pestaña.",
+    "ColorSaveFailed": "No se pudo guardar la configuración. Inténtalo de nuevo.",
+    "SyncWorkspaceLogo": "Sincronizar logotipo con la pestaña",
     "Setting": "Configuración",
     "Spaces": "Espacios",
     "Integrations": "Integraciones",

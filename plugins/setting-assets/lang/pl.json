@@ -1,5 +1,10 @@
 {
   "string": {
+    "IdentificationColor": "Kolor identyfikacyjny",
+    "ColorDefault": "Domyślny",
+    "ColorLogoUnavailable": "Nie udało się wczytać ikony. Używana jest domyślna ikona karty.",
+    "ColorSaveFailed": "Nie udało się zapisać ustawień. Spróbuj ponownie.",
+    "SyncWorkspaceLogo": "Synchronizuj logo z kartą przeglądarki",
     "Setting": "Ustawienia",
     "Spaces": "Przestrzenie",
     "Integrations": "Integracje",
