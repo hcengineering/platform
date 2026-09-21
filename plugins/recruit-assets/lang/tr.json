@@ -119,7 +119,9 @@
     "HideArchivedVacancies": "Arşivlenmiş İlanları gizle",
     "HideApplicantsFromArchivedVacancies": "Arşivlenmiş İlanlardan gizle",
     "CreateNewSkills": "Mevcut bulunamazsa yeni yetenekler oluştur",
-    "SwapFirstAndLastNames": "Ad ve soyadı değiştir"
+    "SwapFirstAndLastNames": "Ad ve soyadı değiştir",
+    "ForbidCreateVacancyPermission": "İş ilanı oluşturmayı yasakla",
+    "ForbidCreateVacancyPermissionDescription": "Kullanıcıların yeni iş ilanı oluşturmasını yasaklar"
   },
   "status": {
     "ApplicationExists": "Başvuru zaten mevcut",
