@@ -27,6 +27,8 @@
     "Rename": "Yeniden adlandır",
     "Restore": "Geri yükle",
     "Root": "/",
+    "ForbidCreateDrivePermission": "Sürücü oluşturmayı yasakla",
+    "ForbidCreateDrivePermissionDescription": "Kullanıcıların yeni sürücü oluşturmasını yasaklar",
     "CreateFilePermission": "Create File",
     "CreateFilePermissionDescription": "Grants users ability to create files",
     "UpdateFilePermission": "Update File",

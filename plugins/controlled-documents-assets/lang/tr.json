@@ -42,6 +42,7 @@
     "SearchDocument": "Doküman ara...",
     "CreateEnVersion": "İnceleme için sürüm oluştur",
     "Approvers": "Onaylayanlar",
+    "ExternalApprovers": "Harici onaylayanlar",
     "CoAuthors": "Ortak Yazarlar",
     "Status": "Durum",
     "TemplateName": "Şablon adı",

@@ -33,6 +33,8 @@
     "ConfigLabel": "CRM",
     "ConfigDescription": "Müşteri ilişkiler yönetimi için uzantı",
     "EditFunnel": "Huniyi Düzenle",
-    "FunnelMembers": "Üyeler"
+    "FunnelMembers": "Üyeler",
+    "ForbidCreateFunnelPermission": "Huni oluşturmayı yasakla",
+    "ForbidCreateFunnelPermissionDescription": "Kullanıcıların yeni huni oluşturmasını yasaklar"
   }
 }
