@@ -42,6 +42,15 @@ export interface ReplyRecord {
   replyId: number
 }
 
+export interface ForumTopicRecord {
+  workspace: WorkspaceUuid
+  account: AccountUuid
+  channelId: Ref<ChunterSpace>
+  forumChatId: number
+  topicId: number
+  createdAt: Date
+}
+
 export interface OtpRecord {
   telegramId: number
   telegramUsername: string

@@ -200,3 +200,17 @@ export async function enableIntegration (integration: IntegrationInfo): Promise<
     }
   })
 }
+
+export async function updateIntegrationData (
+  integration: IntegrationInfo,
+  dataPatch: Record<string, unknown>
+): Promise<void> {
+  const client = getAccountClient(serviceToken())
+  await client.updateIntegration({
+    ...integration,
+    data: {
+      ...(integration.data ?? {}),
+      ...dataPatch
+    }
+  })
+}

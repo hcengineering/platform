@@ -258,6 +258,33 @@ export class WorkspaceClient {
     return res
   }
 
+  /**
+   * Resolves the chunter space (Channel or DirectMessage) that owns the activity
+   * message identified by `messageId`. For thread messages we walk to the parent
+   * object rather than the comment itself. Returns undefined when the message is
+   * not attached to a chunter space, so the caller can fall back to a plain DM.
+   */
+  async getChannelForActivityMessage (
+    messageId: Ref<ActivityMessage>
+  ): Promise<ChunterSpace | undefined> {
+    const message = await this.client.findOne(activity.class.ActivityMessage, { _id: messageId })
+    if (message === undefined) return undefined
+
+    let channelId: Ref<ChunterSpace>
+    if (this.hierarchy.isDerived(message._class, chunter.class.ThreadMessage)) {
+      const thread = message as ThreadMessage
+      channelId = thread.objectId as Ref<ChunterSpace>
+    } else {
+      channelId = message.attachedTo as Ref<ChunterSpace>
+    }
+
+    return await this.client.findOne(chunter.class.ChunterSpace, { _id: channelId })
+  }
+
+  async findChunterSpace (channelRef: Ref<ChunterSpace>): Promise<ChunterSpace | undefined> {
+    return await this.client.findOne(chunter.class.ChunterSpace, { _id: channelRef })
+  }
+
   async getChannels (account: AccountUuid, onlyStarred: boolean): Promise<ChunterSpace[]> {
     if (!onlyStarred) {
       return await this.client.findAll(chunter.class.ChunterSpace, {
