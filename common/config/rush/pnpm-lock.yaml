@@ -5020,6 +5020,9 @@ importers:
 
   ../../foundations/server/packages/middleware:
     dependencies:
+      '@hcengineering/ai-bot':
+        specifier: workspace:^0.7.0
+        version: link:../../../../plugins/ai-bot
       '@hcengineering/analytics':
         specifier: workspace:^0.7.19
         version: link:../../../core/packages/analytics
@@ -31217,6 +31220,9 @@ importers:
       '@hcengineering/account-client':
         specifier: workspace:^0.7.25
         version: link:../../foundations/core/packages/account-client
+      '@hcengineering/ai-bot':
+        specifier: workspace:^0.7.0
+        version: link:../../plugins/ai-bot
       '@hcengineering/analytics':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/analytics

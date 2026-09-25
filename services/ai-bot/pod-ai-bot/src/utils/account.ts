@@ -23,7 +23,7 @@ import {
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import { getAccountClient, withRetry } from '@hcengineering/server-client'
-import { aiBotAccountEmail, aiBotEmailSocialKey } from '@hcengineering/ai-bot'
+import { getAiBotAccountEmail, getAiBotEmailSocialKey } from '@hcengineering/ai-bot'
 import { MeasureContext, PersonUuid, systemAccountUuid } from '@hcengineering/core'
 
 import config from '../config'
@@ -105,7 +105,7 @@ export async function tryAssignToWorkspace (workspace: WorkspaceUuid, ctx: Measu
 
     await withRetry(
       async () => {
-        await accountClient.assignWorkspace(aiBotAccountEmail, workspace, AccountRole.User)
+        await accountClient.assignWorkspace(getAiBotAccountEmail(), workspace, AccountRole.User)
       },
       (_, attempt) => attempt >= ASSIGN_WORKSPACE_ATTEMPTS,
       ASSIGN_WORKSPACE_DELAY
@@ -121,7 +121,7 @@ export async function tryAssignToWorkspace (workspace: WorkspaceUuid, ctx: Measu
 }
 
 async function confirmAccount (uuid: PersonUuid): Promise<void> {
-  const token = generateToken(uuid, undefined, { service: 'aibot', confirmEmail: aiBotAccountEmail })
+  const token = generateToken(uuid, undefined, { service: 'aibot', confirmEmail: getAiBotAccountEmail() })
   const client = getAccountClient(token)
   try {
     await client.confirm()
@@ -135,9 +135,9 @@ let account: AccountUuid | undefined
 export async function getAccountUuid (ctx?: MeasureContext): Promise<AccountUuid | undefined> {
   if (account !== undefined) return account
 
-  const token = generateToken(systemAccountUuid, undefined, { service: 'aibot', confirmEmail: aiBotAccountEmail })
+  const token = generateToken(systemAccountUuid, undefined, { service: 'aibot', confirmEmail: getAiBotAccountEmail() })
   const accountClient = getAccountClient(token)
-  const personUuid = await accountClient.findPersonBySocialKey(aiBotEmailSocialKey)
+  const personUuid = await accountClient.findPersonBySocialKey(getAiBotEmailSocialKey())
 
   if (personUuid !== undefined) {
     await confirmAccount(personUuid)
@@ -145,7 +145,7 @@ export async function getAccountUuid (ctx?: MeasureContext): Promise<AccountUuid
     return account
   }
 
-  const result = await accountClient.signUp(aiBotAccountEmail, config.Password, config.FirstName, config.LastName)
+  const result = await accountClient.signUp(getAiBotAccountEmail(), config.Password, config.FirstName, config.LastName)
 
   if (result !== undefined) {
     await confirmAccount(result.account)
