@@ -6,6 +6,12 @@
 ⭐️ Your star shines on us. Star us on GitHub!
 
 > [!IMPORTANT]
+> **This repository is frozen and is no longer actively maintained.**
+>
+> Development continues in [Platform-Collective/platform](https://github.com/Platform-Collective/platform).
+> Please use the new repository for current source code, issues, and pull requests.
+
+> [!IMPORTANT]
 > **Hosted Huly has shut down.**
 >
 > The hosted Huly service has been discontinued because its hosting is no longer funded. The hosted platform is no longer available.
