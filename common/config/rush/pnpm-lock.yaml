@@ -14824,6 +14824,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.5
         version: 29.5.14
+      '@types/node':
+        specifier: ^22.18.1
+        version: 22.19.0
       '@types/png-chunks-extract':
         specifier: ^1.0.2
         version: 1.0.2

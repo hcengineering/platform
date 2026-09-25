@@ -735,7 +735,7 @@ export function pushAvailable (): boolean {
   return (
     'serviceWorker' in navigator &&
     'PushManager' in window &&
-    isValidPushPublicKey(publicKey) &&
+    hasValidPushPublicKeyFormat(publicKey) &&
     'Notification' in window &&
     Notification.permission !== 'denied'
   )
@@ -748,7 +748,12 @@ export async function subscribePush (): Promise<boolean> {
   }
   const client = getClient()
   const publicKey = getPushPublicKey()
-  if ('serviceWorker' in navigator && 'PushManager' in window && isValidPushPublicKey(publicKey)) {
+  if ('serviceWorker' in navigator && 'PushManager' in window && hasValidPushPublicKeyFormat(publicKey)) {
+    if (!(await isValidPushPublicKey(publicKey))) {
+      pushAllowed.set(false)
+      return false
+    }
+
     try {
       const loc = getCurrentLocation()
       let registration = await navigator.serviceWorker.getRegistration(`/${loc.path[0]}/${loc.path[1]}`)
@@ -808,12 +813,29 @@ function getPushPublicKey (): string | undefined {
   return publicKey.trim() !== '' ? publicKey : undefined
 }
 
-function isValidPushPublicKey (publicKey: string | undefined): publicKey is string {
+function hasValidPushPublicKeyFormat (publicKey: string | undefined): publicKey is string {
   if (publicKey === undefined || publicKey.trim() === '') return false
 
   try {
     const key = urlBase64ToUint8Array(publicKey)
     return key.length === 65 && key[0] === 4
+  } catch {
+    return false
+  }
+}
+
+async function isValidPushPublicKey (publicKey: string): Promise<boolean> {
+  if (globalThis.crypto?.subtle === undefined) return false
+
+  try {
+    await globalThis.crypto.subtle.importKey(
+      'raw',
+      urlBase64ToUint8Array(publicKey),
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['verify']
+    )
+    return true
   } catch {
     return false
   }
