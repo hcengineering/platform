@@ -4,11 +4,38 @@ import { getClient } from '.'
 import notification from '@hcengineering/notification'
 
 const sounds = new Map<Asset, AudioBuffer>()
+const resumeTimeoutMs = 1000
 let context: AudioContext | undefined
 
 function getAudioContext (): AudioContext {
   context ??= new AudioContext()
   return context
+}
+
+async function resumeAudioContext (context: AudioContext): Promise<boolean> {
+  if (context.state === 'running') return true
+  if (context.state === 'closed') return false
+
+  // Calling resume before the document has received user activation can leave
+  // its promise pending indefinitely because of the browser autoplay policy.
+  if (navigator.userActivation?.hasBeenActive === false) return false
+
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    const resumed = await Promise.race([
+      context.resume().then(() => true),
+      new Promise<boolean>((resolve) => {
+        timeout = setTimeout(() => {
+          resolve(false)
+        }, resumeTimeoutMs)
+      })
+    ])
+    return resumed && context.state === 'running'
+  } catch {
+    return false
+  } finally {
+    if (timeout !== undefined) clearTimeout(timeout)
+  }
 }
 
 export async function isNotificationAllowed (_class?: Ref<Class<Doc>>): Promise<boolean> {
@@ -52,9 +79,8 @@ export async function playSound (soundKey: string, loop = false): Promise<(() =>
 
   try {
     const context = getAudioContext()
-    if (context.state === 'suspended') {
-      await context.resume()
-    }
+    if (!(await resumeAudioContext(context))) return null
+
     const audio = context.createBufferSource()
     audio.buffer = sound
     audio.loop = loop
