@@ -44,6 +44,7 @@
   } from '@hcengineering/ui'
   import settingsRes from '../plugin'
   import WorkspacePermissionEditor from './WorkspacePermissionEditor.svelte'
+  import WorkspaceIdentityColor from './WorkspaceIdentityColor.svelte'
 
   let loading = true
   let isEditingName = false
@@ -108,8 +109,9 @@
   let workspaceSettings: WorkspaceSetting | undefined = undefined
 
   const client = getClient()
-  void client.findOne(settingsRes.class.WorkspaceSetting, {}).then((r) => {
-    workspaceSettings = r
+  const workspaceSettingsQuery = createQuery()
+  workspaceSettingsQuery.query(settingsRes.class.WorkspaceSetting, { _id: settingsRes.ids.WorkspaceSetting }, (result) => {
+    workspaceSettings = result[0]
   })
 
   async function handleAvatarDone (): Promise<void> {
@@ -218,7 +220,7 @@
           <div class="ws">
             <EditableAvatar
               person={{
-                avatarType: workspaceSettings?.icon !== undefined ? AvatarType.IMAGE : AvatarType.COLOR,
+                avatarType: workspaceSettings?.icon != null ? AvatarType.IMAGE : AvatarType.COLOR,
                 avatar: workspaceSettings?.icon
               }}
               size="medium"
@@ -247,6 +249,7 @@
               <Button icon={IconClose} kind="ghost" size="small" on:click={handleCancelEditName} />
             {/if}
           </div>
+          <WorkspaceIdentityColor workspaceSetting={workspaceSettings} />
 
           <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={settingsRes.string.PasswordAgingRule} /></div>
@@ -337,6 +340,7 @@
   .ws {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 1rem;
   }
 

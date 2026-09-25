@@ -4,7 +4,32 @@
 <head>
   <meta charset="utf8">
   <title>Huly</title>
-  <link rel="shortcut icon" href="/huly/favicon.ico" sizes="any" id="default-favicon">
+  <link rel="shortcut icon" data-default-href="/huly/favicon.ico" sizes="any" id="default-favicon">
+  <script id="workspace-favicon-bootstrap">
+    // Run before the application (and before assigning a fallback URL) during tab restoration.
+    // Keep the cache key and PNG validation in sync with presentation/workspaceIdentity.ts.
+    ;(function () {
+      var fallback = document.getElementById('default-favicon')
+      try {
+        var workspace = location.pathname.match(/^\/workbench\/[^/]+/)
+        var icon = workspace && localStorage.getItem('huly.workspace-favicon:' + workspace[0])
+        if (icon && icon.length <= 16384 && /^data:image\/png;base64,[A-Za-z0-9+/]+=*$/.test(icon)) {
+          var link = document.createElement('link')
+          link.id = 'workspace-favicon'
+          link.rel = 'icon'
+          link.type = 'image/png'
+          link.sizes = '32x32'
+          link.href = icon
+          document.head.appendChild(link)
+          return
+        }
+      } catch (_) {
+        // Storage can be unavailable in restricted browsing contexts.
+      }
+      fallback.href = fallback.dataset.defaultHref
+    })()
+  </script>
+  <noscript><link rel="icon" href="/huly/favicon.ico"></noscript>
 </head>
 
 <body style="margin: 0; overflow: hidden;">

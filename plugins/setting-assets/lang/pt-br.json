@@ -1,5 +1,10 @@
 {
   "string": {
+    "IdentificationColor": "Cor de identificação",
+    "ColorDefault": "Padrão",
+    "ColorLogoUnavailable": "Não foi possível carregar o ícone. O ícone padrão da aba está sendo usado.",
+    "ColorSaveFailed": "Não foi possível salvar as configurações. Tente novamente.",
+    "SyncWorkspaceLogo": "Sincronizar logotipo com a aba",
     "Setting": "Configuração",
     "Spaces": "Espaços",
     "Integrations": "Integrações",

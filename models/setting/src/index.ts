@@ -134,6 +134,9 @@ export class TOfficeSettings extends TConfiguration implements OfficeSettings {
 @Model(setting.class.WorkspaceSetting, core.class.Doc, DOMAIN_SETTING)
 export class TWorkspaceSetting extends TDoc implements WorkspaceSetting {
   icon?: Ref<Blob>
+  identificationColor?: string | null
+  syncWorkspaceLogo?: boolean
+  identificationColorEnabled?: boolean
 }
 
 @Mixin(setting.mixin.SpaceTypeEditor, core.class.Class)
