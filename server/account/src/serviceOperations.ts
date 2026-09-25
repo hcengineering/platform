@@ -997,9 +997,8 @@ export async function findPersonBySocialKey (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { extra } = decodeTokenVerbose(ctx, token)
-
-  verifyAllowedServices(['tool', 'workspace', 'aibot', ...integrationServices], extra)
+  const { extra, account: callerAccount } = decodeTokenVerbose(ctx, token)
+  const isService = verifyAllowedServices(['tool', 'workspace', 'aibot', ...integrationServices], extra, false)
 
   const socialId = await db.socialId.findOne({ key: socialString })
 
@@ -1007,10 +1006,40 @@ export async function findPersonBySocialKey (
     return
   }
 
-  if (params.requireAccount === true) {
-    const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
+  if (isService || extra?.admin === 'true') {
+    if (params.requireAccount === true) {
+      const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
 
-    return account?.uuid
+      return account?.uuid
+    }
+
+    return socialId.personUuid
+  }
+
+  if (callerAccount == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  const targetAccount = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
+
+  if (targetAccount == null) {
+    return
+  }
+
+  const [callerWorkspaces, targetWorkspaces] = await Promise.all([
+    db.getAccountWorkspaces(callerAccount),
+    db.getAccountWorkspaces(targetAccount.uuid)
+  ])
+
+  const callerActiveWs = new Set(callerWorkspaces.filter((w) => isActiveMode(w.status.mode)).map((w) => w.uuid))
+  const shared = targetWorkspaces.some((w) => isActiveMode(w.status.mode) && callerActiveWs.has(w.uuid))
+
+  if (!shared) {
+    return
+  }
+
+  if (params.requireAccount === true) {
+    return targetAccount.uuid
   }
 
   return socialId.personUuid
