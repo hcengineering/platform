@@ -4,7 +4,12 @@ import { getClient } from '.'
 import notification from '@hcengineering/notification'
 
 const sounds = new Map<Asset, AudioBuffer>()
-const context = new AudioContext()
+let context: AudioContext | undefined
+
+function getAudioContext (): AudioContext {
+  context ??= new AudioContext()
+  return context
+}
 
 export async function isNotificationAllowed (_class?: Ref<Class<Doc>>): Promise<boolean> {
   if (_class === undefined) return false
@@ -24,7 +29,7 @@ export async function prepareSound (key: string): Promise<void> {
     const soundUrl = getMetadata(key as Asset) as string
     const rawAudio = await fetch(soundUrl)
     const rawBuffer = await rawAudio.arrayBuffer()
-    const decodedBuffer = await context.decodeAudioData(rawBuffer)
+    const decodedBuffer = await getAudioContext().decodeAudioData(rawBuffer)
 
     sounds.set(key as Asset, decodedBuffer)
   } catch (err) {
@@ -46,6 +51,10 @@ export async function playSound (soundKey: string, loop = false): Promise<(() =>
   }
 
   try {
+    const context = getAudioContext()
+    if (context.state === 'suspended') {
+      await context.resume()
+    }
     const audio = context.createBufferSource()
     audio.buffer = sound
     audio.loop = loop
