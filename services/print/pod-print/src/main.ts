@@ -22,10 +22,22 @@ export const main = async (): Promise<void> => {
   const storageConfig = storageConfigFromEnv()
   const { app, close } = createServer(storageConfig, config.AllowedHostnames)
   const server = listen(app, config.Port)
+  let shuttingDown = false
 
   const shutdown = (): void => {
-    close()
-    server.close(() => process.exit())
+    if (shuttingDown) {
+      return
+    }
+    shuttingDown = true
+
+    server.close(() => {
+      void close()
+        .then(() => process.exit())
+        .catch((err) => {
+          console.error(err)
+          process.exit(1)
+        })
+    })
   }
 
   process.on('SIGINT', shutdown)

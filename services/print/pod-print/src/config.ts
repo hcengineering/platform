@@ -13,9 +13,18 @@ export interface Config {
   FrontUrl: string
   AllowedHostnames: string[]
   PuppeteerArgs: string[]
+  PrintConcurrency: number
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
+
+const parsePositiveInteger = (str: string | undefined, defaultValue: number): number => {
+  const value = parseNumber(str) ?? defaultValue
+  if (!Number.isInteger(value) || value <= 0) {
+    throw Error(`Invalid positive integer config value: ${str}`)
+  }
+  return value
+}
 
 const config: Config = (() => {
   const allowedHostnames = process.env.ALLOWED_HOSTNAMES
@@ -27,7 +36,8 @@ const config: Config = (() => {
     AccountsUrl: process.env.ACCOUNTS_URL,
     FrontUrl: process.env.FRONT_URL,
     AllowedHostnames: allowedHostnames == null ? [] : allowedHostnames.split(','),
-    PuppeteerArgs: puppeteerArgs.split(',')
+    PuppeteerArgs: puppeteerArgs.split(','),
+    PrintConcurrency: parsePositiveInteger(process.env.PRINT_CONCURRENCY, 1)
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)
