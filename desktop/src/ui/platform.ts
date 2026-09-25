@@ -361,7 +361,9 @@ export async function configurePlatform (onWorkbenchConnect?: () => Promise<void
   setMetadata(presentation.metadata.HulylakeUrl, config.HULYLAKE_URL ?? '')
   setMetadata(presentation.metadata.PulseUrl, config.PULSE_URL ?? '')
 
-  const disabledFeatures = (config.DISABLED_FEATURES ?? '').split(',').map(it => it.trim()).filter(it => it.length > 0)
+  const disabledFeatures = [...(config.DISABLED_FEATURES ?? '').split(','), ...(myBranding.disabledFeatures ?? '').split(',')]
+    .map(it => it.trim())
+    .filter(it => it.length > 0)
   setMetadata(presentation.metadata.DisabledFeatures, new Set(disabledFeatures))
 
   setMetadata(textEditor.metadata.Collaborator, config.COLLABORATOR ?? '')
