@@ -12,6 +12,10 @@ function getAudioContext (): AudioContext {
   return context
 }
 
+function isAudioContextRunning (context: AudioContext): boolean {
+  return context.state === 'running'
+}
+
 async function resumeAudioContext (context: AudioContext): Promise<boolean> {
   if (context.state === 'running') return true
   if (context.state === 'closed') return false
@@ -30,7 +34,7 @@ async function resumeAudioContext (context: AudioContext): Promise<boolean> {
         }, resumeTimeoutMs)
       })
     ])
-    return resumed && context.state === 'running'
+    return resumed && isAudioContextRunning(context)
   } catch {
     return false
   } finally {
