@@ -128,7 +128,7 @@ export async function getCommonNotificationTxes (
     data,
     _class,
     modifiedOn,
-    [],
+    (notifyResult.get(notification.providers.InboxNotificationProvider) ?? []).map((t) => t._id),
     true,
     tx
   )
