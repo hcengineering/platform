@@ -5,6 +5,7 @@
     "DownloadAll": "すべてダウンロード",
     "PrintFailed": "印刷に失敗しました",
     "PrintSettings": "Print settings",
-    "LandscapeMode": "Landscape mode"
+    "LandscapeMode": "Landscape mode",
+    "Retry": "再試行"
   }
 }

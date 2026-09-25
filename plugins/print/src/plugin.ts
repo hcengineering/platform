@@ -15,7 +15,8 @@ export const print = plugin(printId, {
     DownloadAll: '' as IntlString,
     PrintFailed: '' as IntlString,
     PrintSettings: '' as IntlString,
-    LandscapeMode: '' as IntlString
+    LandscapeMode: '' as IntlString,
+    Retry: '' as IntlString
   },
   component: {
     PrintToPDF: '' as AnyComponent,

@@ -5,6 +5,7 @@
     "DownloadAll": "Tümünü indir",
     "PrintFailed": "Yazdırma başarısız",
     "PrintSettings": "Print settings",
-    "LandscapeMode": "Landscape mode"
+    "LandscapeMode": "Landscape mode",
+    "Retry": "Tekrar Dene"
   }
 }

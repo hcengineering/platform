@@ -5,6 +5,7 @@
     "DownloadAll": "Alle herunterladen",
     "PrintFailed": "Druck fehlgeschlagen",
     "PrintSettings": "Print settings",
-    "LandscapeMode": "Landscape mode"
+    "LandscapeMode": "Landscape mode",
+    "Retry": "Wiederholen"
   }
 }
