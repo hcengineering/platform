@@ -20,6 +20,8 @@ import core, {
   type Tx,
   type TxApplyIf,
   type TxCUD,
+  type TxCreateDoc,
+  type TxMixin,
   TxProcessor,
   type TxUpdateDoc
 } from '@hcengineering/core'
@@ -199,36 +201,62 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
 
       const persons = await this.findAll(ctx, contact.class.Person, { _id: tx.objectId as Ref<Person> }, { limit: 1 })
       const person = persons[0]
-      return person === undefined || !this.canUserEditPersonContactDetails(person, account)
+      if (person === undefined) return true
+      if (
+        tx._class === core.class.TxMixin &&
+        (tx as TxMixin<Doc, Doc>).mixin === contact.mixin.Employee &&
+        !h.hasMixin(person, contact.mixin.Employee)
+      ) {
+        return true
+      }
+      return !this.canUserEditPersonContactDetails(person, account)
     }
 
     if (h.isDerived(tx.objectClass, contact.class.Channel)) {
-      const parentPersonId = await this.getChannelParentPersonId(ctx, tx)
-      if (parentPersonId === undefined) return false
-
-      const persons = await this.findAll(ctx, contact.class.Person, { _id: parentPersonId }, { limit: 1 })
-      const person = persons[0]
-      return person === undefined || !this.canUserEditPersonContactDetails(person, account)
+      const parentPersonIds = await this.getChannelParentPersonIds(ctx, tx)
+      for (const parentPersonId of parentPersonIds) {
+        const persons = await this.findAll(ctx, contact.class.Person, { _id: parentPersonId }, { limit: 1 })
+        const person = persons[0]
+        if (person === undefined || !this.canUserEditPersonContactDetails(person, account)) return true
+      }
     }
 
     return false
   }
 
-  private async getChannelParentPersonId (
+  private async getChannelParentPersonIds (
     ctx: MeasureContext<SessionData>,
     tx: TxCUD<Doc>
-  ): Promise<Ref<Person> | undefined> {
-    if (tx.attachedToClass === contact.class.Person && tx.attachedTo !== undefined) {
-      return tx.attachedTo as Ref<Person>
+  ): Promise<Array<Ref<Person>>> {
+    const result = new Set<Ref<Person>>()
+    const addPerson = (personId: Ref<Doc> | undefined, personClass: Ref<Class<Doc>> | undefined): void => {
+      if (
+        personId !== undefined &&
+        personClass !== undefined &&
+        this.context.hierarchy.isDerived(personClass, contact.class.Person)
+      ) {
+        result.add(personId as Ref<Person>)
+      }
     }
 
-    if (tx._class === core.class.TxCreateDoc) return undefined
+    if (tx._class === core.class.TxCreateDoc) {
+      const channel = TxProcessor.createDoc2Doc(tx as TxCreateDoc<Channel>)
+      addPerson(channel.attachedTo, channel.attachedToClass)
+      return Array.from(result)
+    }
 
     const channels = await this.findAll(ctx, contact.class.Channel, { _id: tx.objectId as Ref<Channel> }, { limit: 1 })
     const channel = channels[0]
-    if (channel?.attachedToClass !== contact.class.Person) return undefined
+    if (channel === undefined) return []
 
-    return channel.attachedTo as Ref<Person>
+    addPerson(channel.attachedTo, channel.attachedToClass)
+
+    if (tx._class === core.class.TxUpdateDoc) {
+      const operations = (tx as TxUpdateDoc<Channel>).operations
+      addPerson(operations.attachedTo ?? channel.attachedTo, operations.attachedToClass ?? channel.attachedToClass)
+    }
+
+    return Array.from(result)
   }
 
   /**
