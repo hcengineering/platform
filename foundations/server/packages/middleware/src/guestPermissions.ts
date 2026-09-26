@@ -24,7 +24,7 @@ import core, {
   type TxUpdateDoc
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import contact, { type Person } from '@hcengineering/contact'
+import contact, { type Channel, type Person } from '@hcengineering/contact'
 
 /** Cached state loaded from GuestPermissionsSettings configuration document. */
 interface GuestPermissionsCache {
@@ -122,6 +122,11 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
   async tx (ctx: MeasureContext<SessionData>, txes: Tx[]): Promise<TxMiddlewareResult> {
     const account = ctx.contextData.account
     if (hasAccountRole(account, AccountRole.User)) {
+      if (!hasAccountRole(account, AccountRole.Maintainer)) {
+        for (const tx of txes) {
+          await this.processUserTx(ctx, tx)
+        }
+      }
       this.invalidateCacheIfNeeded(txes)
       return await this.provideTx(ctx, txes)
     }
@@ -158,6 +163,72 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
         throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
       }
     }
+  }
+
+  private async processUserTx (ctx: MeasureContext<SessionData>, tx: Tx): Promise<void> {
+    if (tx._class === core.class.TxApplyIf) {
+      const applyTx = tx as TxApplyIf
+      for (const t of applyTx.txes) {
+        await this.processUserTx(ctx, t)
+      }
+      return
+    }
+
+    if (!TxProcessor.isExtendsCUD(tx._class)) return
+
+    const { account } = ctx.contextData
+    if (await this.isForbiddenUserContactTx(ctx, tx as TxCUD<Doc>, account)) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
+  private canUserEditPersonContactDetails (person: Person, account: Account): boolean {
+    if (person.personUuid === account.uuid) return true
+    return !this.context.hierarchy.hasMixin(person, contact.mixin.Employee)
+  }
+
+  private async isForbiddenUserContactTx (
+    ctx: MeasureContext<SessionData>,
+    tx: TxCUD<Doc>,
+    account: Account
+  ): Promise<boolean> {
+    const h = this.context.hierarchy
+
+    if (h.isDerived(tx.objectClass, contact.class.Person)) {
+      if (tx._class === core.class.TxCreateDoc) return false
+
+      const persons = await this.findAll(ctx, contact.class.Person, { _id: tx.objectId as Ref<Person> }, { limit: 1 })
+      const person = persons[0]
+      return person === undefined || !this.canUserEditPersonContactDetails(person, account)
+    }
+
+    if (h.isDerived(tx.objectClass, contact.class.Channel)) {
+      const parentPersonId = await this.getChannelParentPersonId(ctx, tx)
+      if (parentPersonId === undefined) return false
+
+      const persons = await this.findAll(ctx, contact.class.Person, { _id: parentPersonId }, { limit: 1 })
+      const person = persons[0]
+      return person === undefined || !this.canUserEditPersonContactDetails(person, account)
+    }
+
+    return false
+  }
+
+  private async getChannelParentPersonId (
+    ctx: MeasureContext<SessionData>,
+    tx: TxCUD<Doc>
+  ): Promise<Ref<Person> | undefined> {
+    if (tx.attachedToClass === contact.class.Person && tx.attachedTo !== undefined) {
+      return tx.attachedTo as Ref<Person>
+    }
+
+    if (tx._class === core.class.TxCreateDoc) return undefined
+
+    const channels = await this.findAll(ctx, contact.class.Channel, { _id: tx.objectId as Ref<Channel> }, { limit: 1 })
+    const channel = channels[0]
+    if (channel?.attachedToClass !== contact.class.Person) return undefined
+
+    return channel.attachedTo as Ref<Person>
   }
 
   /**
