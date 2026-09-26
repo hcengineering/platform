@@ -46,10 +46,20 @@ export interface UpdateContentRequest {
 export interface UpdateContentResponse {}
 
 /** @public */
+export interface AppendContentRequest {
+  content: Record<string, Markup>
+}
+
+/** @public */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface AppendContentResponse {}
+
+/** @public */
 export interface CollaboratorClient {
   getMarkup: (document: CollaborativeDoc, source?: Ref<Blob> | null) => Promise<Markup>
   createMarkup: (document: CollaborativeDoc, markup: Markup) => Promise<MarkupBlobRef>
   updateMarkup: (document: CollaborativeDoc, markup: Markup) => Promise<void>
+  appendMarkup: (document: CollaborativeDoc, markup: Markup) => Promise<void>
   copyContent: (source: CollaborativeDoc, target: CollaborativeDoc) => Promise<void>
 }
 
@@ -135,6 +145,20 @@ class CollaboratorClientImpl implements CollaboratorClient {
       3,
       async () => {
         await this.rpc<UpdateContentRequest, UpdateContentResponse>(document, 'updateContent', { content })
+      },
+      50
+    )
+  }
+
+  async appendMarkup (document: CollaborativeDoc, markup: Markup): Promise<void> {
+    const content = {
+      [document.objectAttr]: markup
+    }
+
+    await retry(
+      3,
+      async () => {
+        await this.rpc<AppendContentRequest, AppendContentResponse>(document, 'appendContent', { content })
       },
       50
     )
