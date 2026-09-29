@@ -22,11 +22,18 @@ export function mixLogoColor (pixels: Uint8ClampedArray): string {
     }
   }
   if (weight === 0) return defaultIdentityColor
-  return '#' + total.map((sum) => {
-    const linear = sum / weight
-    const srgb = linear <= 0.0031308 ? linear * 12.92 : 1.055 * linear ** (1 / 2.4) - 0.055
-    return Math.round(Math.max(0, Math.min(1, srgb)) * 255).toString(16).padStart(2, '0')
-  }).join('')
+  return (
+    '#' +
+    total
+      .map((sum) => {
+        const linear = sum / weight
+        const srgb = linear <= 0.0031308 ? linear * 12.92 : 1.055 * linear ** (1 / 2.4) - 0.055
+        return Math.round(Math.max(0, Math.min(1, srgb)) * 255)
+          .toString(16)
+          .padStart(2, '0')
+      })
+      .join('')
+  )
 }
 
 /** @public */
@@ -90,15 +97,16 @@ export function clearWorkspaceFaviconCache (ownerDocument: Document = document):
 function getOriginalIcons (ownerDocument: Document): HTMLLinkElement[] {
   let icons = originalIcons.get(ownerDocument)
   if (icons === undefined) {
-    icons = Array.from(ownerDocument.head.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]:not(#workspace-favicon)'))
-      .map((icon) => {
-        // The initial page keeps fallback icons inert while a cached workspace icon is visible.
-        if (icon.dataset.defaultHref === undefined) return icon
-        const original = icon.cloneNode(true) as HTMLLinkElement
-        original.href = new URL(icon.dataset.defaultHref, ownerDocument.baseURI).href
-        delete original.dataset.defaultHref
-        return original
-      })
+    icons = Array.from(
+      ownerDocument.head.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]:not(#workspace-favicon)')
+    ).map((icon) => {
+      // The initial page keeps fallback icons inert while a cached workspace icon is visible.
+      if (icon.dataset.defaultHref === undefined) return icon
+      const original = icon.cloneNode(true) as HTMLLinkElement
+      original.href = new URL(icon.dataset.defaultHref, ownerDocument.baseURI).href
+      delete original.dataset.defaultHref
+      return original
+    })
     originalIcons.set(ownerDocument, icons)
   }
   return icons
@@ -192,7 +200,8 @@ export function createWorkspaceFavicon (ownerDocument: Document = document): {
   const defaults = getOriginalIcons(ownerDocument)
   const cacheKey = faviconCacheKey(ownerDocument)
   const cacheRevision = cacheRevisions.get(ownerDocument) ?? 0
-  const link = ownerDocument.querySelector<HTMLLinkElement>('link#workspace-favicon') ?? ownerDocument.createElement('link')
+  const link =
+    ownerDocument.querySelector<HTMLLinkElement>('link#workspace-favicon') ?? ownerDocument.createElement('link')
   link.rel = 'icon'
   link.type = 'image/png'
   link.sizes.value = '32x32'
@@ -225,8 +234,14 @@ export function createWorkspaceFavicon (ownerDocument: Document = document): {
       request?.abort()
       request = new AbortController()
       try {
-        const result = await renderWorkspaceIdentity(logoUrl, color, request.signal,
-          options === undefined ? undefined : { ...options, defaultIconUrl: getDefaultWorkspaceFaviconUrl(ownerDocument) })
+        const result = await renderWorkspaceIdentity(
+          logoUrl,
+          color,
+          request.signal,
+          options === undefined
+            ? undefined
+            : { ...options, defaultIconUrl: getDefaultWorkspaceFaviconUrl(ownerDocument) }
+        )
         if (disposed || current !== revision || faviconCacheKey(ownerDocument) !== cacheKey) return
         if (cacheRevision !== (cacheRevisions.get(ownerDocument) ?? 0)) return
         if (result.favicon === undefined) {

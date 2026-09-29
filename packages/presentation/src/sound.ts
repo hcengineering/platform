@@ -22,7 +22,7 @@ async function resumeAudioContext (context: AudioContext): Promise<boolean> {
 
   // Calling resume before the document has received user activation can leave
   // its promise pending indefinitely because of the browser autoplay policy.
-  if (navigator.userActivation?.hasBeenActive === false) return false
+  if (!(navigator.userActivation?.hasBeenActive)) return false
 
   let timeout: ReturnType<typeof setTimeout> | undefined
   try {

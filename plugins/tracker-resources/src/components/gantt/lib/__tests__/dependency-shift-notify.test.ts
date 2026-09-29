@@ -190,7 +190,7 @@ describe('buildRecipientBundles — end-to-end', () => {
     expect(bundles.size).toBe(1)
     const bundle = bundles.get(userB) ?? []
     expect(bundle.length).toBe(2)
-    expect(bundle.map((b) => b.identifier).sort()).toEqual(['PROJ-2', 'PROJ-3'])
+    expect(bundle.map((b) => b.identifier).sort((a, b) => a.localeCompare(b))).toEqual(['PROJ-2', 'PROJ-3'])
   })
 
   it('produces zero bundles when only the trigger user has stake in any shift', () => {

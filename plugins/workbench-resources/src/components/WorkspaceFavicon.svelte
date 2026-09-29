@@ -13,10 +13,12 @@
     settingsLoaded = true
   })
   $: logoUrl = workspaceSetting?.icon != null ? getFileUrl(workspaceSetting.icon) : undefined
-  $: if (settingsLoaded) void favicon?.update(logoUrl, workspaceSetting?.identificationColor, {
-    syncLogo: workspaceSetting?.syncWorkspaceLogo === true,
-    showColor: workspaceSetting?.identificationColorEnabled === true
-  })
+  $: if (settingsLoaded) {
+    void favicon?.update(logoUrl, workspaceSetting?.identificationColor, {
+      syncLogo: workspaceSetting?.syncWorkspaceLogo === true,
+      showColor: workspaceSetting?.identificationColorEnabled === true
+    })
+  }
 
   onMount(() => {
     favicon = createWorkspaceFavicon()
