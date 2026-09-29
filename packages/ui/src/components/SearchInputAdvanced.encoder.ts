@@ -28,7 +28,15 @@
  * a prefix is only aliased (transformation 1), never wrapped (transformation
  * 2). This matches user intent — they specified a field explicitly.
  */
-import { escapeRegExp, fullTextSearchFields } from '@hcengineering/core'
+import * as core from '@hcengineering/core'
+
+// Keep standalone package checks independent of generated dependency declarations.
+// Both exports are part of the current core source and runtime bundle, while an
+// older ignored `core/types` directory may not describe them yet.
+const { escapeRegExp, fullTextSearchFields } = core as typeof core & {
+  escapeRegExp: (value: string) => string
+  fullTextSearchFields: readonly string[]
+}
 
 export type SearchScope = 'title' | 'title-description' | 'all'
 

@@ -37,6 +37,7 @@ export default mergeIds(viewId, view, {
     IdPresenter: '' as AnyComponent
   },
   string: {
+    ConfigureColumns: '' as IntlString,
     Contains: '' as IntlString,
     NotContains: '' as IntlString,
     ValueIsSet: '' as IntlString,
