@@ -43,8 +43,8 @@
     Toggle
   } from '@hcengineering/ui'
   import settingsRes from '../plugin'
-  import ApiTokenPopup from './ApiTokenPopup.svelte'
   import WorkspacePermissionEditor from './WorkspacePermissionEditor.svelte'
+  import WorkspaceIdentityColor from './WorkspaceIdentityColor.svelte'
 
   let loading = true
   let isEditingName = false
@@ -109,8 +109,9 @@
   let workspaceSettings: WorkspaceSetting | undefined = undefined
 
   const client = getClient()
-  void client.findOne(settingsRes.class.WorkspaceSetting, {}).then((r) => {
-    workspaceSettings = r
+  const workspaceSettingsQuery = createQuery()
+  workspaceSettingsQuery.query(settingsRes.class.WorkspaceSetting, { _id: settingsRes.ids.WorkspaceSetting }, (result) => {
+    workspaceSettings = result[0]
   })
 
   async function handleAvatarDone (): Promise<void> {
@@ -151,11 +152,6 @@
   async function changePasswordAgingRules (val: number | undefined): Promise<void> {
     passwordAgingRule = val !== undefined ? Math.max(val, 1) : undefined
     await accountClient.updatePasswordAgingRule(passwordAgingRule)
-  }
-
-  async function handleGenerateApiToken (): Promise<void> {
-    const { token } = await accountClient.selectWorkspace(workspaceUrl)
-    showPopup(ApiTokenPopup, { token })
   }
 
   function handleTogglePermissions (): void {
@@ -224,7 +220,7 @@
           <div class="ws">
             <EditableAvatar
               person={{
-                avatarType: workspaceSettings?.icon !== undefined ? AvatarType.IMAGE : AvatarType.COLOR,
+                avatarType: workspaceSettings?.icon != null ? AvatarType.IMAGE : AvatarType.COLOR,
                 avatar: workspaceSettings?.icon
               }}
               size="medium"
@@ -253,6 +249,7 @@
               <Button icon={IconClose} kind="ghost" size="small" on:click={handleCancelEditName} />
             {/if}
           </div>
+          <WorkspaceIdentityColor workspaceSetting={workspaceSettings} />
 
           <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={settingsRes.string.PasswordAgingRule} /></div>
@@ -319,19 +316,6 @@
           />
 
           <div class="flex-col flex-gap-4 mt-6">
-            <div class="title"><Label label={settingsRes.string.ApiAccess} /></div>
-            <div class="w-32">
-              <Button
-                label={settingsRes.string.GenerateApiToken}
-                kind="regular"
-                disabled={workspaceUrl === ''}
-                showTooltip={{ label: settingsRes.string.GenerateApiToken }}
-                on:click={handleGenerateApiToken}
-              />
-            </div>
-          </div>
-
-          <div class="flex-col flex-gap-4 mt-6">
             <div class="title"><Label label={settingsRes.string.DangerZone} /></div>
             <div class="w-32">
               <Button
@@ -356,6 +340,7 @@
   .ws {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 1rem;
   }
 

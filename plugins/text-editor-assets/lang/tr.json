@@ -82,6 +82,7 @@
     "CannotConnectToCollaborationService": "İşbirliği servisine bağlanılamıyor",
     "SourceURL": "Kaynak URL",
     "SelectedDocuments": "Seçilen belgeler ({count, plural, =1 {1 öğe} other {# öğe}})",
+    "LatestVersion": "En son",
     "Highlight": "Highlight",
     "Subscript": "Subscript",
     "Superscript": "Superscript",

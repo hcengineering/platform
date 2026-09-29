@@ -27,6 +27,7 @@
   import BottomActionComponent from './BottomAction.svelte'
   import login from '../plugin'
   import { LoginInfo } from '@hcengineering/account-client'
+  import { fetchLoginCapabilities } from '../utils'
 
   export let navigateUrl: string | undefined = undefined
   export let signUpDisabled = false
@@ -37,9 +38,18 @@
   export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 
   let method: LoginMethods = useOTP ? LoginMethods.Otp : LoginMethods.Password
+  let guestLoginAvailable = false
+  let capabilitiesLoaded = false
+  let signUpEnabled = true
+  $: effectiveSignUpDisabled = signUpDisabled || (capabilitiesLoaded && !signUpEnabled)
 
   onMount(() => {
     signupStore.setSignUpFlow(false)
+    void fetchLoginCapabilities().then((capabilities) => {
+      signUpEnabled = capabilities.signUpEnabled
+      guestLoginAvailable = capabilities.guestLoginAvailable
+      capabilitiesLoaded = true
+    })
   })
 
   function changeMethod (event: CustomEvent<LoginMethods>): void {
@@ -87,15 +97,33 @@
 </script>
 
 {#if method === LoginMethods.Otp}
-  <LoginOtpForm {navigateUrl} {signUpDisabled} {email} {caption} {subtitle} {onLogin} on:change={changeMethod} />
+  <LoginOtpForm
+    {navigateUrl}
+    signUpDisabled={effectiveSignUpDisabled}
+    {email}
+    {caption}
+    {subtitle}
+    {onLogin}
+    on:change={changeMethod}
+  />
 {:else}
-  <LoginPasswordForm {navigateUrl} {signUpDisabled} {email} {caption} {subtitle} {onLogin} on:change={changeMethod} />
+  <LoginPasswordForm
+    {navigateUrl}
+    signUpDisabled={effectiveSignUpDisabled}
+    {email}
+    {caption}
+    {subtitle}
+    {onLogin}
+    on:change={changeMethod}
+  />
 {/if}
 <div class="actions" style:margin-inline-start={loginFormPaddingInline($deviceInfo.docWidth, $deviceInfo.docHeight)}>
   <BottomActionComponent action={method === LoginMethods.Otp ? loginWithPasswordAction : loginWithCodeAction} />
-  <div class="login-as-guest">
-    <BottomActionComponent action={loginAsGuest} />
-  </div>
+  {#if guestLoginAvailable}
+    <div class="login-as-guest">
+      <BottomActionComponent action={loginAsGuest} />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">

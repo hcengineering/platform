@@ -127,6 +127,12 @@ export class MigrateClientImpl implements MigrationClient {
     await this.lowLevel.rawDeleteMany(domain, query)
   }
 
+  async domainExists (domain: Domain): Promise<boolean> {
+    const adapter = this.pipeline.context.adapterManager?.getAdapter(domain, false)
+    const helper = adapter?.helper?.()
+    return helper !== undefined ? await helper.exists(domain) : true
+  }
+
   async fullReindex (): Promise<void> {
     await this.queue.send(this.ctx, this.wsIds.uuid, [workspaceEvents.fullReindex()])
   }

@@ -5,6 +5,7 @@
         "DownloadAll": "모두 다운로드",
         "PrintFailed": "인쇄 실패",
         "PrintSettings": "Print settings",
-        "LandscapeMode": "Landscape mode"
+        "LandscapeMode": "Landscape mode",
+        "Retry": "다시 시도"
     }
 }

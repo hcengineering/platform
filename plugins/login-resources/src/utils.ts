@@ -80,6 +80,25 @@ export function getAccountClient (
 }
 
 /**
+ * Queries the account service for login affordance flags. Used by the login UI
+ * to hide the Sign Up tab and "Continue as guest" button when those flows are
+ * disabled server-side. Falls back to both available on any error to preserve
+ * backwards compatibility with account services that do not implement this
+ * endpoint yet.
+ */
+export async function fetchLoginCapabilities (): Promise<{
+  signUpEnabled: boolean
+  guestLoginAvailable: boolean
+}> {
+  try {
+    const accountClient = getAccountClient(null)
+    return await accountClient.getLoginCapabilities()
+  } catch {
+    return { signUpEnabled: true, guestLoginAvailable: true }
+  }
+}
+
+/**
  * Perform a login operation to required workspace with user credentials.
  */
 export async function doLogin (email: string, password: string): Promise<[Status, LoginInfo | null]> {

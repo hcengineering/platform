@@ -27,7 +27,7 @@ import core, {
 } from '@hcengineering/core'
 import { rpcJSONReplacer, type RateLimitInfo } from '@hcengineering/rpc'
 import type { ClientSessionCtx, ConnectionSocket, Session, SessionManager } from '@hcengineering/server-core'
-import { decodeToken } from '@hcengineering/server-token'
+import { setApiTokenRevocationChecker, verifyToken, type Token } from '@hcengineering/server-token'
 
 import { createHash } from 'crypto'
 import { type Express, type Response as ExpressResponse, type Request } from 'express'
@@ -136,6 +136,22 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     return getAccountClientRaw(accountsUrl, token)
   }
 
+  // Centralized revocation resolution for verifyToken: the account is the source
+  // of truth, so we simply ask it to validate the presenter's own token via an
+  // existing method. A rejection (Unauthorized) means revoked or expired; any
+  // other failure is transient and left for verifyToken's cache to retry.
+  setApiTokenRevocationChecker(async (_apiTokenId, _token, raw) => {
+    try {
+      await getAccountClient(raw).getLoginInfoByToken()
+      return false
+    } catch (err: any) {
+      if (err instanceof PlatformError && err.status?.code === platform.status.Unauthorized) {
+        return true
+      }
+      throw err
+    }
+  })
+
   async function withSession (
     req: Request,
     res: ExpressResponse,
@@ -161,7 +177,17 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
       const workspaceId = decodeURIComponent(req.params.workspaceId)
       token = token.split(' ')[1]
 
-      const decodedToken = decodeToken(token)
+      // Verify signature, expiry, and (for revokable API tokens) revocation.
+      let decodedToken: Token
+      try {
+        decodedToken = await verifyToken(token)
+      } catch (err: any) {
+        // Keep the response opaque, but leave operators something to debug with:
+        // expired, revoked and unverifiable all look identical from outside.
+        ctx.warn('REST token rejected', { method, error: err?.message })
+        sendError(res, 401, { message: 'Invalid or revoked token' })
+        return
+      }
       if (workspaceId !== decodedToken.workspace) {
         sendError(res, 403, { message: 'Invalid workspace', workspace: decodedToken.workspace })
         return
@@ -267,7 +293,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
   })
 
   app.post('/api/v1/tx/:workspaceId', (req, res) => {
-    void withSession(req, res, 'tx', async (ctx, session, rateLimit) => {
+    void withSession(req, res, 'tx', async (ctx, session, rateLimit, token) => {
       const tx: any = (await retrieveJson(req)) ?? {}
 
       try {

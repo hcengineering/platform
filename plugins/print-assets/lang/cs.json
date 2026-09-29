@@ -5,6 +5,7 @@
     "DownloadAll": "Stáhnout vše",
     "PrintFailed": "Tisk se nezdařil",
     "PrintSettings": "Print settings",
-    "LandscapeMode": "Landscape mode"
+    "LandscapeMode": "Landscape mode",
+    "Retry": "Zkusit znovu"
   }
 }

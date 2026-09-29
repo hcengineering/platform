@@ -5,6 +5,7 @@
     "DownloadAll": "Pobierz wszystkie",
     "PrintFailed": "Wydruk nie powiódł się",
     "PrintSettings": "Ustawienia wydruku",
-    "LandscapeMode": "Orientacja pozioma"
+    "LandscapeMode": "Orientacja pozioma",
+    "Retry": "Ponów"
   }
 }

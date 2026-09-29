@@ -5,6 +5,7 @@
     "DownloadAll": "全部下载",
     "PrintFailed": "打印失败",
     "PrintSettings": "Print settings",
-    "LandscapeMode": "Landscape mode"
+    "LandscapeMode": "Landscape mode",
+    "Retry": "重试"
   }
 }

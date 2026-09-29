@@ -4,7 +4,43 @@ import { getClient } from '.'
 import notification from '@hcengineering/notification'
 
 const sounds = new Map<Asset, AudioBuffer>()
-const context = new AudioContext()
+const resumeTimeoutMs = 1000
+let context: AudioContext | undefined
+
+function getAudioContext (): AudioContext {
+  context ??= new AudioContext()
+  return context
+}
+
+function isAudioContextRunning (context: AudioContext): boolean {
+  return context.state === 'running'
+}
+
+async function resumeAudioContext (context: AudioContext): Promise<boolean> {
+  if (context.state === 'running') return true
+  if (context.state === 'closed') return false
+
+  // Calling resume before the document has received user activation can leave
+  // its promise pending indefinitely because of the browser autoplay policy.
+  if (navigator.userActivation?.hasBeenActive === false) return false
+
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    const resumed = await Promise.race([
+      context.resume().then(() => true),
+      new Promise<boolean>((resolve) => {
+        timeout = setTimeout(() => {
+          resolve(false)
+        }, resumeTimeoutMs)
+      })
+    ])
+    return resumed && isAudioContextRunning(context)
+  } catch {
+    return false
+  } finally {
+    if (timeout !== undefined) clearTimeout(timeout)
+  }
+}
 
 export async function isNotificationAllowed (_class?: Ref<Class<Doc>>): Promise<boolean> {
   if (_class === undefined) return false
@@ -24,7 +60,7 @@ export async function prepareSound (key: string): Promise<void> {
     const soundUrl = getMetadata(key as Asset) as string
     const rawAudio = await fetch(soundUrl)
     const rawBuffer = await rawAudio.arrayBuffer()
-    const decodedBuffer = await context.decodeAudioData(rawBuffer)
+    const decodedBuffer = await getAudioContext().decodeAudioData(rawBuffer)
 
     sounds.set(key as Asset, decodedBuffer)
   } catch (err) {
@@ -46,6 +82,9 @@ export async function playSound (soundKey: string, loop = false): Promise<(() =>
   }
 
   try {
+    const context = getAudioContext()
+    if (!(await resumeAudioContext(context))) return null
+
     const audio = context.createBufferSource()
     audio.buffer = sound
     audio.loop = loop

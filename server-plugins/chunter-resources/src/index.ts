@@ -204,7 +204,13 @@ async function OnChatMessageCreated (ctx: MeasureContext, tx: TxCUD<Doc>, contro
     if (mixin !== undefined) {
       const collaborators = await getDocCollaborators(ctx, targetDoc, mixin, control)
       currentCollaborators = collaborators
-      res.push(...getAddCollaboratTxes(tx.objectId, tx.objectClass, tx.objectSpace, control, collaborators))
+      // Seed the target doc's default collaborators onto the target doc itself, not
+      // onto the ChatMessage. tx is the ChatMessage create, so tx.objectId is the
+      // message id — using it here attached the records to the message, so the target
+      // doc was never actually seeded (currentCollaborators stayed empty on the next
+      // message and the defaults were lost) and, for provideSecurity classes, the seed
+      // re-fired on every message and littered the message with records.
+      res.push(...getAddCollaboratTxes(targetDoc._id, targetDoc._class, targetDoc.space, control, collaborators))
     }
   }
 

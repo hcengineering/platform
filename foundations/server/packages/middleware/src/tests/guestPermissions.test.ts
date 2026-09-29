@@ -41,6 +41,7 @@ import core, {
   type Tx,
   TxFactory
 } from '@hcengineering/core'
+import contact from '@hcengineering/contact'
 import type { PipelineContext, TxMiddlewareResult } from '@hcengineering/server-core'
 import { GuestPermissionsMiddleware } from '../guestPermissions'
 
@@ -106,6 +107,24 @@ function makeCreateTx (objectClass: Ref<Class<Doc>>, objectSpace: Ref<Space>): T
   return factory.createTxCreateDoc(objectClass, objectSpace, {})
 }
 
+function patchContactHierarchy (mw: GuestPermissionsMiddleware): void {
+  ;(mw as any).context.hierarchy.isDerived = (a: any, b: any) => a === b
+  ;(mw as any).context.hierarchy.hasMixin = (doc: any, mixin: any) =>
+    mixin === contact.mixin.Employee && doc?.employee === true
+}
+
+function makePersonDoc (_id: Ref<Doc>, personUuid: Account['uuid'], employee: boolean = true): Doc {
+  return {
+    _id,
+    _class: contact.class.Person,
+    space: 'contact:space:Contacts' as Ref<Space>,
+    modifiedOn: Date.now(),
+    modifiedBy: 'test' as PersonId,
+    personUuid,
+    employee
+  } as any
+}
+
 // Helper: buildGuestSettings - simulate the document that loadPermissionsCache would find
 function makeGuestSettingsDoc (allowedPermissions: Ref<Doc>[], disabledPermissions?: Ref<Doc>[]): Doc {
   return {
@@ -153,6 +172,258 @@ describe('GuestPermissionsMiddleware', () => {
       const tx = makeCreateTx(COVERED_CLASS, FORBIDDEN_SPACE)
       const ctx = makeCtx(makeAccount(AccountRole.Owner))
       await mw.tx(ctx, [tx])
+      expect(nextCalled).toBe(true)
+    })
+  })
+
+  // ─── User contact mutability ────────────────────────────────────────────────
+  describe('user contact mutability', () => {
+    it('forbids a user from updating another employee person', async () => {
+      const otherPersonId = generateId()
+      const account = makeAccount(AccountRole.User)
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === contact.class.Person && query?._id === otherPersonId) {
+          return [makePersonDoc(otherPersonId, generateId() as any)]
+        }
+        return []
+      }
+      const mw = makeMiddleware(findAll)
+      patchContactHierarchy(mw)
+
+      const factory = new TxFactory(account.primarySocialId)
+      const tx = factory.createTxUpdateDoc(
+        contact.class.Person as Ref<Class<Doc>>,
+        'core:space:Workspace' as Ref<Space>,
+        otherPersonId,
+        { name: 'Changed' } as any
+      )
+
+      await expect(mw.tx(makeCtx(account), [tx])).rejects.toThrow()
+    })
+
+    it('allows a user to update their own employee person', async () => {
+      const personId = generateId()
+      const account = makeAccount(AccountRole.User)
+      let nextCalled = false
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === contact.class.Person && query?._id === personId) {
+          return [makePersonDoc(personId, account.uuid)]
+        }
+        return []
+      }
+      const mw = makeMiddleware(findAll, async () => {
+        nextCalled = true
+        return {}
+      })
+      patchContactHierarchy(mw)
+
+      const factory = new TxFactory(account.primarySocialId)
+      const tx = factory.createTxUpdateDoc(
+        contact.class.Person as Ref<Class<Doc>>,
+        'core:space:Workspace' as Ref<Space>,
+        personId,
+        { name: 'Changed' } as any
+      )
+
+      await mw.tx(makeCtx(account), [tx])
+      expect(nextCalled).toBe(true)
+    })
+
+    it('forbids a user from updating channels attached to another employee person', async () => {
+      const otherPersonId = generateId()
+      const channelId = generateId()
+      const account = makeAccount(AccountRole.User)
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === contact.class.Person && query?._id === otherPersonId) {
+          return [makePersonDoc(otherPersonId, generateId() as any)]
+        }
+        if (_class === contact.class.Channel && query?._id === channelId) {
+          return [
+            {
+              _id: channelId,
+              _class: contact.class.Channel,
+              space: 'contact:space:Contacts' as Ref<Space>,
+              modifiedOn: Date.now(),
+              modifiedBy: 'test' as PersonId,
+              attachedTo: otherPersonId,
+              attachedToClass: contact.class.Person
+            } as any
+          ]
+        }
+        return []
+      }
+      const mw = makeMiddleware(findAll)
+      patchContactHierarchy(mw)
+
+      const factory = new TxFactory(account.primarySocialId)
+      const tx = factory.createTxUpdateDoc(
+        contact.class.Channel as Ref<Class<Doc>>,
+        'core:space:Workspace' as Ref<Space>,
+        channelId,
+        { value: 'new@example.com' } as any
+      )
+
+      await expect(mw.tx(makeCtx(account), [tx])).rejects.toThrow()
+    })
+
+    it('does not trust spoofed channel parent fields', async () => {
+      const ownPersonId = generateId()
+      const otherPersonId = generateId()
+      const channelId = generateId()
+      const account = makeAccount(AccountRole.User)
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === contact.class.Person && query?._id === ownPersonId) {
+          return [makePersonDoc(ownPersonId, account.uuid)]
+        }
+        if (_class === contact.class.Person && query?._id === otherPersonId) {
+          return [makePersonDoc(otherPersonId, generateId() as any)]
+        }
+        if (_class === contact.class.Channel && query?._id === channelId) {
+          return [
+            {
+              _id: channelId,
+              _class: contact.class.Channel,
+              space: 'contact:space:Contacts' as Ref<Space>,
+              modifiedOn: Date.now(),
+              modifiedBy: 'test' as PersonId,
+              attachedTo: otherPersonId,
+              attachedToClass: contact.class.Person
+            } as any
+          ]
+        }
+        return []
+      }
+      const mw = makeMiddleware(findAll)
+      patchContactHierarchy(mw)
+
+      const factory = new TxFactory(account.primarySocialId)
+      const tx = factory.createTxUpdateDoc(
+        contact.class.Channel as Ref<Class<Doc>>,
+        'core:space:Workspace' as Ref<Space>,
+        channelId,
+        { value: 'new@example.com' } as any
+      )
+      tx.attachedTo = ownPersonId
+      tx.attachedToClass = contact.class.Person
+
+      await expect(mw.tx(makeCtx(account), [tx])).rejects.toThrow()
+    })
+
+    it('forbids creating a channel attached through attributes to another employee person', async () => {
+      const otherPersonId = generateId()
+      const account = makeAccount(AccountRole.User)
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === contact.class.Person && query?._id === otherPersonId) {
+          return [makePersonDoc(otherPersonId, generateId() as any)]
+        }
+        return []
+      }
+      const mw = makeMiddleware(findAll)
+      patchContactHierarchy(mw)
+
+      const factory = new TxFactory(account.primarySocialId)
+      const tx = factory.createTxCreateDoc(
+        contact.class.Channel as Ref<Class<Doc>>,
+        'contact:space:Contacts' as Ref<Space>,
+        {
+          attachedTo: otherPersonId,
+          attachedToClass: contact.class.Person,
+          collection: 'channels',
+          provider: 'contact:channelProvider:Email',
+          value: 'new@example.com'
+        } as any
+      )
+
+      await expect(mw.tx(makeCtx(account), [tx])).rejects.toThrow()
+    })
+
+    it('forbids moving a channel to another employee person', async () => {
+      const ownPersonId = generateId()
+      const otherPersonId = generateId()
+      const channelId = generateId()
+      const account = makeAccount(AccountRole.User)
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === contact.class.Person && query?._id === ownPersonId) {
+          return [makePersonDoc(ownPersonId, account.uuid)]
+        }
+        if (_class === contact.class.Person && query?._id === otherPersonId) {
+          return [makePersonDoc(otherPersonId, generateId() as any)]
+        }
+        if (_class === contact.class.Channel && query?._id === channelId) {
+          return [
+            {
+              _id: channelId,
+              _class: contact.class.Channel,
+              space: 'contact:space:Contacts' as Ref<Space>,
+              modifiedOn: Date.now(),
+              modifiedBy: 'test' as PersonId,
+              attachedTo: ownPersonId,
+              attachedToClass: contact.class.Person
+            } as any
+          ]
+        }
+        return []
+      }
+      const mw = makeMiddleware(findAll)
+      patchContactHierarchy(mw)
+
+      const factory = new TxFactory(account.primarySocialId)
+      const tx = factory.createTxUpdateDoc(
+        contact.class.Channel as Ref<Class<Doc>>,
+        'core:space:Workspace' as Ref<Space>,
+        channelId,
+        { attachedTo: otherPersonId, attachedToClass: contact.class.Person } as any
+      )
+
+      await expect(mw.tx(makeCtx(account), [tx])).rejects.toThrow()
+    })
+
+    it('forbids a user from adding the employee mixin to a person', async () => {
+      const personId = generateId()
+      const account = makeAccount(AccountRole.User)
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === contact.class.Person && query?._id === personId) {
+          return [makePersonDoc(personId, generateId() as any, false)]
+        }
+        return []
+      }
+      const mw = makeMiddleware(findAll)
+      patchContactHierarchy(mw)
+
+      const factory = new TxFactory(account.primarySocialId)
+      const tx = factory.createTxMixin(
+        personId,
+        contact.class.Person as Ref<Class<Doc>>,
+        'contact:space:Contacts' as Ref<Space>,
+        contact.mixin.Employee,
+        { active: true } as any
+      )
+
+      await expect(mw.tx(makeCtx(account), [tx])).rejects.toThrow()
+    })
+
+    it('allows maintainers to update another employee person', async () => {
+      const otherPersonId = generateId()
+      const account = makeAccount(AccountRole.Maintainer)
+      let nextCalled = false
+      const mw = makeMiddleware(
+        async () => [],
+        async () => {
+          nextCalled = true
+          return {}
+        }
+      )
+      patchContactHierarchy(mw)
+
+      const factory = new TxFactory(account.primarySocialId)
+      const tx = factory.createTxUpdateDoc(
+        contact.class.Person as Ref<Class<Doc>>,
+        'core:space:Workspace' as Ref<Space>,
+        otherPersonId,
+        { name: 'Changed' } as any
+      )
+
+      await mw.tx(makeCtx(account), [tx])
       expect(nextCalled).toBe(true)
     })
   })

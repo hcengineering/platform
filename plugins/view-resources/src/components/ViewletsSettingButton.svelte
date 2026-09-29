@@ -100,7 +100,7 @@
       iconSize={'small'}
       {disabled}
       {pressed}
-      tooltip={{ label: view.string.CustomizeView, direction: 'bottom' }}
+      tooltip={{ label: view.string.ConfigureColumns, direction: 'bottom' }}
       bind:element={btn}
       on:click={clickHandler}
     />

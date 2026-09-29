@@ -50,6 +50,8 @@
     "ConfigLabel": "Dokümanlar",
     "ConfigDescription": "İşbirlikli doküman düzenleme için uzantı",
     "Icon": "İkon",
-    "Color": "Renk"
+    "Color": "Renk",
+    "ForbidCreateTeamspacePermission": "Takım alanı oluşturmayı yasakla",
+    "ForbidCreateTeamspacePermissionDescription": "Kullanıcıların yeni takım alanı oluşturmasını yasaklar"
   }
 }

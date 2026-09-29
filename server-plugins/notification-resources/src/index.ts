@@ -115,7 +115,7 @@ export async function getCommonNotificationTxes (
   const res: Tx[] = []
   const notifyContexts = await control.findAll(ctx, notification.class.DocNotifyContext, { objectId: attachedTo })
 
-  await pushInboxNotifications(
+  const notificationTx = await pushInboxNotifications(
     ctx,
     control,
     res,
@@ -128,10 +128,17 @@ export async function getCommonNotificationTxes (
     data,
     _class,
     modifiedOn,
-    [],
+    (notifyResult.get(notification.providers.InboxNotificationProvider) ?? []).map((t) => t._id),
     true,
     tx
   )
+
+  if (notificationTx !== undefined) {
+    const availableProviders: AvailableProvidersCache =
+      control.contextCache.get(AvailableProvidersCacheKey) ?? new Map()
+    availableProviders.set(notificationTx.objectId, Array.from(notifyResult.keys()))
+    control.contextCache.set(AvailableProvidersCacheKey, availableProviders)
+  }
 
   return res
 }
@@ -1538,7 +1545,9 @@ export async function getCollaborators (
   } else {
     const collaborators = await getDocCollaborators(ctx, doc, mixin, control)
 
-    res.push(...getAddCollaboratTxes(tx.objectId, tx.objectClass, tx.objectSpace, control, collaborators))
+    // The defaults were resolved for `doc`; seed that document rather than
+    // the originating transaction for its attached child.
+    res.push(...getAddCollaboratTxes(doc._id, doc._class, doc.space, control, collaborators))
     return collaborators
   }
 }

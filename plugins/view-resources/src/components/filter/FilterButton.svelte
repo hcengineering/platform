@@ -15,12 +15,11 @@
 <script lang="ts">
   import { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, IconFilter, eventToHTMLElement, resolvedLocationStore, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, IconFilter, eventToHTMLElement, resolvedLocationStore, showPopup } from '@hcengineering/ui'
   import { Filter, ViewOptions } from '@hcengineering/view'
-  import { filterStore, getFilterKey, selectedFilterStore, setFilters } from '../../filter'
+  import { filterStore, getFilterKey, selectedFilterStore, updateFilter } from '../../filter'
   import view from '../../plugin'
   import FilterTypePopup from './FilterTypePopup.svelte'
-  import IconClose from '../icons/Close.svelte'
   import { onDestroy } from 'svelte'
 
   export let _class: Ref<Class<Doc>> | undefined
@@ -54,8 +53,13 @@
     save(_class, p)
   })
 
+  function nextFilterIndex (): number {
+    const current = $filterStore.map((f) => f.index)
+    return current.length === 0 ? 1 : Math.max(...current) + 1
+  }
+
   function onChange (e: Filter | undefined): void {
-    if (e !== undefined) setFilters([e])
+    if (e !== undefined) updateFilter(e)
   }
 
   onDestroy(() => {
@@ -70,7 +74,7 @@
         _class,
         space,
         target,
-        index: 1,
+        index: nextFilterIndex(),
         onChange,
         viewOptions
       },
@@ -87,16 +91,16 @@
 </script>
 
 {#if visible}
+  <!-- Always opens the add-filter popup. Clearing all filters is a
+       separate affordance (see <InlineFilterChips> trailing "Clear all"
+       button); the old toggle behaviour left users with no way to add a
+       second filter once one was present. -->
   <Button
-    icon={$filterStore.length === 0 ? IconFilter : IconClose}
-    label={adaptive ? undefined : $filterStore.length === 0 ? view.string.Filter : view.string.ClearFilters}
+    icon={$filterStore.length === 0 ? IconFilter : IconAdd}
+    label={adaptive ? undefined : $filterStore.length === 0 ? view.string.Filter : view.string.AddFilter}
     kind={'regular'}
     size={'medium'}
-    pressed={$filterStore.length > 0}
-    showTooltip={{ label: $filterStore.length === 0 ? view.string.Filter : view.string.ClearFilters }}
-    on:click={(ev) => {
-      if ($filterStore.length === 0) add(ev)
-      else setFilters([])
-    }}
+    showTooltip={{ label: $filterStore.length === 0 ? view.string.Filter : view.string.AddFilter }}
+    on:click={add}
   />
 {/if}
