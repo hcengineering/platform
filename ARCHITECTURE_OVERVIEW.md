@@ -397,7 +397,7 @@ sequenceDiagram
 | cockroach | cockroachdb/cockroach:latest-v24.3 | 26257, 8089 | **Main application database** - stores users, workspaces, documents, transactions, metadata, permissions | - |
 | **Supporting Infrastructure** | | | | |
 | elastic | elasticsearch:7.14.2 | 9200 | Search engine for full-text indexes | - |
-| minio | minio/minio | 9000, 9001 | Object storage (S3) for files and blobs | - |
+| minio | pgsty/silo | 9000, 9001 | Object storage (S3) for files and blobs | - |
 | redpanda | redpandadata/redpanda:v24.3.6 | 9092, 19092 | Event streaming (Kafka) for async processing | - |
 | redis | redis:8.0.2-alpine3.21 | 6379 | Cache & pub/sub for real-time features | - |
 | **Monitoring** | | | | |
