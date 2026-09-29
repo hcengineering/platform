@@ -88,7 +88,7 @@ services:
     depends_on:
       - redpanda
   minio:
-    image: 'minio/minio'
+    image: 'pgsty/silo'
     command: server /data --address ":9000" --console-address ":9001"
     extra_hosts:
       - 'huly.local:host-gateway'
