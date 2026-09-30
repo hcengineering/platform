@@ -16,10 +16,12 @@ describe('workspace favicon before application startup', () => {
     expect(script).toBeDefined()
     runInNewContext(script ?? '', {
       location: { pathname },
-      localStorage: { getItem: (key: string) => {
-        if (denied) throw new Error('Storage denied')
-        return key === 'huly.workspace-favicon:/workbench/company-a' ? cached ?? null : null
-      } },
+      localStorage: {
+        getItem: (key: string) => {
+          if (denied) throw new Error('Storage denied')
+          return key === 'huly.workspace-favicon:/workbench/company-a' ? (cached ?? null) : null
+        }
+      },
       document: {
         getElementById: () => fallback,
         createElement: () => ({}),
@@ -76,31 +78,43 @@ describe('workspace identification colour', () => {
 
 describe('optional workspace favicon', () => {
   const originalFetch = globalThis.fetch
-  afterEach(() => { globalThis.fetch = originalFetch })
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+  })
 
   it('does not load images when both options are disabled', async () => {
     const fetchIcon = jest.fn()
     globalThis.fetch = fetchIcon
-    await expect(renderWorkspaceIdentity('/workspace.png', null, undefined, {
-      syncLogo: false, showColor: false
-    })).resolves.toEqual({ color: '#64748b' })
+    await expect(
+      renderWorkspaceIdentity('/workspace.png', null, undefined, {
+        syncLogo: false,
+        showColor: false
+      })
+    ).resolves.toEqual({ color: '#64748b' })
     expect(fetchIcon).not.toHaveBeenCalled()
   })
 
   it('does not wait for a workspace logo when applying a manual badge to the site icon', async () => {
     const fetchIcon = jest.fn().mockRejectedValue(new Error('Site icon unavailable'))
     globalThis.fetch = fetchIcon
-    await expect(renderWorkspaceIdentity('/workspace.png', '#ff8800', undefined, {
-      syncLogo: false, showColor: true, defaultIconUrl: '/site.ico'
-    })).rejects.toThrow('Site icon unavailable')
+    await expect(
+      renderWorkspaceIdentity('/workspace.png', '#ff8800', undefined, {
+        syncLogo: false,
+        showColor: true,
+        defaultIconUrl: '/site.ico'
+      })
+    ).rejects.toThrow('Site icon unavailable')
     expect(fetchIcon).toHaveBeenCalledTimes(1)
     expect(fetchIcon).toHaveBeenCalledWith('/site.ico', { signal: undefined })
   })
 
   it('falls back to the unchanged site favicon if the workspace logo is unavailable', async () => {
     globalThis.fetch = jest.fn().mockRejectedValue(new Error('Workspace logo unavailable'))
-    await expect(renderWorkspaceIdentity('/workspace.png', null, undefined, {
-      syncLogo: true, showColor: false
-    })).resolves.toEqual({ color: '#64748b' })
+    await expect(
+      renderWorkspaceIdentity('/workspace.png', null, undefined, {
+        syncLogo: true,
+        showColor: false
+      })
+    ).resolves.toEqual({ color: '#64748b' })
   })
 })

@@ -19,7 +19,14 @@ import { type PresentationMiddlewareCreator } from '@hcengineering/presentation/
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import view, { viewId } from '@hcengineering/view'
 
-export default mergeIds(viewId, view, {
+// Keep standalone package checks independent of generated dependency declarations.
+// ConfigureColumns is already registered by the current @hcengineering/view
+// runtime; an older ignored `view/types` directory may not describe it yet.
+const typedView = view as typeof view & {
+  string: typeof view.string & { ConfigureColumns: IntlString }
+}
+
+export default mergeIds(viewId, typedView, {
   component: {
     ObjectFilter: '' as AnyComponent,
     DateFilter: '' as AnyComponent,

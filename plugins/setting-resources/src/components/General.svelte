@@ -110,9 +110,13 @@
 
   const client = getClient()
   const workspaceSettingsQuery = createQuery()
-  workspaceSettingsQuery.query(settingsRes.class.WorkspaceSetting, { _id: settingsRes.ids.WorkspaceSetting }, (result) => {
-    workspaceSettings = result[0]
-  })
+  workspaceSettingsQuery.query(
+    settingsRes.class.WorkspaceSetting,
+    { _id: settingsRes.ids.WorkspaceSetting },
+    (result) => {
+      workspaceSettings = result[0]
+    }
+  )
 
   async function handleAvatarDone (): Promise<void> {
     const existing = await client.findOne(settingsRes.class.WorkspaceSetting, { _id: settingsRes.ids.WorkspaceSetting })

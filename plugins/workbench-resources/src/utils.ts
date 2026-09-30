@@ -29,7 +29,12 @@ import type {
 import core, { hasAccountRole } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getMetadata, getResource, setMetadata } from '@hcengineering/platform'
-import presentation, { clearWorkspaceFaviconCache, closeClient, getClient, setPresentationCookie } from '@hcengineering/presentation'
+import presentation, {
+  clearWorkspaceFaviconCache,
+  closeClient,
+  getClient,
+  setPresentationCookie
+} from '@hcengineering/presentation'
 import {
   closePanel,
   getCurrentLocation,
