@@ -43,7 +43,7 @@
     } catch (err) {
       if (!controller.signal.aborted && file === value) {
         failed = true
-        Analytics.handleError(err)
+        Analytics.handleError(err instanceof Error ? err : new Error(String(err)))
       }
     } finally {
       if (!controller.signal.aborted && file === value) {
