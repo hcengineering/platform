@@ -378,7 +378,36 @@ describe('GuestPermissionsMiddleware', () => {
       await expect(mw.tx(makeCtx(account), [tx])).rejects.toThrow()
     })
 
-    it('forbids a user from adding the employee mixin to a person', async () => {
+    it('allows a user to add the employee mixin to their own person', async () => {
+      const personId = generateId()
+      const account = makeAccount(AccountRole.User)
+      let nextCalled = false
+      const findAll: FindAllFn = async (_ctx, _class, query: any) => {
+        if (_class === contact.class.Person && query?._id === personId) {
+          return [makePersonDoc(personId, account.uuid, false)]
+        }
+        return []
+      }
+      const mw = makeMiddleware(findAll, async () => {
+        nextCalled = true
+        return {}
+      })
+      patchContactHierarchy(mw)
+
+      const factory = new TxFactory(account.primarySocialId)
+      const tx = factory.createTxMixin(
+        personId,
+        contact.class.Person as Ref<Class<Doc>>,
+        'contact:space:Contacts' as Ref<Space>,
+        contact.mixin.Employee,
+        { active: true } as any
+      )
+
+      await mw.tx(makeCtx(account), [tx])
+      expect(nextCalled).toBe(true)
+    })
+
+    it('forbids a user from adding the employee mixin to another person', async () => {
       const personId = generateId()
       const account = makeAccount(AccountRole.User)
       const findAll: FindAllFn = async (_ctx, _class, query: any) => {
