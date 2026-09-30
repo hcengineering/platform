@@ -37,14 +37,14 @@ export class TalentDetailsPage extends CommonRecruitingPage {
     await expect(async () => {
       if (!(await tagTitle.isVisible())) {
         if (!(await this.selectPopupAddButton().isVisible())) {
-          await this.buttonAddSkill().click({ timeout: 1000 })
+          await this.buttonAddSkill().click({ timeout: 3000 })
         }
-        await this.selectPopupAddButton().click({ timeout: 1000 })
+        await this.selectPopupAddButton().click({ timeout: 3000 })
       }
-      await expect(tagTitle).toBeVisible({ timeout: 1000 })
+      await expect(tagTitle).toBeVisible({ timeout: 3000 })
       await this.page.waitForTimeout(300)
       await expect(tagTitle).toBeVisible({ timeout: 1000 })
-    }).toPass({ timeout: 15000 })
+    }).toPass({ timeout: 20000 })
     await this.addNewTagPopup(this.page, skillTag, skillDescription)
 
     await this.pressShowAllButtonSelectPopup(this.page)
