@@ -96,7 +96,12 @@
     void validate($themeStore.language)
   }
 
-  $: if ($themeStore.language != null && $themeStore.language !== '') {
+  // Re-validate only when the language actually changes (to re-translate validation messages).
+  // Theme updates with the same language (e.g. after plugin strings are loaded) must not
+  // reset the status, otherwise an action error (like wrong credentials) could be wiped out.
+  let validatedLanguage: string | undefined
+  $: if ($themeStore.language != null && $themeStore.language !== '' && $themeStore.language !== validatedLanguage) {
+    validatedLanguage = $themeStore.language
     void validate($themeStore.language)
   }
 

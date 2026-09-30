@@ -160,11 +160,20 @@ export function getFormattedDate (value: number | null, options?: Intl.DateTimeF
 }
 
 export function formatDate (date: Date, showYear: boolean): string {
-  const locale = new Intl.NumberFormat().resolvedOptions().locale
+  // Intl.DateTimeFormat.format throws RangeError for an invalid date, which breaks rendering
+  // of the whole component tree, so never let it propagate.
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return ''
+  }
   const options: Intl.DateTimeFormatOptions = showYear
     ? { year: 'numeric', month: 'short', day: 'numeric' }
     : { month: 'short', day: 'numeric' }
-  return new Intl.DateTimeFormat(locale, options).format(date)
+  try {
+    const locale = new Intl.NumberFormat().resolvedOptions().locale
+    return new Intl.DateTimeFormat(locale, options).format(date)
+  } catch (err: any) {
+    return date.toLocaleDateString('default', options)
+  }
 }
 
 export const getTimeZoneName = (
