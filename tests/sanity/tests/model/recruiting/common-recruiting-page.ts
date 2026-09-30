@@ -90,9 +90,10 @@ export class CommonRecruitingPage extends CalendarPage {
     await this.talentButton().click()
   }
 
-  async createApplication (): Promise<void> {
+  async createReview (): Promise<void> {
     await this.createButton().click()
     await this.page.waitForSelector('form.antiCard', { state: 'detached' })
+    await this.page.reload({ waitUntil: 'domcontentloaded' })
   }
 
   async selectReviewItem (reviewId: string): Promise<void> {
@@ -100,10 +101,7 @@ export class CommonRecruitingPage extends CalendarPage {
     await expect(link).toBeVisible()
     await Promise.all([
       this.page.waitForURL(/\/recruit\/RVE-/),
-      link.evaluate((element) => {
-        const linkElement = element as HTMLElement
-        linkElement.click()
-      })
+      link.click()
     ])
   }
 
@@ -132,7 +130,6 @@ export class CommonRecruitingPage extends CalendarPage {
   async addFirstReview (reviewTitle: string, reviewDescription: string): Promise<void> {
     await this.buttonCreateFirstReview().click()
     await this.createNewReviewPopup(this.page, reviewTitle, reviewDescription)
-    await expect(this.page.getByText(reviewTitle, { exact: true })).toBeVisible()
   }
 
   async createNewTalentPopup (page: Page, firstName: string, lastName: string): Promise<void> {
@@ -146,6 +143,8 @@ export class CommonRecruitingPage extends CalendarPage {
     await this.newReviewDescription().fill(description)
     await this.submitNewReview().click()
     await this.submitNewReview().waitFor({ state: 'hidden' })
+    await page.reload({ waitUntil: 'domcontentloaded' })
+    await expect(page.getByText(title, { exact: true })).toBeVisible()
   }
 
   async deleteEntity (): Promise<void> {
