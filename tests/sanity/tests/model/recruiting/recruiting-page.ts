@@ -11,6 +11,7 @@ export class RecruitingPage {
   talentsNavElement = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Talents')
   reviews = (): Locator => this.page.locator('.antiPanel-navigator').locator('text=Reviews')
   reviewButton = (): Locator => this.page.getByRole('button', { name: 'Review', exact: true })
+  reviewForm = (): Locator => this.page.locator('form[id="recruit:string:CreateReviewParams"]')
 
   frontendEngineerOption = (): Locator => this.page.locator('td:has-text("Frontend Engineer")')
   searchOrRunCommandInput = (): Locator => this.page.locator('[placeholder="Search\\ or\\ run\\ a\\ command\\.\\.\\."]')
@@ -47,7 +48,14 @@ export class RecruitingPage {
   }
 
   async clickOnReviewButton (): Promise<void> {
-    await this.reviewButton().click()
+    await expect(async () => {
+      if (!(await this.reviewForm().isVisible())) {
+        await this.reviewButton().click({ timeout: 1000 })
+      }
+      await expect(this.reviewForm()).toBeVisible({ timeout: 1000 })
+      await this.page.waitForTimeout(300)
+      await expect(this.reviewForm()).toBeVisible({ timeout: 1000 })
+    }).toPass({ timeout: 15000 })
   }
 
   async clickTalentsNavElement (): Promise<void> {

@@ -67,11 +67,11 @@ export class CommonRecruitingPage extends CalendarPage {
   readonly chenRosamundPopupButton = (): Locator => this.page.locator('.popup button:has-text("Chen Rosamund")')
 
   async clickOnTitle (): Promise<void> {
-    await this.title().click()
+    await this.newReviewTitle().click()
   }
 
   async fillTitle (title: string): Promise<void> {
-    await this.title().fill(title)
+    await this.newReviewTitle().fill(title)
   }
 
   async clickAppleseedJohn (): Promise<void> {
@@ -96,7 +96,15 @@ export class CommonRecruitingPage extends CalendarPage {
   }
 
   async selectReviewItem (reviewId: string): Promise<void> {
-    await this.reviewItemLink(reviewId).first().click()
+    const link = this.reviewItemLink(reviewId).first()
+    await expect(link).toBeVisible()
+    await Promise.all([
+      this.page.waitForURL(/\/recruit\/RVE-/),
+      link.evaluate((element) => {
+        const linkElement = element as HTMLElement
+        linkElement.click()
+      })
+    ])
   }
 
   async clickTwoMembers (): Promise<void> {
@@ -124,6 +132,7 @@ export class CommonRecruitingPage extends CalendarPage {
   async addFirstReview (reviewTitle: string, reviewDescription: string): Promise<void> {
     await this.buttonCreateFirstReview().click()
     await this.createNewReviewPopup(this.page, reviewTitle, reviewDescription)
+    await expect(this.page.getByText(reviewTitle, { exact: true })).toBeVisible()
   }
 
   async createNewTalentPopup (page: Page, firstName: string, lastName: string): Promise<void> {
@@ -136,6 +145,7 @@ export class CommonRecruitingPage extends CalendarPage {
     await this.newReviewTitle().fill(title)
     await this.newReviewDescription().fill(description)
     await this.submitNewReview().click()
+    await this.submitNewReview().waitFor({ state: 'hidden' })
   }
 
   async deleteEntity (): Promise<void> {
