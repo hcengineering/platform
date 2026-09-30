@@ -207,7 +207,7 @@ export class GuestPermissionsMiddleware extends BaseMiddleware implements Middle
         (tx as TxMixin<Doc, Doc>).mixin === contact.mixin.Employee &&
         !h.hasMixin(person, contact.mixin.Employee)
       ) {
-        return true
+        return person.personUuid !== account.uuid
       }
       return !this.canUserEditPersonContactDetails(person, account)
     }
