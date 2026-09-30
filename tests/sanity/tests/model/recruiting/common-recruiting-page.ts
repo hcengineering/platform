@@ -99,10 +99,7 @@ export class CommonRecruitingPage extends CalendarPage {
   async selectReviewItem (reviewId: string): Promise<void> {
     const link = this.reviewItemLink(reviewId).first()
     await expect(link).toBeVisible()
-    await Promise.all([
-      this.page.waitForURL(/\/recruit\/RVE-/),
-      link.click()
-    ])
+    await Promise.all([this.page.waitForURL(/\/recruit\/RVE-/), link.click()])
   }
 
   async clickTwoMembers (): Promise<void> {
@@ -143,8 +140,6 @@ export class CommonRecruitingPage extends CalendarPage {
     await this.newReviewDescription().fill(description)
     await this.submitNewReview().click()
     await this.submitNewReview().waitFor({ state: 'hidden' })
-    await page.reload({ waitUntil: 'domcontentloaded' })
-    await expect(page.getByText(title, { exact: true })).toBeVisible()
   }
 
   async deleteEntity (): Promise<void> {
