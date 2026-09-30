@@ -38,7 +38,7 @@
   import UserInfo from './UserInfo.svelte'
 
   export let options: FindOptions<Contact> | undefined = undefined
-  export let selected: Ref<Person> | undefined
+  export let selected: Ref<Person> | undefined | null
   export let docQuery: DocumentQuery<Contact> | undefined = undefined
   export let categories: AssigneeCategory[] | undefined = undefined
   export let allowDeselect = true
@@ -133,10 +133,51 @@
   let selection = 0
   let list: ListView
 
+  $: deselectItemCount = allowDeselect ? 1 : 0
+  $: listCount = contacts.length + deselectItemCount
+
+  function isDeselectItem (item: number): boolean {
+    return allowDeselect && item === 0
+  }
+
+  function getContactByItem (item: number): Contact | undefined {
+    return contacts[item - deselectItemCount]
+  }
+
+  function shouldShowCategory (item: number, obj: Contact): boolean {
+    if (!showCategories) return false
+
+    const category = categorizedPersons.get(obj._id)
+    if (category === undefined) return false
+
+    const contactIndex = item - deselectItemCount
+    if (contactIndex === 0) return true
+
+    const prev = contacts[contactIndex - 1]
+    return prev !== undefined && categorizedPersons.get(prev._id) !== category
+  }
+
   async function handleSelection (evt: Event | undefined, selection: number): Promise<void> {
-    const person = contacts[selection]
-    selected = allowDeselect && person?._id === selected ? undefined : person?._id
-    dispatch('close', selected !== undefined ? person : undefined)
+    if (isDeselectItem(selection)) {
+      selected = undefined
+      dispatch('close', null)
+      return
+    }
+
+    const person = getContactByItem(selection)
+    if (person === undefined) {
+      dispatch('close', undefined)
+      return
+    }
+
+    if (allowDeselect && person._id === selected) {
+      selected = undefined
+      dispatch('close', null)
+      return
+    }
+
+    selected = person._id
+    dispatch('close', person)
   }
 
   function onKeydown (key: KeyboardEvent): void {
@@ -158,9 +199,6 @@
   }
   const manager = createFocusManager()
 
-  function toAny (obj: any): any {
-    return obj
-  }
 </script>
 
 <FocusHandler {manager} />
@@ -191,49 +229,99 @@
   </div>
   <div class="scroll">
     <div class="box">
-      <ListView bind:this={list} count={contacts.length} bind:selection>
+      <ListView bind:this={list} count={listCount} bind:selection>
         <svelte:fragment slot="category" let:item>
-          {#if showCategories}
-            {@const obj = toAny(contacts[item])}
-            {@const category = categorizedPersons.get(obj._id)}
-            <!-- {@const cl = hierarchy.getClass(contacts[item]._class)} -->
-            {#if category !== undefined && (item === 0 || (item > 0 && categorizedPersons.get(toAny(contacts[item - 1])._id) !== categorizedPersons.get(obj._id)))}
-              <!--Category for first item-->
-              {#if item > 0}<div class="menu-separator" />{/if}
-              <div class="menu-group__header flex-row-center category-box">
-                <span class="overflow-label">
-                  <Label label={category.label} />
-                </span>
-              </div>
+          {#if showCategories && !isDeselectItem(item)}
+            {@const obj = getContactByItem(item)}
+            {#if obj !== undefined}
+              {@const category = categorizedPersons.get(obj._id)}
+              <!-- {@const cl = hierarchy.getClass(contacts[item]._class)} -->
+              {#if category !== undefined && shouldShowCategory(item, obj)}
+                <!--Category for first item-->
+                {#if item > 0}<div class="menu-separator" />{/if}
+                <div class="menu-group__header flex-row-center category-box">
+                  <span class="overflow-label">
+                    <Label label={category.label} />
+                  </span>
+                </div>
+              {/if}
             {/if}
           {/if}
         </svelte:fragment>
         <svelte:fragment slot="item" let:item>
-          {@const obj = contacts[item]}
-          <button
-            class="menu-item withList no-focus w-full"
-            class:selected={obj._id === selected}
-            on:click={() => {
-              handleSelection(undefined, item)
-            }}
-          >
-            <div class="flex-grow clear-mins">
-              <UserInfo size={'smaller'} value={obj} {icon} />
-            </div>
-            {#if allowDeselect && selected}
-              {#if loading && obj._id === selected}
+          {#if isDeselectItem(item)}
+            <button
+              class="menu-item withList no-focus w-full"
+              class:selected={selected == null}
+              disabled={loading}
+              on:click={() => {
+                handleSelection(undefined, item)
+              }}
+            >
+              <div class="flex-grow clear-mins">
+                <div class="flex-row-center">
+                  <div class="no-assignee-avatar" aria-hidden="true">
+                    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M10 10.25C11.7949 10.25 13.25 8.79493 13.25 7C13.25 5.20507 11.7949 3.75 10 3.75C8.20507 3.75 6.75 5.20507 6.75 7C6.75 8.79493 8.20507 10.25 10 10.25Z"
+                        stroke="currentColor"
+                        stroke-width="1.35"
+                      />
+                      <path
+                        d="M4.75 16.25C5.375 13.9 7.375 12.75 10 12.75C12.625 12.75 14.625 13.9 15.25 16.25"
+                        stroke="currentColor"
+                        stroke-width="1.35"
+                        stroke-linecap="round"
+                      />
+                      <path d="M4.5 4.5L15.5 15.5" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" />
+                    </svg>
+                  </div>
+                  <div class="flex-col min-w-0 ml-2">
+                    <div class="label text-left overflow-label">
+                      <Label label={titleDeselect ?? contact.string.Unassigned} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {#if loading && selected == null}
                 <Spinner size={'small'} />
               {:else}
                 <div class="check">
-                  {#if obj._id === selected}
-                    <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
-                      <Icon icon={IconCheck} size={'small'} />
-                    </div>
+                  {#if selected == null}
+                    <Icon icon={IconCheck} size={'small'} />
                   {/if}
                 </div>
               {/if}
+            </button>
+          {:else}
+            {@const obj = getContactByItem(item)}
+            {#if obj !== undefined}
+              <button
+                class="menu-item withList no-focus w-full"
+                class:selected={obj._id === selected}
+                on:click={() => {
+                  handleSelection(undefined, item)
+                }}
+              >
+                <div class="flex-grow clear-mins">
+                  <UserInfo size={'smaller'} value={obj} {icon} />
+                </div>
+                {#if allowDeselect && selected}
+                  {#if loading && obj._id === selected}
+                    <Spinner size={'small'} />
+                  {:else}
+                    <div class="check">
+                      {#if obj._id === selected}
+                        <div use:tooltip={{ label: titleDeselect ?? presentation.string.Deselect }}>
+                          <Icon icon={IconCheck} size={'small'} />
+                        </div>
+                      {/if}
+                    </div>
+                  {/if}
+                {/if}
+              </button>
             {/if}
-          </button>
+          {/if}
         </svelte:fragment>
       </ListView>
     </div>
@@ -248,5 +336,23 @@
     border: 1px solid var(--button-border-color);
     border-radius: 0.25rem;
     box-shadow: none;
+  }
+
+  .no-assignee-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex: 0 0 1.75rem;
+    color: var(--theme-caption-color);
+    background-color: var(--theme-button-hovered);
+    border: 1px solid var(--button-border-color);
+    border-radius: 0.375rem;
+  }
+
+  .no-assignee-avatar svg {
+    width: 1.125rem;
+    height: 1.125rem;
   }
 </style>

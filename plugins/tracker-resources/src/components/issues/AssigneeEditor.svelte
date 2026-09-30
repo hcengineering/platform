@@ -16,7 +16,7 @@
   import contact, { Employee, Person } from '@hcengineering/contact'
   import { AssigneeBox, AssigneePopup, employeeRefByAccountUuidStore } from '@hcengineering/contact-resources'
   import { AssigneeCategory } from '@hcengineering/contact-resources/src/assignee'
-  import { Doc, DocumentQuery, notEmpty, Ref, Space } from '@hcengineering/core'
+  import { Doc, DocumentQuery, DocumentUpdate, notEmpty, Ref, Space } from '@hcengineering/core'
   import { RuleApplyResult, getClient, getDocRules } from '@hcengineering/presentation'
   import { Component, Issue, TrackerEvents } from '@hcengineering/tracker'
   import { ButtonKind, ButtonSize, IconSize, TooltipAlignment } from '@hcengineering/ui'
@@ -53,23 +53,28 @@
   const dispatch = createEventDispatcher()
   let progress = false
 
+  function getAssigneeUpdate (newAssignee: Ref<Person> | null): DocumentUpdate<Issue> {
+    return newAssignee === null ? { $unset: { assignee: true } } : { assignee: newAssignee }
+  }
+
   const handleAssigneeChanged = async (newAssignee: Ref<Person> | undefined | null) => {
     if (newAssignee === undefined || (!Array.isArray(_object) && _object?.assignee === newAssignee)) {
       return
     }
     progress = true
+    const assigneeUpdate = getAssigneeUpdate(newAssignee)
     const ops = client.apply()
     if (Array.isArray(_object)) {
       for (const p of _object) {
         if ('_class' in p) {
           Analytics.handleEvent(TrackerEvents.IssueSetAssignee, { issue: p.identifier ?? p._id })
-          await ops.update(p, { assignee: newAssignee })
+          await ops.update(p, assigneeUpdate)
         }
       }
     } else {
       if ('_class' in _object) {
         Analytics.handleEvent(TrackerEvents.IssueSetAssignee, { issue: _object.identifier ?? _object._id })
-        await ops.update(_object, { assignee: newAssignee })
+        await ops.update(_object, assigneeUpdate)
       }
     }
 
@@ -163,7 +168,7 @@
       icon={contact.icon.Person}
       selected={sel}
       allowDeselect={true}
-      titleDeselect={undefined}
+      titleDeselect={tracker.string.NoAssignee}
       loading={progress}
       on:close={(evt) => {
         const result = evt.detail
@@ -183,7 +188,7 @@
       placeholder={tracker.string.Assignee}
       value={sel}
       {categories}
-      titleDeselect={tracker.string.Unassigned}
+      titleDeselect={tracker.string.NoAssignee}
       {size}
       {kind}
       {avatarSize}
