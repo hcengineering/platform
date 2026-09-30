@@ -156,7 +156,7 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
 }
 
 async function convertCommentsToChatMessages (client: MigrationClient): Promise<void> {
-  if ((await client.domainExists(DOMAIN_COMMENT)) === true) {
+  if (await client.domainExists(DOMAIN_COMMENT)) {
     await client.update(
       DOMAIN_COMMENT,
       { _class: 'chunter:class:Comment' as Ref<Class<Doc>> },
@@ -167,7 +167,7 @@ async function convertCommentsToChatMessages (client: MigrationClient): Promise<
 }
 
 async function removeBacklinks (client: MigrationClient): Promise<void> {
-  if ((await client.domainExists(DOMAIN_COMMENT)) === true) {
+  if (await client.domainExists(DOMAIN_COMMENT)) {
     await client.deleteMany(DOMAIN_COMMENT, { _class: 'chunter:class:Backlink' as Ref<Class<Doc>> })
   }
   await client.deleteMany(DOMAIN_ACTIVITY, {

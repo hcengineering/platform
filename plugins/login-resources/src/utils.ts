@@ -92,7 +92,7 @@ export async function fetchLoginCapabilities (): Promise<{
 }> {
   try {
     const accountClient = getAccountClient(null)
-    return accountClient.getLoginCapabilities()
+    return await accountClient.getLoginCapabilities()
   } catch {
     return { signUpEnabled: true, guestLoginAvailable: true }
   }
