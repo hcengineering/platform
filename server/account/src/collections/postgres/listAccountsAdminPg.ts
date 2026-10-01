@@ -75,6 +75,9 @@ export function buildListAccountsAdminSql (
       if (m === 'email_only') orParts.push('(s.has_email AND NOT s.has_oidc)')
       else if (m === 'oidc') orParts.push('(s.has_oidc AND NOT s.has_email)')
       else if (m === 'mixed') orParts.push('(s.has_email AND s.has_oidc)')
+      // 'none': no verified email and no verified OIDC social id. COALESCE
+      // because accounts without any social_id row have NULLs from the LEFT JOIN.
+      else if (m === 'none') orParts.push('(NOT COALESCE(s.has_email, false) AND NOT COALESCE(s.has_oidc, false))')
     }
     if (orParts.length > 0) conds.push(`(${orParts.join(' OR ')})`)
   }
@@ -185,7 +188,8 @@ export function buildListAccountsAdminSql (
       COALESCE(s.has_email, false) AS has_email,
       COALESCE(s.has_oidc,  false) AS has_oidc,
       s.primary_email,
-      COALESCE(w.cnt, 0) AS workspace_count
+      COALESCE(w.cnt, 0) AS workspace_count,
+      EXISTS (SELECT 1 FROM ${ns}.account_passwords pw WHERE pw.account_uuid = a.uuid) AS has_password
     ${joinedTables}
     WHERE ${where}
     ORDER BY ${orderBy}
@@ -217,6 +221,7 @@ export function rowToAccountListRow (row: any, adminEmails: string[]): AccountLi
     primaryEmail: primaryEmail !== '' ? primaryEmail : null,
     authMethods,
     workspaceCount: Number(row.workspace_count ?? 0),
-    isAdmin
+    isAdmin,
+    hasPassword: row.has_password === true
   }
 }

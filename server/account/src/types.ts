@@ -114,7 +114,7 @@ export interface ListAccountsAdminQueryParams {
   search?: string
   statusIn?: Array<'active' | 'disabled'>
   isAdmin?: boolean
-  authMethodIn?: Array<'email_only' | 'oidc' | 'mixed'>
+  authMethodIn?: Array<'email_only' | 'oidc' | 'mixed' | 'none'>
   nameContains?: string
   emailContains?: string
   workspaceUuidsIn?: WorkspaceUuid[]
