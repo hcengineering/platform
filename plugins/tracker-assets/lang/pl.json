@@ -290,6 +290,16 @@
     "UnsetParentIssue": "Wyczyść zagadnienie nadrzędne",
     "ForbidCreateProjectPermission": "Zakaż tworzenia projektów",
     "ForbidCreateProjectPermissionDescription": "Zakaż użytkownikom tworzenia nowych projektów.",
+    "ReadIssuePermission": "Wyświetlanie zadania",
+    "ReadIssuePermissionDescription": "Pozwala wyświetlać pojedyncze zadanie",
+    "CommentOnIssuePermission": "Komentowanie zadania",
+    "CommentOnIssuePermissionDescription": "Pozwala komentować pojedyncze zadanie",
+    "EditIssuePermission": "Edycja zadania",
+    "EditIssuePermissionDescription": "Pozwala edytować pojedyncze zadanie",
+    "TransitionIssuePermission": "Zmiana statusu zadania",
+    "TransitionIssuePermissionDescription": "Pozwala zmieniać status pojedynczego zadania",
+    "DeleteIssuePermission": "Usuwanie zadania",
+    "DeleteIssuePermissionDescription": "Pozwala usuwać pojedyncze zadanie",
     "AllowCreatingIssues": "Zezwól na tworzenie zadań"
   },
   "status": {}
