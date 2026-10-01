@@ -136,6 +136,7 @@ import {
   getTotpUrl,
   generateTokenWithVersion,
   verifyTokenVersion,
+  verifySessionTokenVersion,
   touchLastActivity
 } from './utils'
 
@@ -744,6 +745,7 @@ export async function sendInvite (
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
   }
+  verifySessionTokenVersion(account, extra, currentAccount)
 
   const workspace = await db.workspace.findOne({ uuid: workspaceUuid })
   if (workspace == null) {
@@ -786,6 +788,7 @@ export async function createAccessLink (
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
   }
+  verifySessionTokenVersion(account, extra, currentAccount)
 
   if (workspaceUuid == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
@@ -986,6 +989,7 @@ export async function resendInvite (
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
   }
+  verifySessionTokenVersion(account, extra, currentAccount)
 
   const workspace = await db.workspace.findOne({ uuid: workspaceUuid })
   if (workspace == null) {
@@ -1496,7 +1500,7 @@ export async function changePassword (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { account: accountUuid } = decodeTokenVerbose(ctx, token)
+  const { account: accountUuid, extra } = decodeTokenVerbose(ctx, token)
 
   ctx.info('Changing password', { accountUuid })
 
@@ -1505,6 +1509,7 @@ export async function changePassword (
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountUuid }))
   }
+  verifySessionTokenVersion(accountUuid, extra, account)
 
   if (!verifyPassword(oldPassword, account.hash, account.salt)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -3566,7 +3571,13 @@ export async function auditAdminActionDenied (
   } catch (err) {
     // L-AUD: stabiler Alert-Marker, damit ein verschluckter Audit-Write nicht
     // spurlos bleibt. Mutation-Verhalten unveraendert (Denial-Row ist best-effort).
-    ctx.error?.('AUDIT_WRITE_FAILED', { marker: 'AUDIT_WRITE_FAILED', action: 'admin_action_denied', reason, method, err })
+    ctx.error?.('AUDIT_WRITE_FAILED', {
+      marker: 'AUDIT_WRITE_FAILED',
+      action: 'admin_action_denied',
+      reason,
+      method,
+      err
+    })
   }
 }
 

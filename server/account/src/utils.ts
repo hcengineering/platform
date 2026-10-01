@@ -200,6 +200,53 @@ export async function generateTokenWithVersion (
 }
 
 /**
+ * Pure part of verifyTokenVersion: given the decoded principal and its already
+ * loaded account row, throw TokenError when the row is disabled or its
+ * token_version is newer than the claim. Skips the same principals as
+ * verifyTokenVersion (guest, system, read-only guest, non-UUID, missing row).
+ */
+export function checkTokenVersionClaim (
+  accountUuid: string,
+  extra: Record<string, any> | undefined,
+  account: Pick<Account, 'tokenVersion' | 'disabledAt'> | null | undefined
+): void {
+  if (accountUuid === GUEST_ACCOUNT) return
+  if (accountUuid === systemAccountUuid) return
+  if (accountUuid === readOnlyGuestAccountUuid) return
+  if (!UUID_REGEX.test(accountUuid)) return
+  // Account row may be missing for service-issued tokens (e.g. NIL_UUID for 2FA-pending).
+  // Only enforce when a row exists.
+  if (account == null) return
+  if (account.disabledAt != null) {
+    throw new TokenError('Account disabled')
+  }
+  const tokenVersionClaim = parseInt(extra?.token_version ?? '0', 10)
+  if ((account.tokenVersion ?? 0) > tokenVersionClaim) {
+    throw new TokenError('Token version invalidated')
+  }
+}
+
+/**
+ * Token-version check for operations that mint or extend privileges from the
+ * caller's token (createAccessLink, sendInvite, resendInvite, changePassword).
+ *
+ * API tokens (extra.apiTokenId) are deliberately NOT version-checked here: they
+ * carry no token_version claim and already have their own revocation/expiry
+ * check in wrap() (db.apiToken). Their semantics are unchanged by this helper.
+ * Whether API tokens should be allowed to mint privileges at all is a separate
+ * question (follow-up). Every other principal goes through
+ * checkTokenVersionClaim with the account row the caller already loaded.
+ */
+export function verifySessionTokenVersion (
+  accountUuid: string,
+  extra: Record<string, any> | undefined,
+  account: Pick<Account, 'tokenVersion' | 'disabledAt'> | null | undefined
+): void {
+  if (extra?.apiTokenId !== undefined) return
+  checkTokenVersionClaim(accountUuid, extra, account)
+}
+
+/**
  * Verify that a token's `token_version` claim is not less than the account's current
  * tokenVersion, and that the account is not disabled. Called from DB-aware token-
  * verification paths (getLoginInfoByToken, selectWorkspace, provider-login refresh).
@@ -212,17 +259,8 @@ export async function verifyTokenVersion (ctx: MeasureContext, db: AccountDB, to
   if (accountUuid === systemAccountUuid) return
   if (accountUuid === readOnlyGuestAccountUuid) return
   if (!UUID_REGEX.test(accountUuid)) return
-  const tokenVersionClaim = parseInt(extra?.token_version ?? '0', 10)
   const account = await db.account.findOne({ uuid: accountUuid })
-  // Account row may be missing for service-issued tokens (e.g. NIL_UUID for 2FA-pending).
-  // Only enforce when a row exists.
-  if (account == null) return
-  if (account.disabledAt != null) {
-    throw new TokenError('Account disabled')
-  }
-  if ((account.tokenVersion ?? 0) > tokenVersionClaim) {
-    throw new TokenError('Token version invalidated')
-  }
+  checkTokenVersionClaim(accountUuid, extra, account)
 }
 
 const LAST_ACTIVITY_THROTTLE_MS = 5 * 60 * 1000
