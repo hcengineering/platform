@@ -273,6 +273,11 @@ export interface AccountClient {
   generate2faSecret: () => Promise<{ secret: string, url: string }>
   enable2fa: (secret: string, code: string) => Promise<void>
   disable2fa: (code: string) => Promise<void>
+
+  /** Admin only. Disables the account and invalidates its session tokens. */
+  disableAccount: (accountUuid: AccountUuid) => Promise<{ ok: true }>
+  /** Admin only. Re-enables a disabled account. */
+  enableAccount: (accountUuid: AccountUuid) => Promise<{ ok: true }>
 }
 
 /** @public */
@@ -1427,6 +1432,24 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async disableAccount (accountUuid: AccountUuid): Promise<{ ok: true }> {
+    const request = {
+      method: 'disableAccount' as const,
+      params: { accountUuid }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async enableAccount (accountUuid: AccountUuid): Promise<{ ok: true }> {
+    const request = {
+      method: 'enableAccount' as const,
+      params: { accountUuid }
+    }
+
+    return await this.rpc(request)
   }
 }
 

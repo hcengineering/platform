@@ -304,6 +304,29 @@ export async function touchLastActivity (
   }
 }
 
+/**
+ * Verifies the caller holds an admin session token (`extra.admin === 'true'`)
+ * that has not been invalidated by a token version bump, and returns the
+ * caller's account uuid. Uses `meta.principalAccount` from `wrap` when present.
+ *
+ * Throws Forbidden without the admin claim and TokenError (=> Unauthorized) on a
+ * disabled account or a stale token.
+ */
+export async function assertAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  token: string,
+  meta?: Meta
+): Promise<AccountUuid> {
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true' || extra?.apiTokenId !== undefined) {
+    ctx.warn('Admin method denied: caller has no admin claim', { account })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  await verifyTokenVersion(ctx, db, token, meta?.principalAccount)
+  return account
+}
+
 export function wrap (
   accountMethod: (ctx: MeasureContext, db: AccountDB, branding: Branding | null, ...args: any[]) => Promise<any>
 ): AccountMethodHandler {

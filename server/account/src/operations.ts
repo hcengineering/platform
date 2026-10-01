@@ -138,7 +138,8 @@ import {
   generateTokenWithVersion,
   verifyTokenVersion,
   checkTokenVersionClaim,
-  touchLastActivity
+  touchLastActivity,
+  assertAdmin
 } from './utils'
 
 const NIL_UUID = '00000000-0000-0000-0000-000000000000' as AccountUuid
@@ -3670,6 +3671,219 @@ export async function getWorkspaceUsersWithPermission (
   return await db.getWorkspaceUsersWithPermission(workspace, permission)
 }
 
+/* ======== ADMIN: ACCOUNT LIFECYCLE ======== */
+
+const ADMIN_DENIED_AUDIT_WINDOW_MS = 60 * 1000
+const adminDeniedAuditThrottle = new Map<string, number>()
+
+/** Clears the admin_action_denied audit throttle. For tests. */
+export function resetAdminDeniedAuditThrottle (): void {
+  adminDeniedAuditThrottle.clear()
+}
+
+/**
+ * Best-effort audit row for a refused admin action. Throttled per
+ * (admin, reason, target) to one row per minute; failures are logged and never
+ * change the outcome of the action.
+ */
+async function auditAdminActionDenied (
+  ctx: MeasureContext,
+  db: AccountDB,
+  adminUuid: AccountUuid,
+  targetAccount: AccountUuid,
+  reason: 'self_disable' | 'last_admin'
+): Promise<void> {
+  const now = Date.now()
+  const key = `${adminUuid}:${reason}:${targetAccount}`
+  const last = adminDeniedAuditThrottle.get(key)
+  if (last !== undefined && now - last < ADMIN_DENIED_AUDIT_WINDOW_MS) return
+  if (adminDeniedAuditThrottle.size > 1000) {
+    for (const [k, ts] of adminDeniedAuditThrottle) {
+      if (now - ts >= ADMIN_DENIED_AUDIT_WINDOW_MS) adminDeniedAuditThrottle.delete(k)
+    }
+  }
+  adminDeniedAuditThrottle.set(key, now)
+  try {
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount,
+      action: 'admin_action_denied',
+      workspaceUuid: null,
+      details: { reason, method: 'disableAccount' }
+    })
+  } catch (err: any) {
+    ctx.error('Failed to write admin audit row', { action: 'admin_action_denied', reason, err })
+  }
+}
+
+function getConfiguredAdminEmails (): Set<string> {
+  return new Set(
+    (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((it) => it.trim().toLowerCase())
+      .filter((it) => it !== '')
+  )
+}
+
+/**
+ * True when `target` is an instance admin (one of its email social ids is listed
+ * in ADMIN_EMAILS) and no other admin account exists that is not disabled.
+ */
+async function isLastActiveAdmin (db: AccountDB, target: AccountUuid): Promise<boolean> {
+  const adminEmails = getConfiguredAdminEmails()
+  if (adminEmails.size === 0) return false
+
+  const targetEmails = (await db.socialId.find({ personUuid: target, type: SocialIdType.EMAIL })).map((it) =>
+    it.value.toLowerCase()
+  )
+  if (!targetEmails.some((it) => adminEmails.has(it))) return false
+
+  for (const email of adminEmails) {
+    if (targetEmails.includes(email)) continue
+    const socialId = await db.socialId.findOne({ type: SocialIdType.EMAIL, value: email })
+    if (socialId == null || socialId.personUuid === target) continue
+    const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
+    if (account != null && account.disabledAt == null) return false
+  }
+  return true
+}
+
+function getLifecycleTarget (params: { accountUuid?: AccountUuid } | undefined): AccountUuid {
+  const accountUuid = params?.accountUuid
+  if (typeof accountUuid !== 'string' || accountUuid === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+  return accountUuid
+}
+
+/**
+ * Disables an account (admin only). The account can no longer log in and every
+ * token issued for it is rejected; its token version is bumped so session
+ * tokens stay invalid after a later enable. State change and audit row are
+ * written atomically (PostgreSQL). API tokens are not revoked: they are rejected
+ * while the account is disabled and usable again after enable.
+ */
+export async function disableAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid },
+  meta?: Meta
+): Promise<{ ok: true }> {
+  const adminUuid = await assertAdmin(ctx, db, token, meta)
+  const accountUuid = getLifecycleTarget(params)
+
+  if (adminUuid === accountUuid) {
+    await auditAdminActionDenied(ctx, db, adminUuid, accountUuid, 'self_disable')
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.CannotDisableSelf, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountUuid }))
+  }
+
+  if (account.disabledAt != null) {
+    // Already disabled: no state change and no version bump.
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount: accountUuid,
+      action: 'disable',
+      workspaceUuid: null,
+      details: { noop: true }
+    })
+    return { ok: true }
+  }
+
+  if (await isLastActiveAdmin(db, accountUuid)) {
+    await auditAdminActionDenied(ctx, db, adminUuid, accountUuid, 'last_admin')
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.LastAdmin, {}))
+  }
+
+  await db.applyAccountLifecycle(
+    accountUuid,
+    { disabledAt: Date.now(), bumpTokenVersion: true },
+    {
+      adminAccount: adminUuid,
+      targetAccount: accountUuid,
+      action: 'disable',
+      workspaceUuid: null,
+      details: { reason: 'manual_admin_action' }
+    }
+  )
+
+  // The last-admin check and the write are not one atomic operation: a
+  // concurrent disable of the other remaining admin may have passed its own
+  // check. Re-check against committed state and undo this disable if no active
+  // admin is left. The token version is never lowered.
+  if (await isLastActiveAdmin(db, accountUuid)) {
+    await db.applyAccountLifecycle(
+      accountUuid,
+      { disabledAt: null, bumpTokenVersion: false },
+      {
+        adminAccount: adminUuid,
+        targetAccount: accountUuid,
+        action: 'admin_action_denied',
+        workspaceUuid: null,
+        details: { reason: 'last_admin', rollback: true }
+      }
+    )
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.LastAdmin, {}))
+  }
+
+  ctx.info('Account disabled by admin', { admin: adminUuid, account: accountUuid })
+  return { ok: true }
+}
+
+/**
+ * Re-enables a disabled account (admin only). Bumps the token version, so
+ * session tokens issued before the account was disabled stay invalid. Enabling
+ * an active account changes nothing and only records a no-op audit row.
+ */
+export async function enableAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid },
+  meta?: Meta
+): Promise<{ ok: true }> {
+  const adminUuid = await assertAdmin(ctx, db, token, meta)
+  const accountUuid = getLifecycleTarget(params)
+
+  const account = await db.account.findOne({ uuid: accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountUuid }))
+  }
+
+  if (account.disabledAt == null) {
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount: accountUuid,
+      action: 'enable',
+      workspaceUuid: null,
+      details: { noop: true }
+    })
+    return { ok: true }
+  }
+
+  await db.applyAccountLifecycle(
+    accountUuid,
+    { disabledAt: null, bumpTokenVersion: true },
+    {
+      adminAccount: adminUuid,
+      targetAccount: accountUuid,
+      action: 'enable',
+      workspaceUuid: null,
+      details: null
+    }
+  )
+
+  ctx.info('Account enabled by admin', { admin: adminUuid, account: accountUuid })
+  return { ok: true }
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -3735,6 +3949,8 @@ export type AccountMethods =
   | 'refreshHulyAssistantToken'
   | 'releaseSocialId'
   | 'deleteAccount'
+  | 'disableAccount'
+  | 'enableAccount'
   | 'canMergeSpecifiedPersons'
   | 'mergeSpecifiedPersons'
   | 'setMyProfile'
@@ -3807,6 +4023,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     refreshHulyAssistantToken: wrap(refreshHulyAssistantToken),
     releaseSocialId: wrap(releaseSocialId),
     deleteAccount: wrap(deleteAccount),
+    disableAccount: wrap(disableAccount),
+    enableAccount: wrap(enableAccount),
     canMergeSpecifiedPersons: wrap(canMergeSpecifiedPersons),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     setMyProfile: wrap(setMyProfile),

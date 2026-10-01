@@ -348,7 +348,101 @@ describe('real-account', () => {
           expect.objectContaining({ disabledAt: 1700000000000, tokenVersion: 1, lastActivityAt: 1700000000001 })
         )
         await db.account.update({ uuid: target }, { disabledAt: null, lastActivityAt: null })
+
+        const disabledAt = Date.now()
+        await db.applyAccountLifecycle(
+          target,
+          { disabledAt, bumpTokenVersion: true },
+          { adminAccount: admin, targetAccount: target, action: 'disable', workspaceUuid: null, details: null }
+        )
+        expect(await db.account.findOne({ uuid: target })).toEqual(
+          expect.objectContaining({ disabledAt, tokenVersion: 2 })
+        )
+        const lifecycleRows = await sql.unsafe(
+          `SELECT action FROM ${upgradeNs}.admin_audit_log WHERE target_account = $1 ORDER BY ts_ms`,
+          [target]
+        )
+        expect(lifecycleRows.map((r: any) => r.action).sort((a: string, b: string) => a.localeCompare(b))).toEqual([
+          'admin_action_denied',
+          'disable'
+        ])
       }
+    })
+
+    describe('applyAccountLifecycle', () => {
+      async function auditCount (sql: Sql, ns: string, target: AccountUuid): Promise<number> {
+        const rows = await sql.unsafe(`SELECT count(*) AS n FROM ${ns}.admin_audit_log WHERE target_account = $1`, [
+          target
+        ])
+        return Number(rows[0].n)
+      }
+
+      it('writes state change and audit row together', async () => {
+        for (const { name, sql, account } of [
+          { name: 'cockroach', sql: crSql, account: crAccount },
+          { name: 'postgres', sql: pgSql, account: pgAccount }
+        ]) {
+          const target = users[0].uuid
+          await account.applyAccountLifecycle(
+            target,
+            { disabledAt: 1234, bumpTokenVersion: true },
+            {
+              adminAccount: users[1].uuid,
+              targetAccount: target,
+              action: 'disable',
+              workspaceUuid: null,
+              details: { reason: 'manual_admin_action' }
+            }
+          )
+          expect({ name, row: await account.account.findOne({ uuid: target }) }).toEqual({
+            name,
+            row: expect.objectContaining({ disabledAt: 1234, tokenVersion: 1 })
+          })
+          expect(await auditCount(sql, dbUuid, target)).toBe(1)
+
+          await account.applyAccountLifecycle(
+            target,
+            { disabledAt: null, bumpTokenVersion: false },
+            { adminAccount: users[1].uuid, targetAccount: target, action: 'enable', workspaceUuid: null, details: null }
+          )
+          expect(await account.account.findOne({ uuid: target })).toEqual(
+            expect.objectContaining({ disabledAt: null, tokenVersion: 1 })
+          )
+          expect(await auditCount(sql, dbUuid, target)).toBe(2)
+        }
+      })
+
+      it('rolls the state change back when the audit insert fails', async () => {
+        for (const { name, sql, account } of [
+          { name: 'cockroach', sql: crSql, account: crAccount },
+          { name: 'postgres', sql: pgSql, account: pgAccount }
+        ]) {
+          const target = users[0].uuid
+          const spy = jest
+            .spyOn(account.adminAuditLog, 'insert')
+            .mockRejectedValueOnce(new Error('audit insert failed'))
+          await expect(
+            account.applyAccountLifecycle(
+              target,
+              { disabledAt: Date.now(), bumpTokenVersion: true },
+              {
+                adminAccount: users[1].uuid,
+                targetAccount: target,
+                action: 'disable',
+                workspaceUuid: null,
+                details: null
+              }
+            )
+          ).rejects.toThrow('audit insert failed')
+          spy.mockRestore()
+
+          expect({ name, row: await account.account.findOne({ uuid: target }) }).toEqual({
+            name,
+            row: expect.objectContaining({ disabledAt: null, tokenVersion: 0 })
+          })
+          expect(await auditCount(sql, dbUuid, target)).toBe(0)
+        }
+      })
     })
 
     it('is idempotent on a fresh database', async () => {

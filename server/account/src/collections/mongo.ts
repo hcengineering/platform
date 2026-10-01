@@ -40,6 +40,7 @@ import type {
   AccountDB,
   AccountEvent,
   AccountAggregatedInfo,
+  AccountLifecyclePatch,
   AdminAuditLogCollection,
   AdminAuditLogEntry,
   NewAdminAuditLogEntry,
@@ -899,6 +900,26 @@ export class MongoAccountDB implements AccountDB {
     await this.socialId.update({ personUuid: accountUuid }, { verifiedOn: undefined })
     await this.workspaceMembers.deleteMany({ accountUuid })
     await this.account.deleteMany({ uuid: accountUuid })
+  }
+
+  /**
+   * Not atomic on MongoDB: the state change is applied first, then the audit
+   * row is written. A failed audit insert leaves the state change in place and
+   * surfaces the error to the caller.
+   */
+  async applyAccountLifecycle (
+    accountUuid: AccountUuid,
+    patch: AccountLifecyclePatch,
+    audit: NewAdminAuditLogEntry
+  ): Promise<void> {
+    await this.account.update(
+      { uuid: accountUuid },
+      {
+        disabledAt: patch.disabledAt,
+        ...(patch.bumpTokenVersion ? { $inc: { tokenVersion: 1 } } : {})
+      }
+    )
+    await this.adminAuditLog.insert(audit)
   }
 
   async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {

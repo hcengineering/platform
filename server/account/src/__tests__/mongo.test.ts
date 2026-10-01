@@ -705,6 +705,45 @@ describe('MongoAdminAuditLogCollection', () => {
   })
 })
 
+describe('MongoAccountDB.applyAccountLifecycle', () => {
+  function setup (): { db: MongoAccountDB, calls: string[] } {
+    const calls: string[] = []
+    const db = new MongoAccountDB({ collection: jest.fn() } as unknown as Db)
+    ;(db as any).account = { update: jest.fn(async () => calls.push('account.update')) }
+    ;(db as any).adminAuditLog = { insert: jest.fn(async () => calls.push('audit.insert')) }
+    return { db, calls }
+  }
+  const audit = {
+    adminAccount: 'admin1' as AccountUuid,
+    targetAccount: 'target1' as AccountUuid,
+    action: 'disable' as const,
+    workspaceUuid: null,
+    details: null
+  }
+
+  it('updates the account (with $inc on bump) and then writes the audit row', async () => {
+    const { db, calls } = setup()
+    await db.applyAccountLifecycle('target1' as AccountUuid, { disabledAt: 5, bumpTokenVersion: true }, audit)
+    expect(db.account.update).toHaveBeenCalledWith({ uuid: 'target1' }, { disabledAt: 5, $inc: { tokenVersion: 1 } })
+    expect(db.adminAuditLog.insert).toHaveBeenCalledWith(audit)
+    expect(calls).toEqual(['account.update', 'audit.insert'])
+  })
+
+  it('does not bump the version when not requested', async () => {
+    const { db } = setup()
+    await db.applyAccountLifecycle('target1' as AccountUuid, { disabledAt: null, bumpTokenVersion: false }, audit)
+    expect(db.account.update).toHaveBeenCalledWith({ uuid: 'target1' }, { disabledAt: null })
+  })
+
+  it('surfaces a failed audit insert', async () => {
+    const { db } = setup()
+    ;(db.adminAuditLog.insert as jest.Mock).mockRejectedValueOnce(new Error('audit down'))
+    await expect(
+      db.applyAccountLifecycle('target1' as AccountUuid, { disabledAt: 5, bumpTokenVersion: true }, audit)
+    ).rejects.toThrow('audit down')
+  })
+})
+
 describe('MongoAccountDB', () => {
   let mockDb: any
   let accountDb: MongoAccountDB

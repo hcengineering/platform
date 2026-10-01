@@ -53,6 +53,7 @@ import type {
   ApiToken,
   DBFlavor,
   AdminAuditLogCollection,
+  AccountLifecyclePatch,
   NewAdminAuditLogEntry
 } from '../../types'
 
@@ -1142,6 +1143,24 @@ export class PostgresAccountDB implements AccountDB {
 
       // This removes the account along with the password if any
       await this.account.deleteMany({ uuid: accountUuid }, rTx)
+    })
+  }
+
+  async applyAccountLifecycle (
+    accountUuid: AccountUuid,
+    patch: AccountLifecyclePatch,
+    audit: NewAdminAuditLogEntry
+  ): Promise<void> {
+    await this.withRetry(async (rTx) => {
+      await this.account.update(
+        { uuid: accountUuid },
+        {
+          disabledAt: patch.disabledAt,
+          ...(patch.bumpTokenVersion ? { $inc: { tokenVersion: 1 } } : {})
+        },
+        rTx
+      )
+      await this.adminAuditLog.insert(audit, rTx)
     })
   }
 

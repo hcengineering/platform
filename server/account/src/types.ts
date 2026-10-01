@@ -90,6 +90,14 @@ export interface AdminAuditLogCollection {
   insert: (entry: NewAdminAuditLogEntry) => Promise<void>
 }
 
+/**
+ * Account state change applied by an admin lifecycle action.
+ */
+export interface AccountLifecyclePatch {
+  disabledAt: number | null
+  bumpTokenVersion: boolean
+}
+
 // TODO: type data with generic type
 export interface AccountEvent {
   accountUuid: AccountUuid
@@ -409,6 +417,17 @@ export interface AccountDB {
   setPassword: (accountId: AccountUuid, passwordHash: Buffer, salt: Buffer) => Promise<void>
   resetPassword: (accountId: AccountUuid) => Promise<void>
   deleteAccount: (accountId: AccountUuid) => Promise<void>
+  /**
+   * Sets account.disabled_at (optionally incrementing token_version) and writes
+   * the audit row. On PostgreSQL/CockroachDB both happen in one transaction:
+   * if the audit insert fails, the state change is rolled back. MongoDB applies
+   * them sequentially (not atomic).
+   */
+  applyAccountLifecycle: (
+    accountId: AccountUuid,
+    patch: AccountLifecyclePatch,
+    audit: NewAdminAuditLogEntry
+  ) => Promise<void>
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
   generatePersonUuid: () => Promise<PersonUuid>
 }

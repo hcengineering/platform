@@ -40,6 +40,8 @@ export const accountPlugin = plugin(accountId, {
     OtpSubject: '' as IntlString
   },
   status: {
-    AccountDisabled: '' as StatusCode
+    AccountDisabled: '' as StatusCode,
+    CannotDisableSelf: '' as StatusCode,
+    LastAdmin: '' as StatusCode
   }
 })
