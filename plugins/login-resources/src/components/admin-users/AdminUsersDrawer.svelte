@@ -25,7 +25,7 @@
   import { copyTextToClipboard } from '@hcengineering/presentation'
   import AddToWorkspacePopup from './AddToWorkspacePopup.svelte'
   import AuditEmptyState from '../admin-shell/AuditEmptyState.svelte'
-  import { confirmAction, notify } from './util'
+  import { confirmAction, notify, parseRole } from './util'
 
   export let accountUuid: AccountUuid
   // Optional: parent passes the ordered list of currently-visible uuids so

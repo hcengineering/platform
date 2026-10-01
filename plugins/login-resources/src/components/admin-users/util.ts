@@ -3,20 +3,11 @@
 //
 // Shared utilities for the admin-users / admin-workspaces components.
 //
-import { type AccountRole } from '@hcengineering/core'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import { MessageBox } from '@hcengineering/presentation'
 import { showPopup } from '@hcengineering/ui'
 
-/**
- * Coerce a DropdownIntlItem.id (typed as `string` after round-trip
- * through the dropdown component) back to the numeric AccountRole enum.
- * Several callsites forgot `Number(...)` and silently shipped `"4"`
- * to the backend instead of the integer 4.
- */
-export function parseRole (v: unknown): AccountRole {
-  return Number(v) as AccountRole
-}
+export { parseRole } from './roles'
 
 /**
  * Show a confirm dialog. Used by both the bulk-action bar (AdminUsers)

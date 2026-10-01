@@ -12,6 +12,7 @@
   import type { WorkspaceUuid } from '@hcengineering/core'
   import AddMemberToWorkspacePopup from './AddMemberToWorkspacePopup.svelte'
   import AuditEmptyState from '../admin-shell/AuditEmptyState.svelte'
+  import { parseRole } from '../admin-users/util'
 
   export let workspaceUuid: string
 
@@ -223,7 +224,7 @@
                 <DropdownLabelsIntl
                   items={roleItems}
                   selected={m.role}
-                  on:selected={(e) => onChangeRole(m.accountUuid, e.detail)}
+                  on:selected={(e) => onChangeRole(m.accountUuid, parseRole(e.detail))}
                 />
               </div>
               <!-- pass a human-readable label so the confirmation can name the member -->
