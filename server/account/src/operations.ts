@@ -797,6 +797,8 @@ export async function sendInvite (
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
   }
+  // Session tokens issued before the last token version bump may not mint new access.
+  checkTokenVersionClaim(account, extra, currentAccount)
 
   const workspace = await db.workspace.findOne({ uuid: workspaceUuid })
   if (workspace == null) {
@@ -839,6 +841,8 @@ export async function createAccessLink (
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
   }
+  // Session tokens issued before the last token version bump may not mint new access.
+  checkTokenVersionClaim(account, extra, currentAccount)
 
   if (workspaceUuid == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
@@ -1039,6 +1043,8 @@ export async function resendInvite (
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
   }
+  // Session tokens issued before the last token version bump may not mint new access.
+  checkTokenVersionClaim(account, extra, currentAccount)
 
   const workspace = await db.workspace.findOne({ uuid: workspaceUuid })
   if (workspace == null) {
@@ -1557,7 +1563,7 @@ export async function changePassword (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { account: accountUuid } = decodeTokenVerbose(ctx, token)
+  const { account: accountUuid, extra } = decodeTokenVerbose(ctx, token)
 
   ctx.info('Changing password', { accountUuid })
 
@@ -1566,6 +1572,7 @@ export async function changePassword (
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountUuid }))
   }
+  checkTokenVersionClaim(accountUuid, extra, account)
 
   if (!verifyPassword(oldPassword, account.hash, account.salt)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
