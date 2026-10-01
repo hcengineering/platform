@@ -51,7 +51,9 @@ import type {
   Subscription,
   WorkspacePermission,
   ApiToken,
-  DBFlavor
+  DBFlavor,
+  AdminAuditLogCollection,
+  NewAdminAuditLogEntry
 } from '../../types'
 
 function toSnakeCase (str: string): string {
@@ -455,6 +457,9 @@ export class AccountPostgresDbCollection
         a.max_workspaces,
         a.failed_login_attempts,
         a.tfa_secret,
+        a.disabled_at,
+        a.token_version,
+        a.last_activity_at,
         p.hash,
         p.salt
       FROM ${this.getTableName()} as a
@@ -475,6 +480,13 @@ export class AccountPostgresDbCollection
       }
       if (r.salt != null) {
         r.salt = Buffer.from(Object.values(r.salt))
+      }
+      // INT8 columns are returned as strings by the driver
+      if (typeof r.disabledAt === 'string') {
+        r.disabledAt = Number(r.disabledAt)
+      }
+      if (typeof r.lastActivityAt === 'string') {
+        r.lastActivityAt = Number(r.lastActivityAt)
       }
     }
 
@@ -516,6 +528,37 @@ export class AccountPostgresDbCollection
   }
 }
 
+export class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
+  constructor (
+    readonly client: Sql,
+    readonly ns: string
+  ) {}
+
+  getTableName (): string {
+    return this.ns === '' ? 'admin_audit_log' : `${this.ns}.admin_audit_log`
+  }
+
+  /**
+   * Inserts one audit row. Pass `client` to make the insert part of an
+   * enclosing transaction (see PostgresAccountDB.applyAccountLifecycle).
+   */
+  async insert (entry: NewAdminAuditLogEntry, client?: Sql): Promise<void> {
+    const sql = `
+      INSERT INTO ${this.getTableName()}
+        (admin_account, target_account, action, workspace_uuid, details)
+      VALUES ($1::text, $2::text, $3::text, $4::text, $5::jsonb)
+    `
+    const values = [
+      entry.adminAccount,
+      entry.targetAccount,
+      entry.action,
+      entry.workspaceUuid,
+      entry.details != null ? JSON.stringify(entry.details) : null
+    ]
+    await (client ?? this.client).unsafe(sql, values)
+  }
+}
+
 export class PostgresAccountDB implements AccountDB {
   private readonly retryOptions = {
     maxAttempts: 5,
@@ -542,6 +585,7 @@ export class PostgresAccountDB implements AccountDB {
   subscription: PostgresDbCollection<Subscription, 'id'>
   workspacePermission: PostgresDbCollection<WorkspacePermission>
   apiToken: PostgresDbCollection<ApiToken, 'id'>
+  adminAuditLog: PostgresAdminAuditLogCollection
 
   constructor (
     readonly client: Sql,
@@ -617,6 +661,7 @@ export class PostgresAccountDB implements AccountDB {
       timestampFields: ['createdOn', 'expiresOn'],
       withRetryClient
     })
+    this.adminAuditLog = new PostgresAdminAuditLogCollection(client, ns)
   }
 
   getWsMembersTableName (): string {

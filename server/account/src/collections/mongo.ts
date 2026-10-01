@@ -40,6 +40,9 @@ import type {
   AccountDB,
   AccountEvent,
   AccountAggregatedInfo,
+  AdminAuditLogCollection,
+  AdminAuditLogEntry,
+  NewAdminAuditLogEntry,
   DbCollection,
   Integration,
   IntegrationSecret,
@@ -393,6 +396,27 @@ interface MigrationInfo {
   lastProcessedTime: number
 }
 
+export class MongoAdminAuditLogCollection implements AdminAuditLogCollection {
+  constructor (readonly db: Db) {}
+
+  get collection (): Collection<AdminAuditLogEntry> {
+    return this.db.collection<AdminAuditLogEntry>('adminAuditLog')
+  }
+
+  async insert (entry: NewAdminAuditLogEntry): Promise<void> {
+    const row: AdminAuditLogEntry = {
+      id: new UUID().toJSON(),
+      tsMs: Date.now(),
+      adminAccount: entry.adminAccount,
+      targetAccount: entry.targetAccount,
+      action: entry.action,
+      workspaceUuid: entry.workspaceUuid,
+      details: entry.details
+    }
+    await this.collection.insertOne({ ...row, _id: row.id } as any)
+  }
+}
+
 export class MongoAccountDB implements AccountDB {
   migration: MongoDbCollection<MigrationInfo, 'key'>
   person: MongoDbCollection<Person, 'uuid'>
@@ -413,6 +437,7 @@ export class MongoAccountDB implements AccountDB {
   workspaceMembers: MongoDbCollection<WorkspaceMember>
   workspacePermission: MongoDbCollection<WorkspacePermission>
   apiToken: MongoDbCollection<ApiToken, 'id'>
+  adminAuditLog: MongoAdminAuditLogCollection
 
   constructor (readonly db: Db) {
     this.migration = new MongoDbCollection<MigrationInfo, 'key'>('migration', db, 'key')
@@ -434,6 +459,7 @@ export class MongoAccountDB implements AccountDB {
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
     this.workspacePermission = new MongoDbCollection<WorkspacePermission>('workspacePermissions', db)
     this.apiToken = new MongoDbCollection<ApiToken, 'id'>('apiTokens', db, 'id')
+    this.adminAuditLog = new MongoAdminAuditLogCollection(db)
   }
 
   async init (): Promise<void> {

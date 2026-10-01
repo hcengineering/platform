@@ -29,7 +29,8 @@ import {
   AccountMongoDbCollection,
   SocialIdMongoDbCollection,
   WorkspaceStatusMongoDbCollection,
-  MongoAccountDB
+  MongoAccountDB,
+  MongoAdminAuditLogCollection
 } from '../collections/mongo'
 import { type WorkspaceInfoWithStatus, type WorkspaceStatus } from '../types'
 
@@ -668,6 +669,39 @@ describe('WorkspaceStatusMongoDbCollection', () => {
         }
       })
     })
+  })
+})
+
+describe('MongoAdminAuditLogCollection', () => {
+  it('inserts an audit row with generated id and timestamp', async () => {
+    const insertOne = jest.fn().mockResolvedValue({})
+    const mockDb: any = { collection: jest.fn().mockReturnValue({ insertOne }) }
+    const collection = new MongoAdminAuditLogCollection(mockDb as Db)
+
+    const before = Date.now()
+    await collection.insert({
+      adminAccount: 'admin1' as AccountUuid,
+      targetAccount: 'target1' as AccountUuid,
+      action: 'disable',
+      workspaceUuid: null,
+      details: { reason: 'manual_admin_action' }
+    })
+
+    expect(mockDb.collection).toHaveBeenCalledWith('adminAuditLog')
+    expect(insertOne).toHaveBeenCalledTimes(1)
+    const row = insertOne.mock.calls[0][0]
+    expect(row).toEqual(
+      expect.objectContaining({
+        adminAccount: 'admin1',
+        targetAccount: 'target1',
+        action: 'disable',
+        workspaceUuid: null,
+        details: { reason: 'manual_admin_action' }
+      })
+    )
+    expect(typeof row.id).toBe('string')
+    expect(row._id).toBe(row.id)
+    expect(row.tsMs).toBeGreaterThanOrEqual(before)
   })
 })
 

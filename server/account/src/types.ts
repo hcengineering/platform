@@ -67,6 +67,27 @@ export interface Account {
   maxWorkspaces?: number
   failedLoginAttempts?: number // Number of consecutive failed login attempts
   tfaSecret?: string
+  disabledAt?: number | null // epoch-ms when an admin disabled the account; null/undefined = active
+  tokenVersion?: number // monotonic counter, bumped on disable/enable to invalidate issued session tokens
+  lastActivityAt?: number | null // epoch-ms of the last successful login/workspace selection (throttled)
+}
+
+export type AdminAuditAction = 'disable' | 'enable' | 'admin_action_denied'
+
+export interface AdminAuditLogEntry {
+  id: string
+  tsMs: number
+  adminAccount: AccountUuid
+  targetAccount: AccountUuid
+  action: AdminAuditAction
+  workspaceUuid: WorkspaceUuid | null
+  details: Record<string, any> | null
+}
+
+export type NewAdminAuditLogEntry = Omit<AdminAuditLogEntry, 'id' | 'tsMs'>
+
+export interface AdminAuditLogCollection {
+  insert: (entry: NewAdminAuditLogEntry) => Promise<void>
 }
 
 // TODO: type data with generic type
@@ -350,6 +371,7 @@ export interface AccountDB {
   subscription: DbCollection<Subscription>
   workspacePermission: DbCollection<WorkspacePermission>
   apiToken: DbCollection<ApiToken>
+  adminAuditLog: AdminAuditLogCollection
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>

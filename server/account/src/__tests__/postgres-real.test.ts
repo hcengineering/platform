@@ -4,9 +4,24 @@
 
 import { generateUuid, SocialIdType, type AccountUuid, type PersonId } from '@hcengineering/core'
 import { getDBClient, shutdownPostgres, type PostgresClientReference } from '@hcengineering/postgres'
+import { type Sql } from 'postgres'
 import { PostgresAccountDB } from '../collections/postgres/postgres'
-import { type SocialId } from '../types'
+import { getMigrations } from '../collections/postgres/migrations'
+import { type DBFlavor, type SocialId } from '../types'
 import { createAccount, getDbFlavor, normalizeValue } from '../utils'
+import { getLegacyAdminMigrations } from './fixtures/legacyAdminMigrations'
+
+const FOUNDATION_V28_ID = 'account_db_v28_account_lifecycle_admin_audit'
+
+/**
+ * Account DB that stops before the foundation migration, i.e. the schema state
+ * of a deployment running the previous release.
+ */
+class PreFoundationAccountDB extends PostgresAccountDB {
+  protected getMigrations (): Array<[string, string]> {
+    return super.getMigrations().filter(([id]) => id !== FOUNDATION_V28_ID)
+  }
+}
 
 jest.setTimeout(90000)
 
@@ -33,6 +48,10 @@ describe('real-account', () => {
 
   let crAccount: PostgresAccountDB
   let pgAccount: PostgresAccountDB
+
+  let crSql: Sql
+  let pgSql: Sql
+  let pgFlavor: DBFlavor
 
   const users = [
     {
@@ -107,16 +126,17 @@ describe('real-account', () => {
     }
 
     crClient = getDBClient(crDbUri)
-    const crPGClient = await crClient.getClient()
+    crSql = await crClient.getClient()
 
     pgClient = getDBClient(pgDbUri)
-    const pgPGClient = await pgClient.getClient()
+    pgSql = await pgClient.getClient()
+    pgFlavor = await getDbFlavor(pgSql)
 
     // Initial DB's
 
-    crAccount = new PostgresAccountDB(crPGClient, dbUuid)
+    crAccount = new PostgresAccountDB(crSql, dbUuid)
 
-    pgAccount = new PostgresAccountDB(pgPGClient, dbUuid, await getDbFlavor(pgPGClient))
+    pgAccount = new PostgresAccountDB(pgSql, dbUuid, pgFlavor)
 
     await Promise.all([migrateCockroachDB(crAccount, crDbUri), migratePostgreSQL(pgAccount, pgDbUri)])
 
@@ -222,6 +242,137 @@ describe('real-account', () => {
       expiresOn: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).getTime()
     })
     expect(inviteLinkPG).toBeDefined()
+  })
+
+  describe('account lifecycle migration (v28)', () => {
+    const upgradeNs = 'upgrade_account'
+
+    function targets (): Array<{ name: string, sql: Sql, flavor: DBFlavor }> {
+      return [
+        { name: 'cockroach', sql: crSql, flavor: 'cockroach' },
+        { name: 'postgres', sql: pgSql, flavor: pgFlavor }
+      ]
+    }
+
+    async function appliedMigrations (sql: Sql, ns: string): Promise<Map<string, boolean>> {
+      const rows = await sql.unsafe(`SELECT identifier, applied_at FROM ${ns}._account_applied_migrations`)
+      return new Map(rows.map((r: any) => [r.identifier as string, r.applied_at != null]))
+    }
+
+    async function columns (sql: Sql, ns: string, table: string): Promise<Array<{ name: string, nullable: boolean }>> {
+      const rows = await sql.unsafe(
+        'SELECT column_name, is_nullable FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2',
+        [ns, table]
+      )
+      return rows.map((r: any) => ({ name: r.column_name, nullable: r.is_nullable === 'YES' }))
+    }
+
+    async function indexes (sql: Sql, ns: string): Promise<string[]> {
+      const rows = await sql.unsafe('SELECT indexname FROM pg_indexes WHERE schemaname = $1', [ns])
+      return rows.map((r: any) => r.indexname as string)
+    }
+
+    async function createUser (db: PostgresAccountDB): Promise<AccountUuid> {
+      const uuid = generateUuid() as AccountUuid
+      await db.person.insertOne({ uuid, firstName: 'Upgrade', lastName: 'User' })
+      await createAccount(db, uuid, true)
+      return uuid
+    }
+
+    it('applies on top of the legacy admin migrations (v27-v30 ids)', async () => {
+      for (const { name, sql, flavor } of targets()) {
+        // 1. Previous release schema + the legacy admin migrations, recorded by id.
+        const legacyDb = new PreFoundationAccountDB(sql, upgradeNs, flavor)
+        await legacyDb.init()
+        const legacy = getLegacyAdminMigrations(upgradeNs, flavor)
+        for (const [id, ddl] of legacy) {
+          await legacyDb.migrate(id, ddl)
+        }
+        const before = await appliedMigrations(sql, upgradeNs)
+        expect(before.has(FOUNDATION_V28_ID)).toBe(false)
+
+        // 2. Upgrade: only the foundation migration is new and must apply cleanly.
+        const db = new PostgresAccountDB(sql, upgradeNs, flavor)
+        await db.init()
+
+        const applied = await appliedMigrations(sql, upgradeNs)
+        for (const id of [...legacy.map(([id]) => id), FOUNDATION_V28_ID]) {
+          expect({ name, id, applied: applied.get(id) }).toEqual({ name, id, applied: true })
+        }
+        expect(applied.size).toBe(before.size + 1)
+
+        const accountColumns = (await columns(sql, upgradeNs, 'account')).map((c) => c.name)
+        for (const col of ['disabled_at', 'token_version', 'last_activity_at']) {
+          expect({ name, col, count: accountColumns.filter((c) => c === col).length }).toEqual({ name, col, count: 1 })
+        }
+
+        // Legacy-only schema extensions are left as they are.
+        const auditColumns = await columns(sql, upgradeNs, 'admin_audit_log')
+        expect(auditColumns.some((c) => c.name === 'batch_id')).toBe(true)
+        expect(auditColumns.find((c) => c.name === 'target_account')?.nullable).toBe(true)
+
+        const idx = await indexes(sql, upgradeNs)
+        for (const index of [
+          'admin_audit_log_target_idx',
+          'account_disabled_at_idx',
+          'workspace_members_account_idx'
+        ]) {
+          expect({ name, index, present: idx.includes(index) }).toEqual({ name, index, present: true })
+        }
+
+        // Runtime: the foundation code works against the upgraded schema.
+        const target = await createUser(db)
+        const admin = await createUser(db)
+        await db.adminAuditLog.insert({
+          adminAccount: admin,
+          targetAccount: target,
+          action: 'admin_action_denied',
+          workspaceUuid: null,
+          details: { reason: 'self_disable' }
+        })
+        const auditRows = await sql.unsafe(
+          `SELECT admin_account, target_account, action, details, batch_id FROM ${upgradeNs}.admin_audit_log`
+        )
+        expect(auditRows).toHaveLength(1)
+        expect(auditRows[0].batch_id).toBeNull()
+
+        const account = await db.account.findOne({ uuid: target })
+        expect(account).toEqual(
+          expect.objectContaining({ uuid: target, disabledAt: null, tokenVersion: 0, lastActivityAt: null })
+        )
+        await db.account.update(
+          { uuid: target },
+          { disabledAt: 1700000000000, lastActivityAt: 1700000000001, $inc: { tokenVersion: 1 } }
+        )
+        expect(await db.account.findOne({ uuid: target })).toEqual(
+          expect.objectContaining({ disabledAt: 1700000000000, tokenVersion: 1, lastActivityAt: 1700000000001 })
+        )
+        await db.account.update({ uuid: target }, { disabledAt: null, lastActivityAt: null })
+      }
+    })
+
+    it('is idempotent on a fresh database', async () => {
+      for (const { sql, flavor } of targets()) {
+        const db = new PostgresAccountDB(sql, upgradeNs, flavor)
+        await db.init()
+        const first = await appliedMigrations(sql, upgradeNs)
+        expect(first.get(FOUNDATION_V28_ID)).toBe(true)
+
+        await new PostgresAccountDB(sql, upgradeNs, flavor).init()
+        expect(await appliedMigrations(sql, upgradeNs)).toEqual(first)
+
+        // The DDL itself must be re-runnable (the runner only tracks ids).
+        const ddl = getMigrations(upgradeNs, flavor).find(([id]) => id === FOUNDATION_V28_ID)?.[1] ?? ''
+        await sql.unsafe(ddl)
+        await sql.unsafe(ddl)
+
+        const accountColumns = (await columns(sql, upgradeNs, 'account')).map((c) => c.name)
+        expect(accountColumns.filter((c) => c === 'token_version')).toHaveLength(1)
+        const auditColumns = await columns(sql, upgradeNs, 'admin_audit_log')
+        expect(auditColumns.find((c) => c.name === 'target_account')?.nullable).toBe(false)
+        expect(auditColumns.some((c) => c.name === 'batch_id')).toBe(false)
+      }
+    })
   })
 })
 
