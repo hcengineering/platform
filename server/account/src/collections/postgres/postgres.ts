@@ -24,7 +24,9 @@ import {
   type PersonUuid
 } from '@hcengineering/core'
 
+import type { AccountListRow } from '@hcengineering/account-client'
 import { getMigrations } from './migrations'
+import { buildListAccountsAdminSql, rowToAccountListRow } from './listAccountsAdminPg'
 import type {
   DbCollection,
   Query,
@@ -53,7 +55,10 @@ import type {
   ApiToken,
   DBFlavor,
   AdminAuditLogCollection,
+  AdminAuditLogListParams,
+  AdminAuditLogListResult,
   AccountLifecyclePatch,
+  ListAccountsAdminQueryParams,
   NewAdminAuditLogEntry
 } from '../../types'
 
@@ -557,6 +562,63 @@ export class PostgresAdminAuditLogCollection implements AdminAuditLogCollection 
       entry.details != null ? JSON.stringify(entry.details) : null
     ]
     await (client ?? this.client).unsafe(sql, values)
+  }
+
+  async listAuditAdmin (params: AdminAuditLogListParams): Promise<AdminAuditLogListResult> {
+    const conds: string[] = []
+    const args: any[] = []
+    const ph = (v: any): string => {
+      args.push(v)
+      return `$${args.length}`
+    }
+
+    if (params.targetAccount != null) conds.push(`al.target_account = ${ph(params.targetAccount)}::text`)
+    if (params.adminAccount != null) conds.push(`al.admin_account = ${ph(params.adminAccount)}::text`)
+    if (params.action != null) conds.push(`al.action = ${ph(params.action)}::text`)
+    if (params.fromMs != null) conds.push(`al.ts_ms >= ${ph(params.fromMs)}::int8`)
+    if (params.toMs != null) conds.push(`al.ts_ms <= ${ph(params.toMs)}::int8`)
+    const where = conds.length === 0 ? 'TRUE' : conds.join(' AND ')
+    const countArgs = [...args]
+
+    const limit = Math.min(Math.max(1, Math.floor(params.limit ?? 50)), 200)
+    const offset = Math.max(0, Math.floor(params.offset ?? 0))
+    const personTable = this.ns === '' ? 'person' : `${this.ns}.person`
+
+    const rowsSql = `
+      SELECT
+        al.id, al.ts_ms, al.admin_account, al.target_account, al.action, al.workspace_uuid, al.details,
+        ap.first_name AS admin_first_name, ap.last_name AS admin_last_name,
+        tp.first_name AS target_first_name, tp.last_name AS target_last_name
+      FROM ${this.getTableName()} al
+      LEFT JOIN ${personTable} ap ON ap.uuid::TEXT = al.admin_account
+      LEFT JOIN ${personTable} tp ON tp.uuid::TEXT = al.target_account
+      WHERE ${where}
+      ORDER BY al.ts_ms DESC, al.id DESC
+      LIMIT ${ph(limit)}::int8 OFFSET ${ph(offset)}::int8
+    `
+    const countSql = `SELECT COUNT(*) AS n FROM ${this.getTableName()} al WHERE ${where}`
+
+    const [rows, count] = await Promise.all([
+      this.client.unsafe(rowsSql, args),
+      this.client.unsafe(countSql, countArgs)
+    ])
+
+    return {
+      entries: rows.map((r: any) => ({
+        id: r.id,
+        tsMs: Number(r.ts_ms),
+        adminAccount: r.admin_account,
+        targetAccount: r.target_account ?? null,
+        action: r.action,
+        workspaceUuid: r.workspace_uuid ?? null,
+        details: typeof r.details === 'string' ? JSON.parse(r.details) : (r.details ?? null),
+        adminFirstName: r.admin_first_name ?? '',
+        adminLastName: r.admin_last_name ?? '',
+        targetFirstName: r.target_first_name ?? '',
+        targetLastName: r.target_last_name ?? ''
+      })),
+      total: Number(count[0]?.n ?? 0)
+    }
   }
 }
 
@@ -1162,6 +1224,19 @@ export class PostgresAccountDB implements AccountDB {
       )
       await this.adminAuditLog.insert(audit, rTx)
     })
+  }
+
+  async listAccountsAdmin (query: ListAccountsAdminQueryParams): Promise<{ rows: AccountListRow[], total: number }> {
+    const adminEmails = query.adminEmails ?? []
+    const { rowsSql, countSql, rowsArgs, countArgs } = buildListAccountsAdminSql(this.ns, query, adminEmails)
+    const [rows, count] = await Promise.all([
+      this.client.unsafe(rowsSql, rowsArgs),
+      this.client.unsafe(countSql, countArgs)
+    ])
+    return {
+      rows: rows.map((r: any) => rowToAccountListRow(r, adminEmails)),
+      total: Number(count[0]?.n ?? 0)
+    }
   }
 
   async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {

@@ -139,7 +139,8 @@ import {
   verifyTokenVersion,
   checkTokenVersionClaim,
   touchLastActivity,
-  assertAdmin
+  assertAdmin,
+  getConfiguredAdminEmails
 } from './utils'
 
 const NIL_UUID = '00000000-0000-0000-0000-000000000000' as AccountUuid
@@ -3721,15 +3722,6 @@ async function auditAdminActionDenied (
   } catch (err: any) {
     ctx.error('Failed to write admin audit row', { action: 'admin_action_denied', reason, err })
   }
-}
-
-function getConfiguredAdminEmails (): Set<string> {
-  return new Set(
-    (process.env.ADMIN_EMAILS ?? '')
-      .split(',')
-      .map((it) => it.trim().toLowerCase())
-      .filter((it) => it !== '')
-  )
 }
 
 /**

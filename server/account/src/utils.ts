@@ -181,6 +181,10 @@ export function isGuest (account: AccountUuid, extra: Record<string, any> | unde
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+export function isUuid (value: unknown): value is string {
+  return typeof value === 'string' && UUID_REGEX.test(value)
+}
+
 /**
  * Whether a token principal is subject to the account lifecycle checks
  * (disabled accounts, token version). The doc-guest, system and read-only guest
@@ -302,6 +306,18 @@ export async function touchLastActivity (
   } catch (err: any) {
     ctx.warn('Failed to update account last activity', { accountUuid, err })
   }
+}
+
+/**
+ * Instance admin emails from ADMIN_EMAILS, trimmed and lower-cased.
+ */
+export function getConfiguredAdminEmails (): Set<string> {
+  return new Set(
+    (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((it) => it.trim().toLowerCase())
+      .filter((it) => it !== '')
+  )
 }
 
 /**

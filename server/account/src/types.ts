@@ -34,6 +34,7 @@ import {
   type WorkspaceInfo,
   type IntegrationKind
 } from '@hcengineering/core'
+import type { AccountListRow } from '@hcengineering/account-client'
 import type { EndpointInfo } from './utils'
 
 /* ========= D A T A B A S E  E N T I T I E S ========= */
@@ -86,8 +87,64 @@ export interface AdminAuditLogEntry {
 
 export type NewAdminAuditLogEntry = Omit<AdminAuditLogEntry, 'id' | 'tsMs'>
 
+export interface AdminAuditLogListParams {
+  targetAccount?: AccountUuid
+  adminAccount?: AccountUuid
+  action?: string
+  fromMs?: number
+  toMs?: number
+  limit?: number
+  offset?: number
+}
+
+export interface AdminAuditLogListEntry extends Omit<AdminAuditLogEntry, 'targetAccount' | 'action'> {
+  // Rows written by other tooling may have no target account or other actions.
+  targetAccount: AccountUuid | null
+  action: string
+  adminFirstName: string
+  adminLastName: string
+  targetFirstName: string
+  targetLastName: string
+}
+
+export interface AdminAuditLogListResult {
+  entries: AdminAuditLogListEntry[]
+  total: number
+}
+
 export interface AdminAuditLogCollection {
   insert: (entry: NewAdminAuditLogEntry) => Promise<void>
+  /** Newest first. */
+  listAuditAdmin: (params: AdminAuditLogListParams) => Promise<AdminAuditLogListResult>
+}
+
+/**
+ * Query of the admin account listing (SQL pushdown on PostgreSQL/CockroachDB).
+ */
+export interface ListAccountsAdminQueryParams {
+  search?: string
+  statusIn?: Array<'active' | 'disabled'>
+  isAdmin?: boolean
+  authMethodIn?: Array<'email_only' | 'oidc' | 'mixed' | 'none'>
+  nameContains?: string
+  emailContains?: string
+  workspaceUuidsIn?: WorkspaceUuid[]
+  wsMin?: number
+  wsMax?: number
+  lastActivityFilter?:
+  | { kind: 'never' }
+  | { kind: 'before', tsMs: number }
+  | { kind: 'after', tsMs: number }
+  | { kind: 'between', from: number, to: number }
+  | { kind: 'range', fromMs?: number, toMs?: number }
+  orphan?: boolean
+  sort?: {
+    field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
+    direction: 'asc' | 'desc'
+  }
+  pagination?: { limit?: number, offset?: number }
+  /** Instance admin emails (ADMIN_EMAILS), used for `isAdmin` */
+  adminEmails?: string[]
 }
 
 /**
@@ -429,6 +486,7 @@ export interface AccountDB {
     audit: NewAdminAuditLogEntry
   ) => Promise<void>
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
+  listAccountsAdmin: (query: ListAccountsAdminQueryParams) => Promise<{ rows: AccountListRow[], total: number }>
   generatePersonUuid: () => Promise<PersonUuid>
 }
 

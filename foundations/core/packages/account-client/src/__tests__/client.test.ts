@@ -42,4 +42,18 @@ describe('AccountClient admin methods', () => {
     await expect(client[method](accountUuid)).resolves.toEqual({ ok: true })
     expect(sentRequest()).toEqual({ method, params: { accountUuid } })
   })
+
+  it('listAccountsAdmin forwards the query', async () => {
+    const params = { search: 'jo', statusIn: ['disabled' as const], pagination: { limit: 10, offset: 20 } }
+    const client = getClient('http://account', 'admin-token')
+    await client.listAccountsAdmin(params)
+    expect(sentRequest()).toEqual({ method: 'listAccountsAdmin', params })
+  })
+
+  it('listAuditAdmin forwards the query', async () => {
+    const params = { targetAccount: accountUuid, action: 'disable', limit: 5 }
+    const client = getClient('http://account', 'admin-token')
+    await client.listAuditAdmin(params)
+    expect(sentRequest()).toEqual({ method: 'listAuditAdmin', params })
+  })
 })

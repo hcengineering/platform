@@ -259,3 +259,75 @@ export interface Subscription {
  * Used by billing service to upsert subscription data
  */
 export type SubscriptionData = Omit<Subscription, 'createdOn' | 'updatedOn'>
+
+/* ========= A D M I N ========= */
+
+/**
+ * Parameters of the admin account listing (`listAccountsAdmin`).
+ * All filters are combined with AND.
+ */
+export interface ListAccountsAdminParams {
+  /** Substring match on first name, last name, primary email or account uuid */
+  search?: string
+  statusIn?: Array<'active' | 'disabled'>
+  authMethodIn?: Array<'email_only' | 'oidc' | 'mixed' | 'none'>
+  nameContains?: string
+  emailContains?: string
+  /** Account is a member of at least one of these workspaces */
+  workspaceUuidsIn?: WorkspaceUuid[]
+  workspaceCountRange?: { min?: number, max?: number }
+  lastActivityFilter?: { kind: 'range', fromMs?: number, toMs?: number } | { kind: 'never' }
+  /** Active accounts without any workspace */
+  orphan?: boolean
+  /** Only instance admins (primary email listed in ADMIN_EMAILS) */
+  isAdmin?: boolean
+  sort?: {
+    field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
+    direction: 'asc' | 'desc'
+  }
+  pagination: { limit: number, offset: number }
+}
+
+export interface AccountListRow {
+  uuid: AccountUuid
+  firstName: string
+  lastName: string
+  primaryEmail: string | null
+  authMethods: Array<'email' | 'oidc'>
+  hasPassword: boolean
+  workspaceCount: number
+  status: 'active' | 'disabled'
+  lastActivityAt: number | null
+  isAdmin: boolean
+}
+
+export interface AuditEntry {
+  id: string
+  tsMs: number
+  admin: { uuid: AccountUuid, firstName: string, lastName: string }
+  action: string
+  targetAccount?: { uuid: AccountUuid, firstName: string, lastName: string }
+  workspaceUuid: WorkspaceUuid | null
+  details: Record<string, any> | null
+}
+
+/**
+ * Parameters of the admin audit log listing (`listAuditAdmin`).
+ * Entries are returned newest first.
+ */
+export interface ListAuditAdminParams {
+  targetAccount?: AccountUuid
+  adminAccount?: AccountUuid
+  action?: string
+  /** Inclusive lower bound, epoch ms */
+  fromMs?: number
+  /** Inclusive upper bound, epoch ms */
+  toMs?: number
+  limit?: number
+  offset?: number
+}
+
+export interface ListAuditAdminResponse {
+  entries: AuditEntry[]
+  total: number
+}

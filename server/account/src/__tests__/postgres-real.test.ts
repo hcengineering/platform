@@ -366,6 +366,28 @@ describe('real-account', () => {
           'admin_action_denied',
           'disable'
         ])
+
+        // Listing works on the upgraded schema, including rows written by the
+        // legacy admin code (no target account, batch id set).
+        const disabledList = await db.listAccountsAdmin({ statusIn: ['disabled'] })
+        expect(disabledList.total).toBe(1)
+        expect(disabledList.rows.map((r) => r.uuid)).toEqual([target])
+        expect(disabledList.rows[0].status).toBe('disabled')
+
+        await sql.unsafe(
+          `INSERT INTO ${upgradeNs}.admin_audit_log (admin_account, target_account, action, workspace_uuid, batch_id)
+           VALUES ($1, NULL, 'archive_workspace', $2, gen_random_uuid())`,
+          [admin, generateUuid()]
+        )
+        const byTarget = await db.adminAuditLog.listAuditAdmin({ targetAccount: target })
+        expect(byTarget.total).toBe(2)
+        expect(byTarget.entries.map((e) => e.action).sort((a, b) => a.localeCompare(b))).toEqual([
+          'admin_action_denied',
+          'disable'
+        ])
+        const all = await db.adminAuditLog.listAuditAdmin({})
+        expect(all.total).toBe(3)
+        expect(all.entries.find((e) => e.action === 'archive_workspace')?.targetAccount).toBeNull()
       }
     })
 
@@ -441,6 +463,128 @@ describe('real-account', () => {
             row: expect.objectContaining({ disabledAt: null, tokenVersion: 0 })
           })
           expect(await auditCount(sql, dbUuid, target)).toBe(0)
+        }
+      })
+    })
+
+    describe('admin listing queries', () => {
+      const sortFields = ['name', 'email', 'auth', 'workspace_count', 'last_activity', 'status'] as const
+
+      it('runs every sort field in both directions', async () => {
+        for (const { name, account } of [
+          { name: 'cockroach', account: crAccount },
+          { name: 'postgres', account: pgAccount }
+        ]) {
+          for (const field of sortFields) {
+            for (const direction of ['asc', 'desc'] as const) {
+              const res = await account.listAccountsAdmin({ sort: { field, direction }, pagination: { limit: 10 } })
+              expect({ name, field, direction, total: res.total, rows: res.rows.length }).toEqual({
+                name,
+                field,
+                direction,
+                total: 2,
+                rows: 2
+              })
+            }
+          }
+        }
+      })
+
+      it('applies filters, admin detection and pagination', async () => {
+        for (const { name, account } of [
+          { name: 'cockroach', account: crAccount },
+          { name: 'postgres', account: pgAccount }
+        ]) {
+          // Only verified emails count as primary email / auth method.
+          for (const user of users) {
+            await account.socialId.update(
+              { personUuid: user.uuid, type: SocialIdType.EMAIL },
+              { verifiedOn: Date.now() }
+            )
+          }
+          await account.account.update({ uuid: users[1].uuid }, { disabledAt: 1000, lastActivityAt: 2000 })
+
+          const disabled = await account.listAccountsAdmin({ statusIn: ['disabled'] })
+          expect({ name, uuids: disabled.rows.map((r) => r.uuid) }).toEqual({ name, uuids: [users[1].uuid] })
+          expect(disabled.rows[0]).toEqual(
+            expect.objectContaining({
+              firstName: 'Pavel',
+              primaryEmail: 'user2@example.com',
+              status: 'disabled',
+              lastActivityAt: 2000,
+              authMethods: ['email'],
+              hasPassword: false,
+              workspaceCount: 0
+            })
+          )
+
+          const bySearch = await account.listAccountsAdmin({ search: 'user1@' })
+          expect(bySearch.rows.map((r) => r.uuid)).toEqual([users[0].uuid])
+          const wildcard = await account.listAccountsAdmin({ search: '%' })
+          expect(wildcard.total).toBe(0)
+
+          const admins = await account.listAccountsAdmin({ isAdmin: true, adminEmails: ['USER1@example.com'] })
+          expect(admins.rows.map((r) => [r.uuid, r.isAdmin])).toEqual([[users[0].uuid, true]])
+
+          const never = await account.listAccountsAdmin({ lastActivityFilter: { kind: 'never' } })
+          expect(never.rows.map((r) => r.uuid)).toEqual([users[0].uuid])
+
+          const orphan = await account.listAccountsAdmin({ orphan: true })
+          expect(orphan.rows.map((r) => r.uuid)).toEqual([users[0].uuid])
+
+          const page = await account.listAccountsAdmin({
+            sort: { field: 'name', direction: 'asc' },
+            pagination: { limit: 1, offset: 1 }
+          })
+          expect(page.total).toBe(2)
+          expect(page.rows.map((r) => r.firstName)).toEqual(['Pavel'])
+        }
+      })
+
+      it('lists audit rows newest first with filters', async () => {
+        for (const { name, account } of [
+          { name: 'cockroach', account: crAccount },
+          { name: 'postgres', account: pgAccount }
+        ]) {
+          const [target, admin] = [users[0].uuid, users[1].uuid]
+          for (const [action, ts] of [
+            ['disable', 1000],
+            ['enable', 2000],
+            ['disable', 3000]
+          ] as const) {
+            await account.adminAuditLog.insert({
+              adminAccount: admin,
+              targetAccount: target,
+              action,
+              workspaceUuid: null,
+              details: { ts }
+            })
+          }
+
+          const all = await account.adminAuditLog.listAuditAdmin({ targetAccount: target })
+          expect({ name, total: all.total }).toEqual({ name, total: 3 })
+          expect(all.entries[0]).toEqual(
+            expect.objectContaining({
+              adminAccount: admin,
+              targetAccount: target,
+              adminFirstName: 'Pavel',
+              targetFirstName: 'Jon',
+              details: expect.any(Object)
+            })
+          )
+          for (let i = 1; i < all.entries.length; i++) {
+            expect(all.entries[i - 1].tsMs).toBeGreaterThanOrEqual(all.entries[i].tsMs)
+          }
+
+          const disables = await account.adminAuditLog.listAuditAdmin({ action: 'disable', limit: 1, offset: 1 })
+          expect(disables.total).toBe(2)
+          expect(disables.entries).toHaveLength(1)
+
+          const none = await account.adminAuditLog.listAuditAdmin({ adminAccount: target })
+          expect(none.total).toBe(0)
+
+          const window = await account.adminAuditLog.listAuditAdmin({ fromMs: Date.now() + 60_000 })
+          expect(window.total).toBe(0)
         }
       })
     })

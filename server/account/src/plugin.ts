@@ -42,6 +42,7 @@ export const accountPlugin = plugin(accountId, {
   status: {
     AccountDisabled: '' as StatusCode,
     CannotDisableSelf: '' as StatusCode,
-    LastAdmin: '' as StatusCode
+    LastAdmin: '' as StatusCode,
+    NotSupportedOnBackend: '' as StatusCode<{ backend: string, method: string }>
   }
 })

@@ -34,6 +34,8 @@ import type {
   Sort as RawSort
 } from 'mongodb'
 import { UUID } from 'mongodb'
+import type { AccountListRow } from '@hcengineering/account-client'
+import { PlatformError, Severity, Status } from '@hcengineering/platform'
 
 import type {
   Account,
@@ -43,6 +45,9 @@ import type {
   AccountLifecyclePatch,
   AdminAuditLogCollection,
   AdminAuditLogEntry,
+  AdminAuditLogListParams,
+  AdminAuditLogListResult,
+  ListAccountsAdminQueryParams,
   NewAdminAuditLogEntry,
   DbCollection,
   Integration,
@@ -65,6 +70,7 @@ import type {
   WorkspacePermission,
   ApiToken
 } from '../types'
+import { accountPlugin } from '../plugin'
 import { isShallowEqual } from '../utils'
 
 interface MongoIndex {
@@ -397,6 +403,12 @@ interface MigrationInfo {
   lastProcessedTime: number
 }
 
+function notSupportedOnMongo (method: string): PlatformError<any> {
+  return new PlatformError(
+    new Status(Severity.ERROR, accountPlugin.status.NotSupportedOnBackend, { backend: 'mongo', method })
+  )
+}
+
 export class MongoAdminAuditLogCollection implements AdminAuditLogCollection {
   constructor (readonly db: Db) {}
 
@@ -415,6 +427,10 @@ export class MongoAdminAuditLogCollection implements AdminAuditLogCollection {
       details: entry.details
     }
     await this.collection.insertOne({ ...row, _id: row.id } as any)
+  }
+
+  async listAuditAdmin (params: AdminAuditLogListParams): Promise<AdminAuditLogListResult> {
+    throw notSupportedOnMongo('listAuditAdmin')
   }
 }
 
@@ -920,6 +936,10 @@ export class MongoAccountDB implements AccountDB {
       }
     )
     await this.adminAuditLog.insert(audit)
+  }
+
+  async listAccountsAdmin (query: ListAccountsAdminQueryParams): Promise<{ rows: AccountListRow[], total: number }> {
+    throw notSupportedOnMongo('listAccountsAdmin')
   }
 
   async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {
