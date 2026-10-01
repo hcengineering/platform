@@ -1,4 +1,4 @@
-import { type DocumentUpdate, type Ref, type Space, type WorkspaceUuid } from '@hcengineering/core'
+import { DOMAIN_COLLABORATOR, type DocumentUpdate, type Ref, type Space, type WorkspaceUuid } from '@hcengineering/core'
 import {
   convertArrayParams,
   convertDoc,
@@ -764,6 +764,12 @@ describe('utils - isDataField', () => {
 
   it('should handle attachedTo field', () => {
     expect(isDataField('pg_testing', 'attachedTo')).toBe(false)
+  })
+
+  it('should store Collaborator.role in the data column (no schema column, no migration)', () => {
+    expect(isDataField(DOMAIN_COLLABORATOR, 'role')).toBe(true)
+    expect(isDataField(DOMAIN_COLLABORATOR, 'collaborator')).toBe(false)
+    expect(isDataField(DOMAIN_COLLABORATOR, 'attachedTo')).toBe(false)
   })
 })
 
