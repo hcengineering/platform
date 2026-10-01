@@ -1,8 +1,8 @@
 import Koa from 'koa'
 import passport from 'koa-passport'
 import Router from 'koa-router'
-import session from 'koa-session'
-import { isValidCookieDomain } from './cookieDomain'
+import { resolveSessionCookieOptions } from './cookieDomain'
+import { installSession } from './sessionCookie'
 import { registerGithub } from './github'
 import { registerGoogle } from './google'
 import { registerOpenid } from './openid'
@@ -46,41 +46,21 @@ export function registerProviders (
   }
 
   app.keys = [serverSecret]
-  // koa-session defaults the cookie domain to the request host, which
-  // breaks OIDC flows that start on one subdomain (e.g. dev.example.com)
-  // and get the callback on another (e.g. app.example.com) — the session
-  // cookie set on dev isn't sent back to app, so the Passport state lookup
-  // fails with "did not find expected authorization request details in
-  // session". Setting SESSION_COOKIE_DOMAIN=.example.com makes the cookie
-  // span both hosts so the flow completes. Empty / unset preserves prior
-  // behaviour.
-  //
-  // Only set SESSION_COOKIE_DOMAIN when (a) all subdomains are equally
-  // trusted and (b) HTTPS is terminated in front of this service: widening
-  // the cookie scope forces secure=true + sameSite=lax below, so the
-  // signed httpOnly session cookie (carrying OIDC state/nonce/PKCE verifier)
-  // is never sent over plain HTTP nor cross-site. An invalid value (e.g.
-  // "com", or anything with whitespace/protocol/port) is ignored — the
-  // option falls back to prior behaviour (cookie scoped to the request host).
-  const sessionCookieDomain = process.env.SESSION_COOKIE_DOMAIN?.trim()
-  const sessionOpts: Partial<session.opts> = {}
-  if (sessionCookieDomain !== undefined && sessionCookieDomain.length > 0) {
-    // Accept only plausible parent-domain values: must contain a dot and be
-    // free of whitespace/protocol/port. Prevents misconfiguration like "com"
-    // (which would span the cookie across a whole TLD).
-    if (!isValidCookieDomain(sessionCookieDomain)) {
-      ctx.warn('SESSION_COOKIE_DOMAIN ignored: not a valid domain', { value: sessionCookieDomain })
-    } else {
-      sessionOpts.domain = sessionCookieDomain
-      // A cross-subdomain cookie MUST be hardened once its scope reaches
-      // beyond the request host (koa-session defaults: secure=false,
-      // sameSite unset). sameSite='lax' is enough for the top-level GET
-      // OIDC callback.
-      sessionOpts.secure = true
-      sessionOpts.sameSite = 'lax'
-    }
+  // koa-session defaults the cookie domain to the request host, which breaks
+  // OIDC flows that start on one subdomain and get the callback on another
+  // (Passport then fails with "did not find expected authorization request
+  // details in session"). SESSION_COOKIE_DOMAIN=.example.com spans the cookie
+  // across both hosts. Setting it is also the operator's assertion that HTTPS
+  // is terminated in front of this service: the widened, signed, httpOnly
+  // cookie (OIDC state/nonce/PKCE verifier) is then always written with
+  // Secure + SameSite=Lax, without trusting any X-Forwarded-* header (see
+  // sessionCookie.ts). SESSION_COOKIE_SECURE=false opts out for local
+  // plain-HTTP development only. Invalid or unset values keep prior behaviour.
+  const decision = resolveSessionCookieOptions(process.env.SESSION_COOKIE_DOMAIN, process.env.SESSION_COOKIE_SECURE)
+  if (decision.warning !== undefined) {
+    ctx.warn(decision.warning, { value: process.env.SESSION_COOKIE_DOMAIN })
   }
-  app.use(session(sessionOpts, app))
+  installSession(app, decision)
   app.use(passport.initialize())
   app.use(passport.session())
 
