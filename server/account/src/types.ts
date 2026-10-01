@@ -550,9 +550,17 @@ export interface MailboxOptions {
 
 export type ClientNetworkPosition = 'internal' | 'external'
 
+export type PrincipalAccount = Pick<Account, 'uuid' | 'tokenVersion' | 'disabledAt'>
+
 export interface Meta {
   timezone?: string
   clientNetworkPosition?: ClientNetworkPosition
+  /**
+   * Account row of the token principal, loaded once per request by the
+   * disabled-principal gate in `wrap` (null when the principal has no account
+   * row; absent when the gate did not run). Set by the server only.
+   */
+  principalAccount?: PrincipalAccount | null
 }
 
 export interface AccountAggregatedInfo extends Omit<Account, 'hash' | 'salt'>, Person {
