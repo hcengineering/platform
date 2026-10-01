@@ -122,6 +122,7 @@ import {
   updateAllowGuestSignUp,
   getWorkspaceByDataId,
   assignableRoles,
+  assertAssignableRole,
   getWorkspacesInfoWithStatusByIds,
   doMergePersons,
   getWorkspaceJoinInfo,
@@ -3368,6 +3369,7 @@ export async function setWorkspaceMemberRole (
   params: { accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, newRole: AccountRole }
 ): Promise<{ ok: true }> {
   const adminUuid = await requireAdmin(ctx, db, token)
+  assertAssignableRole(params.newRole)
 
   const currentRole = await db.getWorkspaceRole(params.accountUuid, params.workspaceUuid)
   if (currentRole == null) {

@@ -99,6 +99,7 @@ import {
   getPersonName,
   doMergeAccounts,
   assignableRoles,
+  assertAssignableRole,
   verifyTokenVersion,
   signUpByEmail
 } from './utils'
@@ -323,6 +324,7 @@ export async function addWorkspaceMember (
   params: AddWorkspaceMemberParams
 ): Promise<AccountDetailsResponse> {
   await assertAdmin(ctx, db, token)
+  assertAssignableRole(params.role)
   const adminUuid = decodeTokenVerbose(ctx, token).account
 
   const account = await db.account.findOne({ uuid: params.accountUuid })
@@ -376,6 +378,7 @@ export async function addWorkspaceMemberInternal (
   params: { workspace: WorkspaceInfoWithStatus, accountUuid: AccountUuid, role: AccountRole },
   batchId?: string
 ): Promise<void> {
+  assertAssignableRole(params.role)
   const account = await db.account.findOne({ uuid: params.accountUuid })
   if (account == null) {
     throw new PlatformError(
@@ -508,6 +511,12 @@ export async function createAccountAdmin (
       )
     }
   }
+  // Validate the initial role BEFORE the account is created; otherwise the
+  // account would exist and the assignment would fail (or persist a
+  // non-member role) afterwards.
+  if (params.initialWorkspace != null) {
+    assertAssignableRole(params.initialWorkspace.role)
+  }
 
   // signUpByEmail (utils.ts:722) already does email-collision detection
   // (throws AccountAlreadyExists), person creation, social-id creation,
@@ -627,6 +636,7 @@ export async function bulkAddToWorkspace (
 ): Promise<BulkResult> {
   await assertAdmin(ctx, db, token)
   assertBulkSize(params.accountUuids)
+  assertAssignableRole(params.role)
   const adminUuid = decodeTokenVerbose(ctx, token).account
   // Resolve workspace ONCE — not per-row.
   const workspace = await getWorkspaceInfoWithStatusById(db, params.workspaceUuid)

@@ -1,5 +1,5 @@
 import { type MeasureContext, AccountRole } from '@hcengineering/core'
-import { PlatformError } from '@hcengineering/platform'
+import platform, { PlatformError } from '@hcengineering/platform'
 
 import { createAccountAdmin } from '../serviceOperations'
 
@@ -72,7 +72,10 @@ function mockDb (o: Opts = {}): any {
   }
 }
 
-beforeEach(() => sendMailMock.mockReset().mockResolvedValue(true))
+beforeEach(() => {
+  sendMailMock.mockReset().mockResolvedValue(true)
+  signUpByEmailMock.mockClear()
+})
 
 describe('createAccountAdmin', () => {
   const base = {
@@ -133,5 +136,21 @@ describe('createAccountAdmin', () => {
       initialWorkspace: { workspaceUuid: 'ws' as any, role: AccountRole.User }
     })
     expect(r2.initialWorkspaceAssigned).toBe(false)
+  })
+
+  it.each([
+    ['Admin', AccountRole.Admin],
+    ['DocGuest', AccountRole.DocGuest]
+  ])('400 for initialWorkspace.role %s before the account is created', async (_name, role) => {
+    const okWs = { uuid: 'ws', mode: 'active', name: 'n', url: 'u' }
+    const db = mockDb({ workspace: okWs })
+    const p = createAccountAdmin(ctx, db, null, 'admin', {
+      ...base,
+      initialWorkspace: { workspaceUuid: 'ws' as any, role }
+    })
+    await expect(p).rejects.toThrow(PlatformError)
+    await expect(p).rejects.toMatchObject({ status: { code: platform.status.BadRequest } })
+    expect(signUpByEmailMock).not.toHaveBeenCalled()
+    expect(db.assignWorkspace).not.toHaveBeenCalled()
   })
 })

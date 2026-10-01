@@ -1,7 +1,8 @@
 import { type MeasureContext, AccountRole } from '@hcengineering/core'
-import { PlatformError } from '@hcengineering/platform'
+import platform, { PlatformError } from '@hcengineering/platform'
 
 import {
+  addWorkspaceMemberInternal,
   bulkAddToWorkspace,
   bulkRemoveFromWorkspace,
   bulkSetDisabled,
@@ -121,5 +122,35 @@ describe('bulkActions', () => {
     // Per-row account lookups for the members add ~5 calls; assertAdmin adds ~1.
     // The key invariant: total < 5 * 2 (i.e. not O(bulk * adminChecks)).
     expect(verifyTokenCalls).toBeLessThan(5 * 2)
+  })
+
+  it('bulkAddToWorkspace rejects a non-assignable role for the whole batch (no rows, no audit)', async () => {
+    const mockDb = db()
+    mockDb.assignWorkspace = jest.fn(async () => undefined)
+    mockDb.adminAuditLog = { insert: jest.fn(async () => undefined), findByTarget: async () => [] }
+    const p = bulkAddToWorkspace(ctx, mockDb, null, 'admin', {
+      accountUuids: ['a1', 'a2', 'a3'] as any,
+      workspaceUuid: 'ws' as any,
+      role: AccountRole.DocGuest
+    })
+    await expect(p).rejects.toThrow(PlatformError)
+    await expect(p).rejects.toMatchObject({ status: { code: platform.status.BadRequest } })
+    expect(mockDb.assignWorkspace).not.toHaveBeenCalled()
+    expect(mockDb.adminAuditLog.insert).not.toHaveBeenCalled()
+  })
+
+  it('addWorkspaceMemberInternal rejects a non-assignable role before any DB access', async () => {
+    const mockDb = db()
+    mockDb.account = { findOne: jest.fn(async () => ({ disabledAt: null })), update: async () => undefined }
+    mockDb.assignWorkspace = jest.fn(async () => undefined)
+    const p = addWorkspaceMemberInternal(ctx, mockDb, null, 'admin-uuid' as any, {
+      workspace: { uuid: 'ws', name: 'n', url: 'u', status: { mode: 'active' } } as any,
+      accountUuid: 'a1' as any,
+      role: AccountRole.Admin
+    })
+    await expect(p).rejects.toThrow(PlatformError)
+    await expect(p).rejects.toMatchObject({ status: { code: platform.status.BadRequest } })
+    expect(mockDb.account.findOne).not.toHaveBeenCalled()
+    expect(mockDb.assignWorkspace).not.toHaveBeenCalled()
   })
 })

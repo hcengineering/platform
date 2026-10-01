@@ -3,7 +3,7 @@
 //
 
 import { type MeasureContext, AccountRole, type WorkspaceMemberInfo } from '@hcengineering/core'
-import { PlatformError } from '@hcengineering/platform'
+import platform, { PlatformError } from '@hcengineering/platform'
 
 import { setWorkspaceMemberRole } from '../operations'
 
@@ -87,5 +87,44 @@ describe('setWorkspaceMemberRole', () => {
       newRole: AccountRole.Maintainer
     })
     expect(res).toEqual({ ok: true })
+  })
+
+  describe('rejects non-assignable roles before any DB access', () => {
+    it.each([
+      ['Admin', AccountRole.Admin],
+      ['DocGuest', AccountRole.DocGuest],
+      ['ReadOnlyGuest', AccountRole.ReadOnlyGuest],
+      ["'NaN'", 'NaN' as any],
+      ['undefined', undefined as any]
+    ])('%s -> BadRequest, no write, no audit', async (_name, newRole) => {
+      const db = mockDb(AccountRole.User, [{ person: TARGET, role: AccountRole.Owner }])
+      db.getWorkspaceRole = jest.fn(async () => AccountRole.User)
+      db.updateWorkspaceRole = jest.fn(async () => undefined)
+      db.updateWorkspaceRoleIfOtherOwnerExists = jest.fn(async () => true)
+      db.adminAuditLog = { insert: jest.fn(async () => undefined) }
+      const p = setWorkspaceMemberRole(ctx, db, null, ADMIN_TOKEN, {
+        accountUuid: TARGET,
+        workspaceUuid: WS,
+        newRole
+      })
+      await expect(p).rejects.toThrow(PlatformError)
+      await expect(p).rejects.toMatchObject({ status: { code: platform.status.BadRequest } })
+      expect(db.getWorkspaceRole).not.toHaveBeenCalled()
+      expect(db.updateWorkspaceRole).not.toHaveBeenCalled()
+      expect(db.updateWorkspaceRoleIfOtherOwnerExists).not.toHaveBeenCalled()
+      expect(db.adminAuditLog.insert).not.toHaveBeenCalled()
+    })
+
+    it.each([AccountRole.Guest, AccountRole.User, AccountRole.Maintainer, AccountRole.Owner])(
+      'still accepts %s',
+      async (newRole) => {
+        const res = await setWorkspaceMemberRole(ctx, mockDb(AccountRole.User), null, ADMIN_TOKEN, {
+          accountUuid: TARGET,
+          workspaceUuid: WS,
+          newRole
+        })
+        expect(res).toEqual({ ok: true })
+      }
+    )
   })
 })

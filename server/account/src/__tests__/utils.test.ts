@@ -67,7 +67,8 @@ import {
   addSocialIdBase,
   doReleaseSocialId,
   getLastPasswordChangeEvent,
-  isPasswordChangedSince
+  isPasswordChangedSince,
+  assertAssignableRole
 } from '../utils'
 // eslint-disable-next-line import/no-named-default
 import platform, { getMetadata, PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -230,6 +231,35 @@ describe('account utils', () => {
       expect(maintainer).toBeGreaterThan(user)
       expect(user).toBeGreaterThan(guest)
       expect(guest).toBeGreaterThan(docGuest)
+    })
+  })
+
+  describe('assertAssignableRole', () => {
+    it('accepts the four assignable workspace roles', () => {
+      for (const role of [AccountRole.Guest, AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]) {
+        expect(() => {
+          assertAssignableRole(role)
+        }).not.toThrow()
+      }
+    })
+
+    it.each([
+      ['AccountRole.Admin', AccountRole.Admin],
+      ['AccountRole.DocGuest', AccountRole.DocGuest],
+      ['AccountRole.ReadOnlyGuest', AccountRole.ReadOnlyGuest],
+      ["'DOCGUEST' (DB label, not an enum value)", 'DOCGUEST'],
+      ["''", ''],
+      ['undefined', undefined],
+      ['42', 42]
+    ])('rejects %s with BadRequest', (_name, role) => {
+      expect(() => {
+        assertAssignableRole(role)
+      }).toThrow(PlatformError)
+      try {
+        assertAssignableRole(role)
+      } catch (err: any) {
+        expect(err.status.code).toBe(platform.status.BadRequest)
+      }
     })
   })
 

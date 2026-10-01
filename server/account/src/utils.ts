@@ -160,6 +160,18 @@ export async function getAccountDB (
 
 export const assignableRoles = [AccountRole.Guest, AccountRole.User, AccountRole.Maintainer, AccountRole.Owner]
 
+/**
+ * Throws BadRequest unless `role` is one of the workspace-member roles an admin
+ * may assign (`assignableRoles`). Rejects Admin (a token claim, not a member
+ * role), DocGuest / ReadOnlyGuest (internal pseudo-roles) and any non-enum
+ * value before it can reach the DB layer.
+ */
+export function assertAssignableRole (role: unknown): asserts role is AccountRole {
+  if (typeof role !== 'string' || !assignableRoles.includes(role as AccountRole)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, { role: String(role) }))
+  }
+}
+
 export function getRolePower (role: AccountRole): number {
   return roleOrder[role]
 }

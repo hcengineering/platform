@@ -1,5 +1,5 @@
 import { type MeasureContext, AccountRole } from '@hcengineering/core'
-import { PlatformError } from '@hcengineering/platform'
+import platform, { PlatformError } from '@hcengineering/platform'
 
 import { addWorkspaceMember } from '../serviceOperations'
 
@@ -128,5 +128,24 @@ describe('addWorkspaceMember', () => {
     await addWorkspaceMember(ctx, db, null, ADMIN, { accountUuid: TARGET, workspaceUuid: WS, role: AccountRole.User })
     expect(assignSpy).toHaveBeenCalledWith(TARGET, WS, AccountRole.User)
     expect(auditInsert).toHaveBeenCalledWith(expect.objectContaining({ action: 'add_workspace_member' }))
+  })
+
+  it.each([
+    ['Admin', AccountRole.Admin],
+    ['DocGuest', AccountRole.DocGuest],
+    ['ReadOnlyGuest', AccountRole.ReadOnlyGuest],
+    ["'DOCGUEST' (DB label)", 'DOCGUEST' as any],
+    ['undefined', undefined as any]
+  ])('400 for non-assignable role %s, no assign, no audit', async (_name, role) => {
+    const db = mockDb({ account: { disabledAt: null }, workspace: { mode: 'active' }, currentRole: null })
+    const findAccount = jest.fn(async () => ({ disabledAt: null }))
+    db.account = { findOne: findAccount }
+    db.adminAuditLog = { insert: jest.fn(async () => undefined) }
+    const p = addWorkspaceMember(ctx, db, null, ADMIN, { accountUuid: TARGET, workspaceUuid: WS, role })
+    await expect(p).rejects.toThrow(PlatformError)
+    await expect(p).rejects.toMatchObject({ status: { code: platform.status.BadRequest } })
+    expect(findAccount).not.toHaveBeenCalled()
+    expect(db.assignWorkspace).not.toHaveBeenCalled()
+    expect(db.adminAuditLog.insert).not.toHaveBeenCalled()
   })
 })
