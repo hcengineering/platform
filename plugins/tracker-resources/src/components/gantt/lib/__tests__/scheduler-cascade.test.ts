@@ -4,7 +4,17 @@
 //
 
 import { detectCycle, addScheduleDays, simulateCascade } from '../scheduler'
-import { isWorkingDay } from '@hcengineering/gantt'
+import {
+  isWorkingDay,
+  fsAnchor,
+  fsReverseAnchor,
+  ssAnchor,
+  ssReverseAnchor,
+  ffAnchor,
+  ffReverseAnchor,
+  sfAnchor,
+  sfReverseAnchor
+} from '@hcengineering/gantt'
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 import type { PrimaryEdit } from '../types'
@@ -632,5 +642,96 @@ describe('simulateCascade — working-days mode', () => {
     // The old raw floor would have shifted to Mon 18 + 5d = Sat 23 (a weekend).
     expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 22))
     expect(isWorkingDay(res.shifts[0].newStart, cfgMonFri)).toBe(true)
+  })
+})
+
+describe('simulateCascade — working-days mode: reverse pass must not undo a satisfied FS link', () => {
+  // Mon–Fri calendar with a holiday on Thu Oct 22 2026.
+  const cfg = { weekdayMask: 0b0011111, holidays: [Date.UTC(2026, 9, 22)] }
+  const oct = (d: number): number => Date.UTC(2026, 9, d)
+
+  it('chain push A→B→C where B ends on a Saturday: B keeps Fri 16–Sat 17, no pull-predecessor', () => {
+    // A Mon 5–Fri 9, B Mon 12–Tue 13, C Wed 14–Thu 15 (FS chain).
+    const A = issue('A', oct(5), oct(9))
+    const B = issue('B', oct(12), oct(13))
+    const C = issue('C', oct(14), oct(15))
+    const relations = [rel('A', 'B'), rel('B', 'C')]
+    // Drag A onto Sun 11–Thu 15.
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: oct(11), newDue: oct(15) }]
+    const res = simulateCascade(primary, [A, B, C], relations, () => true, { workingDays: cfg })
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    const byId = new Map(res.shifts.map((s) => [s.issue._id as string, s]))
+    // fsAnchor(Thu 15) = Fri 16 → B Fri 16–Sat 17.
+    expect(byId.get('B')).toMatchObject({ newStart: oct(16), newDue: oct(17), reason: 'push-successor' })
+    // fsAnchor(Sat 17) = Mon 19 → C Mon 19–Tue 20.
+    expect(byId.get('C')).toMatchObject({ newStart: oct(19), newDue: oct(20), reason: 'push-successor' })
+    expect(res.shifts.some((s) => s.reason === 'pull-predecessor')).toBe(false)
+  })
+
+  it('successor dragged onto the first working day after a Saturday-ending predecessor → no cascade', () => {
+    const B = issue('B', oct(16), oct(17))
+    const C = issue('C', oct(21), oct(23))
+    // fsAnchor(Sat 17) = Mon 19: the FS constraint is already satisfied.
+    const primary: PrimaryEdit[] = [{ issue: C, newStart: oct(19), newDue: oct(20) }]
+    const res = simulateCascade(primary, [B, C], [rel('B', 'C')], () => true, { workingDays: cfg })
+    expect(res.kind).toBe('no-cascade')
+  })
+
+  it("successor dragged onto the predecessor's Friday (real violation) → predecessor pulled to Wed 14–Thu 15", () => {
+    const B = issue('B', oct(16), oct(17))
+    const C = issue('C', oct(21), oct(23))
+    const primary: PrimaryEdit[] = [{ issue: C, newStart: oct(16), newDue: oct(19) }]
+    const res = simulateCascade(primary, [B, C], [rel('B', 'C')], () => true, { workingDays: cfg })
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    // fsReverseAnchor(Fri 16) = Thu 15 → B shifted back by 2 calendar days.
+    expect(res.shifts).toHaveLength(1)
+    expect(res.shifts[0]).toMatchObject({ newStart: oct(14), newDue: oct(15), reason: 'pull-predecessor' })
+  })
+})
+
+describe('simulateCascade — legacy mode: reverse-pass guard is a no-op', () => {
+  const may = (d: number): number => Date.UTC(2026, 4, d)
+
+  it('forward/reverse anchors are exact inverses for every relation kind and lag (legacy)', () => {
+    for (const lag of [-1, 0, 1, 2, 5]) {
+      for (const x of [may(1), may(15), may(31)]) {
+        expect(fsReverseAnchor(fsAnchor(x, lag, undefined), lag, undefined)).toBe(x)
+        expect(ssReverseAnchor(ssAnchor(x, lag, undefined), lag, undefined)).toBe(x)
+        expect(ffReverseAnchor(ffAnchor(x, lag, undefined), lag, undefined)).toBe(x)
+        expect(sfReverseAnchor(sfAnchor(x, lag, undefined), lag, undefined)).toBe(x)
+      }
+    }
+  })
+
+  it('chain push A→B→C in legacy mode never emits pull-predecessor', () => {
+    const A = issue('A', may(1), may(5))
+    const B = issue('B', may(6), may(7))
+    const C = issue('C', may(8), may(9))
+    const res = simulateCascade(
+      [{ issue: A, newStart: may(4), newDue: may(8) }],
+      [A, B, C],
+      [rel('A', 'B'), rel('B', 'C')],
+      () => true
+    )
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    expect(res.shifts.map((s) => [s.issue._id, s.newStart, s.newDue, s.reason])).toEqual([
+      ['B', may(9), may(10), 'push-successor'],
+      ['C', may(11), may(12), 'push-successor']
+    ])
+  })
+
+  it('successor dragged onto pred.due + 1 day → no cascade; onto pred.due → pull by exactly one day (legacy)', () => {
+    const A = issue('A', may(1), may(5))
+    const B = issue('B', may(10), may(12))
+    expect(
+      simulateCascade([{ issue: B, newStart: may(6), newDue: may(8) }], [A, B], [rel('A', 'B')], () => true).kind
+    ).toBe('no-cascade')
+    const res = simulateCascade([{ issue: B, newStart: may(5), newDue: may(7) }], [A, B], [rel('A', 'B')], () => true)
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    expect(res.shifts[0]).toMatchObject({ newStart: may(0), newDue: may(4), reason: 'pull-predecessor' })
   })
 })

@@ -379,7 +379,30 @@ export function simulateCascade (
         predAnchorIsDue = false
       }
       const predAnchor = predAnchorIsDue ? predDates.due : predDates.start
-      if (requiredAnchor < predAnchor) {
+      // Test the violation with the FORWARD anchor — the same predicate the
+      // outgoing pass uses. In working-days mode the reverse anchor is not the
+      // inverse of the forward one when the predecessor's anchor sits on a
+      // non-working day (fsAnchor(Sat) = Mon, but fsReverseAnchor(Mon) = Fri),
+      // so `reverse < predAnchor` alone pulls predecessors whose constraint is
+      // already satisfied — and breaks their own upstream links, which are
+      // never re-checked (primaries are guarded above). Legacy mode is
+      // unaffected: calendar-day anchors are exact inverses.
+      let forwardRequired: number
+      let succAnchor: number
+      if (r.kind === 'finish-to-start') {
+        forwardRequired = fsAnchor(predDates.due, lag, cfg)
+        succAnchor = curDates.start
+      } else if (r.kind === 'start-to-start') {
+        forwardRequired = ssAnchor(predDates.start, lag, cfg)
+        succAnchor = curDates.start
+      } else if (r.kind === 'finish-to-finish') {
+        forwardRequired = ffAnchor(predDates.due, lag, cfg)
+        succAnchor = curDates.due
+      } /* start-to-finish */ else {
+        forwardRequired = sfAnchor(predDates.start, lag, cfg)
+        succAnchor = curDates.due
+      }
+      if (forwardRequired > succAnchor && requiredAnchor < predAnchor) {
         const delta = predAnchor - requiredAnchor
         const newStart = predAnchorIsDue ? predDates.start - delta : requiredAnchor
         const newDue = predAnchorIsDue ? requiredAnchor : predDates.due - delta
