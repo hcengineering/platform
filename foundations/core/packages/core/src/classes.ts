@@ -559,6 +559,24 @@ export interface Role extends AttachedDoc<SpaceType, 'roles'> {
 
 /**
  * @public
+ * ObjectRole is a named, app-declared set of object-scoped permissions
+ * (`Permission.scope === 'object'`) for documents of `objectClass`.
+ * It is granted to an account on a single document via `Collaborator.role`.
+ *
+ * Design invariant for enforcement: read access is a SQL-compilable existence
+ * check (a collaborator record exists); per-action granularity lives on the write path.
+ *
+ * Declarations only for now - no middleware evaluates object roles yet.
+ */
+export interface ObjectRole extends Doc {
+  name: IntlString
+  description?: IntlString
+  objectClass: Ref<Class<Doc>>
+  permissions: Ref<Permission>[]
+}
+
+/**
+ * @public
  * Defines assignment of employees to a role within a space
  */
 export type RolesAssignment = Record<Ref<Role>, AccountUuid[] | undefined>
@@ -572,7 +590,13 @@ export interface Permission extends Doc {
   txClass?: Ref<Class<Tx>>
   forbid?: boolean
   objectClass?: Ref<Class<Doc>>
-  scope?: 'space' | 'workspace'
+  /**
+   * - 'space': granted through a space role
+   * - 'workspace': applies workspace-wide
+   * - 'object': granted on a single document through an `ObjectRole` (`Collaborator.role`);
+   *   not evaluated by any enforcement path yet
+   */
+  scope?: 'space' | 'workspace' | 'object'
   txMatch?: DocumentQuery<Tx>
   description?: IntlString
   icon?: Asset
@@ -1043,6 +1067,11 @@ export interface ClassCollaborators<T extends Doc> extends Doc {
 
 export interface Collaborator extends AttachedDoc {
   collaborator: AccountUuid
+  /**
+   * Object role granted to the collaborator on the attached document.
+   * `undefined` keeps today's structural collaborator semantics (fields, notifications, mentions).
+   */
+  role?: Ref<ObjectRole>
 }
 
 /**

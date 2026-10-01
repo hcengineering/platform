@@ -26,6 +26,7 @@ import {
   type ClassPermission,
   type CollectionSize,
   type Doc,
+  type ObjectRole,
   type Permission,
   type Ref,
   type Role,
@@ -161,6 +162,21 @@ export class TRole extends TAttachedDoc implements Role {
     permissions!: Ref<Permission>[]
 }
 
+/**
+ * App-declared, named set of object-scoped permissions, granted per document via `Collaborator.role`.
+ * Not evaluated by any enforcement path yet.
+ */
+@Model(core.class.ObjectRole, core.class.Doc, DOMAIN_MODEL)
+@UX(core.string.Role, undefined, undefined, 'name')
+export class TObjectRole extends TDoc implements ObjectRole {
+  name!: IntlString
+  description?: IntlString
+  objectClass!: Ref<Class<Doc>>
+
+  @Prop(ArrOf(TypeRef(core.class.Permission)), core.string.Permission)
+    permissions!: Ref<Permission>[]
+}
+
 @Model(core.class.Permission, core.class.Doc, DOMAIN_MODEL)
 @UX(core.string.Permission)
 export class TPermission extends TDoc implements Permission {
@@ -168,7 +184,7 @@ export class TPermission extends TDoc implements Permission {
   txClass?: Ref<Class<Tx>>
   forbid?: boolean
   objectClass?: Ref<Class<Doc<Space>>>
-  scope?: 'space' | 'workspace'
+  scope?: 'space' | 'workspace' | 'object'
   description?: IntlString
   icon?: Asset
 }
