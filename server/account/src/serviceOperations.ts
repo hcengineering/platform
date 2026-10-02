@@ -32,6 +32,13 @@ import {
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, unknownError } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
+import type {
+  AccountListRow,
+  AuditEntry,
+  ListAccountsAdminParams,
+  ListAuditAdminParams,
+  ListAuditAdminResponse
+} from '@hcengineering/account-client'
 
 import { accountPlugin } from './plugin'
 import type {
@@ -42,6 +49,8 @@ import type {
   IntegrationKey,
   IntegrationSecret,
   IntegrationSecretKey,
+  ListAccountsAdminQueryParams,
+  Meta,
   Query,
   SocialId,
   Subscription,
@@ -65,12 +74,15 @@ import {
   getWorkspacesInfoWithStatusByIds,
   verifyAllowedServices,
   wrap,
+  assertAdmin,
+  getConfiguredAdminEmails,
   addSocialIdBase,
   getWorkspaces,
   updateWorkspaceRole,
   getPersonName,
   doMergeAccounts,
-  assignableRoles
+  assignableRoles,
+  isUuid
 } from './utils'
 
 // Note: it is IMPORTANT to always destructure params passed here to avoid sending extra params
@@ -117,6 +129,144 @@ export async function listAccounts (
   const { skip, limit, search } = params
 
   return await db.listAccounts(search, skip, limit)
+}
+
+const ADMIN_LIST_STATUSES = ['active', 'disabled'] as const
+const ADMIN_LIST_AUTH_METHODS = ['email_only', 'oidc', 'mixed', 'none'] as const
+const ADMIN_LIST_SORT_FIELDS = ['name', 'email', 'auth', 'workspace_count', 'last_activity', 'status'] as const
+
+function asString (value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
+function asNumber (value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
+function badRequest (): PlatformError<any> {
+  return new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+}
+
+/**
+ * Like asNumber, but a fractional or unsafe number is a malformed request
+ * (BadRequest) instead of being forwarded to an integer SQL parameter.
+ */
+function asInteger (value: unknown): number | undefined {
+  const n = asNumber(value)
+  if (n !== undefined && !Number.isSafeInteger(n)) throw badRequest()
+  return n
+}
+
+/**
+ * Workspace UUID filter: every element must be a UUID, otherwise BadRequest
+ * (the values are bound as UUID[] and a malformed one would fail in the DB).
+ */
+function asWorkspaceUuids (value: unknown): WorkspaceUuid[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  if (!value.every((it) => isUuid(it))) throw badRequest()
+  return value as WorkspaceUuid[]
+}
+
+function asEnumArray<T extends string> (value: unknown, allowed: readonly T[]): T[] | undefined {
+  return Array.isArray(value) ? value.filter((it): it is T => allowed.includes(it)) : undefined
+}
+
+/**
+ * Maps the public request to the DB query, keeping only well-typed values.
+ * Throws BadRequest for malformed workspace UUIDs and non-integer numbers.
+ */
+function toListAccountsAdminQuery (params: Partial<ListAccountsAdminParams> | undefined): ListAccountsAdminQueryParams {
+  const p = params ?? {}
+  let lastActivityFilter: ListAccountsAdminQueryParams['lastActivityFilter']
+  if (p.lastActivityFilter?.kind === 'never') {
+    lastActivityFilter = { kind: 'never' }
+  } else if (p.lastActivityFilter?.kind === 'range') {
+    lastActivityFilter = {
+      kind: 'range',
+      fromMs: asInteger(p.lastActivityFilter.fromMs),
+      toMs: asInteger(p.lastActivityFilter.toMs)
+    }
+  }
+  const sortField = p.sort?.field
+  const sort =
+    sortField !== undefined && (ADMIN_LIST_SORT_FIELDS as readonly string[]).includes(sortField)
+      ? { field: sortField, direction: p.sort?.direction === 'desc' ? ('desc' as const) : ('asc' as const) }
+      : undefined
+
+  return {
+    search: asString(p.search),
+    statusIn: asEnumArray(p.statusIn, ADMIN_LIST_STATUSES),
+    authMethodIn: asEnumArray(p.authMethodIn, ADMIN_LIST_AUTH_METHODS),
+    nameContains: asString(p.nameContains),
+    emailContains: asString(p.emailContains),
+    workspaceUuidsIn: asWorkspaceUuids(p.workspaceUuidsIn),
+    wsMin: asInteger(p.workspaceCountRange?.min),
+    wsMax: asInteger(p.workspaceCountRange?.max),
+    lastActivityFilter,
+    orphan: p.orphan === true ? true : undefined,
+    isAdmin: typeof p.isAdmin === 'boolean' ? p.isAdmin : undefined,
+    sort,
+    pagination: { limit: asInteger(p.pagination?.limit), offset: asInteger(p.pagination?.offset) }
+  }
+}
+
+/**
+ * Admin only. Lists accounts with filters, sorting and offset pagination.
+ */
+export async function listAccountsAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: ListAccountsAdminParams,
+  meta?: Meta
+): Promise<{ total: number, accounts: AccountListRow[] }> {
+  await assertAdmin(ctx, db, token, meta)
+
+  const query = toListAccountsAdminQuery(params)
+  query.adminEmails = Array.from(getConfiguredAdminEmails())
+
+  const { rows, total } = await db.listAccountsAdmin(query)
+  return { total, accounts: rows }
+}
+
+/**
+ * Admin only. Lists admin audit log entries, newest first.
+ */
+export async function listAuditAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: ListAuditAdminParams,
+  meta?: Meta
+): Promise<ListAuditAdminResponse> {
+  await assertAdmin(ctx, db, token, meta)
+
+  const p: Partial<ListAuditAdminParams> = params ?? {}
+  const result = await db.adminAuditLog.listAuditAdmin({
+    targetAccount: asString(p.targetAccount) as AccountUuid | undefined,
+    adminAccount: asString(p.adminAccount) as AccountUuid | undefined,
+    action: asString(p.action),
+    fromMs: asNumber(p.fromMs),
+    toMs: asNumber(p.toMs),
+    limit: asNumber(p.limit),
+    offset: asNumber(p.offset)
+  })
+
+  const entries: AuditEntry[] = result.entries.map((e) => ({
+    id: e.id,
+    tsMs: e.tsMs,
+    admin: { uuid: e.adminAccount, firstName: e.adminFirstName, lastName: e.adminLastName },
+    action: e.action,
+    targetAccount:
+      e.targetAccount != null
+        ? { uuid: e.targetAccount, firstName: e.targetFirstName, lastName: e.targetLastName }
+        : undefined,
+    workspaceUuid: e.workspaceUuid,
+    details: e.details
+  }))
+  return { entries, total: result.total }
 }
 
 export async function performWorkspaceOperation (
@@ -1146,6 +1296,8 @@ export type AccountServiceMethods =
   | 'mergeSpecifiedAccounts'
   | 'findPersonBySocialKey'
   | 'listAccounts'
+  | 'listAccountsAdmin'
+  | 'listAuditAdmin'
   | 'findFullSocialIds'
   | 'getSubscriptionByProviderId'
   | 'upsertSubscription'
@@ -1182,6 +1334,8 @@ export function getServiceMethods (): Partial<Record<AccountServiceMethods, Acco
     mergeSpecifiedAccounts: wrap(mergeSpecifiedAccounts),
     findPersonBySocialKey: wrap(findPersonBySocialKey),
     listAccounts: wrap(listAccounts),
+    listAccountsAdmin: wrap(listAccountsAdmin),
+    listAuditAdmin: wrap(listAuditAdmin),
     getSubscriptionByProviderId: wrap(getSubscriptionByProviderId),
     upsertSubscription: wrap(upsertSubscription)
   }

@@ -20,7 +20,13 @@ import {
   type WorkspaceMode,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import { AccountPostgresDbCollection, PostgresAccountDB, PostgresDbCollection } from '../collections/postgres/postgres'
+import {
+  AccountPostgresDbCollection,
+  PostgresAccountDB,
+  PostgresAdminAuditLogCollection,
+  PostgresDbCollection
+} from '../collections/postgres/postgres'
+import { getMigrations } from '../collections/postgres/migrations'
 import { type Sql } from 'postgres'
 
 interface TestWorkspace {
@@ -338,6 +344,9 @@ describe('AccountPostgresDbCollection', () => {
         a.max_workspaces,
         a.failed_login_attempts,
         a.tfa_secret,
+        a.disabled_at,
+        a.token_version,
+        a.last_activity_at,
         p.hash,
         p.salt
       FROM global_account.account as a
@@ -346,6 +355,18 @@ describe('AccountPostgresDbCollection', () => {
         ['acc1']
       )
       expect(result).toEqual(mockResult)
+    })
+
+    it('should convert lifecycle timestamps from database', async () => {
+      mockClient.unsafe.mockResolvedValue([
+        { uuid: 'acc1', disabled_at: '1700000000000', token_version: 2, last_activity_at: null }
+      ])
+
+      const [result] = await collection.find({ uuid: 'acc1' as AccountUuid })
+
+      expect(result.disabledAt).toBe(1700000000000)
+      expect(result.tokenVersion).toBe(2)
+      expect(result.lastActivityAt).toBeNull()
     })
 
     it('should convert buffer fields from database', async () => {
@@ -441,6 +462,80 @@ describe('AccountPostgresDbCollection', () => {
 
       expect(mockClient.unsafe).toHaveBeenCalledWith('DELETE FROM global_account.account WHERE "uuid" = $1', ['acc1'])
     })
+  })
+})
+
+describe('PostgresAdminAuditLogCollection', () => {
+  it('inserts a row without batch_id and serializes details as JSON', async () => {
+    const mockClient: any = { unsafe: jest.fn().mockResolvedValue([]) }
+    const collection = new PostgresAdminAuditLogCollection(mockClient as Sql, ns)
+
+    await collection.insert({
+      adminAccount: 'admin1' as AccountUuid,
+      targetAccount: 'target1' as AccountUuid,
+      action: 'disable',
+      workspaceUuid: null,
+      details: { reason: 'manual_admin_action' }
+    })
+
+    expect(mockClient.unsafe).toHaveBeenCalledTimes(1)
+    const [sql, values] = mockClient.unsafe.mock.calls[0]
+    expect(sql.replace(/\s+/g, ' ').trim()).toBe(
+      'INSERT INTO global_account.admin_audit_log (admin_account, target_account, action, workspace_uuid, details) VALUES ($1::text, $2::text, $3::text, $4::text, $5::jsonb)'
+    )
+    expect(values).toEqual(['admin1', 'target1', 'disable', null, '{"reason":"manual_admin_action"}'])
+  })
+
+  it('uses the provided transaction client instead of the default one', async () => {
+    const mockClient: any = { unsafe: jest.fn().mockResolvedValue([]) }
+    const txClient: any = { unsafe: jest.fn().mockResolvedValue([]) }
+    const collection = new PostgresAdminAuditLogCollection(mockClient as Sql, ns)
+
+    await collection.insert(
+      {
+        adminAccount: 'admin1' as AccountUuid,
+        targetAccount: 'target1' as AccountUuid,
+        action: 'enable',
+        workspaceUuid: null,
+        details: null
+      },
+      txClient as Sql
+    )
+
+    expect(mockClient.unsafe).not.toHaveBeenCalled()
+    expect(txClient.unsafe).toHaveBeenCalledTimes(1)
+    expect(txClient.unsafe.mock.calls[0][1][4]).toBeNull()
+  })
+})
+
+describe('account lifecycle migration (v28)', () => {
+  const v28Id = 'account_db_v28_account_lifecycle_admin_audit'
+
+  it.each(['postgres', 'cockroach'] as const)('is registered after the api tokens migration (%s)', (flavor) => {
+    const ids = getMigrations(ns, flavor).map(([id]) => id)
+    expect(ids.filter((id) => id === v28Id)).toHaveLength(1)
+    expect(ids.indexOf(v28Id)).toBe(ids.indexOf('account_db_v27_add_api_tokens_table') + 1)
+  })
+
+  it.each(['postgres', 'cockroach'] as const)('only contains idempotent statements (%s)', (flavor) => {
+    const ddl = getMigrations(ns, flavor).find(([id]) => id === v28Id)?.[1] ?? ''
+    const statements = ddl
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split(';')
+      .map((s) => s.replace(/\s+/g, ' ').trim())
+      .filter((s) => s !== '')
+    expect(statements.length).toBeGreaterThan(0)
+    for (const stmt of statements) {
+      if (stmt.startsWith('ALTER TABLE')) {
+        const clauses = stmt.split(',')
+        for (const clause of clauses) {
+          expect(clause).toMatch(/ADD COLUMN IF NOT EXISTS/)
+        }
+      } else {
+        expect(stmt).toMatch(/^CREATE (TABLE|INDEX) IF NOT EXISTS /)
+      }
+    }
+    expect(ddl).not.toMatch(/ADD CONSTRAINT|DROP NOT NULL|batch_id/)
   })
 })
 

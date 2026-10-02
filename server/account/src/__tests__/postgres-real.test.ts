@@ -4,9 +4,24 @@
 
 import { generateUuid, SocialIdType, type AccountUuid, type PersonId } from '@hcengineering/core'
 import { getDBClient, shutdownPostgres, type PostgresClientReference } from '@hcengineering/postgres'
+import { type Sql } from 'postgres'
 import { PostgresAccountDB } from '../collections/postgres/postgres'
-import { type SocialId } from '../types'
+import { getMigrations } from '../collections/postgres/migrations'
+import { type DBFlavor, type SocialId } from '../types'
 import { createAccount, getDbFlavor, normalizeValue } from '../utils'
+import { getLegacyAdminMigrations } from './fixtures/legacyAdminMigrations'
+
+const FOUNDATION_V28_ID = 'account_db_v28_account_lifecycle_admin_audit'
+
+/**
+ * Account DB that stops before the foundation migration, i.e. the schema state
+ * of a deployment running the previous release.
+ */
+class PreFoundationAccountDB extends PostgresAccountDB {
+  protected getMigrations (): Array<[string, string]> {
+    return super.getMigrations().filter(([id]) => id !== FOUNDATION_V28_ID)
+  }
+}
 
 jest.setTimeout(90000)
 
@@ -33,6 +48,10 @@ describe('real-account', () => {
 
   let crAccount: PostgresAccountDB
   let pgAccount: PostgresAccountDB
+
+  let crSql: Sql
+  let pgSql: Sql
+  let pgFlavor: DBFlavor
 
   const users = [
     {
@@ -107,16 +126,17 @@ describe('real-account', () => {
     }
 
     crClient = getDBClient(crDbUri)
-    const crPGClient = await crClient.getClient()
+    crSql = await crClient.getClient()
 
     pgClient = getDBClient(pgDbUri)
-    const pgPGClient = await pgClient.getClient()
+    pgSql = await pgClient.getClient()
+    pgFlavor = await getDbFlavor(pgSql)
 
     // Initial DB's
 
-    crAccount = new PostgresAccountDB(crPGClient, dbUuid)
+    crAccount = new PostgresAccountDB(crSql, dbUuid)
 
-    pgAccount = new PostgresAccountDB(pgPGClient, dbUuid, await getDbFlavor(pgPGClient))
+    pgAccount = new PostgresAccountDB(pgSql, dbUuid, pgFlavor)
 
     await Promise.all([migrateCockroachDB(crAccount, crDbUri), migratePostgreSQL(pgAccount, pgDbUri)])
 
@@ -222,6 +242,375 @@ describe('real-account', () => {
       expiresOn: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).getTime()
     })
     expect(inviteLinkPG).toBeDefined()
+  })
+
+  describe('account lifecycle migration (v28)', () => {
+    const upgradeNs = 'upgrade_account'
+
+    function targets (): Array<{ name: string, sql: Sql, flavor: DBFlavor }> {
+      return [
+        { name: 'cockroach', sql: crSql, flavor: 'cockroach' },
+        { name: 'postgres', sql: pgSql, flavor: pgFlavor }
+      ]
+    }
+
+    async function appliedMigrations (sql: Sql, ns: string): Promise<Map<string, boolean>> {
+      const rows = await sql.unsafe(`SELECT identifier, applied_at FROM ${ns}._account_applied_migrations`)
+      return new Map(rows.map((r: any) => [r.identifier as string, r.applied_at != null]))
+    }
+
+    async function columns (sql: Sql, ns: string, table: string): Promise<Array<{ name: string, nullable: boolean }>> {
+      const rows = await sql.unsafe(
+        'SELECT column_name, is_nullable FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2',
+        [ns, table]
+      )
+      return rows.map((r: any) => ({ name: r.column_name, nullable: r.is_nullable === 'YES' }))
+    }
+
+    async function indexes (sql: Sql, ns: string): Promise<string[]> {
+      const rows = await sql.unsafe('SELECT indexname FROM pg_indexes WHERE schemaname = $1', [ns])
+      return rows.map((r: any) => r.indexname as string)
+    }
+
+    async function createUser (db: PostgresAccountDB): Promise<AccountUuid> {
+      const uuid = generateUuid() as AccountUuid
+      await db.person.insertOne({ uuid, firstName: 'Upgrade', lastName: 'User' })
+      await createAccount(db, uuid, true)
+      return uuid
+    }
+
+    it('applies on top of the legacy admin migrations (v27-v30 ids)', async () => {
+      for (const { name, sql, flavor } of targets()) {
+        // 1. Previous release schema + the legacy admin migrations, recorded by id.
+        const legacyDb = new PreFoundationAccountDB(sql, upgradeNs, flavor)
+        await legacyDb.init()
+        const legacy = getLegacyAdminMigrations(upgradeNs, flavor)
+        for (const [id, ddl] of legacy) {
+          await legacyDb.migrate(id, ddl)
+        }
+        const before = await appliedMigrations(sql, upgradeNs)
+        expect(before.has(FOUNDATION_V28_ID)).toBe(false)
+
+        // 2. Upgrade: only the foundation migration is new and must apply cleanly.
+        const db = new PostgresAccountDB(sql, upgradeNs, flavor)
+        await db.init()
+
+        const applied = await appliedMigrations(sql, upgradeNs)
+        for (const id of [...legacy.map(([id]) => id), FOUNDATION_V28_ID]) {
+          expect({ name, id, applied: applied.get(id) }).toEqual({ name, id, applied: true })
+        }
+        expect(applied.size).toBe(before.size + 1)
+
+        const accountColumns = (await columns(sql, upgradeNs, 'account')).map((c) => c.name)
+        for (const col of ['disabled_at', 'token_version', 'last_activity_at']) {
+          expect({ name, col, count: accountColumns.filter((c) => c === col).length }).toEqual({ name, col, count: 1 })
+        }
+
+        // Legacy-only schema extensions are left as they are.
+        const auditColumns = await columns(sql, upgradeNs, 'admin_audit_log')
+        expect(auditColumns.some((c) => c.name === 'batch_id')).toBe(true)
+        expect(auditColumns.find((c) => c.name === 'target_account')?.nullable).toBe(true)
+
+        const idx = await indexes(sql, upgradeNs)
+        for (const index of [
+          'admin_audit_log_target_idx',
+          'account_disabled_at_idx',
+          'workspace_members_account_idx'
+        ]) {
+          expect({ name, index, present: idx.includes(index) }).toEqual({ name, index, present: true })
+        }
+
+        // Runtime: the foundation code works against the upgraded schema.
+        const target = await createUser(db)
+        const admin = await createUser(db)
+        await db.adminAuditLog.insert({
+          adminAccount: admin,
+          targetAccount: target,
+          action: 'admin_action_denied',
+          workspaceUuid: null,
+          details: { reason: 'self_disable' }
+        })
+        const auditRows = await sql.unsafe(
+          `SELECT admin_account, target_account, action, details, batch_id FROM ${upgradeNs}.admin_audit_log`
+        )
+        expect(auditRows).toHaveLength(1)
+        expect(auditRows[0].batch_id).toBeNull()
+
+        const account = await db.account.findOne({ uuid: target })
+        expect(account).toEqual(
+          expect.objectContaining({ uuid: target, disabledAt: null, tokenVersion: 0, lastActivityAt: null })
+        )
+        await db.account.update(
+          { uuid: target },
+          { disabledAt: 1700000000000, lastActivityAt: 1700000000001, $inc: { tokenVersion: 1 } }
+        )
+        expect(await db.account.findOne({ uuid: target })).toEqual(
+          expect.objectContaining({ disabledAt: 1700000000000, tokenVersion: 1, lastActivityAt: 1700000000001 })
+        )
+        await db.account.update({ uuid: target }, { disabledAt: null, lastActivityAt: null })
+
+        const disabledAt = Date.now()
+        await db.applyAccountLifecycle(
+          target,
+          { disabledAt, bumpTokenVersion: true },
+          { adminAccount: admin, targetAccount: target, action: 'disable', workspaceUuid: null, details: null }
+        )
+        expect(await db.account.findOne({ uuid: target })).toEqual(
+          expect.objectContaining({ disabledAt, tokenVersion: 2 })
+        )
+        const lifecycleRows = await sql.unsafe(
+          `SELECT action FROM ${upgradeNs}.admin_audit_log WHERE target_account = $1 ORDER BY ts_ms`,
+          [target]
+        )
+        expect(lifecycleRows.map((r: any) => r.action).sort((a: string, b: string) => a.localeCompare(b))).toEqual([
+          'admin_action_denied',
+          'disable'
+        ])
+
+        // Listing works on the upgraded schema, including rows written by the
+        // legacy admin code (no target account, batch id set).
+        const disabledList = await db.listAccountsAdmin({ statusIn: ['disabled'] })
+        expect(disabledList.total).toBe(1)
+        expect(disabledList.rows.map((r) => r.uuid)).toEqual([target])
+        expect(disabledList.rows[0].status).toBe('disabled')
+
+        await sql.unsafe(
+          `INSERT INTO ${upgradeNs}.admin_audit_log (admin_account, target_account, action, workspace_uuid, batch_id)
+           VALUES ($1, NULL, 'archive_workspace', $2, gen_random_uuid())`,
+          [admin, generateUuid()]
+        )
+        const byTarget = await db.adminAuditLog.listAuditAdmin({ targetAccount: target })
+        expect(byTarget.total).toBe(2)
+        expect(byTarget.entries.map((e) => e.action).sort((a, b) => a.localeCompare(b))).toEqual([
+          'admin_action_denied',
+          'disable'
+        ])
+        const all = await db.adminAuditLog.listAuditAdmin({})
+        expect(all.total).toBe(3)
+        expect(all.entries.find((e) => e.action === 'archive_workspace')?.targetAccount).toBeNull()
+      }
+    })
+
+    describe('applyAccountLifecycle', () => {
+      async function auditCount (sql: Sql, ns: string, target: AccountUuid): Promise<number> {
+        const rows = await sql.unsafe(`SELECT count(*) AS n FROM ${ns}.admin_audit_log WHERE target_account = $1`, [
+          target
+        ])
+        return Number(rows[0].n)
+      }
+
+      it('writes state change and audit row together', async () => {
+        for (const { name, sql, account } of [
+          { name: 'cockroach', sql: crSql, account: crAccount },
+          { name: 'postgres', sql: pgSql, account: pgAccount }
+        ]) {
+          const target = users[0].uuid
+          await account.applyAccountLifecycle(
+            target,
+            { disabledAt: 1234, bumpTokenVersion: true },
+            {
+              adminAccount: users[1].uuid,
+              targetAccount: target,
+              action: 'disable',
+              workspaceUuid: null,
+              details: { reason: 'manual_admin_action' }
+            }
+          )
+          expect({ name, row: await account.account.findOne({ uuid: target }) }).toEqual({
+            name,
+            row: expect.objectContaining({ disabledAt: 1234, tokenVersion: 1 })
+          })
+          expect(await auditCount(sql, dbUuid, target)).toBe(1)
+
+          await account.applyAccountLifecycle(
+            target,
+            { disabledAt: null, bumpTokenVersion: false },
+            { adminAccount: users[1].uuid, targetAccount: target, action: 'enable', workspaceUuid: null, details: null }
+          )
+          expect(await account.account.findOne({ uuid: target })).toEqual(
+            expect.objectContaining({ disabledAt: null, tokenVersion: 1 })
+          )
+          expect(await auditCount(sql, dbUuid, target)).toBe(2)
+        }
+      })
+
+      it('rolls the state change back when the audit insert fails', async () => {
+        for (const { name, sql, account } of [
+          { name: 'cockroach', sql: crSql, account: crAccount },
+          { name: 'postgres', sql: pgSql, account: pgAccount }
+        ]) {
+          const target = users[0].uuid
+          const spy = jest
+            .spyOn(account.adminAuditLog, 'insert')
+            .mockRejectedValueOnce(new Error('audit insert failed'))
+          await expect(
+            account.applyAccountLifecycle(
+              target,
+              { disabledAt: Date.now(), bumpTokenVersion: true },
+              {
+                adminAccount: users[1].uuid,
+                targetAccount: target,
+                action: 'disable',
+                workspaceUuid: null,
+                details: null
+              }
+            )
+          ).rejects.toThrow('audit insert failed')
+          spy.mockRestore()
+
+          expect({ name, row: await account.account.findOne({ uuid: target }) }).toEqual({
+            name,
+            row: expect.objectContaining({ disabledAt: null, tokenVersion: 0 })
+          })
+          expect(await auditCount(sql, dbUuid, target)).toBe(0)
+        }
+      })
+    })
+
+    describe('admin listing queries', () => {
+      const sortFields = ['name', 'email', 'auth', 'workspace_count', 'last_activity', 'status'] as const
+
+      it('runs every sort field in both directions', async () => {
+        for (const { name, account } of [
+          { name: 'cockroach', account: crAccount },
+          { name: 'postgres', account: pgAccount }
+        ]) {
+          for (const field of sortFields) {
+            for (const direction of ['asc', 'desc'] as const) {
+              const res = await account.listAccountsAdmin({ sort: { field, direction }, pagination: { limit: 10 } })
+              expect({ name, field, direction, total: res.total, rows: res.rows.length }).toEqual({
+                name,
+                field,
+                direction,
+                total: 2,
+                rows: 2
+              })
+            }
+          }
+        }
+      })
+
+      it('applies filters, admin detection and pagination', async () => {
+        for (const { name, account } of [
+          { name: 'cockroach', account: crAccount },
+          { name: 'postgres', account: pgAccount }
+        ]) {
+          // Only verified emails count as primary email / auth method.
+          for (const user of users) {
+            await account.socialId.update(
+              { personUuid: user.uuid, type: SocialIdType.EMAIL },
+              { verifiedOn: Date.now() }
+            )
+          }
+          await account.account.update({ uuid: users[1].uuid }, { disabledAt: 1000, lastActivityAt: 2000 })
+
+          const disabled = await account.listAccountsAdmin({ statusIn: ['disabled'] })
+          expect({ name, uuids: disabled.rows.map((r) => r.uuid) }).toEqual({ name, uuids: [users[1].uuid] })
+          expect(disabled.rows[0]).toEqual(
+            expect.objectContaining({
+              firstName: 'Pavel',
+              primaryEmail: 'user2@example.com',
+              status: 'disabled',
+              lastActivityAt: 2000,
+              authMethods: ['email'],
+              hasPassword: false,
+              workspaceCount: 0
+            })
+          )
+
+          const bySearch = await account.listAccountsAdmin({ search: 'user1@' })
+          expect(bySearch.rows.map((r) => r.uuid)).toEqual([users[0].uuid])
+          const wildcard = await account.listAccountsAdmin({ search: '%' })
+          expect(wildcard.total).toBe(0)
+
+          const admins = await account.listAccountsAdmin({ isAdmin: true, adminEmails: ['USER1@example.com'] })
+          expect(admins.rows.map((r) => [r.uuid, r.isAdmin])).toEqual([[users[0].uuid, true]])
+
+          const never = await account.listAccountsAdmin({ lastActivityFilter: { kind: 'never' } })
+          expect(never.rows.map((r) => r.uuid)).toEqual([users[0].uuid])
+
+          const orphan = await account.listAccountsAdmin({ orphan: true })
+          expect(orphan.rows.map((r) => r.uuid)).toEqual([users[0].uuid])
+
+          const page = await account.listAccountsAdmin({
+            sort: { field: 'name', direction: 'asc' },
+            pagination: { limit: 1, offset: 1 }
+          })
+          expect(page.total).toBe(2)
+          expect(page.rows.map((r) => r.firstName)).toEqual(['Pavel'])
+        }
+      })
+
+      it('lists audit rows newest first with filters', async () => {
+        for (const { name, account } of [
+          { name: 'cockroach', account: crAccount },
+          { name: 'postgres', account: pgAccount }
+        ]) {
+          const [target, admin] = [users[0].uuid, users[1].uuid]
+          for (const [action, ts] of [
+            ['disable', 1000],
+            ['enable', 2000],
+            ['disable', 3000]
+          ] as const) {
+            await account.adminAuditLog.insert({
+              adminAccount: admin,
+              targetAccount: target,
+              action,
+              workspaceUuid: null,
+              details: { ts }
+            })
+          }
+
+          const all = await account.adminAuditLog.listAuditAdmin({ targetAccount: target })
+          expect({ name, total: all.total }).toEqual({ name, total: 3 })
+          expect(all.entries[0]).toEqual(
+            expect.objectContaining({
+              adminAccount: admin,
+              targetAccount: target,
+              adminFirstName: 'Pavel',
+              targetFirstName: 'Jon',
+              details: expect.any(Object)
+            })
+          )
+          for (let i = 1; i < all.entries.length; i++) {
+            expect(all.entries[i - 1].tsMs).toBeGreaterThanOrEqual(all.entries[i].tsMs)
+          }
+
+          const disables = await account.adminAuditLog.listAuditAdmin({ action: 'disable', limit: 1, offset: 1 })
+          expect(disables.total).toBe(2)
+          expect(disables.entries).toHaveLength(1)
+
+          const none = await account.adminAuditLog.listAuditAdmin({ adminAccount: target })
+          expect(none.total).toBe(0)
+
+          const window = await account.adminAuditLog.listAuditAdmin({ fromMs: Date.now() + 60_000 })
+          expect(window.total).toBe(0)
+        }
+      })
+    })
+
+    it('is idempotent on a fresh database', async () => {
+      for (const { sql, flavor } of targets()) {
+        const db = new PostgresAccountDB(sql, upgradeNs, flavor)
+        await db.init()
+        const first = await appliedMigrations(sql, upgradeNs)
+        expect(first.get(FOUNDATION_V28_ID)).toBe(true)
+
+        await new PostgresAccountDB(sql, upgradeNs, flavor).init()
+        expect(await appliedMigrations(sql, upgradeNs)).toEqual(first)
+
+        // The DDL itself must be re-runnable (the runner only tracks ids).
+        const ddl = getMigrations(upgradeNs, flavor).find(([id]) => id === FOUNDATION_V28_ID)?.[1] ?? ''
+        await sql.unsafe(ddl)
+        await sql.unsafe(ddl)
+
+        const accountColumns = (await columns(sql, upgradeNs, 'account')).map((c) => c.name)
+        expect(accountColumns.filter((c) => c === 'token_version')).toHaveLength(1)
+        const auditColumns = await columns(sql, upgradeNs, 'admin_audit_log')
+        expect(auditColumns.find((c) => c.name === 'target_account')?.nullable).toBe(false)
+        expect(auditColumns.some((c) => c.name === 'batch_id')).toBe(false)
+      }
+    })
   })
 })
 

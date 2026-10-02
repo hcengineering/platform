@@ -24,7 +24,9 @@ import {
   type PersonUuid
 } from '@hcengineering/core'
 
+import type { AccountListRow } from '@hcengineering/account-client'
 import { getMigrations } from './migrations'
+import { buildListAccountsAdminSql, rowToAccountListRow } from './listAccountsAdminPg'
 import type {
   DbCollection,
   Query,
@@ -51,7 +53,13 @@ import type {
   Subscription,
   WorkspacePermission,
   ApiToken,
-  DBFlavor
+  DBFlavor,
+  AdminAuditLogCollection,
+  AdminAuditLogListParams,
+  AdminAuditLogListResult,
+  AccountLifecyclePatch,
+  ListAccountsAdminQueryParams,
+  NewAdminAuditLogEntry
 } from '../../types'
 
 function toSnakeCase (str: string): string {
@@ -455,6 +463,9 @@ export class AccountPostgresDbCollection
         a.max_workspaces,
         a.failed_login_attempts,
         a.tfa_secret,
+        a.disabled_at,
+        a.token_version,
+        a.last_activity_at,
         p.hash,
         p.salt
       FROM ${this.getTableName()} as a
@@ -475,6 +486,13 @@ export class AccountPostgresDbCollection
       }
       if (r.salt != null) {
         r.salt = Buffer.from(Object.values(r.salt))
+      }
+      // INT8 columns are returned as strings by the driver
+      if (typeof r.disabledAt === 'string') {
+        r.disabledAt = Number(r.disabledAt)
+      }
+      if (typeof r.lastActivityAt === 'string') {
+        r.lastActivityAt = Number(r.lastActivityAt)
       }
     }
 
@@ -516,6 +534,94 @@ export class AccountPostgresDbCollection
   }
 }
 
+export class PostgresAdminAuditLogCollection implements AdminAuditLogCollection {
+  constructor (
+    readonly client: Sql,
+    readonly ns: string
+  ) {}
+
+  getTableName (): string {
+    return this.ns === '' ? 'admin_audit_log' : `${this.ns}.admin_audit_log`
+  }
+
+  /**
+   * Inserts one audit row. Pass `client` to make the insert part of an
+   * enclosing transaction (see PostgresAccountDB.applyAccountLifecycle).
+   */
+  async insert (entry: NewAdminAuditLogEntry, client?: Sql): Promise<void> {
+    const sql = `
+      INSERT INTO ${this.getTableName()}
+        (admin_account, target_account, action, workspace_uuid, details)
+      VALUES ($1::text, $2::text, $3::text, $4::text, $5::jsonb)
+    `
+    const values = [
+      entry.adminAccount,
+      entry.targetAccount,
+      entry.action,
+      entry.workspaceUuid,
+      entry.details != null ? JSON.stringify(entry.details) : null
+    ]
+    await (client ?? this.client).unsafe(sql, values)
+  }
+
+  async listAuditAdmin (params: AdminAuditLogListParams): Promise<AdminAuditLogListResult> {
+    const conds: string[] = []
+    const args: any[] = []
+    const ph = (v: any): string => {
+      args.push(v)
+      return `$${args.length}`
+    }
+
+    if (params.targetAccount != null) conds.push(`al.target_account = ${ph(params.targetAccount)}::text`)
+    if (params.adminAccount != null) conds.push(`al.admin_account = ${ph(params.adminAccount)}::text`)
+    if (params.action != null) conds.push(`al.action = ${ph(params.action)}::text`)
+    if (params.fromMs != null) conds.push(`al.ts_ms >= ${ph(params.fromMs)}::int8`)
+    if (params.toMs != null) conds.push(`al.ts_ms <= ${ph(params.toMs)}::int8`)
+    const where = conds.length === 0 ? 'TRUE' : conds.join(' AND ')
+    const countArgs = [...args]
+
+    const limit = Math.min(Math.max(1, Math.floor(params.limit ?? 50)), 200)
+    const offset = Math.max(0, Math.floor(params.offset ?? 0))
+    const personTable = this.ns === '' ? 'person' : `${this.ns}.person`
+
+    const rowsSql = `
+      SELECT
+        al.id, al.ts_ms, al.admin_account, al.target_account, al.action, al.workspace_uuid, al.details,
+        ap.first_name AS admin_first_name, ap.last_name AS admin_last_name,
+        tp.first_name AS target_first_name, tp.last_name AS target_last_name
+      FROM ${this.getTableName()} al
+      LEFT JOIN ${personTable} ap ON ap.uuid::TEXT = al.admin_account
+      LEFT JOIN ${personTable} tp ON tp.uuid::TEXT = al.target_account
+      WHERE ${where}
+      ORDER BY al.ts_ms DESC, al.id DESC
+      LIMIT ${ph(limit)}::int8 OFFSET ${ph(offset)}::int8
+    `
+    const countSql = `SELECT COUNT(*) AS n FROM ${this.getTableName()} al WHERE ${where}`
+
+    const [rows, count] = await Promise.all([
+      this.client.unsafe(rowsSql, args),
+      this.client.unsafe(countSql, countArgs)
+    ])
+
+    return {
+      entries: rows.map((r: any) => ({
+        id: r.id,
+        tsMs: Number(r.ts_ms),
+        adminAccount: r.admin_account,
+        targetAccount: r.target_account ?? null,
+        action: r.action,
+        workspaceUuid: r.workspace_uuid ?? null,
+        details: typeof r.details === 'string' ? JSON.parse(r.details) : (r.details ?? null),
+        adminFirstName: r.admin_first_name ?? '',
+        adminLastName: r.admin_last_name ?? '',
+        targetFirstName: r.target_first_name ?? '',
+        targetLastName: r.target_last_name ?? ''
+      })),
+      total: Number(count[0]?.n ?? 0)
+    }
+  }
+}
+
 export class PostgresAccountDB implements AccountDB {
   private readonly retryOptions = {
     maxAttempts: 5,
@@ -542,6 +648,7 @@ export class PostgresAccountDB implements AccountDB {
   subscription: PostgresDbCollection<Subscription, 'id'>
   workspacePermission: PostgresDbCollection<WorkspacePermission>
   apiToken: PostgresDbCollection<ApiToken, 'id'>
+  adminAuditLog: PostgresAdminAuditLogCollection
 
   constructor (
     readonly client: Sql,
@@ -617,6 +724,7 @@ export class PostgresAccountDB implements AccountDB {
       timestampFields: ['createdOn', 'expiresOn'],
       withRetryClient
     })
+    this.adminAuditLog = new PostgresAdminAuditLogCollection(client, ns)
   }
 
   getWsMembersTableName (): string {
@@ -1098,6 +1206,37 @@ export class PostgresAccountDB implements AccountDB {
       // This removes the account along with the password if any
       await this.account.deleteMany({ uuid: accountUuid }, rTx)
     })
+  }
+
+  async applyAccountLifecycle (
+    accountUuid: AccountUuid,
+    patch: AccountLifecyclePatch,
+    audit: NewAdminAuditLogEntry
+  ): Promise<void> {
+    await this.withRetry(async (rTx) => {
+      await this.account.update(
+        { uuid: accountUuid },
+        {
+          disabledAt: patch.disabledAt,
+          ...(patch.bumpTokenVersion ? { $inc: { tokenVersion: 1 } } : {})
+        },
+        rTx
+      )
+      await this.adminAuditLog.insert(audit, rTx)
+    })
+  }
+
+  async listAccountsAdmin (query: ListAccountsAdminQueryParams): Promise<{ rows: AccountListRow[], total: number }> {
+    const adminEmails = query.adminEmails ?? []
+    const { rowsSql, countSql, rowsArgs, countArgs } = buildListAccountsAdminSql(this.ns, query, adminEmails)
+    const [rows, count] = await Promise.all([
+      this.client.unsafe(rowsSql, rowsArgs),
+      this.client.unsafe(countSql, countArgs)
+    ])
+    return {
+      rows: rows.map((r: any) => rowToAccountListRow(r, adminEmails)),
+      total: Number(count[0]?.n ?? 0)
+    }
   }
 
   async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {

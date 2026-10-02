@@ -35,6 +35,7 @@ import {
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import type {
   AccountAggregatedInfo,
+  AccountListRow,
   ApiTokenInfo,
   ApiTokenResult,
   Integration,
@@ -46,6 +47,9 @@ import type {
   LoginInfoRequestData,
   InviteInfo,
   LoginInfoWithWorkspaces,
+  ListAccountsAdminParams,
+  ListAuditAdminParams,
+  ListAuditAdminResponse,
   MailboxInfo,
   MailboxOptions,
   MailboxSecret,
@@ -273,6 +277,15 @@ export interface AccountClient {
   generate2faSecret: () => Promise<{ secret: string, url: string }>
   enable2fa: (secret: string, code: string) => Promise<void>
   disable2fa: (code: string) => Promise<void>
+
+  /** Admin only. Disables the account and invalidates its session tokens. */
+  disableAccount: (accountUuid: AccountUuid) => Promise<{ ok: true }>
+  /** Admin only. Re-enables a disabled account. */
+  enableAccount: (accountUuid: AccountUuid) => Promise<{ ok: true }>
+  /** Admin only. Lists accounts with filters, sorting and pagination. */
+  listAccountsAdmin: (params: ListAccountsAdminParams) => Promise<{ total: number, accounts: AccountListRow[] }>
+  /** Admin only. Lists admin audit log entries, newest first. */
+  listAuditAdmin: (params: ListAuditAdminParams) => Promise<ListAuditAdminResponse>
 }
 
 /** @public */
@@ -1427,6 +1440,42 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async disableAccount (accountUuid: AccountUuid): Promise<{ ok: true }> {
+    const request = {
+      method: 'disableAccount' as const,
+      params: { accountUuid }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async enableAccount (accountUuid: AccountUuid): Promise<{ ok: true }> {
+    const request = {
+      method: 'enableAccount' as const,
+      params: { accountUuid }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async listAccountsAdmin (params: ListAccountsAdminParams): Promise<{ total: number, accounts: AccountListRow[] }> {
+    const request = {
+      method: 'listAccountsAdmin' as const,
+      params
+    }
+
+    return await this.rpc(request)
+  }
+
+  async listAuditAdmin (params: ListAuditAdminParams): Promise<ListAuditAdminResponse> {
+    const request = {
+      method: 'listAuditAdmin' as const,
+      params
+    }
+
+    return await this.rpc(request)
   }
 }
 

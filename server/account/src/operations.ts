@@ -134,7 +134,13 @@ import {
   checkPasswordAging,
   generateTotpSecret,
   verifyTotpCode,
-  getTotpUrl
+  getTotpUrl,
+  generateTokenWithVersion,
+  verifyTokenVersion,
+  checkTokenVersionClaim,
+  touchLastActivity,
+  assertAdmin,
+  getConfiguredAdminEmails
 } from './utils'
 
 const NIL_UUID = '00000000-0000-0000-0000-000000000000' as AccountUuid
@@ -168,7 +174,7 @@ export async function loginAsGuest (
   }
   return {
     account: guestPerson.uuid as AccountUuid,
-    token: generateToken(guestPerson.uuid, undefined)
+    token: await generateTokenWithVersion(ctx, db, guestPerson.uuid)
   }
 }
 
@@ -270,8 +276,16 @@ export async function login (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
     }
 
+    // Checked only after the password matched so the disabled state is not
+    // disclosed to callers that do not know the password.
+    if (existingAccount.disabledAt != null) {
+      ctx.warn('Login attempt on a disabled account', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountDisabled, {}))
+    }
+
     // Successful login - reset failed attempts counter
     await resetFailedLoginAttempts(db, existingAccount.uuid)
+    await touchLastActivity(ctx, db, existingAccount.uuid, existingAccount)
 
     const isConfirmed = emailSocialId.verifiedOn != null
 
@@ -283,10 +297,14 @@ export async function login (
     return {
       account: existingAccount.uuid,
       token: isConfirmed
-        ? generateToken(
+        ? await generateTokenWithVersion(
+          ctx,
+          db,
           existingAccount.tfaSecret != null ? NIL_UUID : existingAccount.uuid,
           undefined,
-          existingAccount.tfaSecret != null ? { ...extraToken, tfaAccount: existingAccount.uuid } : extraToken
+          existingAccount.tfaSecret != null ? { ...extraToken, tfaAccount: existingAccount.uuid } : extraToken,
+          undefined,
+          existingAccount
         )
         : undefined,
       name: getPersonName(person),
@@ -372,7 +390,7 @@ export async function signUp (
   if (forceConfirmation) {
     const normalizedEmail = cleanEmail(email)
 
-    await sendEmailConfirmation(ctx, branding, account, normalizedEmail)
+    await sendEmailConfirmation(ctx, db, branding, account, normalizedEmail)
   } else {
     ctx.warn('Please provide MAIL_URL to enable sign up email confirmations.')
     await confirmEmail(ctx, db, account, email)
@@ -384,7 +402,7 @@ export async function signUp (
     account,
     name: getPersonName(person),
     socialId,
-    token: !forceConfirmation ? generateToken(account) : undefined
+    token: !forceConfirmation ? await generateTokenWithVersion(ctx, db, account) : undefined
   }
 }
 
@@ -489,6 +507,11 @@ export async function validateOtp (
 
     const targetAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
 
+    if (targetAccount?.disabledAt != null) {
+      ctx.warn('OTP validation attempt on a disabled account', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountDisabled, {}))
+    }
+
     if (action !== 'verify') {
       // login/sign up
       if (emailSocialId.verifiedOn == null) {
@@ -581,12 +604,18 @@ export async function validateOtp (
       : { authMethod: 'otp' }
 
     const _token = isConfirmed
-      ? generateToken(
+      ? await generateTokenWithVersion(
+        ctx,
+        db,
         targetAccount?.tfaSecret != null ? NIL_UUID : emailSocialId.personUuid,
         undefined,
-        targetAccount?.tfaSecret != null ? { ...extraToken, tfaAccount: emailSocialId.personUuid } : extraToken
+        targetAccount?.tfaSecret != null ? { ...extraToken, tfaAccount: emailSocialId.personUuid } : extraToken,
+        undefined,
+        targetAccount
       )
       : undefined
+
+    await touchLastActivity(ctx, db, emailSocialId.personUuid as AccountUuid, targetAccount)
 
     return {
       account: emailSocialId.personUuid as AccountUuid,
@@ -677,7 +706,7 @@ export async function createWorkspace (
     account,
     socialId: socialId._id,
     name: getPersonName(person),
-    token: generateToken(account, workspaceUuid, extra),
+    token: await generateTokenWithVersion(ctx, db, account, workspaceUuid, extra),
     endpoint: getEndpoint(workspaceUuid, region, EndpointKind.External),
     workspace: workspaceUuid,
     workspaceUrl,
@@ -769,6 +798,8 @@ export async function sendInvite (
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
   }
+  // Session tokens issued before the last token version bump may not mint new access.
+  checkTokenVersionClaim(account, extra, currentAccount)
 
   const workspace = await db.workspace.findOne({ uuid: workspaceUuid })
   if (workspace == null) {
@@ -811,6 +842,8 @@ export async function createAccessLink (
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
   }
+  // Session tokens issued before the last token version bump may not mint new access.
+  checkTokenVersionClaim(account, extra, currentAccount)
 
   if (workspaceUuid == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
@@ -866,7 +899,7 @@ export async function createAccessLink (
   }
 
   try {
-    const accessToken = generateToken(GUEST_ACCOUNT, undefined, undefined, undefined, {
+    const accessToken = await generateTokenWithVersion(ctx, db, GUEST_ACCOUNT, undefined, undefined, {
       grant,
       sub: newUuid,
       exp: expiration,
@@ -1011,6 +1044,8 @@ export async function resendInvite (
   if (currentAccount == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account }))
   }
+  // Session tokens issued before the last token version bump may not mint new access.
+  checkTokenVersionClaim(account, extra, currentAccount)
 
   const workspace = await db.workspace.findOne({ uuid: workspaceUuid })
   if (workspace == null) {
@@ -1300,7 +1335,15 @@ export async function checkAutoJoin (
       }
 
       if (token === undefined || token === null) {
-        token = generateToken(targetAccount.uuid)
+        token = await generateTokenWithVersion(
+          ctx,
+          db,
+          targetAccount.uuid,
+          undefined,
+          undefined,
+          undefined,
+          targetAccount
+        )
       }
       return await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
     }
@@ -1324,7 +1367,15 @@ export async function checkAutoJoin (
     true
   )
 
-  return await doJoinByInvite(ctx, db, branding, generateToken(account, workspaceUuid), account, workspace, invite)
+  return await doJoinByInvite(
+    ctx,
+    db,
+    branding,
+    await generateTokenWithVersion(ctx, db, account, workspaceUuid),
+    account,
+    workspace,
+    invite
+  )
 }
 
 /**
@@ -1386,7 +1437,7 @@ export async function signUpJoin (
     const normalizedEmail = cleanEmail(email)
     // Thread the invite info through the confirmation token so the user
     // is auto-joined to the workspace once they confirm their email.
-    await sendEmailConfirmation(ctx, branding, account, normalizedEmail, {
+    await sendEmailConfirmation(ctx, db, branding, account, normalizedEmail, {
       inviteId,
       workspaceUrl
     })
@@ -1406,7 +1457,7 @@ export async function signUpJoin (
     ctx,
     db,
     branding,
-    generateToken(account, workspaceJoinInfo.workspace?.uuid),
+    await generateTokenWithVersion(ctx, db, account, workspaceJoinInfo.workspace?.uuid),
     account,
     workspaceJoinInfo.workspace,
     workspaceJoinInfo.invite
@@ -1440,7 +1491,7 @@ export async function confirm (
     account,
     name: getPersonName(person),
     socialId,
-    token: generateToken(account)
+    token: await generateTokenWithVersion(ctx, db, account)
   }
 
   // If invite info was carried through the confirmation token (signUpJoin flow),
@@ -1454,7 +1505,7 @@ export async function confirm (
         ctx,
         db,
         branding,
-        generateToken(account, joinInfo.workspace?.uuid),
+        await generateTokenWithVersion(ctx, db, account, joinInfo.workspace?.uuid),
         account,
         joinInfo.workspace,
         joinInfo.invite
@@ -1513,7 +1564,7 @@ export async function changePassword (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const { account: accountUuid } = decodeTokenVerbose(ctx, token)
+  const { account: accountUuid, extra } = decodeTokenVerbose(ctx, token)
 
   ctx.info('Changing password', { accountUuid })
 
@@ -1522,6 +1573,7 @@ export async function changePassword (
   if (account == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountUuid }))
   }
+  checkTokenVersionClaim(accountUuid, extra, account)
 
   if (!verifyPassword(oldPassword, account.hash, account.salt)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1570,9 +1622,17 @@ export async function requestPasswordReset (
   const { mailURL, mailAuth } = getMailUrl()
   const front = getFrontUrl(branding)
 
-  const token = generateToken(account.uuid, undefined, {
-    restoreEmail: normalizedEmail
-  })
+  const token = await generateTokenWithVersion(
+    ctx,
+    db,
+    account.uuid,
+    undefined,
+    {
+      restoreEmail: normalizedEmail
+    },
+    undefined,
+    account
+  )
 
   const link = concatLink(front, `/login/recovery?id=${token}`)
   const lang = branding?.language
@@ -1643,7 +1703,9 @@ export async function requestPasswordSetup (
 
   const { mailURL, mailAuth } = getMailUrl()
   const front = getFrontUrl(branding)
-  const resetToken = generateToken(accountUuid, undefined, { restoreEmail: emailSocialId.value })
+  const resetToken = await generateTokenWithVersion(ctx, db, accountUuid, undefined, {
+    restoreEmail: emailSocialId.value
+  })
   const link = concatLink(front, `/login/recovery?id=${resetToken}`)
   const lang = branding?.language
   const text = await translate(accountPlugin.string.PasswordSetupText, { link }, lang)
@@ -1781,7 +1843,7 @@ export async function leaveWorkspace (
     return {
       account,
       name: getPersonName(person),
-      token: generateToken(account, undefined, extra)
+      token: await generateTokenWithVersion(ctx, db, account, undefined, extra)
     }
   }
 
@@ -1952,6 +2014,11 @@ export async function verify2fa (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
   }
 
+  if (account.disabledAt != null) {
+    ctx.warn('2FA verification attempt on a disabled account', { accountUuid })
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountDisabled, {}))
+  }
+
   const person = await db.person.findOne({ uuid: accountUuid })
   if (person == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
@@ -1963,7 +2030,7 @@ export async function verify2fa (
 
   return {
     account: accountUuid,
-    token: generateToken(accountUuid, undefined, filteredExtra),
+    token: await generateTokenWithVersion(ctx, db, accountUuid, undefined, filteredExtra, undefined, account),
     name: getPersonName(person),
     socialId: socialId?._id
   }
@@ -2118,6 +2185,8 @@ export async function getLoginInfoByToken (
 
   try {
     ;({ account, workspace: workspaceUuid, extra, grant, nbf, exp, sub } = decodeTokenVerbose(ctx, token))
+    // Disabled account or session token issued before the last version bump => Unauthorized.
+    await verifyTokenVersion(ctx, db, token, meta?.principalAccount)
     if (grant != null && sub == null) {
       sub = (await db.generatePersonUuid()) as AccountUuid
     }
@@ -2189,6 +2258,10 @@ export async function getLoginInfoByToken (
       await signUpByGrant(ctx, db, branding, accountUuid, grant, params)
       await db.assignWorkspace(accountUuid, workspaceUuid, grant.role)
     } else {
+      if (grantAccount.disabledAt != null) {
+        ctx.warn('Grant sign-in attempt on a disabled account', { account: accountUuid })
+        throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountDisabled, {}))
+      }
       if (grantAccount.automatic == null || !grantAccount.automatic) {
         // If grant is for existing non-automatic account we need it to be signed in using the regular approach
         // So return the request for authentication
@@ -2243,7 +2316,15 @@ export async function getLoginInfoByToken (
     account: accountUuid,
     name: getPersonName(person),
     socialId: socialId?._id,
-    token: generateToken(accountUuid, workspaceUuid, extra, undefined, { grant, nbf, exp, sub })
+    token: await generateTokenWithVersion(
+      ctx,
+      db,
+      accountUuid,
+      workspaceUuid,
+      extra,
+      { grant, nbf, exp, sub },
+      meta?.principalAccount
+    )
   }
 
   if (!isSystem) {
@@ -2302,13 +2383,18 @@ export async function getLoginWithWorkspaceInfo (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
-  token: string
+  token: string,
+  _params?: Record<string, any>,
+  meta?: Meta
 ): Promise<LoginInfoWithWorkspaces> {
   let accountUuid: AccountUuid
   let extra: any
   let workspace: WorkspaceUuid | undefined
   try {
     ;({ account: accountUuid, extra, workspace } = decodeTokenVerbose(ctx, token))
+    // Transactor session path: a disabled account or a session token issued
+    // before the last version bump must not (re)establish a session.
+    await verifyTokenVersion(ctx, db, token, meta?.principalAccount)
   } catch (err: any) {
     Analytics.handleError(err)
     ctx.error('Invalid token', { token })
@@ -2747,7 +2833,7 @@ function verifyNotApiToken (extra: Record<string, any> | undefined): void {
  * @throws BadRequest if validation fails
  * @throws Forbidden if user lacks workspace access
  */
-async function createApiToken (
+export async function createApiToken (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2756,7 +2842,8 @@ async function createApiToken (
     name: string
     workspaceUuid: WorkspaceUuid
     expiryDays: number
-  }
+  },
+  meta?: Meta
 ): Promise<{ id: string, token: string, expiresOn: number }> {
   const { name, workspaceUuid, expiryDays } = params
 
@@ -2781,6 +2868,11 @@ async function createApiToken (
 
   const { account, extra } = decodeTokenVerbose(ctx, token)
   verifyNotApiToken(extra)
+  // Defense in depth: wrap() already rejects disabled principals, but never mint
+  // a long-lived API token for a disabled account or from a stale session token.
+  const principal =
+    meta?.principalAccount?.uuid === account ? meta.principalAccount : await db.account.findOne({ uuid: account })
+  checkTokenVersionClaim(account, extra, principal)
 
   // Verify the user has access to this workspace and is at least a User (not a guest)
   const role = await db.getWorkspaceRole(account, workspaceUuid)
@@ -2909,7 +3001,7 @@ async function exchangeGuestToken (
       )
     }
 
-    return generateToken(GUEST_ACCOUNT, workspace.uuid, { linkId, guest: 'true' })
+    return await generateTokenWithVersion(ctx, db, GUEST_ACCOUNT, workspace.uuid, { linkId, guest: 'true' })
   }
 
   return token
@@ -3003,7 +3095,7 @@ export async function refreshHulyAssistantToken (
     key
   }
 
-  const secret = generateToken(account, undefined, { userAiAssistant: 'true' })
+  const secret = await generateTokenWithVersion(ctx, db, account, undefined, { userAiAssistant: 'true' })
 
   const existingToken = await db.integrationSecret.findOne(integrationSecretKey)
 
@@ -3587,6 +3679,210 @@ export async function getWorkspaceUsersWithPermission (
   return await db.getWorkspaceUsersWithPermission(workspace, permission)
 }
 
+/* ======== ADMIN: ACCOUNT LIFECYCLE ======== */
+
+const ADMIN_DENIED_AUDIT_WINDOW_MS = 60 * 1000
+const adminDeniedAuditThrottle = new Map<string, number>()
+
+/** Clears the admin_action_denied audit throttle. For tests. */
+export function resetAdminDeniedAuditThrottle (): void {
+  adminDeniedAuditThrottle.clear()
+}
+
+/**
+ * Best-effort audit row for a refused admin action. Throttled per
+ * (admin, reason, target) to one row per minute; failures are logged and never
+ * change the outcome of the action.
+ */
+async function auditAdminActionDenied (
+  ctx: MeasureContext,
+  db: AccountDB,
+  adminUuid: AccountUuid,
+  targetAccount: AccountUuid,
+  reason: 'self_disable' | 'last_admin'
+): Promise<void> {
+  const now = Date.now()
+  const key = `${adminUuid}:${reason}:${targetAccount}`
+  const last = adminDeniedAuditThrottle.get(key)
+  if (last !== undefined && now - last < ADMIN_DENIED_AUDIT_WINDOW_MS) return
+  if (adminDeniedAuditThrottle.size > 1000) {
+    for (const [k, ts] of adminDeniedAuditThrottle) {
+      if (now - ts >= ADMIN_DENIED_AUDIT_WINDOW_MS) adminDeniedAuditThrottle.delete(k)
+    }
+  }
+  adminDeniedAuditThrottle.set(key, now)
+  try {
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount,
+      action: 'admin_action_denied',
+      workspaceUuid: null,
+      details: { reason, method: 'disableAccount' }
+    })
+  } catch (err: any) {
+    ctx.error('Failed to write admin audit row', { action: 'admin_action_denied', reason, err })
+  }
+}
+
+/**
+ * True when `target` is an instance admin (one of its email social ids is listed
+ * in ADMIN_EMAILS) and no other admin account exists that is not disabled.
+ */
+async function isLastActiveAdmin (db: AccountDB, target: AccountUuid): Promise<boolean> {
+  const adminEmails = getConfiguredAdminEmails()
+  if (adminEmails.size === 0) return false
+
+  const targetEmails = (await db.socialId.find({ personUuid: target, type: SocialIdType.EMAIL })).map((it) =>
+    it.value.toLowerCase()
+  )
+  if (!targetEmails.some((it) => adminEmails.has(it))) return false
+
+  for (const email of adminEmails) {
+    if (targetEmails.includes(email)) continue
+    const socialId = await db.socialId.findOne({ type: SocialIdType.EMAIL, value: email })
+    if (socialId == null || socialId.personUuid === target) continue
+    const account = await db.account.findOne({ uuid: socialId.personUuid as AccountUuid })
+    if (account != null && account.disabledAt == null) return false
+  }
+  return true
+}
+
+function getLifecycleTarget (params: { accountUuid?: AccountUuid } | undefined): AccountUuid {
+  const accountUuid = params?.accountUuid
+  if (typeof accountUuid !== 'string' || accountUuid === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+  return accountUuid
+}
+
+/**
+ * Disables an account (admin only). The account can no longer log in and every
+ * token issued for it is rejected; its token version is bumped so session
+ * tokens stay invalid after a later enable. State change and audit row are
+ * written atomically (PostgreSQL). API tokens are not revoked: they are rejected
+ * while the account is disabled and usable again after enable.
+ */
+export async function disableAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid },
+  meta?: Meta
+): Promise<{ ok: true }> {
+  const adminUuid = await assertAdmin(ctx, db, token, meta)
+  const accountUuid = getLifecycleTarget(params)
+
+  if (adminUuid === accountUuid) {
+    await auditAdminActionDenied(ctx, db, adminUuid, accountUuid, 'self_disable')
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.CannotDisableSelf, {}))
+  }
+
+  const account = await db.account.findOne({ uuid: accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountUuid }))
+  }
+
+  if (account.disabledAt != null) {
+    // Already disabled: no state change and no version bump.
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount: accountUuid,
+      action: 'disable',
+      workspaceUuid: null,
+      details: { noop: true }
+    })
+    return { ok: true }
+  }
+
+  if (await isLastActiveAdmin(db, accountUuid)) {
+    await auditAdminActionDenied(ctx, db, adminUuid, accountUuid, 'last_admin')
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.LastAdmin, {}))
+  }
+
+  await db.applyAccountLifecycle(
+    accountUuid,
+    { disabledAt: Date.now(), bumpTokenVersion: true },
+    {
+      adminAccount: adminUuid,
+      targetAccount: accountUuid,
+      action: 'disable',
+      workspaceUuid: null,
+      details: { reason: 'manual_admin_action' }
+    }
+  )
+
+  // The last-admin check and the write are not one atomic operation: a
+  // concurrent disable of the other remaining admin may have passed its own
+  // check. Re-check against committed state and undo this disable if no active
+  // admin is left. The token version is never lowered.
+  if (await isLastActiveAdmin(db, accountUuid)) {
+    await db.applyAccountLifecycle(
+      accountUuid,
+      { disabledAt: null, bumpTokenVersion: false },
+      {
+        adminAccount: adminUuid,
+        targetAccount: accountUuid,
+        action: 'admin_action_denied',
+        workspaceUuid: null,
+        details: { reason: 'last_admin', rollback: true }
+      }
+    )
+    throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.LastAdmin, {}))
+  }
+
+  ctx.info('Account disabled by admin', { admin: adminUuid, account: accountUuid })
+  return { ok: true }
+}
+
+/**
+ * Re-enables a disabled account (admin only). Bumps the token version, so
+ * session tokens issued before the account was disabled stay invalid. Enabling
+ * an active account changes nothing and only records a no-op audit row.
+ */
+export async function enableAccount (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { accountUuid: AccountUuid },
+  meta?: Meta
+): Promise<{ ok: true }> {
+  const adminUuid = await assertAdmin(ctx, db, token, meta)
+  const accountUuid = getLifecycleTarget(params)
+
+  const account = await db.account.findOne({ uuid: accountUuid })
+  if (account == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: accountUuid }))
+  }
+
+  if (account.disabledAt == null) {
+    await db.adminAuditLog.insert({
+      adminAccount: adminUuid,
+      targetAccount: accountUuid,
+      action: 'enable',
+      workspaceUuid: null,
+      details: { noop: true }
+    })
+    return { ok: true }
+  }
+
+  await db.applyAccountLifecycle(
+    accountUuid,
+    { disabledAt: null, bumpTokenVersion: true },
+    {
+      adminAccount: adminUuid,
+      targetAccount: accountUuid,
+      action: 'enable',
+      workspaceUuid: null,
+      details: null
+    }
+  )
+
+  ctx.info('Account enabled by admin', { admin: adminUuid, account: accountUuid })
+  return { ok: true }
+}
+
 export type AccountMethods =
   | AccountServiceMethods
   | 'login'
@@ -3652,6 +3948,8 @@ export type AccountMethods =
   | 'refreshHulyAssistantToken'
   | 'releaseSocialId'
   | 'deleteAccount'
+  | 'disableAccount'
+  | 'enableAccount'
   | 'canMergeSpecifiedPersons'
   | 'mergeSpecifiedPersons'
   | 'setMyProfile'
@@ -3724,6 +4022,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     refreshHulyAssistantToken: wrap(refreshHulyAssistantToken),
     releaseSocialId: wrap(releaseSocialId),
     deleteAccount: wrap(deleteAccount),
+    disableAccount: wrap(disableAccount),
+    enableAccount: wrap(enableAccount),
     canMergeSpecifiedPersons: wrap(canMergeSpecifiedPersons),
     mergeSpecifiedPersons: wrap(mergeSpecifiedPersons),
     setMyProfile: wrap(setMyProfile),

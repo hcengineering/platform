@@ -1,4 +1,4 @@
-import { type IntlString, type Metadata, plugin, type Plugin } from '@hcengineering/platform'
+import { type IntlString, type Metadata, plugin, type Plugin, type StatusCode } from '@hcengineering/platform'
 
 /**
  * @public
@@ -38,5 +38,11 @@ export const accountPlugin = plugin(accountId, {
     OtpText: '' as IntlString,
     OtpHTML: '' as IntlString,
     OtpSubject: '' as IntlString
+  },
+  status: {
+    AccountDisabled: '' as StatusCode,
+    CannotDisableSelf: '' as StatusCode,
+    LastAdmin: '' as StatusCode,
+    NotSupportedOnBackend: '' as StatusCode<{ backend: string, method: string }>
   }
 })

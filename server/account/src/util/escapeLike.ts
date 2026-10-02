@@ -1,5 +1,5 @@
 //
-// Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,13 +13,11 @@
 // limitations under the License.
 //
 
-import { accountPlugin } from './plugin'
-
-export * from './operations'
-export * from './plugin'
-export * from './utils'
-export * from './types'
-export { listAccountsAdmin, listAuditAdmin } from './serviceOperations'
-export { escapeLike } from './util/escapeLike'
-export type { MongoAccountDB } from './collections/mongo'
-export default accountPlugin
+/**
+ * Escapes the LIKE/ILIKE wildcards (`%`, `_`) and the escape character (`\`)
+ * in a user-supplied substring so it can be embedded in a `'%' + value + '%'`
+ * pattern as a literal. Use together with `ESCAPE '\'` in the SQL.
+ */
+export function escapeLike (s: string): string {
+  return s.replace(/[\\%_]/g, '\\$&')
+}

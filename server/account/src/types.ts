@@ -34,6 +34,7 @@ import {
   type WorkspaceInfo,
   type IntegrationKind
 } from '@hcengineering/core'
+import type { AccountListRow } from '@hcengineering/account-client'
 import type { EndpointInfo } from './utils'
 
 /* ========= D A T A B A S E  E N T I T I E S ========= */
@@ -67,6 +68,91 @@ export interface Account {
   maxWorkspaces?: number
   failedLoginAttempts?: number // Number of consecutive failed login attempts
   tfaSecret?: string
+  disabledAt?: number | null // epoch-ms when an admin disabled the account; null/undefined = active
+  tokenVersion?: number // monotonic counter, bumped on disable/enable to invalidate issued session tokens
+  lastActivityAt?: number | null // epoch-ms of the last successful login/workspace selection (throttled)
+}
+
+export type AdminAuditAction = 'disable' | 'enable' | 'admin_action_denied'
+
+export interface AdminAuditLogEntry {
+  id: string
+  tsMs: number
+  adminAccount: AccountUuid
+  targetAccount: AccountUuid
+  action: AdminAuditAction
+  workspaceUuid: WorkspaceUuid | null
+  details: Record<string, any> | null
+}
+
+export type NewAdminAuditLogEntry = Omit<AdminAuditLogEntry, 'id' | 'tsMs'>
+
+export interface AdminAuditLogListParams {
+  targetAccount?: AccountUuid
+  adminAccount?: AccountUuid
+  action?: string
+  fromMs?: number
+  toMs?: number
+  limit?: number
+  offset?: number
+}
+
+export interface AdminAuditLogListEntry extends Omit<AdminAuditLogEntry, 'targetAccount' | 'action'> {
+  // Rows written by other tooling may have no target account or other actions.
+  targetAccount: AccountUuid | null
+  action: string
+  adminFirstName: string
+  adminLastName: string
+  targetFirstName: string
+  targetLastName: string
+}
+
+export interface AdminAuditLogListResult {
+  entries: AdminAuditLogListEntry[]
+  total: number
+}
+
+export interface AdminAuditLogCollection {
+  insert: (entry: NewAdminAuditLogEntry) => Promise<void>
+  /** Newest first. */
+  listAuditAdmin: (params: AdminAuditLogListParams) => Promise<AdminAuditLogListResult>
+}
+
+/**
+ * Query of the admin account listing (SQL pushdown on PostgreSQL/CockroachDB).
+ */
+export interface ListAccountsAdminQueryParams {
+  search?: string
+  statusIn?: Array<'active' | 'disabled'>
+  isAdmin?: boolean
+  authMethodIn?: Array<'email_only' | 'oidc' | 'mixed' | 'none'>
+  nameContains?: string
+  emailContains?: string
+  workspaceUuidsIn?: WorkspaceUuid[]
+  wsMin?: number
+  wsMax?: number
+  lastActivityFilter?:
+  | { kind: 'never' }
+  | { kind: 'before', tsMs: number }
+  | { kind: 'after', tsMs: number }
+  | { kind: 'between', from: number, to: number }
+  | { kind: 'range', fromMs?: number, toMs?: number }
+  orphan?: boolean
+  sort?: {
+    field: 'name' | 'email' | 'auth' | 'workspace_count' | 'last_activity' | 'status'
+    direction: 'asc' | 'desc'
+  }
+  pagination?: { limit?: number, offset?: number }
+  /** Instance admin emails (ADMIN_EMAILS), used for `isAdmin` */
+  adminEmails?: string[]
+}
+
+/**
+ * Account state change applied by an admin lifecycle action.
+ */
+export interface AccountLifecyclePatch {
+  disabledAt: number | null
+  bumpTokenVersion: boolean
 }
 
 // TODO: type data with generic type
@@ -350,6 +436,7 @@ export interface AccountDB {
   subscription: DbCollection<Subscription>
   workspacePermission: DbCollection<WorkspacePermission>
   apiToken: DbCollection<ApiToken>
+  adminAuditLog: AdminAuditLogCollection
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
@@ -387,7 +474,19 @@ export interface AccountDB {
   setPassword: (accountId: AccountUuid, passwordHash: Buffer, salt: Buffer) => Promise<void>
   resetPassword: (accountId: AccountUuid) => Promise<void>
   deleteAccount: (accountId: AccountUuid) => Promise<void>
+  /**
+   * Sets account.disabled_at (optionally incrementing token_version) and writes
+   * the audit row. On PostgreSQL/CockroachDB both happen in one transaction:
+   * if the audit insert fails, the state change is rolled back. MongoDB applies
+   * them sequentially (not atomic).
+   */
+  applyAccountLifecycle: (
+    accountId: AccountUuid,
+    patch: AccountLifecyclePatch,
+    audit: NewAdminAuditLogEntry
+  ) => Promise<void>
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
+  listAccountsAdmin: (query: ListAccountsAdminQueryParams) => Promise<{ rows: AccountListRow[], total: number }>
   generatePersonUuid: () => Promise<PersonUuid>
 }
 
@@ -528,9 +627,17 @@ export interface MailboxOptions {
 
 export type ClientNetworkPosition = 'internal' | 'external'
 
+export type PrincipalAccount = Pick<Account, 'uuid' | 'tokenVersion' | 'disabledAt'>
+
 export interface Meta {
   timezone?: string
   clientNetworkPosition?: ClientNetworkPosition
+  /**
+   * Account row of the token principal, loaded once per request by the
+   * disabled-principal gate in `wrap` (null when the principal has no account
+   * row; absent when the gate did not run). Set by the server only.
+   */
+  principalAccount?: PrincipalAccount | null
 }
 
 export interface AccountAggregatedInfo extends Omit<Account, 'hash' | 'salt'>, Person {

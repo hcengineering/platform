@@ -995,7 +995,7 @@ describe('account utils', () => {
         const email = 'test@example.com'
 
         test('should send confirmation email with correct link', async () => {
-          await sendEmailConfirmation(mockCtx, mockBranding, account, email)
+          await sendEmailConfirmation(mockCtx, mockDb, mockBranding, account, email)
 
           expect(mockFetch).toHaveBeenCalledWith(
             'https://ses.example.com/send',
@@ -1013,7 +1013,7 @@ describe('account utils', () => {
         test('should throw error if MAIL_URL is missing', async () => {
           ;(getMetadata as jest.Mock).mockReturnValue(undefined)
 
-          await expect(sendEmailConfirmation(mockCtx, mockBranding, account, email)).rejects.toThrow(
+          await expect(sendEmailConfirmation(mockCtx, mockDb, mockBranding, account, email)).rejects.toThrow(
             new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
           )
 
@@ -1026,7 +1026,7 @@ describe('account utils', () => {
             front: 'https://custom.example.com'
           }
 
-          await sendEmailConfirmation(mockCtx, brandingWithFront, account, email)
+          await sendEmailConfirmation(mockCtx, mockDb, brandingWithFront, account, email)
 
           expect(mockFetch).toHaveBeenCalledWith(
             expect.any(String),
