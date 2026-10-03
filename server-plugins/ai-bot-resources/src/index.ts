@@ -26,7 +26,7 @@ import core, {
 } from '@hcengineering/core'
 import { TriggerControl } from '@hcengineering/server-core'
 import { getAccountBySocialKey } from '@hcengineering/server-contact'
-import { aiBotEmailSocialKey, AIEventRequest } from '@hcengineering/ai-bot'
+import { getAiBotEmailSocialKey, AIEventRequest } from '@hcengineering/ai-bot'
 import chunter, { ChatMessage, DirectMessage, ThreadMessage } from '@hcengineering/chunter'
 import contact from '@hcengineering/contact'
 
@@ -64,7 +64,7 @@ async function OnUserStatus (txes: TxCUD<UserStatus>[], control: TriggerControl)
     }
 
     const socialIdentity = (
-      await control.findAll(control.ctx, contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, { limit: 1 })
+      await control.findAll(control.ctx, contact.class.SocialIdentity, { key: getAiBotEmailSocialKey() }, { limit: 1 })
     )[0]
 
     if (socialIdentity === undefined) {
@@ -82,7 +82,7 @@ async function OnMessageSend (originTxs: TxCreateDoc<ChatMessage>[], control: Tr
   }
   const { account } = control.ctx.contextData
   const primaryIdentity = (
-    await control.findAll(control.ctx, contact.class.SocialIdentity, { key: aiBotEmailSocialKey }, { limit: 1 })
+    await control.findAll(control.ctx, contact.class.SocialIdentity, { key: getAiBotEmailSocialKey() }, { limit: 1 })
   )[0]
 
   if (primaryIdentity === undefined) return []
@@ -165,7 +165,7 @@ async function getMessageDoc (message: ChatMessage, control: TriggerControl): Pr
 
 async function isDirectAvailable (direct: DirectMessage, control: TriggerControl): Promise<boolean> {
   const { members } = direct
-  const account = await getAccountBySocialKey(control, aiBotEmailSocialKey)
+  const account = await getAccountBySocialKey(control, getAiBotEmailSocialKey())
 
   if (account == null) {
     return false
