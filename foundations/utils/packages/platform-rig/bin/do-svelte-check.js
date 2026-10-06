@@ -47,7 +47,11 @@ async function execProcess(cmd, logFile, args, useConsole) {
     mkdirSync(join(process.cwd(), '.svelte-check'))
   }
 
-  const compileOut = spawn(cmd, args)
+  // pnpm exposes package binaries as .cmd shims on Windows. child_process.spawn
+  // cannot execute those shims directly, so delegate to cmd.exe there.
+  const compileOut = spawn(process.platform === 'win32' ? `${cmd}.cmd` : cmd, args, {
+    shell: process.platform === 'win32'
+  })
 
   const stdoutFilePath = `.svelte-check/${logFile}.log`
   const stderrFilePath = `.svelte-check/${logFile}-err.log`
