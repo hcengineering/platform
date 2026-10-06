@@ -1082,7 +1082,8 @@
       activeDrag.set({ kind: 'idle' })
     }
   )
-  $: calendarState.setSpace(space)
+  // IssuesView supplies a project ref, but its shared viewlet prop is typed as Space.
+  $: calendarState.setSpace(space as Ref<Project> | undefined)
   // Calendar-dependent mutations may only START when a concrete project's
   // calendar is loaded. The all-projects view is read-only for
   // drag/resize/cascade/auto-schedule (no single project calendar); display

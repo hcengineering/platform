@@ -125,7 +125,7 @@
   }
 
   $: subIssueValue = sortedSubIssues.map((iss) => {
-    const status = iss.$lookup?.status
+    const status = iss.$lookup?.status as WithLookup<IssueStatus> | undefined
     const icon = status?.$lookup?.category?.icon
     const color = status?.color ?? status?.$lookup?.category?.color
 
