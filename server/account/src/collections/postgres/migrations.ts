@@ -84,7 +84,8 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV24Migration(ns, flavor),
     getV25Migration(ns, flavor),
     getV26Migration(ns, flavor),
-    getV27Migration(ns, flavor)
+    getV27Migration(ns, flavor),
+    getV28Migration(ns, flavor)
   ]
 }
 
@@ -838,6 +839,44 @@ function getV27Migration (ns: string, flavor: DBFlavor): [string, string] {
 
     CREATE INDEX IF NOT EXISTS api_tokens_expires_on_idx
     ON ${ns}.api_tokens (expires_on);
+    `
+  ]
+}
+
+function getV28Migration (ns: string, flavor: DBFlavor): [string, string] {
+  const types = dbTypes[flavor]
+  // Account lifecycle (admin disable/enable + token versioning + last activity)
+  // and the admin audit log. Every statement is idempotent (IF NOT EXISTS): the
+  // runner keys applied migrations by id only, and some deployments already
+  // created these objects under earlier migration ids.
+  return [
+    'account_db_v28_account_lifecycle_admin_audit',
+    `
+    ALTER TABLE ${ns}.account
+      ADD COLUMN IF NOT EXISTS disabled_at ${types.int8} NULL,
+      ADD COLUMN IF NOT EXISTS token_version ${types.int4} NOT NULL DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS last_activity_at ${types.int8} NULL;
+
+    /* ======= A D M I N   A U D I T   L O G ======= */
+    CREATE TABLE IF NOT EXISTS ${ns}.admin_audit_log (
+      id              ${types.string} NOT NULL DEFAULT gen_random_uuid()::TEXT,
+      ts_ms           ${types.int8} NOT NULL DEFAULT current_epoch_ms(),
+      admin_account   ${types.string} NOT NULL,
+      target_account  ${types.string} NOT NULL,
+      action          ${types.string} NOT NULL,
+      workspace_uuid  ${types.string} NULL,
+      details         JSONB NULL,
+      PRIMARY KEY (id)
+    );
+
+    CREATE INDEX IF NOT EXISTS admin_audit_log_target_idx ON ${ns}.admin_audit_log (target_account, ts_ms DESC);
+    CREATE INDEX IF NOT EXISTS admin_audit_log_admin_idx ON ${ns}.admin_audit_log (admin_account, ts_ms DESC);
+    CREATE INDEX IF NOT EXISTS admin_audit_log_ts_idx ON ${ns}.admin_audit_log (ts_ms DESC);
+
+    CREATE INDEX IF NOT EXISTS account_disabled_at_idx ON ${ns}.account (disabled_at);
+    CREATE INDEX IF NOT EXISTS account_last_activity_idx ON ${ns}.account (last_activity_at);
+    CREATE INDEX IF NOT EXISTS social_id_person_verified_idx ON ${ns}.social_id (person_uuid) WHERE verified_on IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS workspace_members_account_idx ON ${ns}.workspace_members (account_uuid);
     `
   ]
 }

@@ -34,12 +34,21 @@ import type {
   Sort as RawSort
 } from 'mongodb'
 import { UUID } from 'mongodb'
+import type { AccountListRow } from '@hcengineering/account-client'
+import { PlatformError, Severity, Status } from '@hcengineering/platform'
 
 import type {
   Account,
   AccountDB,
   AccountEvent,
   AccountAggregatedInfo,
+  AccountLifecyclePatch,
+  AdminAuditLogCollection,
+  AdminAuditLogEntry,
+  AdminAuditLogListParams,
+  AdminAuditLogListResult,
+  ListAccountsAdminQueryParams,
+  NewAdminAuditLogEntry,
   DbCollection,
   Integration,
   IntegrationSecret,
@@ -61,6 +70,7 @@ import type {
   WorkspacePermission,
   ApiToken
 } from '../types'
+import { accountPlugin } from '../plugin'
 import { isShallowEqual } from '../utils'
 
 interface MongoIndex {
@@ -393,6 +403,37 @@ interface MigrationInfo {
   lastProcessedTime: number
 }
 
+function notSupportedOnMongo (method: string): PlatformError<any> {
+  return new PlatformError(
+    new Status(Severity.ERROR, accountPlugin.status.NotSupportedOnBackend, { backend: 'mongo', method })
+  )
+}
+
+export class MongoAdminAuditLogCollection implements AdminAuditLogCollection {
+  constructor (readonly db: Db) {}
+
+  get collection (): Collection<AdminAuditLogEntry> {
+    return this.db.collection<AdminAuditLogEntry>('adminAuditLog')
+  }
+
+  async insert (entry: NewAdminAuditLogEntry): Promise<void> {
+    const row: AdminAuditLogEntry = {
+      id: new UUID().toJSON(),
+      tsMs: Date.now(),
+      adminAccount: entry.adminAccount,
+      targetAccount: entry.targetAccount,
+      action: entry.action,
+      workspaceUuid: entry.workspaceUuid,
+      details: entry.details
+    }
+    await this.collection.insertOne({ ...row, _id: row.id } as any)
+  }
+
+  async listAuditAdmin (params: AdminAuditLogListParams): Promise<AdminAuditLogListResult> {
+    throw notSupportedOnMongo('listAuditAdmin')
+  }
+}
+
 export class MongoAccountDB implements AccountDB {
   migration: MongoDbCollection<MigrationInfo, 'key'>
   person: MongoDbCollection<Person, 'uuid'>
@@ -413,6 +454,7 @@ export class MongoAccountDB implements AccountDB {
   workspaceMembers: MongoDbCollection<WorkspaceMember>
   workspacePermission: MongoDbCollection<WorkspacePermission>
   apiToken: MongoDbCollection<ApiToken, 'id'>
+  adminAuditLog: MongoAdminAuditLogCollection
 
   constructor (readonly db: Db) {
     this.migration = new MongoDbCollection<MigrationInfo, 'key'>('migration', db, 'key')
@@ -434,6 +476,7 @@ export class MongoAccountDB implements AccountDB {
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
     this.workspacePermission = new MongoDbCollection<WorkspacePermission>('workspacePermissions', db)
     this.apiToken = new MongoDbCollection<ApiToken, 'id'>('apiTokens', db, 'id')
+    this.adminAuditLog = new MongoAdminAuditLogCollection(db)
   }
 
   async init (): Promise<void> {
@@ -873,6 +916,30 @@ export class MongoAccountDB implements AccountDB {
     await this.socialId.update({ personUuid: accountUuid }, { verifiedOn: undefined })
     await this.workspaceMembers.deleteMany({ accountUuid })
     await this.account.deleteMany({ uuid: accountUuid })
+  }
+
+  /**
+   * Not atomic on MongoDB: the state change is applied first, then the audit
+   * row is written. A failed audit insert leaves the state change in place and
+   * surfaces the error to the caller.
+   */
+  async applyAccountLifecycle (
+    accountUuid: AccountUuid,
+    patch: AccountLifecyclePatch,
+    audit: NewAdminAuditLogEntry
+  ): Promise<void> {
+    await this.account.update(
+      { uuid: accountUuid },
+      {
+        disabledAt: patch.disabledAt,
+        ...(patch.bumpTokenVersion ? { $inc: { tokenVersion: 1 } } : {})
+      }
+    )
+    await this.adminAuditLog.insert(audit)
+  }
+
+  async listAccountsAdmin (query: ListAccountsAdminQueryParams): Promise<{ rows: AccountListRow[], total: number }> {
+    throw notSupportedOnMongo('listAccountsAdmin')
   }
 
   async listAccounts (search?: string, skip?: number, limit?: number): Promise<AccountAggregatedInfo[]> {

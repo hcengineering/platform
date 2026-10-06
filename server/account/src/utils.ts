@@ -65,6 +65,7 @@ import {
   type Meta,
   type Operations,
   type OtpInfo,
+  type PrincipalAccount,
   type RegionInfo,
   type SocialId,
   type Workspace,
@@ -178,6 +179,170 @@ export function isGuest (account: AccountUuid, extra: Record<string, any> | unde
   return account === GUEST_ACCOUNT && extra?.guest === 'true'
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+export function isUuid (value: unknown): value is string {
+  return typeof value === 'string' && UUID_REGEX.test(value)
+}
+
+/**
+ * Whether a token principal is subject to the account lifecycle checks
+ * (disabled accounts, token version). The doc-guest, system and read-only guest
+ * principals and non-UUID principals never have a lifecycle and are exempt.
+ */
+export function isGatedPrincipal (accountUuid: string | undefined | null): boolean {
+  if (accountUuid == null) return false
+  if (accountUuid === GUEST_ACCOUNT) return false
+  if (accountUuid === systemAccountUuid) return false
+  if (accountUuid === readOnlyGuestAccountUuid) return false
+  return UUID_REGEX.test(accountUuid)
+}
+
+function pickPrincipal (
+  accountUuid: string,
+  preloaded: PrincipalAccount | null | undefined
+): PrincipalAccount | undefined {
+  return preloaded != null && preloaded.uuid === accountUuid ? preloaded : undefined
+}
+
+/**
+ * Issues a token for the account and stamps the account's current
+ * `token_version` into `extra.token_version` when it is greater than 0.
+ * Tokens without the claim are treated as version 0.
+ *
+ * Pass `account` when the caller already loaded the row to avoid a second read.
+ */
+export async function generateTokenWithVersion (
+  ctx: MeasureContext,
+  db: AccountDB,
+  accountUuid: PersonUuid,
+  workspaceUuid?: WorkspaceUuid,
+  extra?: Record<string, string>,
+  options?: Parameters<typeof generateToken>[4],
+  account?: PrincipalAccount | null
+): Promise<string> {
+  let mergedExtra = extra
+  if (isGatedPrincipal(accountUuid)) {
+    const row = pickPrincipal(accountUuid, account) ?? (await db.account.findOne({ uuid: accountUuid as AccountUuid }))
+    if (row?.tokenVersion != null && row.tokenVersion > 0) {
+      mergedExtra = { ...(extra ?? {}), token_version: String(row.tokenVersion) }
+    }
+  }
+  return generateToken(accountUuid, workspaceUuid, mergedExtra, undefined, options)
+}
+
+/**
+ * True for ordinary session tokens, the only tokens whose `token_version` claim
+ * is validated. API tokens (`extra.apiTokenId`) are revoked through their own
+ * row and service tokens (`extra.service`) are minted by trusted services with
+ * the shared secret; neither is version-validated, even when a re-minted token
+ * (e.g. from getLoginInfoByToken or selectWorkspace) carries the claim.
+ */
+export function isVersionedSessionToken (extra: Record<string, any> | undefined): boolean {
+  return extra?.apiTokenId === undefined && extra?.service === undefined
+}
+
+/**
+ * Throws `TokenError` when the account row is disabled (any token kind) or, for
+ * session tokens, when its `tokenVersion` is newer than the token's
+ * `token_version` claim. Exempt principals and a missing row (e.g. the 2FA
+ * intermediate principal) are a no-op.
+ */
+export function checkTokenVersionClaim (
+  accountUuid: string,
+  extra: Record<string, any> | undefined,
+  account: Pick<Account, 'tokenVersion' | 'disabledAt'> | null | undefined
+): void {
+  if (!isGatedPrincipal(accountUuid)) return
+  if (account == null) return
+  if (account.disabledAt != null) {
+    throw new TokenError('Account disabled')
+  }
+  if (!isVersionedSessionToken(extra)) return
+  const claim = parseInt(extra?.token_version ?? '0', 10)
+  if ((account.tokenVersion ?? 0) > (Number.isNaN(claim) ? 0 : claim)) {
+    throw new TokenError('Token version invalidated')
+  }
+}
+
+/**
+ * Decodes the token and verifies the principal is not disabled and, for
+ * session tokens, that the token version is current. Uses `preloaded` (normally `meta.principalAccount` from
+ * `wrap`) when it belongs to the token principal, otherwise reads the account.
+ *
+ * Throws `TokenError` on a disabled account or a stale session token version.
+ */
+export async function verifyTokenVersion (
+  ctx: MeasureContext,
+  db: AccountDB,
+  token: string,
+  preloaded?: PrincipalAccount | null
+): Promise<void> {
+  const { account: accountUuid, extra } = decodeTokenVerbose(ctx, token)
+  if (!isGatedPrincipal(accountUuid)) return
+  const account = pickPrincipal(accountUuid, preloaded) ?? (await db.account.findOne({ uuid: accountUuid }))
+  checkTokenVersionClaim(accountUuid, extra, account)
+}
+
+const LAST_ACTIVITY_THROTTLE_MS = 5 * 60 * 1000
+
+/**
+ * Records the account's last activity. Writes at most once per 5 minutes per
+ * account. Best-effort: failures are logged and never block authentication.
+ */
+export async function touchLastActivity (
+  ctx: MeasureContext,
+  db: AccountDB,
+  accountUuid: AccountUuid,
+  account?: Pick<Account, 'uuid' | 'lastActivityAt'> | null
+): Promise<void> {
+  try {
+    if (!isGatedPrincipal(accountUuid)) return
+    const row = account?.uuid === accountUuid ? account : await db.account.findOne({ uuid: accountUuid })
+    if (row == null) return
+    const now = Date.now()
+    if (now - (row.lastActivityAt ?? 0) < LAST_ACTIVITY_THROTTLE_MS) return
+    await db.account.update({ uuid: accountUuid }, { lastActivityAt: now })
+  } catch (err: any) {
+    ctx.warn('Failed to update account last activity', { accountUuid, err })
+  }
+}
+
+/**
+ * Instance admin emails from ADMIN_EMAILS, trimmed and lower-cased.
+ */
+export function getConfiguredAdminEmails (): Set<string> {
+  return new Set(
+    (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((it) => it.trim().toLowerCase())
+      .filter((it) => it !== '')
+  )
+}
+
+/**
+ * Verifies the caller holds an admin session token (`extra.admin === 'true'`)
+ * that has not been invalidated by a token version bump, and returns the
+ * caller's account uuid. Uses `meta.principalAccount` from `wrap` when present.
+ *
+ * Throws Forbidden without the admin claim and TokenError (=> Unauthorized) on a
+ * disabled account or a stale token.
+ */
+export async function assertAdmin (
+  ctx: MeasureContext,
+  db: AccountDB,
+  token: string,
+  meta?: Meta
+): Promise<AccountUuid> {
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  if (extra?.admin !== 'true' || extra?.apiTokenId !== undefined) {
+    ctx.warn('Admin method denied: caller has no admin claim', { account })
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  await verifyTokenVersion(ctx, db, token, meta?.principalAccount)
+  return account
+}
+
 export function wrap (
   accountMethod: (ctx: MeasureContext, db: AccountDB, branding: Branding | null, ...args: any[]) => Promise<any>
 ): AccountMethodHandler {
@@ -189,6 +354,7 @@ export function wrap (
     token?: string,
     meta?: Meta
   ): Promise<any> {
+    let principal: PrincipalAccount | null | undefined
     // The account is the source of truth for API token validity. Reject revoked
     // or expired API tokens up front so every method (and any service that
     // delegates token verification here) sees a consistent answer.
@@ -207,9 +373,39 @@ export function wrap (
           return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
         }
       }
+
+      // Disabled-principal gate: every token (session, API or user-scoped
+      // service token) of a disabled account is rejected for every method.
+      // Exempt principals (system, guests, non-UUID) and principals without an
+      // account row pass. The loaded row is handed to the method via
+      // meta.principalAccount so it does not have to be read again.
+      const principalUuid = decoded?.account
+      if (isGatedPrincipal(principalUuid)) {
+        let row: Account | null
+        try {
+          row = await db.account.findOne({ uuid: principalUuid as AccountUuid })
+        } catch (err: any) {
+          Analytics.handleError(err)
+          ctx.error('Failed to load token principal', { method: accountMethod.name, err })
+          return { error: new Status(Severity.ERROR, platform.status.InternalServerError, {}) }
+        }
+        if (row?.disabledAt != null) {
+          ctx.warn('Rejected request from a disabled account', { method: accountMethod.name, account: row.uuid })
+          return { error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
+        }
+        principal =
+          row == null ? null : { uuid: row.uuid, tokenVersion: row.tokenVersion, disabledAt: row.disabledAt ?? null }
+      }
     }
 
-    return await accountMethod(ctx, db, branding, token, { ...request.params }, meta)
+    // meta.principalAccount is only ever set here, never taken from the caller.
+    let methodMeta: Meta | undefined = meta
+    if (meta?.principalAccount !== undefined || principal !== undefined) {
+      const { principalAccount: _ignored, ...rest } = meta ?? {}
+      methodMeta = principal !== undefined ? { ...rest, principalAccount: principal } : rest
+    }
+
+    return await accountMethod(ctx, db, branding, token, { ...request.params }, methodMeta)
       .then((result) => ({ id: request.id, result }))
       .catch((err: Error) => {
         const status =
@@ -841,7 +1037,7 @@ export async function selectWorkspace (
   if (accountUuid === systemAccountUuid) {
     return {
       account: accountUuid,
-      token: generateToken(accountUuid, workspace.uuid, extra, undefined, {
+      token: await generateTokenWithVersion(ctx, db, accountUuid, workspace.uuid, extra, {
         grant,
         sub,
         exp,
@@ -859,6 +1055,8 @@ export async function selectWorkspace (
     role = AccountRole.Admin
   }
   let account = await db.account.findOne({ uuid: accountUuid })
+  // Reject disabled accounts and session tokens issued before the last token version bump.
+  checkTokenVersionClaim(accountUuid, extra, account)
 
   if ((role == null || account == null) && workspace.allowReadOnlyGuest) {
     accountUuid = readOnlyGuestAccountUuid
@@ -878,6 +1076,8 @@ export async function selectWorkspace (
   if (accountUuid !== systemAccountUuid && meta !== undefined) {
     void setTimezone(ctx, db, accountUuid, account, meta)
   }
+
+  await touchLastActivity(ctx, db, accountUuid, account)
 
   if (role === AccountRole.ReadOnlyGuest) {
     if (extra == null) {
@@ -903,12 +1103,20 @@ export async function selectWorkspace (
 
   return {
     account: accountUuid,
-    token: generateToken(accountUuid, workspace.uuid, extra, undefined, {
-      grant,
-      sub,
-      exp,
-      nbf
-    }),
+    token: await generateTokenWithVersion(
+      ctx,
+      db,
+      accountUuid,
+      workspace.uuid,
+      extra,
+      {
+        grant,
+        sub,
+        exp,
+        nbf
+      },
+      account
+    ),
     endpoint: getEndpoint(workspace.uuid, workspace.region, getKind(workspace.region)),
     workspace: workspace.uuid,
     workspaceUrl: workspace.url,
@@ -1259,6 +1467,7 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
 
 export async function sendEmailConfirmation (
   ctx: MeasureContext,
+  db: AccountDB,
   branding: Branding | null,
   account: PersonUuid,
   email: string,
@@ -1278,7 +1487,7 @@ export async function sendEmailConfirmation (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
   }
 
-  const token = generateToken(account, undefined, {
+  const token = await generateTokenWithVersion(ctx, db, account, undefined, {
     confirmEmail: email,
     ...(extra ?? {})
   })
@@ -1601,6 +1810,9 @@ export async function loginOrSignUpWithProvider (
 
       await createAccount(db, personUuid, true)
       await db.person.update({ uuid: personUuid }, { firstName: first, lastName: last })
+    } else if (account.disabledAt != null) {
+      ctx.warn('Provider login attempt on a disabled account', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, accountPlugin.status.AccountDisabled, {}))
     }
 
     // We should check and reset password if there's an account with password but no social ids have been
@@ -1634,6 +1846,7 @@ export async function loginOrSignUpWithProvider (
     }
 
     await confirmHulyIds(ctx, db, personUuid as AccountUuid)
+    await touchLastActivity(ctx, db, personUuid as AccountUuid, account)
     const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
     ctx.info('Provider login succeeded', { email, normalizedEmail, emailSocialId, socialId, ...extraToken })
 
@@ -1641,7 +1854,7 @@ export async function loginOrSignUpWithProvider (
       account: personUuid as AccountUuid,
       socialId: socialIdId,
       name: getPersonName(person),
-      token: generateToken(personUuid, undefined, extraToken)
+      token: await generateTokenWithVersion(ctx, db, personUuid, undefined, extraToken, undefined, account)
     }
   } catch (err: any) {
     Analytics.handleError(err)
@@ -1693,7 +1906,7 @@ export async function joinWithProvider (
     ctx,
     db,
     branding,
-    generateToken(loginInfo.account, workspaceUuid),
+    await generateTokenWithVersion(ctx, db, loginInfo.account, workspaceUuid),
     loginInfo.account,
     workspace,
     invite
