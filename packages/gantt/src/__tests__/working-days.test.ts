@@ -418,14 +418,22 @@ describe('working-day helpers — degenerate input stays bounded', () => {
     expect(findWorkingDay(WED + 3 * 3_600_000, -1, cfgMonFri)).toBe(WED)
   })
 
-  it('addWorkingDays caps a huge finite step count and finishes quickly', () => {
-    const t0 = Date.now()
+  // No wall-clock assertions: every step of the walk moves the cursor by one
+  // calendar day, so the distance of the result from the input is an exact,
+  // runner-independent count of the loop iterations.
+  it('addWorkingDays caps a huge finite step count at MAX_WORKING_SPAN_DAYS', () => {
     expect(addWorkingDays(MON, Number.MAX_SAFE_INTEGER, cfgAllDays)).toBe(MON + MAX_WORKING_SPAN_DAYS * DAY_MS)
     expect(addWorkingDays(MON, -Number.MAX_SAFE_INTEGER, cfgAllDays)).toBe(MON - MAX_WORKING_SPAN_DAYS * DAY_MS)
     expect(addWorkingDays(MON, Number.MAX_VALUE, cfgMonFri)).toBe(addWorkingDays(MON, MAX_WORKING_SPAN_DAYS, cfgMonFri))
-    expect(Number.isFinite(addWorkingDays(MON, 1e15, cfgEmpty))).toBe(true)
-    expect(Number.isFinite(addWorkingDays(MON, -1e15, allHolidays))).toBe(true)
-    expect(Date.now() - t0).toBeLessThan(2000)
+  })
+
+  it('addWorkingDays stops after |n| × 7 + 60 calendar days without working weekdays', () => {
+    expect(addWorkingDays(MON, 3, cfgEmpty)).toBe(MON + (3 * 7 + 60) * DAY_MS)
+    expect(addWorkingDays(MON, -3, cfgEmpty)).toBe(MON - (3 * 7 + 60) * DAY_MS)
+    // A huge step count is capped first, so the walk is bounded by the cap.
+    expect(addWorkingDays(MON, 1e15, cfgEmpty)).toBe(MON + (MAX_WORKING_SPAN_DAYS * 7 + 60) * DAY_MS)
+    // A holiday blackout is walked through and the remaining steps still count.
+    expect(addWorkingDays(MON + 69 * DAY_MS, -10, allHolidays)).toBe(MON - 10 * DAY_MS)
   })
 
   it('addWorkingDays treats a non-finite step count as zero', () => {
@@ -455,8 +463,8 @@ describe('working-day helpers — degenerate input stays bounded', () => {
   it('dueForSpan / startForSpan clamp a huge span and terminate without working weekdays', () => {
     expect(dueForSpan(MON, 1e12, cfgAllDays)).toBe(MON + (MAX_WORKING_SPAN_DAYS - 1) * DAY_MS)
     expect(startForSpan(MON, 1e12, cfgAllDays)).toBe(MON - (MAX_WORKING_SPAN_DAYS - 1) * DAY_MS)
-    expect(Number.isFinite(dueForSpan(MON, 1e12, cfgEmpty))).toBe(true)
-    expect(Number.isFinite(startForSpan(MON, 1e12, cfgEmpty))).toBe(true)
+    expect(dueForSpan(MON, 1e12, cfgEmpty)).toBe(MON + ((MAX_WORKING_SPAN_DAYS - 1) * 7 + 60) * DAY_MS)
+    expect(startForSpan(MON, 3, cfgEmpty)).toBe(MON - (2 * 7 + 60) * DAY_MS)
   })
 
   it('dueForSpan / startForSpan return a non-finite anchor unchanged', () => {
