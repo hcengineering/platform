@@ -5,7 +5,7 @@
 
 import { reduce } from '../drag-controller'
 import { createTimeScale, snapToUtcMidnight } from '../time-scale'
-import type { DragState, DragTarget, GanttItem } from '../types'
+import type { DragState, DragTarget, GanttItem, WorkingCalendar } from '../types'
 
 // Neutral stand-in for a tracker Issue/Milestone: the reducer only reads `_id`,
 // so the date/space fields are plain padding consumed by the test assertions.
@@ -614,5 +614,266 @@ describe('drag-controller — bulk co-drag', () => {
     expect(next.coDrag).toBeUndefined()
     expect(next.previewStart).toBe((issue.startDate as number) + 2 * 86_400_000)
     void snapToUtcMidnight // keep import alive
+  })
+})
+
+describe('drag-controller — working-days calendar', () => {
+  // Week zoom = 14 px/day; dates in May 2026 (Mon 18 .. Mon 25).
+  const D = (day: number): number => Date.UTC(2026, 4, day)
+  const cfgMonFri: WorkingCalendar = { weekdayMask: 0b0011111, holidays: [] }
+
+  const bodyState = (start: number, end: number): DragState => ({
+    kind: 'dragging-body',
+    target: issueTarget,
+    originStart: start,
+    originEnd: end,
+    cursorStartX: 200,
+    previewStart: start,
+    previewEnd: end
+  })
+  const leftState = (start: number, end: number): DragState => ({
+    kind: 'resizing-left',
+    target: issueTarget,
+    originStart: start,
+    originEnd: end,
+    cursorStartX: 200,
+    previewStart: start
+  })
+  const rightState = (start: number, end: number): DragState => ({
+    kind: 'resizing-right',
+    target: issueTarget,
+    originStart: start,
+    originEnd: end,
+    cursorStartX: 200,
+    previewEnd: end
+  })
+  const unscheduledState: DragState = {
+    kind: 'dragging-unscheduled',
+    target: issueTarget,
+    originStart: D(1),
+    originEnd: D(2),
+    cursorStartX: 100,
+    previewStart: D(1),
+    previewEnd: D(2),
+    hasCanvasTarget: false
+  }
+  const ts2 = createTimeScale('week', D(18))
+
+  const preview = (s: DragState): [number | undefined, number | undefined] => {
+    if (s.kind === 'dragging-body' || s.kind === 'dragging-unscheduled') return [s.previewStart, s.previewEnd]
+    if (s.kind === 'resizing-left') return [s.previewStart, undefined]
+    if (s.kind === 'resizing-right') return [undefined, s.previewEnd]
+    throw new Error(`unexpected state ${s.kind}`)
+  }
+
+  it('body drag onto a Saturday lands on Monday and keeps three working days', () => {
+    const next = reduce(bodyState(D(18), D(20)), { type: 'mousemove', cursorX: 270 }, ts, cfgMonFri)
+    expect(preview(next)).toEqual([D(25), D(27)])
+  })
+
+  it('body drag onto a working day keeps the working-day span across the weekend', () => {
+    const next = reduce(bodyState(D(18), D(20)), { type: 'mousemove', cursorX: 242 }, ts, cfgMonFri)
+    expect(preview(next)).toEqual([D(21), D(25)])
+  })
+
+  it('body drag left onto a Sunday lands on the previous Friday', () => {
+    const next = reduce(bodyState(D(25), D(27)), { type: 'mousemove', cursorX: 186 }, ts, cfgMonFri)
+    expect(preview(next)).toEqual([D(22), D(26)])
+  })
+
+  it('body drag onto a holiday lands on the next working day', () => {
+    const cfgHol: WorkingCalendar = { weekdayMask: 0b0011111, holidays: [D(21)] }
+    const next = reduce(bodyState(D(18), D(19)), { type: 'mousemove', cursorX: 242 }, ts, cfgHol)
+    expect(preview(next)).toEqual([D(22), D(25)])
+  })
+
+  it('a zero-delta move leaves a bar on non-working days untouched', () => {
+    const next = reduce(bodyState(D(23), D(24)), { type: 'mousemove', cursorX: 200 }, ts, cfgMonFri)
+    expect(preview(next)).toEqual([D(23), D(24)])
+  })
+
+  it('a weekend-only bar becomes a one-working-day bar once it is moved', () => {
+    const next = reduce(bodyState(D(23), D(24)), { type: 'mousemove', cursorX: 228 }, ts, cfgMonFri)
+    expect(preview(next)).toEqual([D(25), D(25)])
+  })
+
+  it('the start handle rounds up to the next working day and never crosses originEnd', () => {
+    const at = (cursorX: number, start: number, end: number): number | undefined =>
+      preview(reduce(leftState(start, end), { type: 'mousemove', cursorX }, ts, cfgMonFri))[0]
+    expect(at(186, D(18), D(19))).toBe(D(18)) // pointer on Sun 17
+    expect(at(172, D(18), D(19))).toBe(D(18)) // pointer on Sat 16
+    expect(at(158, D(18), D(19))).toBe(D(15)) // pointer on Fri 15
+    expect(at(270, D(18), D(18))).toBe(D(18)) // Sat 23 → Mon 25, clamped to originEnd
+  })
+
+  it('the end handle rounds down to the previous working day and never crosses originStart', () => {
+    const at = (cursorX: number, start: number, end: number): number | undefined =>
+      preview(reduce(rightState(start, end), { type: 'mousemove', cursorX }, ts, cfgMonFri))[1]
+    expect(at(228, D(18), D(21))).toBe(D(22)) // pointer on Sat 23
+    expect(at(242, D(18), D(21))).toBe(D(22)) // pointer on Sun 24
+    expect(at(256, D(18), D(21))).toBe(D(25)) // pointer on Mon 25
+    expect(at(186, D(22), D(22))).toBe(D(22)) // Thu 21, clamped to originStart
+  })
+
+  it('an unscheduled issue dropped on a Saturday starts Monday and lasts two working days', () => {
+    const next = reduce(unscheduledState, { type: 'mousemove', cursorX: 200, canvasX: 5 * 14 }, ts2, cfgMonFri)
+    expect(preview(next)).toEqual([D(25), D(26)])
+    if (next.kind !== 'dragging-unscheduled') throw new Error('expected dragging-unscheduled')
+    expect(next.hasCanvasTarget).toBe(true)
+  })
+
+  it('without a calendar every branch keeps its calendar-day result', () => {
+    expect(preview(reduce(bodyState(D(18), D(20)), { type: 'mousemove', cursorX: 270 }, ts))).toEqual([D(23), D(25)])
+    expect(preview(reduce(leftState(D(18), D(19)), { type: 'mousemove', cursorX: 172 }, ts))[0]).toBe(D(16))
+    expect(preview(reduce(rightState(D(18), D(21)), { type: 'mousemove', cursorX: 228 }, ts))[1]).toBe(D(23))
+    expect(preview(reduce(unscheduledState, { type: 'mousemove', cursorX: 200, canvasX: 5 * 14 }, ts2))).toEqual([
+      D(23),
+      D(24)
+    ])
+  })
+
+  it('a co-drag ignores the calendar and keeps its shared clamped delta', () => {
+    const dragging: DragState = {
+      kind: 'dragging-body',
+      target: issueTarget,
+      originStart: D(18),
+      originEnd: D(20),
+      cursorStartX: 200,
+      previewStart: D(18),
+      previewEnd: D(20),
+      coDrag: {
+        anchorDeltaMs: 0,
+        members: [
+          { issueId: issue._id, originStart: D(18), originEnd: D(20) },
+          { issueId: 'issue-2', originStart: D(19), originEnd: D(22) }
+        ],
+        minDeltaMs: -2 * 86_400_000,
+        maxDeltaMs: 5 * 86_400_000
+      }
+    }
+    // +6 days raw, clamped to +5 → the leader lands on Saturday 23.
+    const next = reduce(dragging, { type: 'mousemove', cursorX: 284 }, ts, cfgMonFri)
+    if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+    expect(next.previewStart).toBe(D(23))
+    expect(next.previewEnd).toBe(D(25))
+    expect(next.coDrag?.anchorDeltaMs).toBe(5 * 86_400_000)
+  })
+
+  it('snaps in the drag direction, so reversing the drag does not jump', () => {
+    const right = reduce(bodyState(D(18), D(18)), { type: 'mousemove', cursorX: 214 }, ts, cfgMonFri)
+    expect(preview(right)).toEqual([D(19), D(19)])
+    const left = reduce(right, { type: 'mousemove', cursorX: 186 }, ts, cfgMonFri)
+    expect(preview(left)).toEqual([D(15), D(15)])
+  })
+
+  it('a calendar without working weekdays falls back to calendar days', () => {
+    const cfgNone: WorkingCalendar = { weekdayMask: 0, holidays: [] }
+    expect(preview(reduce(bodyState(D(18), D(20)), { type: 'mousemove', cursorX: 270 }, ts, cfgNone))).toEqual([
+      D(23),
+      D(25)
+    ])
+    expect(preview(reduce(leftState(D(18), D(19)), { type: 'mousemove', cursorX: 172 }, ts, cfgNone))[0]).toBe(D(16))
+    expect(preview(reduce(rightState(D(18), D(21)), { type: 'mousemove', cursorX: 228 }, ts, cfgNone))[1]).toBe(D(23))
+    expect(
+      preview(reduce(unscheduledState, { type: 'mousemove', cursorX: 200, canvasX: 5 * 14 }, ts2, cfgNone))
+    ).toEqual([D(23), D(24)])
+  })
+
+  it('a bar longer than MAX_WORKING_SPAN_DAYS or with a non-finite origin moves in calendar days', () => {
+    const farEnd = D(20) + 50_000 * 86_400_000
+    expect(preview(reduce(bodyState(D(18), farEnd), { type: 'mousemove', cursorX: 270 }, ts, cfgMonFri))).toEqual([
+      D(23),
+      farEnd + 5 * 86_400_000
+    ])
+    const [start, end] = preview(reduce(bodyState(D(18), Infinity), { type: 'mousemove', cursorX: 270 }, ts, cfgMonFri))
+    expect(start).toBe(D(23))
+    expect(end).toBeNaN() // same as without a calendar: snapToUtcMidnight(Infinity)
+  })
+
+  describe('a holiday blackout longer than the working-day search window', () => {
+    // Mon..Fri calendar where every day from Fri May 22 to Sun Oct 18 (150
+    // days) is a holiday: from its middle no working day is within reach.
+    const DAY = 86_400_000
+    const blackoutStart = D(22)
+    const blackoutEnd = D(22) + 150 * DAY // Mon Oct 19, first working day after
+    const blackout: WorkingCalendar = {
+      weekdayMask: 0b0011111,
+      holidays: Array.from({ length: 150 }, (_, i) => blackoutStart + i * DAY)
+    }
+    const inBlackout = (t: number | undefined): boolean => t !== undefined && t >= blackoutStart && t < blackoutEnd
+
+    it('a body drag deep into the blackout moves in calendar days, as without a calendar', () => {
+      // +60 days → Fri Jul 17; the next working day (Oct 19) is 94 days away.
+      const move = { type: 'mousemove', cursorX: 200 + 60 * 14 } as const
+      const next = reduce(bodyState(D(18), D(20)), move, ts, blackout)
+      expect(preview(next)).toEqual([D(18) + 60 * DAY, D(20) + 60 * DAY])
+      expect(preview(next)).toEqual(preview(reduce(bodyState(D(18), D(20)), move, ts)))
+    })
+
+    it('a body drag left from after the blackout into it moves in calendar days', () => {
+      // -10 days → Fri Oct 9; the previous working day (Thu May 21) is 141 days away.
+      const next = reduce(bodyState(blackoutEnd, blackoutEnd), { type: 'mousemove', cursorX: 60 }, ts, blackout)
+      expect(preview(next)).toEqual([blackoutEnd - 10 * DAY, blackoutEnd - 10 * DAY])
+    })
+
+    it('a body drag whose working-day end would cross the blackout moves in calendar days', () => {
+      // Mon..Wed bar dragged one day right: Tue 19 is a working day, but a
+      // three-working-day end would have to cross the whole blackout.
+      const next = reduce(bodyState(D(18), D(20)), { type: 'mousemove', cursorX: 214 }, ts, blackout)
+      expect(preview(next)).toEqual([D(19), D(21)])
+    })
+
+    it('a body drag near the edge of the blackout still snaps past it', () => {
+      // +120 days → Wed Sep 16; Mon Oct 19 is 33 days away, a one-day bar snaps there.
+      const next = reduce(bodyState(D(18), D(18)), { type: 'mousemove', cursorX: 200 + 120 * 14 }, ts, blackout)
+      expect(preview(next)).toEqual([blackoutEnd, blackoutEnd])
+    })
+
+    it('resize handles deep in the blackout follow the pointer in calendar days', () => {
+      const left = reduce(leftState(D(18), blackoutEnd), { type: 'mousemove', cursorX: 200 + 60 * 14 }, ts, blackout)
+      expect(preview(left)[0]).toBe(D(18) + 60 * DAY)
+      const right = reduce(rightState(D(18), D(19)), { type: 'mousemove', cursorX: 200 + 80 * 14 }, ts, blackout)
+      expect(preview(right)[1]).toBe(D(19) + 80 * DAY)
+    })
+
+    it('an unscheduled drop deep in the blackout keeps the calendar-day drop', () => {
+      // canvasX 60 days after the scale origin (Mon May 18) → Fri Jul 17.
+      const next = reduce(unscheduledState, { type: 'mousemove', cursorX: 200, canvasX: 60 * 14 }, ts2, blackout)
+      expect(preview(next)).toEqual([D(18) + 60 * DAY, D(18) + 61 * DAY])
+    })
+
+    it('never previews a non-working day as a snapped result', () => {
+      for (let days = -5; days <= 160; days++) {
+        const [s, e] = preview(
+          reduce(bodyState(D(18), D(20)), { type: 'mousemove', cursorX: 200 + days * 14 }, ts, blackout)
+        )
+        const calendarDays = s === D(18) + days * DAY && e === D(20) + days * DAY
+        if (!calendarDays) {
+          expect(inBlackout(s)).toBe(false)
+          expect(inBlackout(e)).toBe(false)
+        }
+      }
+    })
+  })
+
+  it('a non-finite cursor position terminates without a working-day loop', () => {
+    const next = reduce(bodyState(D(18), D(20)), { type: 'mousemove', cursorX: NaN }, ts, cfgMonFri)
+    expect(next.kind).toBe('dragging-body')
+    const [start, end] = preview(next)
+    expect(start).toBeNaN()
+    expect(end).toBeNaN()
+  })
+
+  it('a milestone target snaps like an issue in the reducer (the adapter decides)', () => {
+    const milestone: TestItem = { _id: 'ms-2', _class: 'tracker:class:Milestone', targetDate: D(20) }
+    const next = reduce(
+      { ...bodyState(D(18), D(20)), target: { kind: 'milestone', doc: milestone } } as unknown as DragState,
+      { type: 'mousemove', cursorX: 270 },
+      ts,
+      cfgMonFri
+    )
+    if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+    expect(next.target.kind).toBe('milestone')
+    expect(preview(next)).toEqual([D(25), D(27)])
   })
 })
