@@ -17,7 +17,7 @@
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint --fix \"src/**/*.ts\"",
     "format": "format",
-    "clean": "rm -rf lib && rm -rf types rm -rf node_modules"
+    "clean": "node ../../../../common/scripts/bash.js --script clean"
   },
   "devDependencies": {
     "@hcengineering/platform-rig": "workspace:^0.7.21",
@@ -57,5 +57,8 @@
       "require": "./lib/index.js",
       "import": "./lib/index.js"
     }
+  },
+  "bashScripts": {
+    "clean": "rm -rf lib && rm -rf types rm -rf node_modules"
   }
 }
