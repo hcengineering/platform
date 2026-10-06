@@ -13,9 +13,9 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "start": "rush bundle --to @hcengineering/network-tool && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 DB_URL=mongodb://localhost:27017 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false MODEL_JSON=../../models/all/bundle/model.json STATS_URL=http://huly.local:4900 node --inspect bundle/bundle.js",
-    "start-cr": "rush bundle --to @hcengineering/network-tool && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false MODEL_JSON=../../models/all/bundle/model.json STATS_URL=http://huly.local:4900 FULLTEXT_URL=http://huly.local:4702 SERVER_PORT=3332 node --inspect bundle/bundle.js",
-    "start-flame": "rush bundle --to @hcengineering/network-tool && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret MODEL_JSON=../../models/all/bundle/model.json clinic flame --dest ./out -- node --nolazy -r ts-node/register --enable-source-maps src/__start.ts",
+    "start": "node ../../../../common/scripts/bash.js --script start",
+    "start-cr": "node ../../../../common/scripts/bash.js --script start-cr",
+    "start-flame": "node ../../../../common/scripts/bash.js --script start-flame",
     "start-raw": "ts-node src/__start.ts",
     "build": "compile",
     "prepublishOnly": "npm run build",
@@ -28,7 +28,7 @@
     "docker:abuild": "docker build -t hardcoreeng/network-tool . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/network-tool",
     "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/network-tool staging",
     "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/network-tool",
-    "run": "(rushx bundle || true) && node bundle/bundle.js",
+    "run": "node ../../../../common/scripts/bash.js --script run",
     "build:watch": "compile",
     "format": "format src",
     "test": "jest --coverage --coverageDirectory=./coverage --passWithNoTests --forceExit",
@@ -74,5 +74,11 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "bashScripts": {
+    "start": "rush bundle --to @hcengineering/network-tool && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 DB_URL=mongodb://localhost:27017 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false MODEL_JSON=../../models/all/bundle/model.json STATS_URL=http://huly.local:4900 node --inspect bundle/bundle.js",
+    "start-cr": "rush bundle --to @hcengineering/network-tool && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false MODEL_JSON=../../models/all/bundle/model.json STATS_URL=http://huly.local:4900 FULLTEXT_URL=http://huly.local:4702 SERVER_PORT=3332 node --inspect bundle/bundle.js",
+    "start-flame": "rush bundle --to @hcengineering/network-tool && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret MODEL_JSON=../../models/all/bundle/model.json clinic flame --dest ./out -- node --nolazy -r ts-node/register --enable-source-maps src/__start.ts",
+    "run": "(rushx bundle || true) && node bundle/bundle.js"
   }
 }

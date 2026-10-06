@@ -6,11 +6,11 @@
   "template": "@hcengineering/default-package",
   "scripts": {
     "_phase:package": "rushx package",
-    "package": "rm -rf ./dist && cp -r ../desktop/dist . && cp ../desktop/.env ./dist && cp src/AppIcon.png ./dist/ui/public && cp src/AppIcon.ico ./dist/ui/public && echo 'done'",
-    "dist": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build -p onTag",
-    "dist-local": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build",
-    "dist-signed": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=true NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build -c.afterSign=scripts/notarize.js -p onTag",
-    "dist-mac-win": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build --windows --x64",
+    "package": "node ../common/scripts/bash.js --script package",
+    "dist": "node ../common/scripts/bash.js --script dist",
+    "dist-local": "node ../common/scripts/bash.js --script dist-local",
+    "dist-signed": "node ../common/scripts/bash.js --script dist-signed",
+    "dist-mac-win": "node ../common/scripts/bash.js --script dist-mac-win",
     "format": "echo done",
     "bump": "bump-package-version"
   },
@@ -121,5 +121,12 @@
     "electron",
     "typescript",
     "svelte"
-  ]
+  ],
+  "bashScripts": {
+    "package": "rm -rf ./dist && cp -r ../desktop/dist . && cp ../desktop/.env ./dist && cp src/AppIcon.png ./dist/ui/public && cp src/AppIcon.ico ./dist/ui/public && echo 'done'",
+    "dist": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build -p onTag",
+    "dist-local": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build",
+    "dist-signed": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=true NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build -c.afterSign=scripts/notarize.js -p onTag",
+    "dist-mac-win": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false NODE_ENV=production VERSION=$(node ../common/scripts/show_tag.js) MODEL_VERSION=$(node ../common/scripts/show_version.js) electron-builder build --windows --x64"
+  }
 }

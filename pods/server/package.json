@@ -8,9 +8,9 @@
   "template": "@hcengineering/node-package",
   "license": "EPL-2.0",
   "scripts": {
-    "start": "rush bundle --to @hcengineering/pod-server && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 DB_URL=mongodb://localhost:27017 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false MODEL_JSON=../../models/all/bundle/model.json STATS_URL=http://huly.local:4900 node --inspect bundle/bundle.js",
-    "start-cr": "rush bundle --to @hcengineering/pod-server && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false MODEL_JSON=../../models/all/bundle/model.json STATS_URL=http://huly.local:4900 FULLTEXT_URL=http://huly.local:4702 SERVER_PORT=3332 node --inspect bundle/bundle.js",
-    "start-flame": "rush bundle --to @hcengineering/pod-server && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret MODEL_JSON=../../models/all/bundle/model.json clinic flame --dest ./out -- node --nolazy -r ts-node/register --enable-source-maps src/__start.ts",
+    "start": "node ../../common/scripts/bash.js --script start",
+    "start-cr": "node ../../common/scripts/bash.js --script start-cr",
+    "start-flame": "node ../../common/scripts/bash.js --script start-flame",
     "start-raw": "ts-node src/__start.ts",
     "build": "compile",
     "_phase:bundle": "rushx bundle",
@@ -18,11 +18,11 @@
     "_phase:docker-staging": "rushx docker:staging",
     "get-model": "node ../../common/scripts/esbuild.js --entry=src/get-model.ts -keep-names=true --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION --bundle=true && node ./bundle/bundle.js > ./bundle/model.json",
     "bundle": "rushx get-model && node ../../common/scripts/esbuild.js --entry=src/__start.ts --keep-names=true --bundle=true --sourcemap=external --external=*.node --external=bufferutil --external=snappy --define=MODEL_VERSION --define=VERSION --define=GIT_REVISION --external=utf-8-validate --external=msgpackr-extract",
-    "docker:build": "../../common/scripts/docker_build.sh hardcoreeng/transactor",
-    "docker:tbuild": "docker build -t hardcoreeng/transactor . --platform=linux/amd64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor",
-    "docker:abuild": "docker build -t hardcoreeng/transactor . --platform=linux/arm64 && ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor",
-    "docker:staging": "../../common/scripts/docker_tag.sh hardcoreeng/transactor staging",
-    "docker:push": "../../common/scripts/docker_tag.sh hardcoreeng/transactor",
+    "docker:build": "node ../../common/scripts/bash.js ../../common/scripts/docker_build.sh hardcoreeng/transactor",
+    "docker:tbuild": "docker build -t hardcoreeng/transactor . --platform=linux/amd64 && node ../../common/scripts/bash.js ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor",
+    "docker:abuild": "docker build -t hardcoreeng/transactor . --platform=linux/arm64 && node ../../common/scripts/bash.js ../../common/scripts/docker_tag_push.sh hardcoreeng/transactor",
+    "docker:staging": "node ../../common/scripts/bash.js ../../common/scripts/docker_tag.sh hardcoreeng/transactor staging",
+    "docker:push": "node ../../common/scripts/bash.js ../../common/scripts/docker_tag.sh hardcoreeng/transactor",
     "build:watch": "compile",
     "format": "format src",
     "test": "jest --passWithNoTests --silent --forceExit",
@@ -96,5 +96,10 @@
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "express": "^4.21.2"
+  },
+  "bashScripts": {
+    "start": "rush bundle --to @hcengineering/pod-server && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 DB_URL=mongodb://localhost:27017 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false MODEL_JSON=../../models/all/bundle/model.json STATS_URL=http://huly.local:4900 node --inspect bundle/bundle.js",
+    "start-cr": "rush bundle --to @hcengineering/pod-server && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 DB_URL=postgresql://root@huly.local:26257/defaultdb?sslmode=disable FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret OPERATION_PROFILING=false MODEL_JSON=../../models/all/bundle/model.json STATS_URL=http://huly.local:4900 FULLTEXT_URL=http://huly.local:4702 SERVER_PORT=3332 node --inspect bundle/bundle.js",
+    "start-flame": "rush bundle --to @hcengineering/pod-server && cross-env NODE_ENV=production MODEL_VERSION=$(node ../../common/scripts/show_version.js) ACCOUNTS_URL=http://localhost:3000 REKONI_URL=http://localhost:4004 MONGO_URL=mongodb://localhost:27017 FRONT_URL=http://localhost:8087 UPLOAD_URL=/upload MINIO_ENDPOINT=localhost MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin METRICS_CONSOLE=true SERVER_SECRET=secret MODEL_JSON=../../models/all/bundle/model.json clinic flame --dest ./out -- node --nolazy -r ts-node/register --enable-source-maps src/__start.ts"
   }
 }
