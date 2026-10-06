@@ -28,7 +28,9 @@ import {
  *
  * With a `calendar`, previews of single-bar body drags, resizes and drops
  * land on working days (see `reduceFromActive`); a co-drag and any call
- * without a calendar are unchanged.
+ * without a calendar are unchanged. A `mousemove` with `calendarDays: true`
+ * suspends the snapping for that move (the per-drag override) and marks the
+ * state `snapSuspended`, so the next move without it snaps again.
  */
 export function reduce<TTarget extends DragTarget = DragTarget, TNode extends GanttItem = GanttItem> (
   state: DragState<TTarget, TNode>,
@@ -200,11 +202,55 @@ function reduceFromHover (state: DragState & { kind: 'hover-bar' }, event: DragE
  */
 function snapCalendar (state: DragState, calendar: WorkingCalendar | undefined): WorkingCalendar | undefined {
   if (calendar === undefined || workingDaysPerWeek(calendar) === 0) return undefined
+  // A co-drag moves by its shared raw delta and never snaps.
+  if (state.kind === 'dragging-body' && state.coDrag !== undefined) return undefined
   if (state.kind === 'dragging-body') {
     const spanDays = (state.originEnd - state.originStart) / 86_400_000
     if (!(spanDays >= 0 && spanDays <= MAX_WORKING_SPAN_DAYS)) return undefined
   }
   return calendar
+}
+
+/**
+ * The calendar a commit should use for date arithmetic that belongs to the
+ * drag itself (e.g. shifting a dragged parent's children): `undefined` when
+ * the drag suspended working-day snapping, so the whole gesture stays in
+ * calendar days, otherwise `calendar` unchanged.
+ */
+export function dragCalendar<TTarget extends DragTarget = DragTarget, TNode extends GanttItem = GanttItem> (
+  state: DragState<TTarget, TNode>,
+  calendar: WorkingCalendar | undefined
+): WorkingCalendar | undefined {
+  return 'snapSuspended' in state && state.snapSuspended === true ? undefined : calendar
+}
+
+/**
+ * The `mousemove` that re-syncs a running bar drag, resize or drop with the
+ * current state of the calendar-days modifier, replayed at the last pointer
+ * position, or `undefined` when there is nothing to re-sync (no such drag,
+ * no move yet, or the state already matches). Used on key presses, on
+ * pointer release (from the event's own modifier flag) and on window blur
+ * (modifier treated as released), so a Shift released outside the window
+ * cannot leave the drag suspended and commit calendar-day dates.
+ */
+export function modifierSyncMove<TTarget extends DragTarget = DragTarget, TNode extends GanttItem = GanttItem> (
+  state: DragState<TTarget, TNode>,
+  calendarDays: boolean,
+  lastMove: { cursorX: number, canvasX?: number } | undefined
+): (DragEvent<TTarget, TNode> & { type: 'mousemove' }) | undefined {
+  if (lastMove === undefined) return undefined
+  if (
+    state.kind !== 'dragging-body' &&
+    state.kind !== 'dragging-unscheduled' &&
+    state.kind !== 'resizing-left' &&
+    state.kind !== 'resizing-right'
+  ) {
+    return undefined
+  }
+  // Skip when already in sync. A press on an unflagged state is still
+  // replayed: the reducer flags it only when a calendar applies.
+  if ((state.snapSuspended === true) === calendarDays) return undefined
+  return { type: 'mousemove', cursorX: lastMove.cursorX, canvasX: lastMove.canvasX, calendarDays }
 }
 
 function reduceFromActive (
@@ -217,8 +263,27 @@ function reduceFromActive (
     return { kind: 'idle' }
   }
   if (event.type !== 'mousemove') return state
-  const calendar = snapCalendar(state, requestedCalendar)
+  const snapping = snapCalendar(state, requestedCalendar)
+  // The override only counts (and is only flagged) when there is snapping to
+  // suspend: without a calendar, for a co-drag or a degenerate calendar the
+  // move is calendar-day anyway.
+  const suspended = event.calendarDays === true && snapping !== undefined
+  const next = previewFromMove(state, event, timeScale, suspended ? undefined : snapping)
+  if (suspended) return { ...next, snapSuspended: true } as unknown as DragState
+  if ('snapSuspended' in next) {
+    const { snapSuspended, ...rest } = next
+    void snapSuspended
+    return rest as DragState
+  }
+  return next
+}
 
+function previewFromMove (
+  state: DragState,
+  event: DragEvent & { type: 'mousemove' },
+  timeScale: TimeScale,
+  calendar: WorkingCalendar | undefined
+): DragState {
   if (state.kind === 'dragging-body') {
     const deltaPx = event.cursorX - state.cursorStartX
     const rawDeltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000

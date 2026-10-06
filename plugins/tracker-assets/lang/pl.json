@@ -290,7 +290,9 @@
     "UnsetParentIssue": "Wyczyść zagadnienie nadrzędne",
     "ForbidCreateProjectPermission": "Zakaż tworzenia projektów",
     "ForbidCreateProjectPermissionDescription": "Zakaż użytkownikom tworzenia nowych projektów.",
-    "AllowCreatingIssues": "Zezwól na tworzenie zadań"
+    "AllowCreatingIssues": "Zezwól na tworzenie zadań",
+    "GanttHelpCalendarDaysDrag": "Przytrzymaj podczas przeciągania, aby ignorować dni robocze (dni kalendarzowe)",
+    "GanttDragCalendarDays": "Dni kalendarzowe"
   },
   "status": {}
 }

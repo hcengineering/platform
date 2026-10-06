@@ -12,6 +12,9 @@ import {
   keyboardWeekStep
 } from '../scheduler'
 import {
+  createTimeScale,
+  dragCalendar,
+  reduce,
   isWorkingDay,
   fsAnchor,
   fsReverseAnchor,
@@ -24,7 +27,7 @@ import {
 } from '@hcengineering/gantt'
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
-import type { PrimaryEdit } from '../types'
+import type { DragState, DragTarget, PrimaryEdit } from '../types'
 
 function issue (id: string, start?: number, due?: number): Issue {
   return {
@@ -121,6 +124,57 @@ describe('shiftScheduleDays / shiftWithPrimary / keyboardWeekStep', () => {
   it('shiftWithPrimary moves a child by the primary move in working days with a calendar', () => {
     expect(shiftWithPrimary(D(22), D(18), D(19), cfgMonFri)).toBe(D(25))
     expect(shiftWithPrimary(D(22), D(18), D(19), undefined)).toBe(D(23))
+  })
+
+  describe('parent drag with the calendar-days override (Shift held)', () => {
+    // Parent Mon 18 – Wed 20 with child Tue 19 – Wed 20, dragged +5 days so
+    // the pointer is on Saturday 23. GanttView shifts the children with
+    // shiftWithPrimary(…, dragCalendar(state, calendar)).
+    const parent = issue('P', D(18), D(20))
+    const ts = createTimeScale('week', D(18))
+    const start: DragState = {
+      kind: 'dragging-body',
+      target: { kind: 'issue', doc: parent },
+      originStart: D(18),
+      originEnd: D(20),
+      cursorStartX: 200,
+      previewStart: D(18),
+      previewEnd: D(20)
+    }
+    const move = (state: DragState, calendarDays: boolean | undefined, cfg: typeof cfgMonFri | undefined): DragState =>
+      reduce<DragTarget, Issue>(state, { type: 'mousemove', cursorX: 270, calendarDays }, ts, cfg)
+    const children = (state: DragState, cfg: typeof cfgMonFri | undefined): number[] => {
+      if (state.kind !== 'dragging-body') throw new Error('expected dragging-body')
+      const childCfg = dragCalendar(state, cfg)
+      return [D(19), D(20)].map((t) => shiftWithPrimary(t, state.originStart, state.previewStart, childCfg))
+    }
+
+    it('without Shift the parent snaps to Monday and the child moves by working days', () => {
+      const next = move(start, undefined, cfgMonFri)
+      if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+      expect([next.previewStart, next.previewEnd]).toEqual([D(25), D(27)])
+      expect(children(next, cfgMonFri)).toEqual([D(26), D(27)])
+    })
+
+    it('with Shift parent and child move by calendar days onto the weekend', () => {
+      const next = move(start, true, cfgMonFri)
+      if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+      expect([next.previewStart, next.previewEnd]).toEqual([D(23), D(25)])
+      expect(children(next, cfgMonFri)).toEqual([D(24), D(25)])
+    })
+
+    it('releasing Shift before the drop restores the working-day result', () => {
+      const pressed = move(start, true, cfgMonFri)
+      const released = move(pressed, false, cfgMonFri)
+      expect(children(released, cfgMonFri)).toEqual([D(26), D(27)])
+    })
+
+    it('in legacy mode Shift changes nothing', () => {
+      const plain = move(start, undefined, undefined)
+      const pressed = move(start, true, undefined)
+      expect(pressed).toEqual(plain)
+      expect(children(pressed, undefined)).toEqual([D(24), D(25)])
+    })
   })
 
   it('shiftWithPrimary leaves the child unchanged for a zero move in both modes', () => {

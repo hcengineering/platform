@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import { reduce } from '../drag-controller'
+import { dragCalendar, modifierSyncMove, reduce } from '../drag-controller'
 import { createTimeScale, snapToUtcMidnight } from '../time-scale'
 import type { DragState, DragTarget, GanttItem, WorkingCalendar } from '../types'
 
@@ -875,5 +875,164 @@ describe('drag-controller — working-days calendar', () => {
     if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
     expect(next.target.kind).toBe('milestone')
     expect(preview(next)).toEqual([D(25), D(27)])
+  })
+
+  describe('calendarDays override (Shift held during the drag)', () => {
+    const free = { type: 'mousemove', cursorX: 270, calendarDays: true } as const
+    const suspended = (s: DragState): boolean | undefined => ('snapSuspended' in s ? s.snapSuspended : undefined)
+
+    it('a body drag onto a Saturday stays on Saturday and keeps the calendar length', () => {
+      const next = reduce(bodyState(D(18), D(20)), free, ts, cfgMonFri)
+      expect(preview(next)).toEqual([D(23), D(25)])
+      expect(suspended(next)).toBe(true)
+    })
+
+    it('resize handles follow the pointer onto non-working days', () => {
+      const left = reduce(
+        leftState(D(18), D(19)),
+        { type: 'mousemove', cursorX: 172, calendarDays: true },
+        ts,
+        cfgMonFri
+      )
+      expect(preview(left)[0]).toBe(D(16))
+      expect(suspended(left)).toBe(true)
+      const right = reduce(
+        rightState(D(18), D(21)),
+        { type: 'mousemove', cursorX: 228, calendarDays: true },
+        ts,
+        cfgMonFri
+      )
+      expect(preview(right)[1]).toBe(D(23))
+      expect(suspended(right)).toBe(true)
+    })
+
+    it('an unscheduled drop on a Saturday starts on Saturday and lasts two calendar days', () => {
+      const next = reduce(
+        unscheduledState,
+        { type: 'mousemove', cursorX: 200, canvasX: 5 * 14, calendarDays: true },
+        ts2,
+        cfgMonFri
+      )
+      expect(preview(next)).toEqual([D(23), D(24)])
+      expect(suspended(next)).toBe(true)
+    })
+
+    it('toggling the override mid-drag switches the preview at the same pointer position', () => {
+      const snapped = reduce(bodyState(D(18), D(20)), { type: 'mousemove', cursorX: 270 }, ts, cfgMonFri)
+      expect(preview(snapped)).toEqual([D(25), D(27)])
+      expect(suspended(snapped)).toBeUndefined()
+      const pressed = reduce(snapped, free, ts, cfgMonFri)
+      expect(preview(pressed)).toEqual([D(23), D(25)])
+      expect(suspended(pressed)).toBe(true)
+      const released = reduce(pressed, { type: 'mousemove', cursorX: 270, calendarDays: false }, ts, cfgMonFri)
+      expect(preview(released)).toEqual([D(25), D(27)])
+      expect(suspended(released)).toBeUndefined()
+      expect('snapSuspended' in released).toBe(false)
+    })
+
+    it('toggling mid-resize switches between the snapped and the raw handle position', () => {
+      const snapped = reduce(rightState(D(18), D(21)), { type: 'mousemove', cursorX: 228 }, ts, cfgMonFri)
+      expect(preview(snapped)[1]).toBe(D(22))
+      const pressed = reduce(snapped, { type: 'mousemove', cursorX: 228, calendarDays: true }, ts, cfgMonFri)
+      expect(preview(pressed)[1]).toBe(D(23))
+      const released = reduce(pressed, { type: 'mousemove', cursorX: 228 }, ts, cfgMonFri)
+      expect(preview(released)[1]).toBe(D(22))
+    })
+
+    it('without a calendar the override changes nothing and is not flagged', () => {
+      const plain = reduce(bodyState(D(18), D(20)), { type: 'mousemove', cursorX: 270 }, ts)
+      const next = reduce(bodyState(D(18), D(20)), free, ts)
+      expect(next).toEqual(plain)
+      expect('snapSuspended' in next).toBe(false)
+      const right = reduce(rightState(D(18), D(21)), { type: 'mousemove', cursorX: 228, calendarDays: true }, ts)
+      expect(preview(right)[1]).toBe(D(23))
+      expect('snapSuspended' in right).toBe(false)
+    })
+
+    it('a co-drag is unaffected and not flagged (it never snaps)', () => {
+      const dragging: DragState = {
+        kind: 'dragging-body',
+        target: issueTarget,
+        originStart: D(18),
+        originEnd: D(20),
+        cursorStartX: 200,
+        previewStart: D(18),
+        previewEnd: D(20),
+        coDrag: {
+          anchorDeltaMs: 0,
+          members: [{ issueId: issue._id, originStart: D(18), originEnd: D(20) }],
+          minDeltaMs: -2 * 86_400_000,
+          maxDeltaMs: 5 * 86_400_000
+        }
+      }
+      const next = reduce(dragging, { type: 'mousemove', cursorX: 284, calendarDays: true }, ts, cfgMonFri)
+      expect(preview(next)).toEqual([D(23), D(25)])
+      expect('snapSuspended' in next).toBe(false)
+    })
+  })
+
+  describe('dragCalendar', () => {
+    it('returns the calendar unless the active drag suspended snapping', () => {
+      expect(dragCalendar(bodyState(D(18), D(20)), cfgMonFri)).toBe(cfgMonFri)
+      const pressed = reduce(
+        bodyState(D(18), D(20)),
+        { type: 'mousemove', cursorX: 270, calendarDays: true },
+        ts,
+        cfgMonFri
+      )
+      expect(dragCalendar(pressed, cfgMonFri)).toBeUndefined()
+      expect(dragCalendar(pressed, undefined)).toBeUndefined()
+      expect(dragCalendar({ kind: 'idle' }, cfgMonFri)).toBe(cfgMonFri)
+    })
+  })
+
+  describe('modifierSyncMove (Shift released outside the window)', () => {
+    const last = { cursorX: 270 }
+
+    it('a blur or a release without Shift un-suspends the drag at the last position, so the commit snaps', () => {
+      const pressed = reduce(
+        bodyState(D(18), D(20)),
+        { type: 'mousemove', cursorX: 270, calendarDays: true },
+        ts,
+        cfgMonFri
+      )
+      expect(preview(pressed)).toEqual([D(23), D(25)])
+      const move = modifierSyncMove(pressed, false, last)
+      expect(move).toEqual({ type: 'mousemove', cursorX: 270, canvasX: undefined, calendarDays: false })
+      const synced = reduce(pressed, move as NonNullable<typeof move>, ts, cfgMonFri)
+      expect(preview(synced)).toEqual([D(25), D(27)])
+      expect('snapSuspended' in synced).toBe(false)
+      expect(dragCalendar(synced, cfgMonFri)).toBe(cfgMonFri)
+    })
+
+    it('a release still holding Shift keeps the suspended preview (nothing to replay)', () => {
+      const pressed = reduce(
+        bodyState(D(18), D(20)),
+        { type: 'mousemove', cursorX: 270, calendarDays: true },
+        ts,
+        cfgMonFri
+      )
+      expect(modifierSyncMove(pressed, true, last)).toBeUndefined()
+    })
+
+    it('a Shift press on a snapped drag replays the move with the override', () => {
+      const snapped = reduce(bodyState(D(18), D(20)), { type: 'mousemove', cursorX: 270 }, ts, cfgMonFri)
+      expect(modifierSyncMove(snapped, false, last)).toBeUndefined()
+      const move = modifierSyncMove(snapped, true, last)
+      expect(move?.calendarDays).toBe(true)
+      expect(preview(reduce(snapped, move as NonNullable<typeof move>, ts, cfgMonFri))).toEqual([D(23), D(25)])
+    })
+
+    it('keeps canvasX for an unscheduled drop and does nothing without a drag or a prior move', () => {
+      const pressed = reduce(
+        unscheduledState,
+        { type: 'mousemove', cursorX: 200, canvasX: 5 * 14, calendarDays: true },
+        ts2,
+        cfgMonFri
+      )
+      expect(modifierSyncMove(pressed, false, { cursorX: 200, canvasX: 5 * 14 })?.canvasX).toBe(5 * 14)
+      expect(modifierSyncMove(pressed, false, undefined)).toBeUndefined()
+      expect(modifierSyncMove({ kind: 'idle' }, false, last)).toBeUndefined()
+    })
   })
 })

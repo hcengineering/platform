@@ -129,6 +129,12 @@ export type DragState<TTarget extends DragTarget = DragTarget, TNode extends Gan
       maxDeltaMs: number
       anchorDeltaMs: number
     }
+    /**
+       * True while the user suspends working-day snapping for this gesture
+       * (`calendarDays` on the last `mousemove`) and a calendar would otherwise
+       * apply; the preview then moves in calendar days. Absent otherwise.
+       */
+    snapSuspended?: boolean
   }
   | {
     kind: 'resizing-left'
@@ -137,6 +143,12 @@ export type DragState<TTarget extends DragTarget = DragTarget, TNode extends Gan
     originEnd: number
     cursorStartX: number
     previewStart: number
+    /**
+       * True while the user suspends working-day snapping for this gesture
+       * (`calendarDays` on the last `mousemove`) and a calendar would otherwise
+       * apply; the preview then moves in calendar days. Absent otherwise.
+       */
+    snapSuspended?: boolean
   }
   | {
     kind: 'resizing-right'
@@ -145,6 +157,12 @@ export type DragState<TTarget extends DragTarget = DragTarget, TNode extends Gan
     originEnd: number
     cursorStartX: number
     previewEnd: number
+    /**
+       * True while the user suspends working-day snapping for this gesture
+       * (`calendarDays` on the last `mousemove`) and a calendar would otherwise
+       * apply; the preview then moves in calendar days. Absent otherwise.
+       */
+    snapSuspended?: boolean
   }
   | {
     kind: 'dragging-unscheduled'
@@ -164,6 +182,12 @@ export type DragState<TTarget extends DragTarget = DragTarget, TNode extends Gan
        * treats `dragging-unscheduled && !hasCanvasTarget` as a no-op.
        */
     hasCanvasTarget: boolean
+    /**
+       * True while the user suspends working-day snapping for this gesture
+       * (`calendarDays` on the last `mousemove`) and a calendar would otherwise
+       * apply; the preview then moves in calendar days. Absent otherwise.
+       */
+    snapSuspended?: boolean
   }
   | {
     kind: 'connector-drawing'
@@ -223,7 +247,17 @@ export type DragEvent<TTarget extends DragTarget = DragTarget, TNode extends Gan
     }
   }
   | { type: 'mousedown-unscheduled', target: TTarget, cursorX: number }
-  | { type: 'mousemove', cursorX: number, canvasX?: number }
+  | {
+    type: 'mousemove'
+    cursorX: number
+    canvasX?: number
+    /**
+       * Suspend working-day snapping for this move: the preview is computed in
+       * calendar days even when the reducer gets a calendar (the per-drag
+       * override, Shift held during the drag). No effect without a calendar.
+       */
+    calendarDays?: boolean
+  }
   | { type: 'mouseup' }
   | { type: 'cancel' }
   | {

@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
+  import type { IntlString } from '@hcengineering/platform'
   import { Label } from '@hcengineering/ui'
   import tracker from '../../plugin'
 
@@ -31,6 +32,8 @@
   interface Row {
     key: string
     label: string
+    /** Localised label; takes precedence over `label` when set. */
+    intl?: IntlString
   }
   const rows: Row[] = [
     { key: '?', label: 'Show this help' },
@@ -45,7 +48,12 @@
     { key: 'Q', label: 'Zoom to quarter view' },
     { key: 'E', label: 'Export visible view to PNG' },
     { key: 'Esc', label: 'Cancel drag / close popup / dismiss this help' },
-    { key: 'Alt + drag', label: 'Bypass cascade simulation (force commit)' }
+    { key: 'Alt + drag', label: 'Bypass cascade simulation (force commit)' },
+    {
+      key: 'Shift + drag',
+      label: 'Hold while dragging to ignore working days (calendar days)',
+      intl: tracker.string.GanttHelpCalendarDaysDrag
+    }
   ]
 </script>
 
@@ -57,7 +65,9 @@
     {#each rows as r (r.key)}
       <div class="row">
         <kbd>{r.key}</kbd>
-        <span>{r.label}</span>
+        <span>
+          {#if r.intl !== undefined}<Label label={r.intl} />{:else}{r.label}{/if}
+        </span>
       </div>
     {/each}
   </div>

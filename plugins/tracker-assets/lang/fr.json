@@ -296,6 +296,8 @@
     "GanttExpand": "Expand",
     "GanttCollapse": "Collapse",
     "GanttCornerNoOpInSwimlane": "No effect in group-by mode",
+    "GanttHelpCalendarDaysDrag": "Maintenir pendant le glissement pour ignorer les jours ouvrés (jours calendaires)",
+    "GanttDragCalendarDays": "Jours calendaires",
     "ModeSelectorDisabledByFilter": "Le statut est contrôlé par un filtre actif. Supprimez le filtre de statut pour utiliser ce raccourci.",
     "ShowQuickModeSelector": "Filtre rapide : Tous / Actif / Backlog",
     "SearchScopeLabel": "Rechercher dans…",
