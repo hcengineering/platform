@@ -115,3 +115,5 @@ dev/tool/history.json
 ws-tests/docker-compose.override.yml
 .cursor/*
 CLAUDE.md
+.agents/
+skills-lock.json
