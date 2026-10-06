@@ -3,7 +3,14 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import { detectCycle, addScheduleDays, simulateCascade } from '../scheduler'
+import {
+  detectCycle,
+  addScheduleDays,
+  simulateCascade,
+  shiftScheduleDays,
+  shiftWithPrimary,
+  keyboardWeekStep
+} from '../scheduler'
 import {
   isWorkingDay,
   fsAnchor,
@@ -95,6 +102,49 @@ describe('addScheduleDays', () => {
   it('returns base unchanged when days = 0', () => {
     const base = Date.UTC(2026, 4, 12)
     expect(addScheduleDays(base, 0)).toBe(base)
+  })
+})
+
+describe('shiftScheduleDays / shiftWithPrimary / keyboardWeekStep', () => {
+  // May 2026: Mon 18 .. Wed 27.
+  const D = (day: number): number => Date.UTC(2026, 4, day)
+  const cfgMonFri = { weekdayMask: 0b0011111, holidays: [] }
+
+  it('shiftScheduleDays counts working days with a calendar and calendar days without', () => {
+    expect(shiftScheduleDays(D(22), 1, cfgMonFri)).toBe(D(25))
+    expect(shiftScheduleDays(D(22), 1, undefined)).toBe(D(23))
+    expect(shiftScheduleDays(D(18), 7, undefined)).toBe(D(25))
+    expect(shiftScheduleDays(D(18), 5, cfgMonFri)).toBe(D(25))
+    expect(shiftScheduleDays(D(23), 0, cfgMonFri)).toBe(D(23))
+  })
+
+  it('shiftWithPrimary moves a child by the primary move in working days with a calendar', () => {
+    expect(shiftWithPrimary(D(22), D(18), D(19), cfgMonFri)).toBe(D(25))
+    expect(shiftWithPrimary(D(22), D(18), D(19), undefined)).toBe(D(23))
+  })
+
+  it('shiftWithPrimary leaves the child unchanged for a zero move in both modes', () => {
+    expect(shiftWithPrimary(D(23), D(18), D(18), cfgMonFri)).toBe(D(23))
+    expect(shiftWithPrimary(D(23), D(18), D(18), undefined)).toBe(D(23))
+  })
+
+  it('shiftWithPrimary handles a move to the left', () => {
+    // Primary Mon 25 → Fri 22: one working day back, three calendar days back.
+    expect(shiftWithPrimary(D(27), D(25), D(22), cfgMonFri)).toBe(D(26))
+    expect(shiftWithPrimary(D(27), D(25), D(22), undefined)).toBe(D(24))
+  })
+
+  it('shiftWithPrimary falls back to the raw delta for a non-finite or huge move', () => {
+    const huge = 50_000 * 86_400_000
+    expect(shiftWithPrimary(D(22), D(18), D(18) + huge, cfgMonFri)).toBe(D(22) + huge)
+    expect(shiftWithPrimary(D(22), D(18), Infinity, cfgMonFri)).toBe(Infinity)
+    expect(shiftWithPrimary(D(22), D(18), NaN, cfgMonFri)).toBeNaN()
+  })
+
+  it('keyboardWeekStep is seven calendar days without a calendar and the active weekdays with one', () => {
+    expect(keyboardWeekStep(undefined)).toBe(7)
+    expect(keyboardWeekStep(cfgMonFri)).toBe(5)
+    expect(keyboardWeekStep({ weekdayMask: 0b1111111, holidays: [] })).toBe(7)
   })
 })
 

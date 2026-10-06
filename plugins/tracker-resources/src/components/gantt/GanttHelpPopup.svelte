@@ -35,7 +35,7 @@
   const rows: Row[] = [
     { key: '?', label: 'Show this help' },
     { key: '←  →', label: 'Move selected issue ±1 day' },
-    { key: 'Shift+←  Shift+→', label: 'Move selected issue ±7 days' },
+    { key: 'Shift+←  Shift+→', label: 'Move selected issue ±1 week' },
     { key: '+ / =', label: 'Zoom in' },
     { key: '−', label: 'Zoom out' },
     { key: 'T', label: 'Jump to today' },

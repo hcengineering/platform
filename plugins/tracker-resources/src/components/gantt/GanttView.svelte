@@ -33,7 +33,14 @@
   import contact from '@hcengineering/contact'
   import { issuePriorities } from '../../types'
   import { connectedIssueIds } from './lib/dependency-router'
-  import { wouldCreateCycle, simulateCascade, addScheduleDays, descendantsWithDates } from './lib/scheduler'
+  import {
+    wouldCreateCycle,
+    simulateCascade,
+    descendantsWithDates,
+    shiftScheduleDays,
+    shiftWithPrimary,
+    keyboardWeekStep
+  } from './lib/scheduler'
   import {
     newCascadeToken,
     fsAnchor,
@@ -1979,6 +1986,25 @@
     return e.clientX - sidebarEdge + canvasViewportLeft
   }
 
+  /**
+   * Working-days snapping applies to single issue bars only: milestones keep
+   * plain calendar-day drags and a bulk co-drag keeps its shared raw delta
+   * (its hard-stop window is a millisecond window).
+   */
+  function snapCalendarFor (s: DragState): WorkingCalendar | undefined {
+    if (
+      s.kind !== 'dragging-body' &&
+      s.kind !== 'dragging-unscheduled' &&
+      s.kind !== 'resizing-left' &&
+      s.kind !== 'resizing-right'
+    ) {
+      return undefined
+    }
+    if (s.target.kind !== 'issue') return undefined
+    if (s.kind === 'dragging-body' && s.coDrag !== undefined) return undefined
+    return effectiveCalendar
+  }
+
   function handleCanvasPointerMove (e: MouseEvent): void {
     // once a confirmation popup is open the drag preview must
     // freeze at the position the user released the bar. Without this
@@ -2013,7 +2039,7 @@
       return // Don't also fire mousemove for bar drag
     }
     activeDrag.update((s) =>
-      reduce(s, { type: 'mousemove', cursorX: e.clientX, canvasX: computeCanvasX(e) }, timeScale)
+      reduce(s, { type: 'mousemove', cursorX: e.clientX, canvasX: computeCanvasX(e) }, timeScale, snapCalendarFor(s))
     )
   }
 
@@ -2862,7 +2888,6 @@
       )
       const isParent = allInSpace.some((i) => i.parents?.[0]?.parentId === parent._id)
       if (isParent) {
-        const delta = (state as any).previewStart - (state as any).originStart
         const primaryEdits: PrimaryEdit[] = [
           {
             issue: parent,
@@ -2873,8 +2898,13 @@
         for (const child of descendantsWithDates(parent, allInSpace)) {
           primaryEdits.push({
             issue: child,
-            newStart: (child.startDate as number) + delta,
-            newDue: (child.dueDate as number) + delta
+            newStart: shiftWithPrimary(
+              child.startDate as number,
+              state.originStart,
+              state.previewStart,
+              effectiveCalendar
+            ),
+            newDue: shiftWithPrimary(child.dueDate as number, state.originStart, state.previewStart, effectiveCalendar)
           })
         }
         // Parent-drag fans out → primaryEdits.length > 1, so commitWithCascade
@@ -3066,21 +3096,21 @@
     )
     // Stale-mutation guard after the await — before any edit is built.
     if (!mutationStillCurrent(i.space)) return
-    // All date arithmetic routes through addScheduleDays so the Phase-2
-    // working-calendar swap stays a single integration point.
+    // All date arithmetic routes through shiftScheduleDays: calendar days in
+    // legacy mode, working days with a project calendar.
     const primaryEdits: PrimaryEdit[] = [
       {
         issue: i,
-        newStart: addScheduleDays(i.startDate, days),
-        newDue: addScheduleDays(i.dueDate, days)
+        newStart: shiftScheduleDays(i.startDate, days, effectiveCalendar),
+        newDue: shiftScheduleDays(i.dueDate, days, effectiveCalendar)
       }
     ]
     // Include descendants (matches drag behaviour for parent shifts).
     for (const child of descendantsWithDates(i, allInSpace)) {
       primaryEdits.push({
         issue: child,
-        newStart: addScheduleDays(child.startDate as number, days),
-        newDue: addScheduleDays(child.dueDate as number, days)
+        newStart: shiftScheduleDays(child.startDate as number, days, effectiveCalendar),
+        newDue: shiftScheduleDays(child.dueDate as number, days, effectiveCalendar)
       })
     }
     // Keyboard shift has no Alt-modifier path and no legacy-confirm UX
@@ -3188,13 +3218,13 @@
     }
     if (e.key === 'ArrowRight') {
       if (isTextInputFocused()) return
-      void shiftFocused(e.shiftKey ? 7 : 1)
+      void shiftFocused(e.shiftKey ? keyboardWeekStep(effectiveCalendar) : 1)
       e.preventDefault()
       return
     }
     if (e.key === 'ArrowLeft') {
       if (isTextInputFocused()) return
-      void shiftFocused(e.shiftKey ? -7 : -1)
+      void shiftFocused(e.shiftKey ? -keyboardWeekStep(effectiveCalendar) : -1)
       e.preventDefault()
       return
     }
