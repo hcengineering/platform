@@ -67,11 +67,15 @@ import {
   addSocialIdBase,
   doReleaseSocialId,
   getLastPasswordChangeEvent,
-  isPasswordChangedSince
+  isPasswordChangedSince,
+  reportInvalidToken,
+  tokenErrorReason,
+  tokenFingerprint
 } from '../utils'
 // eslint-disable-next-line import/no-named-default
 import platform, { getMetadata, PlatformError, Severity, Status } from '@hcengineering/platform'
-import { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
+import serverToken, { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
+import { Analytics } from '@hcengineering/analytics'
 import { randomBytes } from 'crypto'
 
 import { type AccountDB, type AccountEvent, AccountEventType, type Workspace } from '../types'
@@ -92,6 +96,8 @@ jest.mock('@hcengineering/platform', () => {
 
 // Mock server-token
 jest.mock('@hcengineering/server-token', () => ({
+  __esModule: true,
+  default: jest.requireActual('@hcengineering/server-token').default,
   TokenError: jest.requireActual('@hcengineering/server-token').TokenError,
   decodeTokenVerbose: jest.fn(),
   generateToken: jest.fn()
@@ -2432,6 +2438,192 @@ describe('account utils', () => {
         expect(mockDb.socialId.update).not.toHaveBeenCalled()
         expect(mockDb.accountEvent.insertOne).not.toHaveBeenCalled()
       })
+    })
+  })
+})
+
+describe('token log redaction', () => {
+  const token = 'eyJ.secret.token'
+
+  const useSecret = (secret: string | undefined): void => {
+    ;(getMetadata as jest.Mock).mockImplementation((id) => (id === serverToken.metadata.Secret ? secret : undefined))
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    useSecret('test-secret')
+  })
+
+  afterEach(() => {
+    ;(getMetadata as jest.Mock).mockReset()
+  })
+
+  describe('tokenFingerprint', () => {
+    test('returns a 16-character hex digest that is not part of the token', () => {
+      const fp = tokenFingerprint('header.payload.signature')
+      expect(fp).toMatch(/^[0-9a-f]{16}$/)
+      expect('header.payload.signature').not.toContain(fp as string)
+    })
+
+    test('is deterministic and distinguishes tokens', () => {
+      expect(tokenFingerprint('a.b.c')).toBe(tokenFingerprint('a.b.c'))
+      expect(tokenFingerprint('a.b.c')).not.toBe(tokenFingerprint('a.b.d'))
+    })
+
+    test('depends on the server secret', () => {
+      useSecret('s1')
+      const one = tokenFingerprint('a.b.c')
+      useSecret('s2')
+      expect(tokenFingerprint('a.b.c')).not.toBe(one)
+    })
+
+    test('is omitted when the server secret is not configured', () => {
+      useSecret(undefined)
+      expect(tokenFingerprint('a.b.c')).toBeUndefined()
+      useSecret('')
+      expect(tokenFingerprint('a.b.c')).toBeUndefined()
+    })
+
+    test('returns undefined for a missing or empty token', () => {
+      expect(tokenFingerprint(undefined)).toBeUndefined()
+      expect(tokenFingerprint(null)).toBeUndefined()
+      expect(tokenFingerprint('')).toBeUndefined()
+    })
+  })
+
+  describe('tokenErrorReason', () => {
+    test('classifies known TokenError messages and falls back to other', () => {
+      expect(tokenErrorReason(new TokenError('Token expired'))).toBe('Token expired')
+      expect(tokenErrorReason(new TokenError('Signature verification failed'))).toBe('Signature verification failed')
+      expect(tokenErrorReason(new TokenError('Unexpected token x in JSON at position 3'))).toBe('other')
+      expect(tokenErrorReason(new Error('Token expired'))).toBe('unexpected')
+      expect(tokenErrorReason('Token expired')).toBe('unexpected')
+    })
+  })
+
+  describe('reportInvalidToken', () => {
+    let ctx: MeasureContext
+
+    const reportedErrors = (): any[] => (Analytics.handleError as jest.Mock).mock.calls.map((c) => c[0])
+
+    const allLogged = (): string =>
+      JSON.stringify([
+        (ctx.warn as jest.Mock).mock.calls,
+        (ctx.error as jest.Mock).mock.calls,
+        (ctx.info as jest.Mock).mock.calls,
+        reportedErrors().map((e) => [
+          typeof e,
+          String(e),
+          e?.name,
+          e?.message,
+          e?.stack,
+          String(e?.cause),
+          e != null && typeof e === 'object' ? { ...e } : e
+        ])
+      ])
+
+    beforeEach(() => {
+      ctx = { error: jest.fn(), warn: jest.fn(), info: jest.fn() } as unknown as MeasureContext
+    })
+
+    test('logs a TokenError at warn level with fingerprint and reason only and skips Analytics', () => {
+      reportInvalidToken(ctx, token, new TokenError('Token expired'))
+      expect(ctx.warn).toHaveBeenCalledWith('Invalid token', {
+        token: tokenFingerprint(token),
+        error: 'TokenError',
+        reason: 'Token expired'
+      })
+      expect(ctx.error).not.toHaveBeenCalled()
+      expect(Analytics.handleError).not.toHaveBeenCalled()
+      expect(allLogged()).not.toContain(token)
+    })
+
+    test('never logs a TokenError message that contains the raw token', () => {
+      reportInvalidToken(ctx, token, new TokenError(`Unexpected token ${token} in JSON at position 0`))
+      expect(ctx.warn).toHaveBeenCalledWith('Invalid token', {
+        token: tokenFingerprint(token),
+        error: 'TokenError',
+        reason: 'other'
+      })
+      expect(Analytics.handleError).not.toHaveBeenCalled()
+      expect(allLogged()).not.toContain(token)
+    })
+
+    test('omits the fingerprint when the server secret is not configured', () => {
+      useSecret(undefined)
+      reportInvalidToken(ctx, token, new TokenError('Token expired'))
+      expect(ctx.warn).toHaveBeenCalledWith('Invalid token', {
+        token: undefined,
+        error: 'TokenError',
+        reason: 'Token expired'
+      })
+      expect(allLogged()).not.toContain(token)
+    })
+
+    test('reports any other error to Analytics as a fresh error and logs it at error level', () => {
+      const err = new Error('connection reset')
+      reportInvalidToken(ctx, token, err)
+      expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+      const reported = reportedErrors()[0]
+      expect(reported).toBeInstanceOf(Error)
+      expect(reported).not.toBe(err)
+      expect(reported.name).toBe('Error')
+      expect(reported.message).toBe('Unexpected error while validating a token')
+      expect(reported.cause).toBeUndefined()
+      // only the allowlisted name may be set on the fresh error
+      expect(Object.keys(reported).filter((k) => k !== 'name')).toEqual([])
+      expect(ctx.error).toHaveBeenCalledWith('Invalid token', {
+        token: tokenFingerprint(token),
+        error: 'Error',
+        reason: 'unexpected'
+      })
+      expect(ctx.warn).not.toHaveBeenCalled()
+      expect(allLogged()).not.toContain(token)
+    })
+
+    test('does not leak a token contained in the message of an unexpected error', () => {
+      reportInvalidToken(ctx, token, new Error(`connection reset while handling ${token}`))
+      expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+      expect(allLogged()).not.toContain(token)
+    })
+
+    test('does not leak a token contained in the cause of an unexpected error', () => {
+      const err = new Error('connection reset')
+      Object.defineProperty(err, 'cause', { value: new Error(`while handling ${token}`), enumerable: false })
+      reportInvalidToken(ctx, token, err)
+      expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+      expect(reportedErrors()[0].cause).toBeUndefined()
+      expect(allLogged()).not.toContain(token)
+    })
+
+    test('does not leak a token contained in a custom field of an unexpected error', () => {
+      const err = Object.assign(new Error('connection reset'), { request: { token }, detail: token })
+      reportInvalidToken(ctx, token, err)
+      expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+      expect(Object.keys(reportedErrors()[0]).filter((k) => k !== 'name')).toEqual([])
+      expect(allLogged()).not.toContain(token)
+    })
+
+    test('does not leak a token from an error whose name contains it', () => {
+      const err = new Error('connection reset')
+      err.name = `Error_${token}`
+      reportInvalidToken(ctx, token, err)
+      expect(reportedErrors()[0].name).toBe('Error')
+      expect(allLogged()).not.toContain(token)
+    })
+
+    test('does not leak a token from a thrown string', () => {
+      reportInvalidToken(ctx, token, `failed to handle ${token}`)
+      expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+      const reported = reportedErrors()[0]
+      expect(reported).toBeInstanceOf(Error)
+      expect(reported.name).toBe('Error')
+      expect(ctx.error).toHaveBeenCalledWith('Invalid token', {
+        token: tokenFingerprint(token),
+        error: 'string',
+        reason: 'unexpected'
+      })
+      expect(allLogged()).not.toContain(token)
     })
   })
 })
