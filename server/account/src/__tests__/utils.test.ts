@@ -2502,9 +2502,13 @@ describe('token log redaction', () => {
   })
 
   describe('reportInvalidToken', () => {
+    // The mocked function is a plain jest.fn(), so referencing it unbound is safe.
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const handleError = Analytics.handleError as jest.Mock
+
     let ctx: MeasureContext
 
-    const reportedErrors = (): any[] => (Analytics.handleError as jest.Mock).mock.calls.map((c) => c[0])
+    const reportedErrors = (): any[] => handleError.mock.calls.map((c) => c[0])
 
     const allLogged = (): string =>
       JSON.stringify([
@@ -2534,7 +2538,7 @@ describe('token log redaction', () => {
         reason: 'Token expired'
       })
       expect(ctx.error).not.toHaveBeenCalled()
-      expect(Analytics.handleError).not.toHaveBeenCalled()
+      expect(handleError).not.toHaveBeenCalled()
       expect(allLogged()).not.toContain(token)
     })
 
@@ -2545,7 +2549,7 @@ describe('token log redaction', () => {
         error: 'TokenError',
         reason: 'other'
       })
-      expect(Analytics.handleError).not.toHaveBeenCalled()
+      expect(handleError).not.toHaveBeenCalled()
       expect(allLogged()).not.toContain(token)
     })
 
@@ -2563,7 +2567,7 @@ describe('token log redaction', () => {
     test('reports any other error to Analytics as a fresh error and logs it at error level', () => {
       const err = new Error('connection reset')
       reportInvalidToken(ctx, token, err)
-      expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+      expect(handleError).toHaveBeenCalledTimes(1)
       const reported = reportedErrors()[0]
       expect(reported).toBeInstanceOf(Error)
       expect(reported).not.toBe(err)
@@ -2583,7 +2587,7 @@ describe('token log redaction', () => {
 
     test('does not leak a token contained in the message of an unexpected error', () => {
       reportInvalidToken(ctx, token, new Error(`connection reset while handling ${token}`))
-      expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+      expect(handleError).toHaveBeenCalledTimes(1)
       expect(allLogged()).not.toContain(token)
     })
 
@@ -2591,7 +2595,7 @@ describe('token log redaction', () => {
       const err = new Error('connection reset')
       Object.defineProperty(err, 'cause', { value: new Error(`while handling ${token}`), enumerable: false })
       reportInvalidToken(ctx, token, err)
-      expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+      expect(handleError).toHaveBeenCalledTimes(1)
       expect(reportedErrors()[0].cause).toBeUndefined()
       expect(allLogged()).not.toContain(token)
     })
@@ -2599,7 +2603,7 @@ describe('token log redaction', () => {
     test('does not leak a token contained in a custom field of an unexpected error', () => {
       const err = Object.assign(new Error('connection reset'), { request: { token }, detail: token })
       reportInvalidToken(ctx, token, err)
-      expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+      expect(handleError).toHaveBeenCalledTimes(1)
       expect(Object.keys(reportedErrors()[0]).filter((k) => k !== 'name')).toEqual([])
       expect(allLogged()).not.toContain(token)
     })
@@ -2614,7 +2618,7 @@ describe('token log redaction', () => {
 
     test('does not leak a token from a thrown string', () => {
       reportInvalidToken(ctx, token, `failed to handle ${token}`)
-      expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+      expect(handleError).toHaveBeenCalledTimes(1)
       const reported = reportedErrors()[0]
       expect(reported).toBeInstanceOf(Error)
       expect(reported.name).toBe('Error')

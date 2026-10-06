@@ -106,6 +106,10 @@ jest.mock('@hcengineering/analytics', () => ({
 }))
 
 describe('account operations', () => {
+  // The mocked function is a plain jest.fn(), so referencing it unbound is safe.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const handleError = Analytics.handleError as jest.Mock
+
   const mockCtx = {
     error: jest.fn(),
     info: jest.fn(),
@@ -1048,7 +1052,7 @@ describe('account operations', () => {
           (mockCtx.warn as jest.Mock).mock.calls,
           (mockCtx.error as jest.Mock).mock.calls,
           (mockCtx.info as jest.Mock).mock.calls,
-          (Analytics.handleError as jest.Mock).mock.calls.map((c) => [
+          handleError.mock.calls.map((c) => [
             String(c[0]),
             c[0]?.name,
             c[0]?.message,
@@ -1073,7 +1077,7 @@ describe('account operations', () => {
           new PlatformError(new Status(Severity.ERROR, platform.status.TokenExpired, {}))
         )
 
-        expect(Analytics.handleError).not.toHaveBeenCalled()
+        expect(handleError).not.toHaveBeenCalled()
         expect(mockCtx.error).not.toHaveBeenCalled()
         expect(mockCtx.warn).toHaveBeenCalledWith('Invalid token', {
           token: utils.tokenFingerprint(mockToken),
@@ -1098,7 +1102,7 @@ describe('account operations', () => {
           error: 'TokenError',
           reason: 'other'
         })
-        expect(Analytics.handleError).not.toHaveBeenCalled()
+        expect(handleError).not.toHaveBeenCalled()
         expect(allLogged()).not.toContain(mockToken)
       })
 
@@ -1115,8 +1119,8 @@ describe('account operations', () => {
           new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
         )
 
-        expect(Analytics.handleError).toHaveBeenCalledTimes(1)
-        expect((Analytics.handleError as jest.Mock).mock.calls[0][0]).not.toBe(dbErr)
+        expect(handleError).toHaveBeenCalledTimes(1)
+        expect(handleError.mock.calls[0][0]).not.toBe(dbErr)
         expect(mockCtx.error).toHaveBeenCalledWith('Invalid token', {
           token: utils.tokenFingerprint(mockToken),
           error: 'Error',
@@ -1137,7 +1141,7 @@ describe('account operations', () => {
 
         expect(mockCtx.warn).not.toHaveBeenCalled()
         expect(mockCtx.error).not.toHaveBeenCalled()
-        expect(Analytics.handleError).not.toHaveBeenCalled()
+        expect(handleError).not.toHaveBeenCalled()
       })
     })
   })
@@ -1172,7 +1176,7 @@ describe('account operations', () => {
           new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
         )
 
-        expect(Analytics.handleError).not.toHaveBeenCalled()
+        expect(handleError).not.toHaveBeenCalled()
         expect(mockCtx.error).not.toHaveBeenCalled()
         expect(mockCtx.warn).toHaveBeenCalledWith('Invalid token', {
           token: utils.tokenFingerprint(mockToken),
