@@ -344,6 +344,8 @@
     "GanttJumpToDate": "Перейти к дате",
     "GanttZoomDay": "День",
     "GanttZoomWeek": "Неделя",
+    "GanttWeekLabel": "Нед. {week}",
+    "GanttQuarterLabel": "Кв. {quarter}",
     "GanttZoomMonth": "Месяц",
     "GanttZoomQuarter": "Квартал",
     "GanttZoomCustom": "Другой",
@@ -561,7 +563,16 @@
     "SearchEmptyTitle": "Не найдено задач по запросу «{query}»",
     "SearchEmptyActiveFilters": "Активные фильтры: {filters}",
     "SearchEmptyClearFilters": "Искать без фильтров",
-    "SearchEmptyAllProjects": "Искать во всех проектах"
+    "SearchEmptyAllProjects": "Искать во всех проектах",
+    "GanttWithoutDates": "Без дат: {count}",
+    "GanttDates": "Даты",
+    "GanttSetDates": "Задать даты",
+    "GanttNoScheduledTasks": "Нет запланированных задач",
+    "GanttTodayAlreadyVisible": "Сегодня уже на экране",
+    "GanttVisibleRange": "Период",
+    "GanttNotScheduled": "Не запланировано",
+    "GanttMissingStartDates": "У {count} задач не задана дата начала.",
+    "GanttSetDatesHint": "Задайте дату начала и срок в карточке задачи, чтобы увидеть полосу на шкале."
   },
   "status": {}
 }

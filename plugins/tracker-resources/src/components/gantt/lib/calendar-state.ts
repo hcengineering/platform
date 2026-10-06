@@ -111,6 +111,7 @@ export class CalendarStateMachine {
 
   get snapshot (): CalendarSnapshot {
     const scope = resolveHolidayScope(
+      // Tracker keeps this ref generic to avoid depending on the optional HR model.
       this.cfg?.holidayDepartment as Ref<Department> | undefined,
       this.head,
       this.departments

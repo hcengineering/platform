@@ -44,7 +44,7 @@ export function addScheduleDays (t: number, days: number): number {
 export function descendantsWithDates (issue: Issue, allIssues: Issue[]): Issue[] {
   const childrenByParent = new Map<Ref<Issue>, Issue[]>()
   for (const i of allIssues) {
-    const parent = i.parents?.[0]?.parentId as Ref<Issue> | undefined
+    const parent = i.parents?.[0]?.parentId
     if (parent === undefined) continue
     const bucket = childrenByParent.get(parent)
     if (bucket === undefined) {

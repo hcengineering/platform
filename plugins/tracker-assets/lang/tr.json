@@ -327,6 +327,8 @@
     "GanttJumpToDate": "Jump to date",
     "GanttZoomDay": "Gün",
     "GanttZoomWeek": "Hafta",
+    "GanttWeekLabel": "H{week}",
+    "GanttQuarterLabel": "Ç{quarter}",
     "GanttZoomMonth": "Ay",
     "GanttZoomQuarter": "Çeyrek",
     "GanttZoomCustom": "Özel",
@@ -544,7 +546,16 @@
     "SearchEmptyTitle": "\"{query}\" için sorun bulunamadı",
     "SearchEmptyActiveFilters": "Aktif filtreler: {filters}",
     "SearchEmptyClearFilters": "Filtresiz ara",
-    "SearchEmptyAllProjects": "Tüm projelerde ara"
+    "SearchEmptyAllProjects": "Tüm projelerde ara",
+    "GanttWithoutDates": "Tarihsiz: {count}",
+    "GanttDates": "Tarihler",
+    "GanttSetDates": "Set dates",
+    "GanttNoScheduledTasks": "No scheduled tasks",
+    "GanttTodayAlreadyVisible": "Today is already in view",
+    "GanttVisibleRange": "Range",
+    "GanttNotScheduled": "Not scheduled",
+    "GanttMissingStartDates": "{count} issues have no start date.",
+    "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
   },
   "status": {}
 }

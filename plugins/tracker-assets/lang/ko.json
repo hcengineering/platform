@@ -306,7 +306,18 @@
         "SearchEmptyTitle": "\"{query}\"에 대한 이슈를 찾을 수 없습니다",
         "SearchEmptyActiveFilters": "활성 필터: {filters}",
         "SearchEmptyClearFilters": "필터 없이 검색",
-        "SearchEmptyAllProjects": "모든 프로젝트에서 검색"
+        "SearchEmptyAllProjects": "모든 프로젝트에서 검색",
+        "GanttWeekLabel": "{week}주",
+        "GanttQuarterLabel": "{quarter}분기",
+        "GanttWithoutDates": "날짜 없음: {count}",
+        "GanttDates": "날짜",
+        "GanttSetDates": "Set dates",
+    "GanttNoScheduledTasks": "No scheduled tasks",
+        "GanttTodayAlreadyVisible": "Today is already in view",
+        "GanttVisibleRange": "Range",
+        "GanttNotScheduled": "Not scheduled",
+        "GanttMissingStartDates": "{count} issues have no start date.",
+        "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
     },
     "status": {}
 }

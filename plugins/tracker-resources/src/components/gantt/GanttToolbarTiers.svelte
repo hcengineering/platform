@@ -32,15 +32,19 @@
     IconCalendar,
     IconJumpToEnd,
     IconJumpToStart,
-    IconNavNext,
-    IconNavPrev,
     IconRedo,
     IconUndo,
     Label,
+    SimpleDatePopup,
+    eventToHTMLElement,
+    showPopup,
+    themeStore,
     tooltip
   } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { GROUP_BY_KEYS } from './lib/group-by'
+  import type { DropdownIntlItem } from '@hcengineering/ui'
+  import type { IntlString } from '@hcengineering/platform'
   import type { ToolbarTier } from '@hcengineering/gantt'
   import type { GanttToolbarSnapshot } from './ganttToolbarStore'
 
@@ -52,6 +56,26 @@
   /** Stack the tiers vertically — used by the "…" popover. */
   export let vertical: boolean = false
 
+  const colorLabels: Record<(typeof COLOR_BY_KEYS)[number], IntlString> = {
+    status: tracker.string.GanttColorByStatus,
+    priority: tracker.string.GanttColorByPriority,
+    assignee: tracker.string.GanttColorByAssignee,
+    component: tracker.string.GanttColorByComponent,
+    milestone: tracker.string.GanttColorByMilestone,
+    none: tracker.string.GanttColorByNone
+  }
+  const groupLabels: Record<(typeof GROUP_BY_KEYS)[number], IntlString> = {
+    none: tracker.string.GanttGroupByNone,
+    status: tracker.string.GanttGroupByStatus,
+    priority: tracker.string.GanttGroupByPriority,
+    assignee: tracker.string.GanttGroupByAssignee,
+    component: tracker.string.GanttGroupByComponent,
+    milestone: tracker.string.GanttGroupByMilestone,
+    label: tracker.string.GanttGroupByLabel
+  }
+  const colorItems: DropdownIntlItem[] = COLOR_BY_KEYS.map((id) => ({ id, label: colorLabels[id] }))
+  const groupItems: DropdownIntlItem[] = GROUP_BY_KEYS.map((id) => ({ id, label: groupLabels[id] }))
+
   // Constants — kept identical to GanttView so the input widget validates
   // the same range whether the user types in the toolbar or hits D/W/M/Q.
   const MIN_VISIBLE_DAYS = 1
@@ -59,13 +83,37 @@
 
   // Wrapper handlers so template expressions stay assignment-free (Svelte 4
   // does not parse TS casts inside attribute expressions).
-  function onDateInput (e: Event): void {
-    const v = (e.currentTarget as HTMLInputElement).value
-    snap.setDatePickerValue(v)
+  const zoomPresets = [
+    { id: 'day', label: tracker.string.GanttZoomDay },
+    { id: 'week', label: tracker.string.GanttZoomWeek },
+    { id: 'month', label: tracker.string.GanttZoomMonth },
+    { id: 'quarter', label: tracker.string.GanttZoomQuarter }
+  ] as const
+  function selectZoom (id: (typeof zoomPresets)[number]['id']): void {
+    snap.onZoomDropdownSelected(new CustomEvent('selected', { detail: id }))
   }
-  function onDateChange (e: Event): void {
-    const v = (e.currentTarget as HTMLInputElement).value
-    snap.jumpToDate(v)
+
+  function dateLabel (value: string, locale: string): string {
+    if (value === '') return ''
+    return new Date(`${value}T00:00:00Z`).toLocaleDateString(locale, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC'
+    })
+  }
+  function openDatePicker (e: MouseEvent): void {
+    const currentDate = snap.datePickerValue === '' ? null : new Date(`${snap.datePickerValue}T00:00:00`)
+    showPopup(SimpleDatePopup, { currentDate }, eventToHTMLElement(e), (result: Date | undefined) => {
+      if (result === undefined) return
+      const iso = [
+        result.getFullYear(),
+        String(result.getMonth() + 1).padStart(2, '0'),
+        String(result.getDate()).padStart(2, '0')
+      ].join('-')
+      snap.setDatePickerValue(iso)
+      snap.jumpToDate(iso)
+    })
   }
 </script>
 
@@ -74,59 +122,96 @@
        tier's natural width; do not remove it. -->
   <div class="gantt-tb-tier" class:vertical data-tier={tier}>
     {#if tier === 'group'}
-      <!-- Compact dropdowns: visible labels removed, intent surfaced via
-           tooltip on the wrap. Each dropdown shows only the current value
-           (e.g. "Status") plus a small icon prefix so users can distinguish
-           the two at a glance without reading. -->
-      <div class="gantt-tb-colorby-wrap" use:tooltip={{ label: tracker.string.GanttColorBy }}>
-        <span class="gantt-tb-dd-icon" aria-hidden="true">●</span>
-        <!-- svelte-ignore a11y-no-onchange -->
-        <select
-          class="gantt-tb-colorby-select"
-          value={snap.ganttBarColorBy}
-          on:change={snap.onColorBySelectChange}
-          aria-label={snap.ariaLabels?.[tracker.string.GanttColorBy] ?? ''}
-        >
-          {#each COLOR_BY_KEYS as key (key)}
-            <option value={key}>
-              {#if key === 'status'}<Label label={tracker.string.GanttColorByStatus} />
-              {:else if key === 'priority'}<Label label={tracker.string.GanttColorByPriority} />
-              {:else if key === 'assignee'}<Label label={tracker.string.GanttColorByAssignee} />
-              {:else if key === 'component'}<Label label={tracker.string.GanttColorByComponent} />
-              {:else if key === 'milestone'}<Label label={tracker.string.GanttColorByMilestone} />
-              {:else if key === 'none'}<Label label={tracker.string.GanttColorByNone} />
-              {/if}
-            </option>
-          {/each}
-        </select>
+      <div class="gantt-tb-dropdown">
+        <span class="gantt-tb-control-label"><Label label={tracker.string.GanttGroupBy} /></span>
+        <DropdownLabelsIntl
+          kind="regular"
+          size="small"
+          justify="left"
+          width={vertical ? '100%' : '8rem'}
+          label={tracker.string.GanttGroupBy}
+          items={groupItems}
+          selected={snap.ganttGroupBy}
+          shouldUpdateUndefined={false}
+          on:selected={snap.onGroupBySelectChange}
+        />
       </div>
-      <div class="gantt-tb-groupby-wrap" use:tooltip={{ label: tracker.string.GanttGroupBy }}>
-        <span class="gantt-tb-dd-icon" aria-hidden="true">▤</span>
-        <!-- svelte-ignore a11y-no-onchange -->
-        <select
-          class="gantt-tb-groupby-select"
-          value={snap.ganttGroupBy}
-          on:change={snap.onGroupBySelectChange}
-          aria-label={snap.ariaLabels?.[tracker.string.GanttGroupBy] ?? ''}
-        >
-          {#each GROUP_BY_KEYS as key (key)}
-            <option value={key}>
-              {#if key === 'none'}<Label label={tracker.string.GanttGroupByNone} />
-              {:else if key === 'status'}<Label label={tracker.string.GanttGroupByStatus} />
-              {:else if key === 'priority'}<Label label={tracker.string.GanttGroupByPriority} />
-              {:else if key === 'assignee'}<Label label={tracker.string.GanttGroupByAssignee} />
-              {:else if key === 'component'}<Label label={tracker.string.GanttGroupByComponent} />
-              {:else if key === 'milestone'}<Label label={tracker.string.GanttGroupByMilestone} />
-              {:else if key === 'label'}<Label label={tracker.string.GanttGroupByLabel} />
-              {/if}
-            </option>
-          {/each}
-        </select>
+    {:else if tier === 'color'}
+      <div class="gantt-tb-dropdown">
+        <span class="gantt-tb-control-label"><Label label={tracker.string.GanttColorBy} /></span>
+        <DropdownLabelsIntl
+          kind="regular"
+          size="small"
+          justify="left"
+          width={vertical ? '100%' : '8rem'}
+          label={tracker.string.GanttColorBy}
+          items={colorItems}
+          selected={snap.ganttBarColorBy}
+          shouldUpdateUndefined={false}
+          on:selected={snap.onColorBySelectChange}
+        />
       </div>
     {:else if tier === 'nav'}
+      <div class="gantt-tb-segmented gantt-tb-navigation">
+        <button
+          class="gantt-tb-icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
+          on:click={snap.pageScrollPrev}
+          aria-label={snap.ariaLabels[tracker.string.GanttPreviousPeriod] ?? ''}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </button>
+        <button
+          class="gantt-tb-today-btn"
+          type="button"
+          disabled={!snap.canJumpToToday}
+          use:tooltip={{
+            label: snap.canJumpToToday ? tracker.string.GanttToday : tracker.string.GanttTodayAlreadyVisible
+          }}
+          on:click={snap.jumpToToday}
+        >
+          <Label label={tracker.string.GanttToday} />
+        </button>
+        <button
+          class="gantt-tb-icon-btn"
+          type="button"
+          use:tooltip={{ label: tracker.string.GanttNextPeriod }}
+          on:click={snap.pageScrollNext}
+          aria-label={snap.ariaLabels[tracker.string.GanttNextPeriod] ?? ''}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+      </div>
+    {:else if tier === 'date'}
       <button
-        class="gantt-tb-icon-btn"
         type="button"
+        class="gantt-tb-icon-btn"
+        disabled={!snap.canJumpToStart}
         use:tooltip={{ label: tracker.string.GanttJumpToStart }}
         on:click={snap.jumpToStart}
         aria-label={snap.ariaLabels[tracker.string.GanttJumpToStart] ?? ''}
@@ -134,62 +219,31 @@
         <Icon icon={IconJumpToStart} size="small" />
       </button>
       <button
-        class="gantt-tb-icon-btn"
         type="button"
-        use:tooltip={{ label: tracker.string.GanttPreviousPeriod }}
-        on:click={snap.pageScrollPrev}
-        aria-label={snap.ariaLabels[tracker.string.GanttPreviousPeriod] ?? ''}
+        class="gantt-tb-date-wrap"
+        use:tooltip={{ label: tracker.string.GanttJumpToDate }}
+        on:click={openDatePicker}
+        aria-label={snap.ariaLabels[tracker.string.GanttJumpToDate] ?? ''}
       >
-        <Icon icon={IconNavPrev} size="small" />
-      </button>
-      <button class="gantt-tb-today-btn" type="button" on:click={snap.jumpToToday}>
-        <Label label={tracker.string.GanttToday} />
+        <Icon icon={IconCalendar} size="small" />
+        {#if snap.datePickerValue === ''}<Label label={tracker.string.GanttJumpToDate} />
+        {:else}{dateLabel(snap.datePickerValue, $themeStore.language)}{/if}
       </button>
       <button
-        class="gantt-tb-icon-btn"
         type="button"
-        use:tooltip={{ label: tracker.string.GanttNextPeriod }}
-        on:click={snap.pageScrollNext}
-        aria-label={snap.ariaLabels[tracker.string.GanttNextPeriod] ?? ''}
-      >
-        <Icon icon={IconNavNext} size="small" />
-      </button>
-      <button
         class="gantt-tb-icon-btn"
-        type="button"
+        disabled={!snap.canJumpToEnd}
         use:tooltip={{ label: tracker.string.GanttJumpToEnd }}
         on:click={snap.jumpToEnd}
         aria-label={snap.ariaLabels[tracker.string.GanttJumpToEnd] ?? ''}
       >
         <Icon icon={IconJumpToEnd} size="small" />
       </button>
-    {:else if tier === 'date'}
-      <label class="gantt-tb-date-wrap" use:tooltip={{ label: tracker.string.GanttJumpToDate }}>
-        <Icon icon={IconCalendar} size="small" />
-        <input
-          type="date"
-          class="gantt-tb-date-input"
-          value={snap.datePickerValue}
-          on:input={onDateInput}
-          on:change={onDateChange}
-          aria-label={snap.ariaLabels[tracker.string.GanttJumpToDate] ?? ''}
-        />
-      </label>
-    {:else if tier === 'zoom'}
-      <DropdownLabelsIntl
-        kind={'regular'}
-        size={'small'}
-        justify={'left'}
-        label={tracker.string.GanttZoomLabel}
-        items={snap.zoomDropdownItems}
-        selected={snap.zoomDropdownSelection}
-        shouldUpdateUndefined={false}
-        on:selected={snap.onZoomDropdownSelected}
-      />
       <div
         class="gantt-tb-days-wrap"
         use:tooltip={{ label: tracker.string.GanttZoomVisibleDays, props: { days: snap.visibleDays } }}
       >
+        <span class="gantt-tb-control-label"><Label label={tracker.string.GanttVisibleRange} /></span>
         <EditBox
           value={snap.visibleDaysInput}
           format={'number'}
@@ -203,6 +257,26 @@
           on:keydown={snap.onVisibleDaysKeyDown}
         />
         <span class="gantt-tb-days-suffix"><Label label={tracker.string.GanttZoomDaysSuffix} /></span>
+      </div>
+    {:else if tier === 'zoom'}
+      <div
+        class="gantt-tb-segmented gantt-tb-zoom"
+        role="group"
+        aria-label={snap.ariaLabels[tracker.string.GanttZoomLabel] ?? ''}
+      >
+        {#each zoomPresets as preset (preset.id)}
+          <button
+            type="button"
+            class:active={snap.zoomDropdownSelection === preset.id}
+            aria-pressed={snap.zoomDropdownSelection === preset.id}
+            on:click={() => {
+              selectZoom(preset.id)
+            }}><Label label={preset.label} /></button
+          >
+        {/each}
+        {#if snap.zoomDropdownSelection === 'custom'}
+          <span class="gantt-tb-custom"><Label label={tracker.string.GanttZoomCustom} /></span>
+        {/if}
       </div>
     {:else if tier === 'undo'}
       <button
@@ -246,6 +320,48 @@
 {/each}
 
 <style lang="scss">
+  .gantt-tb-segmented {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 0.5rem;
+    background: var(--theme-button-hovered);
+  }
+  .gantt-tb-segmented button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.75rem;
+    min-width: 2rem;
+    padding: 0 0.55rem;
+    border: 0;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--theme-dark-color);
+    font: inherit;
+    cursor: pointer;
+  }
+  .gantt-tb-zoom button {
+    padding: 0 0.375rem;
+  }
+  .gantt-tb-segmented button:hover:not([disabled]) {
+    color: var(--theme-content-color);
+  }
+  .gantt-tb-segmented button.active {
+    background: var(--theme-comp-header-color);
+    color: var(--theme-content-color);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--theme-content-color) 18%, transparent);
+  }
+  .gantt-tb-segmented button[disabled] {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .gantt-tb-custom {
+    padding: 0 0.55rem;
+    color: var(--theme-dark-color);
+    font-size: 0.75rem;
+  }
   .gantt-tb-tier {
     display: inline-flex;
     align-items: center;
@@ -264,8 +380,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 2rem;
+    height: 2rem;
     padding: 0;
     background: transparent;
     border: 1px solid transparent;
@@ -285,7 +401,7 @@
   }
 
   .gantt-tb-today-btn {
-    height: 1.75rem;
+    height: 2rem;
     padding: 0 0.625rem;
     background: transparent;
     border: 1px solid var(--theme-button-border);
@@ -295,7 +411,7 @@
     cursor: pointer;
     flex-shrink: 0;
 
-    &:hover {
+    &:hover:not([disabled]) {
       background: var(--theme-button-hovered);
       color: var(--theme-caption-color);
     }
@@ -305,28 +421,22 @@
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    height: 1.75rem;
+    height: 2rem;
     padding: 0 0.375rem;
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
     color: var(--theme-content-color);
-    flex-shrink: 0;
-  }
-
-  .gantt-tb-date-input {
-    background: transparent;
-    border: none;
-    color: inherit;
+    background: var(--theme-comp-header-color);
     font: inherit;
-    outline: none;
-    width: 7.5rem;
+    cursor: pointer;
+    flex-shrink: 0;
   }
 
   .gantt-tb-days-wrap {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    height: 1.75rem;
+    height: 2rem;
     padding: 0 0.5rem;
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
@@ -339,61 +449,52 @@
     color: var(--theme-dark-color);
   }
 
-  /* Compact icon-only dropdowns: visible "Group by"/"Color by" label
-     removed (lives on the tooltip), small text glyph as prefix so the
-     two dropdowns stay distinguishable at a glance. */
-  .gantt-tb-groupby-wrap,
-  .gantt-tb-colorby-wrap {
-    display: inline-flex;
+  .gantt-tb-dropdown {
+    display: flex;
     align-items: center;
-    gap: 0.125rem;
-    height: 1.75rem;
-    padding: 0 0.25rem 0 0.375rem;
-    border: 1px solid var(--theme-button-border);
-    border-radius: 0.25rem;
-    color: var(--theme-content-color);
+    gap: 0.375rem;
+    min-width: 0;
+  }
+  .gantt-tb-control-label {
+    color: var(--theme-dark-color);
     font-size: 0.75rem;
-    flex-shrink: 0;
+    white-space: nowrap;
   }
-
-  .gantt-tb-dd-icon {
-    font-size: 0.85rem;
-    line-height: 1;
-    opacity: 0.55;
-    color: var(--theme-content-color);
-    pointer-events: none;
+  .vertical[data-tier='group'],
+  .vertical[data-tier='color'] {
+    align-items: stretch;
   }
-
-  .gantt-tb-groupby-select,
-  .gantt-tb-colorby-select {
-    background: transparent;
-    border: none;
-    color: var(--theme-content-color);
-    font: inherit;
-    cursor: pointer;
-    outline: none;
-    padding: 0 0.125rem;
-    /* Cap intrinsic width — native <select> sizes itself to the longest
-       option which can blow up if a label gets long; clipping here keeps
-       the toolbar predictable. The selected value still renders cleanly
-       because options open in a native dropdown that ignores this cap. */
-    max-width: 8rem;
-    text-overflow: ellipsis;
-    /* Trim native chevron padding so the value text + chevron sit snug. */
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    padding-right: 0.875rem;
-    background-image:
-      linear-gradient(45deg, transparent 50%, var(--theme-content-color) 50%),
-      linear-gradient(135deg, var(--theme-content-color) 50%, transparent 50%);
-    background-position:
-      calc(100% - 6px) 50%,
-      calc(100% - 2px) 50%;
-    background-size: 4px 4px;
-    background-repeat: no-repeat;
+  .vertical[data-tier='date'] {
+    flex-wrap: wrap;
   }
-
+  .vertical .gantt-tb-dropdown {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .vertical .gantt-tb-dropdown :global(.min-w-0) {
+    flex: 1;
+  }
+  .vertical .gantt-tb-control-label {
+    min-width: 5rem;
+  }
+  .gantt-tb-tier + .gantt-tb-tier {
+    padding-left: 0.25rem;
+  }
+  .gantt-tb-tier.vertical + .gantt-tb-tier.vertical {
+    padding-left: 0;
+    padding-top: 0.5rem;
+    border-left: none;
+    border-top: 1px solid var(--theme-divider-color);
+  }
+  button:focus-visible,
+  .gantt-tb-date-wrap:focus-within {
+    outline: 2px solid var(--theme-content-accent-color);
+    outline-offset: 2px;
+  }
+  .gantt-tb-today-btn[disabled] {
+    opacity: 0.4;
+    cursor: default;
+  }
   .gantt-tb-savedview-wrap {
     display: inline-flex;
     align-items: center;

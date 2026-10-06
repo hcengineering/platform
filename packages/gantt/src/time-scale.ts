@@ -45,7 +45,22 @@ export interface TimeScale {
   ticks: (range: [number, number]) => Tick[]
 }
 
-export function createTimeScale (zoom: ZoomLevel, origin: number, pxPerDayOverride?: number): TimeScale {
+/** Presentation settings supplied by the host application's active language. */
+export interface TimeScaleLocale {
+  locale?: string
+  weekLabel?: (week: number) => string
+  quarterLabel?: (quarter: number) => string
+}
+
+export function createTimeScale (
+  zoom: ZoomLevel,
+  origin: number,
+  pxPerDayOverride?: number,
+  labels: TimeScaleLocale = {}
+): TimeScale {
+  const locale = labels.locale ?? 'en'
+  const weekLabel = labels.weekLabel ?? ((week: number) => `W${week}`)
+  const quarterLabel = labels.quarterLabel ?? ((quarter: number) => `Q${quarter}`)
   const pxPerDay = pxPerDayOverride ?? PX_PER_DAY[zoom]
   const originSnapped = snapToUtcMidnight(origin)
 
@@ -71,7 +86,7 @@ export function createTimeScale (zoom: ZoomLevel, origin: number, pxPerDayOverri
           const m = d.getUTCMonth()
           let secondary: string | undefined
           if (first || m !== lastMonth) {
-            secondary = d.toLocaleString(undefined, { month: 'short', timeZone: 'UTC' })
+            secondary = d.toLocaleString(locale, { month: 'short', timeZone: 'UTC' })
             lastMonth = m
             first = false
           }
@@ -106,7 +121,7 @@ export function createTimeScale (zoom: ZoomLevel, origin: number, pxPerDayOverri
           }
           result.push({
             date: cursor,
-            label: `W${isoWeekNumber(c)}`,
+            label: weekLabel(isoWeekNumber(c)),
             level: isFirstWeekOfMonth ? 'major' : 'minor',
             secondaryLabel: secondary
           })
@@ -135,7 +150,7 @@ export function createTimeScale (zoom: ZoomLevel, origin: number, pxPerDayOverri
           }
           result.push({
             date: cursor,
-            label: c.toLocaleString(undefined, { month: 'short', timeZone: 'UTC' }),
+            label: c.toLocaleString(locale, { month: 'short', timeZone: 'UTC' }),
             level: c.getUTCMonth() === 0 ? 'major' : 'minor',
             secondaryLabel: secondary
           })
@@ -170,7 +185,7 @@ export function createTimeScale (zoom: ZoomLevel, origin: number, pxPerDayOverri
           }
           result.push({
             date: cursor,
-            label: `Q${qNum}`,
+            label: quarterLabel(qNum),
             level: qNum === 1 ? 'major' : 'minor',
             secondaryLabel: secondary
           })

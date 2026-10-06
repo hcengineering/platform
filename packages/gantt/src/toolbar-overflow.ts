@@ -28,7 +28,7 @@
  * that collapses as a whole; splitting e.g. the date-navigation into single
  * buttons would leave a half-usable control group behind.
  */
-export const TOOLBAR_TIERS = ['group', 'nav', 'date', 'zoom', 'undo', 'savedview'] as const
+export const TOOLBAR_TIERS = ['group', 'color', 'nav', 'date', 'zoom', 'undo', 'savedview'] as const
 export type ToolbarTier = (typeof TOOLBAR_TIERS)[number]
 
 /**
@@ -37,12 +37,21 @@ export type ToolbarTier = (typeof TOOLBAR_TIERS)[number]
  * - `savedview` is a passive "modified" indicator plus its update button; the
  *   same action is reachable from the More-actions menu.
  * - `date` (jump-to-date) duplicates what panning and the nav buttons do.
- * - `group` (group-by / colour-by) is view configuration, not navigation.
+ * - `color` is cosmetic; keep `group` visible longer because it changes the
+ *   layout of the issue list and chart.
  * - `undo` matters while editing, but the keyboard shortcuts stay live.
  * - `zoom` and `nav` are the two controls a Gantt is unusable without, so
  *   they are the last to go.
  */
-export const TOOLBAR_COLLAPSE_ORDER: readonly ToolbarTier[] = ['savedview', 'date', 'group', 'undo', 'zoom', 'nav']
+export const TOOLBAR_COLLAPSE_ORDER: readonly ToolbarTier[] = [
+  'savedview',
+  'date',
+  'color',
+  'group',
+  'undo',
+  'zoom',
+  'nav'
+]
 
 /**
  * Width assumed for a tier that has never been measured. Deliberately

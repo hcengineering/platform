@@ -344,6 +344,8 @@
     "GanttJumpToDate": "Jump to date",
     "GanttZoomDay": "Day",
     "GanttZoomWeek": "Week",
+    "GanttWeekLabel": "W{week}",
+    "GanttQuarterLabel": "Q{quarter}",
     "GanttZoomMonth": "Month",
     "GanttZoomQuarter": "Quarter",
     "GanttZoomCustom": "Custom",
@@ -561,7 +563,16 @@
     "SearchEmptyTitle": "No issues found for \"{query}\"",
     "SearchEmptyActiveFilters": "Active filters: {filters}",
     "SearchEmptyClearFilters": "Search without filters",
-    "SearchEmptyAllProjects": "Search in all projects"
+    "SearchEmptyAllProjects": "Search in all projects",
+    "GanttWithoutDates": "{count} without dates",
+    "GanttDates": "Dates",
+    "GanttSetDates": "Set dates",
+    "GanttNoScheduledTasks": "No scheduled tasks",
+    "GanttTodayAlreadyVisible": "Today is already in view",
+    "GanttVisibleRange": "Range",
+    "GanttNotScheduled": "Not scheduled",
+    "GanttMissingStartDates": "{count} issues have no start date.",
+    "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
   },
   "status": {}
 }

@@ -33,21 +33,21 @@ describe('resolveBarColors', () => {
   })
 
   it('mode=priority maps Urgent→Orange, High→Sunshine, Medium→Ocean, Low→Cloud, NoPriority→Blueberry', () => {
-    expect(resolveBarColors({ ...issue, priority: IssuePriority.Urgent } as any, 'priority', ctx).paletteIndex).toBe(
+    expect(resolveBarColors({ ...issue, priority: IssuePriority.Urgent }, 'priority', ctx).paletteIndex).toBe(
       PaletteColorIndexes.Orange
     )
-    expect(resolveBarColors({ ...issue, priority: IssuePriority.High } as any, 'priority', ctx).paletteIndex).toBe(
+    expect(resolveBarColors({ ...issue, priority: IssuePriority.High }, 'priority', ctx).paletteIndex).toBe(
       PaletteColorIndexes.Sunshine
     )
-    expect(resolveBarColors({ ...issue, priority: IssuePriority.Medium } as any, 'priority', ctx).paletteIndex).toBe(
+    expect(resolveBarColors({ ...issue, priority: IssuePriority.Medium }, 'priority', ctx).paletteIndex).toBe(
       PaletteColorIndexes.Ocean
     )
-    expect(resolveBarColors({ ...issue, priority: IssuePriority.Low } as any, 'priority', ctx).paletteIndex).toBe(
+    expect(resolveBarColors({ ...issue, priority: IssuePriority.Low }, 'priority', ctx).paletteIndex).toBe(
       PaletteColorIndexes.Cloud
     )
-    expect(
-      resolveBarColors({ ...issue, priority: IssuePriority.NoPriority } as any, 'priority', ctx).paletteIndex
-    ).toBe(PaletteColorIndexes.Blueberry)
+    expect(resolveBarColors({ ...issue, priority: IssuePriority.NoPriority }, 'priority', ctx).paletteIndex).toBe(
+      PaletteColorIndexes.Blueberry
+    )
   })
 
   it('mode=assignee uses assigneeRankFor; null → neutral fill', () => {
@@ -59,7 +59,7 @@ describe('resolveBarColors', () => {
 
   it('mode=component uses componentColorFor; null (no component) → neutral fill', () => {
     expect(resolveBarColors(issue, 'component', ctx).paletteIndex).toBe(4)
-    const noCmp = { ...issue, component: null } as any
+    const noCmp = { ...issue, component: null }
     expect(resolveBarColors(noCmp, 'component', ctx).fill).toContain('button-default')
   })
 
@@ -71,7 +71,7 @@ describe('resolveBarColors', () => {
 
   it('mode=milestone analogous to component', () => {
     expect(resolveBarColors(issue, 'milestone', ctx).paletteIndex).toBe(7)
-    const noMst = { ...issue, milestone: null } as any
+    const noMst = { ...issue, milestone: null }
     expect(resolveBarColors(noMst, 'milestone', ctx).fill).toContain('button-default')
   })
 

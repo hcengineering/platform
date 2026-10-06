@@ -306,7 +306,18 @@
     "SearchEmptyTitle": "\"{query}\" に一致するイシューが見つかりません",
     "SearchEmptyActiveFilters": "アクティブなフィルター：{filters}",
     "SearchEmptyClearFilters": "フィルターなしで検索",
-    "SearchEmptyAllProjects": "すべてのプロジェクトを検索"
+    "SearchEmptyAllProjects": "すべてのプロジェクトを検索",
+    "GanttWeekLabel": "第{week}週",
+    "GanttQuarterLabel": "第{quarter}四半期",
+    "GanttWithoutDates": "日付なし: {count}",
+    "GanttDates": "日付",
+    "GanttSetDates": "Set dates",
+    "GanttNoScheduledTasks": "No scheduled tasks",
+    "GanttTodayAlreadyVisible": "Today is already in view",
+    "GanttVisibleRange": "Range",
+    "GanttNotScheduled": "Not scheduled",
+    "GanttMissingStartDates": "{count} issues have no start date.",
+    "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
   },
   "status": {}
 }

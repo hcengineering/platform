@@ -8,7 +8,7 @@
   import type { IntlString } from '@hcengineering/platform'
   import type { Issue, IssueRelation, Milestone } from '@hcengineering/tracker'
   import { formatPredecessors, resolveIssueNumber } from './lib/predecessor-format'
-  import { Icon, IconChevronDown, IconChevronRight, Label, tooltip } from '@hcengineering/ui'
+  import { Icon, IconChevronDown, IconChevronRight, Label, themeStore, tooltip } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import type { DragState, LayoutRow } from './lib/types'
   import type { TimeScale, SidebarColumnKey } from '@hcengineering/gantt'
@@ -16,16 +16,22 @@
   import StatusBadge from './StatusBadge.svelte'
   import GanttSidebarHeaderCell from './GanttSidebarHeaderCell.svelte'
   import GanttSidebarColumn from './GanttSidebarColumn.svelte'
-  import {
-    activeDragTargetId,
-    computeYViewport,
-    sliceVisibleRows,
-    DEFAULT_COLUMNS,
-    DEFAULT_WIDTHS
-  } from '@hcengineering/gantt'
+  import { activeDragTargetId, sliceVisibleRows, DEFAULT_COLUMNS, DEFAULT_WIDTHS } from '@hcengineering/gantt'
   import type { GanttSortState, SortDirection } from './lib/sidebar-sort'
 
   export let rows: LayoutRow[]
+  $: groupRanges = (() => {
+    const ranges = new Map<string, { start: number, due: number }>()
+    for (const row of rows) {
+      if (row.groupKey === undefined || row.issue?.startDate == null || row.issue.dueDate == null) continue
+      const current = ranges.get(row.groupKey)
+      ranges.set(row.groupKey, {
+        start: Math.min(current?.start ?? Infinity, row.issue.startDate),
+        due: Math.max(current?.due ?? -Infinity, row.issue.dueDate)
+      })
+    }
+    return ranges
+  })()
   export let width: number = 280
   export let timeScale: TimeScale | undefined = undefined
   export let viewportLeft: number = 0
@@ -157,43 +163,19 @@
   // viewport props. Off → render every row (legacy path, preserved for
   // tests / embed previews).
   $: virtualizationOn = rowHeight > 0 && viewportHeight > 0
-  // When the parent applies a sort that re-orders the `rows` array, each
-  // row's `.y` field (set by `buildLayout` on the un-sorted ordering) no
-  // longer matches the sorted position. Re-stamp `y = index × rowHeight`
-  // so the absolute-positioned rows visually appear in the order they're
-  // passed in. This is identical to buildLayout's own y assignment for
-  // uniform-height rows, just keyed on the current (post-sort) index.
-  $: indexedRows = virtualizationOn
-    ? rows.map((r, i) => ({ row: r, vy: i * rowHeight }))
-    : rows.map((r) => ({ row: r, vy: r.y }))
-  // Total scrollable height — rowCount × rowHeight, matching the canvas.
-  $: totalRowsHeight =
-    rows.length * (rowHeight > 0 ? rowHeight : 0) ||
-    (rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0)
-  $: yViewport = virtualizationOn
-    ? computeYViewport({
-      rowCount: rows.length,
-      rowHeight,
-      scrollTop,
-      viewportHeight,
-      overscan
-    })
-    : null
-  // Slice on the re-stamped vy (so post-sort order matters) and project the
-  // result back to `{ row, vy }` pairs the template iterates over.
-  $: visibleIndexed =
-    virtualizationOn && yViewport !== null
-      ? indexedRows.filter((p) => {
-        return (
-          p.vy + (p.row.height ?? rowHeight) > scrollTop - overscan * rowHeight &&
-            p.vy < scrollTop + viewportHeight + overscan * rowHeight
-        )
-      })
-      : indexedRows
-  // When virtualizing, render the slice anchored to its re-stamped vy; the
-  // wrapper carries an explicit height so the scroller's scrollHeight
-  // matches the unvirtualized layout. The add-issue-row sits BELOW the
-  // spacer so it always renders at the bottom of the list.
+  // Sorting is applied before layout, so each row's y is authoritative.
+  // Group headers are shorter than issue rows; index × rowHeight drifts from
+  // the canvas by the height difference after every group header.
+  $: indexedRows = rows.map((row) => ({ row, vy: row.y }))
+  $: totalRowsHeight = rows.length > 0 ? rows[rows.length - 1].y + rows[rows.length - 1].height : 0
+  $: visibleIndexed = virtualizationOn
+    ? sliceVisibleRows(rows, {
+      top: scrollTop - overscan * rowHeight,
+      bottom: scrollTop + viewportHeight + overscan * rowHeight
+    }).map((row) => ({ row, vy: row.y }))
+    : indexedRows
+  // The spacer uses the same total height as the canvas. The add-issue row
+  // sits below it so it remains at the bottom of the list.
   $: spacerHeight = virtualizationOn ? totalRowsHeight : 0
 
   const dispatch = createEventDispatcher<{
@@ -268,6 +250,18 @@
     if (maxX < viewportLeft) return 'left'
     if (minX > viewportRight) return 'right'
     return null
+  }
+
+  function formatDates (
+    start: number | null | undefined,
+    due: number | null | undefined,
+    locale: string
+  ): string | null {
+    if (start == null && due == null) return null
+    const format = new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' })
+    if (start == null) return format.format(due as number)
+    if (due == null || due === start) return format.format(start)
+    return `${format.format(start)} – ${format.format(due)}`
   }
 
   function rowJumpTarget (row: LayoutRow): { startDate: number | null, dueDate: number | null } | null {
@@ -360,6 +354,10 @@
             </button>
             <span class="gantt-group-label" title={row.groupLabel ?? ''}>{row.groupLabel ?? ''}</span>
             <span class="gantt-group-count">{row.groupCount ?? 0}</span>
+            {#if row.groupKey !== undefined && groupRanges.has(row.groupKey)}
+              {@const range = groupRanges.get(row.groupKey)}
+              <span class="gantt-group-dates">{formatDates(range?.start, range?.due, $themeStore.language) ?? ''}</span>
+            {/if}
           </div>
         {:else}
           <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -446,6 +444,10 @@
           </span>
           <span class="gantt-group-label" title={row.groupLabel ?? ''}>{row.groupLabel ?? ''}</span>
           <span class="gantt-group-count">{row.groupCount ?? 0}</span>
+          {#if row.groupKey !== undefined && groupRanges.has(row.groupKey)}
+            {@const range = groupRanges.get(row.groupKey)}
+            <span class="gantt-group-dates">{formatDates(range?.start, range?.due, $themeStore.language) ?? ''}</span>
+          {/if}
         </div>
       {:else}
         {@const indent = row.depth * 20}
@@ -581,6 +583,14 @@
               <span class="cell-title" />
             {/if}
           {/if}
+          <span class="cell-dates">
+            {#if row.issue !== null}
+              {@const dates = formatDates(row.issue.startDate, row.issue.dueDate, $themeStore.language)}
+              {#if dates === null}<Label label={tracker.string.GanttNotScheduled} />{:else}{dates}{/if}
+            {:else if row.milestone !== null}
+              {formatDates(row.milestone.startDate, row.milestone.targetDate, $themeStore.language) ?? ''}
+            {/if}
+          </span>
           <span class="cell-jump">
             {#if dir !== null && jumpX !== null}
               <button
@@ -706,6 +716,16 @@
     border-radius: 3px;
     background: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 15%, transparent);
     color: var(--theme-state-info-color, #6366f1);
+  }
+  .cell-dates {
+    flex: 0 0 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    color: var(--theme-dark-color);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
   .cell-id {
     flex: 0 0 80px;
@@ -902,7 +922,7 @@
      extended-grid sidebar layouts via the .gantt-group-header modifier. */
   .sidebar-row.gantt-group-header,
   .sidebar-grid-row.gantt-group-header {
-    background: var(--theme-divider-color);
+    background: var(--theme-button-hovered);
     color: var(--theme-content-color);
     font-weight: 600;
     font-size: 12px;
@@ -914,15 +934,36 @@
     border-bottom: 1px solid var(--theme-divider-color);
   }
   .gantt-group-label {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .gantt-group-count {
+    padding: 1px 6px;
+    border-radius: 0.5rem;
+    background: var(--theme-divider-color);
+    font-variant-numeric: tabular-nums;
     flex: 0 0 auto;
     opacity: 0.7;
     font-weight: 500;
     font-size: 11px;
+  }
+  .gantt-group-dates {
+    margin-left: auto;
+    color: var(--theme-dark-color);
+    font-size: 11px;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .sidebar-row.gantt-group-header .gantt-group-dates {
+    /* The compact issue rows reserve a 28px jump cell and two 8px gaps
+       after dates. Match that inset and the 110px date column exactly. */
+    flex: 0 0 110px;
+    margin-right: 36px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
   }
 </style>

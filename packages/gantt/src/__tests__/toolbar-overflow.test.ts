@@ -16,6 +16,7 @@ const ALL: ToolbarTier[] = [...TOOLBAR_TIERS]
 // One easy-to-reason-about width per tier.
 const W: Record<ToolbarTier, number> = {
   group: 100,
+  color: 80,
   nav: 200,
   date: 150,
   zoom: 120,
@@ -39,24 +40,31 @@ describe('computeToolbarOverflow', () => {
   })
 
   it('keeps everything inline when it fits exactly', () => {
-    // 100+200+150+120+60+90 = 720, plus five gaps = 740
-    const r = computeToolbarOverflow(ALL, W, 740, GAP, MORE)
+    // 100+80+200+150+120+60+90 = 800, plus six gaps = 824
+    const r = computeToolbarOverflow(ALL, W, 824, GAP, MORE)
     expect(r.hidden).toEqual([])
     expect(r.visible).toEqual(ALL)
   })
 
   it('collapses the least important tier first', () => {
-    const r = computeToolbarOverflow(ALL, W, 739, GAP, MORE)
+    const r = computeToolbarOverflow(ALL, W, 823, GAP, MORE)
     expect(r.hidden).toEqual(['savedview'])
-    expect(r.visible).toEqual(['group', 'nav', 'date', 'zoom', 'undo'])
+    expect(r.visible).toEqual(['group', 'color', 'nav', 'date', 'zoom', 'undo'])
   })
 
   it('collapses further tiers in TOOLBAR_COLLAPSE_ORDER as space shrinks', () => {
-    expect(computeToolbarOverflow(ALL, W, 600, GAP, MORE).hidden).toEqual(['date', 'savedview'])
-    expect(computeToolbarOverflow(ALL, W, 450, GAP, MORE).hidden).toEqual(['group', 'date', 'savedview'])
-    expect(computeToolbarOverflow(ALL, W, 400, GAP, MORE).hidden).toEqual(['group', 'date', 'undo', 'savedview'])
+    expect(computeToolbarOverflow(ALL, W, 600, GAP, MORE).hidden).toEqual(['color', 'date', 'savedview'])
+    expect(computeToolbarOverflow(ALL, W, 450, GAP, MORE).hidden).toEqual(['group', 'color', 'date', 'savedview'])
+    expect(computeToolbarOverflow(ALL, W, 400, GAP, MORE).hidden).toEqual([
+      'group',
+      'color',
+      'date',
+      'undo',
+      'savedview'
+    ])
     expect(computeToolbarOverflow(ALL, W, 300, GAP, MORE).hidden).toEqual([
       'group',
+      'color',
       'date',
       'zoom',
       'undo',
@@ -71,7 +79,7 @@ describe('computeToolbarOverflow', () => {
   })
 
   it('never drops a tier — visible + hidden is always the input set', () => {
-    for (const available of [-1, 0, 30, 120, 300, 500, 740, 2000]) {
+    for (const available of [-1, 0, 30, 120, 300, 500, 824, 2000]) {
       const r = computeToolbarOverflow(ALL, W, available, GAP, MORE)
       expect([...r.visible, ...r.hidden].sort()).toEqual([...ALL].sort())
     }
@@ -81,6 +89,13 @@ describe('computeToolbarOverflow', () => {
     const r = computeToolbarOverflow(ALL, W, 300, GAP, MORE)
     expect(r.visible).toEqual(ALL.filter((t) => !r.hidden.includes(t)))
     expect(r.hidden).toEqual(ALL.filter((t) => r.hidden.includes(t)))
+  })
+
+  it('keeps grouping inline when only one of the two view controls fits', () => {
+    const present: ToolbarTier[] = ['group', 'color', 'nav', 'zoom', 'undo']
+    const r = computeToolbarOverflow(present, W, 510, GAP, 0)
+    expect(r.visible).toEqual(['group', 'nav', 'zoom', 'undo'])
+    expect(r.hidden).toEqual(['color'])
   })
 
   it('ignores tiers that are not present', () => {

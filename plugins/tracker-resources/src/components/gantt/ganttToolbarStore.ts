@@ -20,6 +20,10 @@ export interface GanttToolbarSnapshot {
   mobileDrawerOpen: boolean
   toggleMobileDrawer: () => void
 
+  canJumpToStart: boolean
+  canJumpToEnd: boolean
+  canJumpToToday: boolean
+  hasScheduledTasks: boolean
   datePickerValue: string
   setDatePickerValue: (v: string) => void
   jumpToStart: () => void
@@ -46,7 +50,7 @@ export interface GanttToolbarSnapshot {
   handleRedo: () => void
 
   ganttGroupBy: GroupByKey
-  onGroupBySelectChange: (e: Event) => void
+  onGroupBySelectChange: (e: CustomEvent<string>) => void
 
   savedViewModified: boolean
   savedViewName: string
@@ -58,7 +62,7 @@ export interface GanttToolbarSnapshot {
   ariaLabels: Record<string, string>
 
   ganttBarColorBy: BarColorMode
-  onColorBySelectChange: (ev: Event) => void
+  onColorBySelectChange: (ev: CustomEvent<string>) => void
 }
 
 export const ganttToolbarSnapshot = writable<GanttToolbarSnapshot | null>(null)

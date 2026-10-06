@@ -306,7 +306,18 @@
     "SearchEmptyTitle": "Aucun problème trouvé pour \"{query}\"",
     "SearchEmptyActiveFilters": "Filtres actifs : {filters}",
     "SearchEmptyClearFilters": "Rechercher sans filtres",
-    "SearchEmptyAllProjects": "Rechercher dans tous les projets"
+    "SearchEmptyAllProjects": "Rechercher dans tous les projets",
+    "GanttWeekLabel": "S{week}",
+    "GanttQuarterLabel": "T{quarter}",
+    "GanttWithoutDates": "{count} sans dates",
+    "GanttDates": "Dates",
+    "GanttSetDates": "Set dates",
+    "GanttNoScheduledTasks": "No scheduled tasks",
+    "GanttTodayAlreadyVisible": "Today is already in view",
+    "GanttVisibleRange": "Range",
+    "GanttNotScheduled": "Not scheduled",
+    "GanttMissingStartDates": "{count} issues have no start date.",
+    "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
   },
   "status": {}
 }
