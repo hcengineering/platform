@@ -18,9 +18,9 @@
     "_phase:docker-build": "rushx docker:build",
     "_phase:docker-staging": "rushx docker:staging",
     "bundle": "node ../../../common/scripts/esbuild.js --external=ws",
-    "docker:build": "../../../common/scripts/docker_build.sh hardcoreeng/events-processor",
-    "docker:staging": "../../../common/scripts/docker_tag.sh hardcoreeng/events-processor staging",
-    "docker:push": "../../../common/scripts/docker_tag.sh hardcoreeng/events-processor",
+    "docker:build": "node ../../../common/scripts/bash.js ../../../common/scripts/docker_build.sh hardcoreeng/events-processor",
+    "docker:staging": "node ../../../common/scripts/bash.js ../../../common/scripts/docker_tag.sh hardcoreeng/events-processor staging",
+    "docker:push": "node ../../../common/scripts/bash.js ../../../common/scripts/docker_tag.sh hardcoreeng/events-processor",
     "run-local": "cross-env ts-node src/index.ts",
     "format": "format src",
     "_phase:build": "compile transpile src",
@@ -68,4 +68,3 @@
     "dotenv": "^16.4.5"
   }
 }
-

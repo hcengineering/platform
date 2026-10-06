@@ -95,6 +95,7 @@ For detailed information about the platform architecture, services, and their in
     - [UI tests](#ui-tests)
   - [Package publishing](#package-publishing)
   - [Additional testing](#additional-testing)
+  - [Native Windows build](#native-windows-build)
   - [WSL build guide](#wsl-build-guide)
 
 ## Pre-requisites
@@ -324,6 +325,22 @@ node ./common/scripts/bump.js -p projectName
 ## Additional testing
 
 This project is tested with BrowserStack.
+
+## Native Windows build
+
+The repository can be built and run directly on Windows, without WSL. Build and run scripts are written in bash; on Windows they are executed with Git Bash through `common/scripts/bash.js`, so no extra setup is needed beyond the usual prerequisites:
+
+- [Git for Windows](https://git-scm.com/download/win) (it provides Git Bash). If it is installed in a non-standard location and `git` is not on `PATH`, set `GIT_BASH` to the full path of `bash.exe`, e.g. `C:\Program Files\Git\bin\bash.exe`.
+- Node.js, Rush and Docker Desktop as described in [Pre-requisites](#pre-requisites).
+
+Run `rush` and `rushx` commands from any shell (PowerShell, cmd or Git Bash).
+
+Notes for contributors:
+
+- Do not put bash syntax (`$(...)`, `rm -rf`, `cp`, `|| true`, `>/dev/null`, single quotes) directly into `package.json` scripts: Windows runs them with `cmd.exe`. Put such a command into the `bashScripts` section of the same `package.json` and call it as `node <path-to-root>/common/scripts/bash.js --script <name>`.
+- Call `.sh` files as `node <path-to-root>/common/scripts/bash.js <path-to-script>.sh [args]`, not directly.
+- `.sh` files are always checked out with LF line endings (see `.gitattributes`).
+- On Windows the wrapper disables Git Bash path conversion (`MSYS_NO_PATHCONV=1`), so arguments such as `UPLOAD_URL=/files` are passed as is.
 
 ## WSL build guide
 
