@@ -16,12 +16,12 @@
   import { ActionContext } from '@hcengineering/presentation'
   import { Room as TypeRoom } from '@hcengineering/love'
   import { getMetadata } from '@hcengineering/platform'
-  import { Label, Loading, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
+  import { Label, Loading, Separator, defineSeparators, deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
 
   import love from '../plugin'
   import { waitForOfficeLoaded, currentRoom } from '../stores'
-  import { isFullScreen, lk } from '../utils'
+  import { isFullScreen } from '../utils'
   import ControlBar from './meeting/ControlBar.svelte'
   import ParticipantsListView from './meeting/ParticipantsListView.svelte'
   import ScreenSharingView from './meeting/ScreenSharingView.svelte'
@@ -29,11 +29,16 @@
   export let canMaximize: boolean = true
   export let room: TypeRoom
 
-  let roomEl: HTMLDivElement
+  let roomElement: HTMLDivElement | undefined = undefined
 
   let withScreenSharing: boolean = false
   let loading: boolean = false
   let configured: boolean = false
+
+  defineSeparators('love-room', [
+    { minSize: 14, size: 'auto', maxSize: 'auto' },
+    { minSize: 14, size: 18, maxSize: 75 }
+  ])
 
   onMount(async () => {
     loading = true
@@ -46,29 +51,21 @@
 
     await waitForOfficeLoaded()
 
-    roomEl && roomEl.addEventListener('fullscreenchange', handleFullScreen)
+    roomElement?.addEventListener('fullscreenchange', handleFullScreen)
     loading = false
   })
 
-  let gridStyle = ''
-  let columns: number = 0
-  let rows: number = 0
-
   onDestroy(() => {
-    roomEl.removeEventListener('fullscreenchange', handleFullScreen)
+    roomElement?.removeEventListener('fullscreenchange', handleFullScreen)
   })
 
-  function updateStyle (count: number, screenSharing: boolean): void {
-    columns = screenSharing ? 1 : Math.min(Math.ceil(Math.sqrt(count)), 8)
-    rows = Math.ceil(count / columns)
-    gridStyle = `grid-template-columns: repeat(${columns}, 1fr); aspect-ratio: ${columns * 1280}/${rows * 720};`
+  const handleFullScreen = (): void => {
+    $isFullScreen = document.fullscreenElement != null
   }
-
-  const handleFullScreen = () => ($isFullScreen = document.fullscreenElement != null)
 
   function checkFullscreen (): void {
     const needFullScreen = $isFullScreen
-    if (document.fullscreenElement && !needFullScreen) {
+    if (document.fullscreenElement != null && !needFullScreen) {
       document
         .exitFullscreen()
         .then(() => {
@@ -78,8 +75,8 @@
           console.log(`Error exiting fullscreen mode: ${err.message} (${err.name})`)
           $isFullScreen = false
         })
-    } else if (!document.fullscreenElement && needFullScreen && roomEl != null) {
-      roomEl
+    } else if (document.fullscreenElement == null && needFullScreen && roomElement != null) {
+      roomElement
         .requestFullscreen()
         .then(() => {
           $isFullScreen = true
@@ -93,8 +90,8 @@
 
   function onFullScreen (): void {
     const needFullScreen = !$isFullScreen
-    if (!document.fullscreenElement && needFullScreen && roomEl != null) {
-      roomEl
+    if (document.fullscreenElement == null && needFullScreen && roomElement != null) {
+      roomElement
         .requestFullscreen()
         .then(() => {
           $isFullScreen = true
@@ -116,11 +113,12 @@
     }
   }
 
-  $: if (((document.fullscreenElement && !$isFullScreen) || $isFullScreen) && roomEl) checkFullscreen()
-  $: updateStyle(lk.numParticipants, withScreenSharing)
+  $: if (((document.fullscreenElement != null && !$isFullScreen) || $isFullScreen) && roomElement !== undefined) {
+    checkFullscreen()
+  }
 </script>
 
-<div bind:this={roomEl} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
+<div bind:this={roomElement} class="flex-col-center w-full h-full" class:theme-dark={$isFullScreen}>
   <ActionContext context={{ mode: 'workbench' }} />
   {#if !configured}
     <div class="flex justify-center error h-full w-full clear-mins">
@@ -132,20 +130,17 @@
   <div
     class="room-container"
     class:sharing={withScreenSharing}
-    class:many={columns > 3}
     class:hidden={loading}
     class:mobile={$deviceInfo.isMobile}
   >
     <div class="screenContainer">
       <ScreenSharingView bind:hasActiveTrack={withScreenSharing} />
     </div>
-    <div class="videoGrid" style={withScreenSharing ? '' : gridStyle} class:scroll-m-0={withScreenSharing}>
-      <ParticipantsListView
-        room={room._id}
-        on:participantsCount={(evt) => {
-          updateStyle(evt.detail, withScreenSharing)
-        }}
-      />
+    {#if withScreenSharing && !$deviceInfo.isMobile}
+      <Separator name={'love-room'} index={0} />
+    {/if}
+    <div class="participantsPane">
+      <ParticipantsListView room={room._id} />
     </div>
   </div>
   {#if $currentRoom}
@@ -162,7 +157,6 @@
   .room-container {
     display: flex;
     justify-content: center;
-    padding: 1rem;
     width: 100%;
     height: 100%;
     min-width: 0;
@@ -173,6 +167,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      padding: 0.5rem;
       max-height: 100%;
       min-height: 0;
       width: 100%;
@@ -190,55 +185,59 @@
     &:not(.sharing) {
       gap: 0;
 
-      .videoGrid {
-        display: grid;
-        grid-auto-rows: 1fr;
-        justify-content: center;
-        align-items: center;
-        gap: 1rem;
-        max-height: 100%;
-        max-width: 100%;
+      .participantsPane {
+        flex: 1;
+        --participants-gap: 1rem;
       }
       .screenContainer {
         display: none;
       }
     }
     &.sharing {
-      gap: 1rem;
+      gap: 0;
 
-      .videoGrid {
+      .screenContainer {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      .participantsPane {
+        flex: 0 0 auto;
+        width: clamp(14rem, 22vw, 18rem);
+        max-width: clamp(14rem, 22vw, 18rem);
+        min-width: 12rem;
+        height: 100%;
         overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin: 0.5rem 0;
-        padding: 0 0.5rem;
-        width: 15rem;
-        min-width: 15rem;
-        min-height: 0;
-        max-width: 15rem;
+        --participants-gap: var(--spacing-0_5);
       }
     }
-
-    &.many {
-      padding: 0.5rem;
-
-      &:not(.sharing) .videoGrid,
-      &.sharing {
-        gap: 0.5rem;
-      }
-    }
-
     &.mobile {
       padding: var(--spacing-0_5);
 
-      &:not(.sharing) .videoGrid,
-      &.sharing {
-        gap: var(--spacing-0_5);
+      .participantsPane {
+        padding: var(--spacing-0_25);
+        --participants-gap: var(--spacing-0_5);
       }
     }
   }
   .hidden {
     display: none;
+  }
+
+  .participantsPane {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0.5rem;
+  }
+
+  .participantsPane :global(.participants-grid) {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
   }
 </style>
