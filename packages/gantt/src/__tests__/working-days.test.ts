@@ -5,7 +5,9 @@
 
 import {
   isWorkingDay,
+  findWorkingDay,
   nextWorkingDay,
+  prevWorkingDay,
   addWorkingDays,
   workingDaysBetween,
   workingDayDelta,
@@ -17,7 +19,12 @@ import {
   fsReverseAnchor,
   ssReverseAnchor,
   ffReverseAnchor,
-  sfReverseAnchor
+  sfReverseAnchor,
+  workingDaySpan,
+  dueForSpan,
+  startForSpan,
+  workingDaysPerWeek,
+  MAX_WORKING_SPAN_DAYS
 } from '../working-days'
 import type { WorkingCalendar } from '../types'
 
@@ -28,6 +35,7 @@ const DAY_MS = 86_400_000
 const MON = Date.UTC(2026, 4, 18)
 const TUE = Date.UTC(2026, 4, 19)
 const WED = Date.UTC(2026, 4, 20)
+const THU = Date.UTC(2026, 4, 21)
 const FRI = Date.UTC(2026, 4, 22)
 const SAT = Date.UTC(2026, 4, 23)
 const SUN = Date.UTC(2026, 4, 24)
@@ -295,5 +303,164 @@ describe('FS/SS/FF/SF anchors — working-days mode (Mon-Fri)', () => {
 
   it('fsReverseAnchor from Monday + lag=0 lands on the previous Friday', () => {
     expect(fsReverseAnchor(MON2, 0, cfgMonFri)).toBe(FRI)
+  })
+})
+
+describe('prevWorkingDay', () => {
+  it('returns the input midnight when it is a working day', () => {
+    expect(prevWorkingDay(MON, cfgMonFri)).toBe(MON)
+  })
+
+  it('Saturday rolls back to Friday', () => {
+    expect(prevWorkingDay(SAT, cfgMonFri)).toBe(FRI)
+  })
+
+  it('Sunday rolls back to Friday', () => {
+    expect(prevWorkingDay(SUN, cfgMonFri)).toBe(FRI)
+  })
+
+  it('skips a Friday holiday back to Thursday', () => {
+    const cfgHolFri: WorkingCalendar = { weekdayMask: 0b0011111, holidays: [FRI] }
+    expect(prevWorkingDay(FRI, cfgHolFri)).toBe(THU)
+    expect(prevWorkingDay(SUN, cfgHolFri)).toBe(THU)
+  })
+
+  it('falls back to the input midnight when no day is a working day', () => {
+    expect(prevWorkingDay(SAT + 3 * 3_600_000, cfgEmpty)).toBe(SAT)
+  })
+
+  it('normalizes a time-of-day input to UTC midnight', () => {
+    expect(prevWorkingDay(SAT + 3 * 3_600_000, cfgMonFri)).toBe(FRI)
+  })
+})
+
+describe('workingDaySpan', () => {
+  it('Mon..Fri is five working days', () => {
+    expect(workingDaySpan(MON, FRI, cfgMonFri)).toBe(5)
+  })
+
+  it('Fri..Mon spans two working days across the weekend', () => {
+    expect(workingDaySpan(FRI, MON2, cfgMonFri)).toBe(2)
+  })
+
+  it('a weekend-only bar counts as one working day', () => {
+    expect(workingDaySpan(SAT, SUN, cfgMonFri)).toBe(1)
+  })
+
+  it('a holiday inside the bar is not counted', () => {
+    expect(workingDaySpan(MON, FRI, { weekdayMask: 0b0011111, holidays: [WED] })).toBe(4)
+  })
+
+  it('clamps an inverted range to one', () => {
+    expect(workingDaySpan(FRI, MON, cfgMonFri)).toBe(1)
+  })
+})
+
+describe('dueForSpan / startForSpan', () => {
+  it('a three-working-day bar starting Thursday ends next Monday', () => {
+    expect(dueForSpan(THU, 3, cfgMonFri)).toBe(MON2)
+  })
+
+  it('a three-working-day bar ending Monday starts the previous Thursday', () => {
+    expect(startForSpan(MON2, 3, cfgMonFri)).toBe(THU)
+  })
+
+  it('startForSpan inverts dueForSpan for every weekday start and spans 1..10', () => {
+    for (const s of [MON, TUE, WED, THU, FRI]) {
+      for (let n = 1; n <= 10; n++) {
+        expect(startForSpan(dueForSpan(s, n, cfgMonFri), n, cfgMonFri)).toBe(s)
+      }
+    }
+  })
+
+  it('a span of one or less returns the input unchanged', () => {
+    expect(dueForSpan(SAT, 1, cfgMonFri)).toBe(SAT)
+    expect(dueForSpan(WED, 0, cfgMonFri)).toBe(WED)
+    expect(startForSpan(SUN, 1, cfgMonFri)).toBe(SUN)
+    expect(startForSpan(WED, -2, cfgMonFri)).toBe(WED)
+  })
+})
+
+describe('workingDaysPerWeek', () => {
+  it('counts the active weekdays of the mask', () => {
+    expect(workingDaysPerWeek({ weekdayMask: 31, holidays: [] })).toBe(5)
+    expect(workingDaysPerWeek({ weekdayMask: 63, holidays: [] })).toBe(6)
+    expect(workingDaysPerWeek({ weekdayMask: 127, holidays: [] })).toBe(7)
+    expect(workingDaysPerWeek({ weekdayMask: 0, holidays: [] })).toBe(0)
+  })
+})
+
+describe('working-day helpers — degenerate input stays bounded', () => {
+  // 70 consecutive holidays from Mon May 18: longer than the 60-day bail.
+  const allHolidays: WorkingCalendar = {
+    weekdayMask: 0b1111111,
+    holidays: Array.from({ length: 70 }, (_, i) => MON + i * DAY_MS)
+  }
+
+  it('nextWorkingDay / prevWorkingDay fall back to the input midnight when holidays cover the window', () => {
+    expect(nextWorkingDay(MON, allHolidays)).toBe(MON)
+    expect(prevWorkingDay(MON + 69 * DAY_MS, allHolidays)).toBe(MON + 69 * DAY_MS)
+  })
+
+  it('findWorkingDay reports a failed search instead of a non-working day', () => {
+    expect(findWorkingDay(MON, 1, allHolidays)).toBeUndefined()
+    expect(findWorkingDay(MON + 69 * DAY_MS, -1, allHolidays)).toBeUndefined()
+    expect(findWorkingDay(SAT, 1, cfgEmpty)).toBeUndefined()
+    expect(findWorkingDay(NaN, 1, cfgMonFri)).toBeUndefined()
+    // Within the window it finds the working day just past the blackout.
+    expect(findWorkingDay(MON + 20 * DAY_MS, 1, allHolidays)).toBe(MON + 70 * DAY_MS)
+    expect(findWorkingDay(MON + 50 * DAY_MS, -1, allHolidays)).toBe(MON - DAY_MS)
+  })
+
+  it('findWorkingDay snaps forward / backward like nextWorkingDay / prevWorkingDay', () => {
+    expect(findWorkingDay(SAT + 3 * 3_600_000, 1, cfgMonFri)).toBe(MON2)
+    expect(findWorkingDay(SAT + 3 * 3_600_000, -1, cfgMonFri)).toBe(FRI)
+    expect(findWorkingDay(WED + 3 * 3_600_000, -1, cfgMonFri)).toBe(WED)
+  })
+
+  it('addWorkingDays caps a huge finite step count and finishes quickly', () => {
+    const t0 = Date.now()
+    expect(addWorkingDays(MON, Number.MAX_SAFE_INTEGER, cfgAllDays)).toBe(MON + MAX_WORKING_SPAN_DAYS * DAY_MS)
+    expect(addWorkingDays(MON, -Number.MAX_SAFE_INTEGER, cfgAllDays)).toBe(MON - MAX_WORKING_SPAN_DAYS * DAY_MS)
+    expect(addWorkingDays(MON, Number.MAX_VALUE, cfgMonFri)).toBe(addWorkingDays(MON, MAX_WORKING_SPAN_DAYS, cfgMonFri))
+    expect(Number.isFinite(addWorkingDays(MON, 1e15, cfgEmpty))).toBe(true)
+    expect(Number.isFinite(addWorkingDays(MON, -1e15, allHolidays))).toBe(true)
+    expect(Date.now() - t0).toBeLessThan(2000)
+  })
+
+  it('addWorkingDays treats a non-finite step count as zero', () => {
+    expect(addWorkingDays(MON, Infinity, cfgMonFri)).toBe(MON)
+    expect(addWorkingDays(MON, -Infinity, cfgMonFri)).toBe(MON)
+    expect(addWorkingDays(MON, NaN, cfgMonFri)).toBe(MON)
+  })
+
+  it('workingDaySpan returns 1 for non-finite or inverted input', () => {
+    expect(workingDaySpan(MON, Infinity, cfgMonFri)).toBe(1)
+    expect(workingDaySpan(-Infinity, MON, cfgMonFri)).toBe(1)
+    expect(workingDaySpan(NaN, MON, cfgMonFri)).toBe(1)
+    expect(workingDaySpan(Number.MAX_SAFE_INTEGER, 0, cfgMonFri)).toBe(1)
+  })
+
+  it('workingDaySpan counts at most MAX_WORKING_SPAN_DAYS calendar days of a huge range', () => {
+    expect(workingDaySpan(0, Number.MAX_SAFE_INTEGER, cfgAllDays)).toBe(MAX_WORKING_SPAN_DAYS)
+    expect(workingDaySpan(0, Number.MAX_SAFE_INTEGER, cfgEmpty)).toBe(1)
+  })
+
+  it('dueForSpan / startForSpan treat a non-finite span as one day', () => {
+    expect(dueForSpan(WED, Infinity, cfgMonFri)).toBe(WED)
+    expect(dueForSpan(WED, NaN, cfgMonFri)).toBe(WED)
+    expect(startForSpan(WED, Infinity, cfgMonFri)).toBe(WED)
+  })
+
+  it('dueForSpan / startForSpan clamp a huge span and terminate without working weekdays', () => {
+    expect(dueForSpan(MON, 1e12, cfgAllDays)).toBe(MON + (MAX_WORKING_SPAN_DAYS - 1) * DAY_MS)
+    expect(startForSpan(MON, 1e12, cfgAllDays)).toBe(MON - (MAX_WORKING_SPAN_DAYS - 1) * DAY_MS)
+    expect(Number.isFinite(dueForSpan(MON, 1e12, cfgEmpty))).toBe(true)
+    expect(Number.isFinite(startForSpan(MON, 1e12, cfgEmpty))).toBe(true)
+  })
+
+  it('dueForSpan / startForSpan return a non-finite anchor unchanged', () => {
+    expect(dueForSpan(NaN, 3, cfgMonFri)).toBeNaN()
+    expect(startForSpan(Infinity, 3, cfgMonFri)).toBe(Infinity)
   })
 })
