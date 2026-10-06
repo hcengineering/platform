@@ -512,6 +512,8 @@ describe('simulateCascade — working-days mode', () => {
     if (res.kind !== 'cascade') return
     // fsAnchor(Fri May 22, 1 wd, Mo-Fr) = Mon May 25.
     expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 25))
+    // B keeps its five working days: Mon May 25 .. Fri May 29.
+    expect(res.shifts[0].newDue).toBe(Date.UTC(2026, 4, 29))
   })
 
   it('FS lag=2 with Mo-Fr cfg: 2 working days after Friday = Wednesday next week', () => {
@@ -524,6 +526,8 @@ describe('simulateCascade — working-days mode', () => {
     if (res.kind !== 'cascade') return
     // fsAnchor(Fri May 22, (1 + 2) wd, Mo-Fr) = Wed May 27.
     expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 27))
+    // B keeps its five working days: Wed May 27 .. Tue Jun 2.
+    expect(res.shifts[0].newDue).toBe(Date.UTC(2026, 5, 2))
   })
 
   it('legacy (cfg=undefined): FS push uses calendar days with the +1-day rule', () => {
@@ -564,6 +568,8 @@ describe('simulateCascade — working-days mode', () => {
     // fsReverseAnchor(Mon May 25, 0, cfg) = previous Fri May 22 → A.newDue = May 22.
     expect(res.shifts[0].issue._id).toBe('A')
     expect(res.shifts[0].newDue).toBe(Date.UTC(2026, 4, 22))
+    // A keeps its six working days (Mon Jun 1 .. Mon Jun 8): Fri May 15 .. Fri May 22.
+    expect(res.shifts[0].newStart).toBe(Date.UTC(2026, 4, 15))
   })
 
   it('FS gap floor uses working days: drag A Fri→Mon (1 wd) pushes B by 1 working day, not 3 calendar days', () => {
@@ -656,23 +662,27 @@ describe('simulateCascade — working-days mode', () => {
   })
 
   it('Test 6: multi-hop FS chain — floor dominates the second hop and propagates through the cascade', () => {
-    // A: 1-day Thu 14. B: Fri 15 .. Mon 18 (weekend spanner, zero slack: fsAnchor(Thu 14) = Fri 15).
-    // C: 1-day Wed 20 (1 wd slack: fsAnchor(Mon 18) = Tue 19). Primary: A → Sat 16 (pinned non-working).
+    // A: 1-day Thu 14. B: Fri 15 .. Mon 18 (weekend spanner, two working days, zero slack:
+    // fsAnchor(Thu 14) = Fri 15). C: 1-day Wed 20 (1 wd slack: fsAnchor(Mon 18) = Tue 19).
+    // Primary: A → Mon 18.
     const A = issue('A', Date.UTC(2026, 4, 14), Date.UTC(2026, 4, 14))
     const B = issue('B', Date.UTC(2026, 4, 15), Date.UTC(2026, 4, 18))
     const C = issue('C', Date.UTC(2026, 4, 20), Date.UTC(2026, 4, 20))
     const relations = [rel('A', 'B', 'finish-to-start', 0), rel('B', 'C', 'finish-to-start', 0)]
-    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 16), newDue: Date.UTC(2026, 4, 16) }]
+    const primary: PrimaryEdit[] = [{ issue: A, newStart: Date.UTC(2026, 4, 18), newDue: Date.UTC(2026, 4, 18) }]
     const res = simulateCascade(primary, [A, B, C], relations, () => true, { workingDays: cfgMonFri })
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
     const byId = new Map(res.shifts.map((s) => [s.issue._id, s]))
-    // Hop 1 (A→B): snap = floor = Mon 18 (anchor case) → B keeps its 3-day span → Mon 18 .. Thu 21.
-    expect(byId.get('B' as Ref<Issue>)?.newStart).toBe(Date.UTC(2026, 4, 18))
-    expect(byId.get('B' as Ref<Issue>)?.newDue).toBe(Date.UTC(2026, 4, 21))
-    // Hop 2 (B→C): floor addWorkingDays(Wed 20, 3) = Mon 25 > snap fsAnchor(Thu 21) = Fri 22 → floor wins.
-    expect(byId.get('C' as Ref<Issue>)?.newStart).toBe(Date.UTC(2026, 4, 25))
-    expect(byId.get('C' as Ref<Issue>)?.newDue).toBe(Date.UTC(2026, 4, 25))
+    // Hop 1 (A→B): floor addWorkingDays(Fri 15, workingDayDelta(Thu 14, Mon 18) = 2) = Tue 19
+    // = snap fsAnchor(Mon 18) → B keeps its two working days → Tue 19 .. Wed 20.
+    expect(byId.get('B' as Ref<Issue>)?.newStart).toBe(Date.UTC(2026, 4, 19))
+    expect(byId.get('B' as Ref<Issue>)?.newDue).toBe(Date.UTC(2026, 4, 20))
+    // Hop 2 (B→C): floor addWorkingDays(Wed 20, workingDayDelta(Mon 18, Wed 20) = 2) = Fri 22
+    // > snap fsAnchor(Wed 20) = Thu 21 → floor wins.
+    expect(byId.get('C' as Ref<Issue>)?.newStart).toBe(Date.UTC(2026, 4, 22))
+    expect(byId.get('C' as Ref<Issue>)?.newDue).toBe(Date.UTC(2026, 4, 22))
+    expect(res.shifts.some((s) => s.reason === 'pull-predecessor')).toBe(false)
     expect(isWorkingDay(byId.get('C' as Ref<Issue>)?.newStart as number, cfgMonFri)).toBe(true)
   })
 
@@ -754,7 +764,7 @@ describe('simulateCascade — working-days mode: reverse pass must not undo a sa
   const cfg = { weekdayMask: 0b0011111, holidays: [Date.UTC(2026, 9, 22)] }
   const oct = (d: number): number => Date.UTC(2026, 9, d)
 
-  it('chain push A→B→C where B ends on a Saturday: B keeps Fri 16–Sat 17, no pull-predecessor', () => {
+  it('chain push A→B→C: B keeps its two working days (Fri 16–Mon 19), C follows on Tue 20–Wed 21', () => {
     // A Mon 5–Fri 9, B Mon 12–Tue 13, C Wed 14–Thu 15 (FS chain).
     const A = issue('A', oct(5), oct(9))
     const B = issue('B', oct(12), oct(13))
@@ -766,10 +776,11 @@ describe('simulateCascade — working-days mode: reverse pass must not undo a sa
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
     const byId = new Map(res.shifts.map((s) => [s.issue._id as string, s]))
-    // fsAnchor(Thu 15) = Fri 16 → B Fri 16–Sat 17.
-    expect(byId.get('B')).toMatchObject({ newStart: oct(16), newDue: oct(17), reason: 'push-successor' })
-    // fsAnchor(Sat 17) = Mon 19 → C Mon 19–Tue 20.
-    expect(byId.get('C')).toMatchObject({ newStart: oct(19), newDue: oct(20), reason: 'push-successor' })
+    // fsAnchor(Thu 15) = Fri 16 → B keeps two working days: Fri 16–Mon 19.
+    expect(byId.get('B')).toMatchObject({ newStart: oct(16), newDue: oct(19), reason: 'push-successor' })
+    // fsAnchor(Mon 19) = Tue 20 = floor addWorkingDays(Wed 14, workingDayDelta(Tue 13, Mon 19) = 4)
+    // → C Tue 20–Wed 21; fsAnchor(B.due Mon 19) = Tue 20 = C.start, so no pull.
+    expect(byId.get('C')).toMatchObject({ newStart: oct(20), newDue: oct(21), reason: 'push-successor' })
     expect(res.shifts.some((s) => s.reason === 'pull-predecessor')).toBe(false)
   })
 
@@ -783,15 +794,171 @@ describe('simulateCascade — working-days mode: reverse pass must not undo a sa
   })
 
   it("successor dragged onto the predecessor's Friday (real violation) → predecessor pulled to Wed 14–Thu 15", () => {
+    // B Thu 15–Fri 16 (two working days).
+    const B = issue('B', oct(15), oct(16))
+    const C = issue('C', oct(21), oct(23))
+    const primary: PrimaryEdit[] = [{ issue: C, newStart: oct(16), newDue: oct(19) }]
+    const res = simulateCascade(primary, [B, C], [rel('B', 'C')], () => true, { workingDays: cfg })
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    // fsReverseAnchor(Fri 16) = Thu 15 → B keeps two working days: Wed 14–Thu 15.
+    expect(res.shifts).toHaveLength(1)
+    expect(res.shifts[0]).toMatchObject({ newStart: oct(14), newDue: oct(15), reason: 'pull-predecessor' })
+  })
+
+  it('a pulled predecessor stored on Fri 16–Sat 17 becomes a one-working-day bar (Thu 15)', () => {
     const B = issue('B', oct(16), oct(17))
     const C = issue('C', oct(21), oct(23))
     const primary: PrimaryEdit[] = [{ issue: C, newStart: oct(16), newDue: oct(19) }]
     const res = simulateCascade(primary, [B, C], [rel('B', 'C')], () => true, { workingDays: cfg })
     expect(res.kind).toBe('cascade')
     if (res.kind !== 'cascade') return
-    // fsReverseAnchor(Fri 16) = Thu 15 → B shifted back by 2 calendar days.
+    // workingDaySpan(Fri 16, Sat 17) = 1 → B Thu 15–Thu 15.
     expect(res.shifts).toHaveLength(1)
-    expect(res.shifts[0]).toMatchObject({ newStart: oct(14), newDue: oct(15), reason: 'pull-predecessor' })
+    expect(res.shifts[0]).toMatchObject({ newStart: oct(15), newDue: oct(15), reason: 'pull-predecessor' })
+  })
+})
+
+describe('simulateCascade — working-days mode: shifted issues keep their working-day span', () => {
+  const cfgMonFri = { weekdayMask: 0b0011111, holidays: [] }
+  const may = (d: number): number => Date.UTC(2026, 4, d)
+  const jun = (d: number): number => Date.UTC(2026, 5, d)
+
+  function run (
+    issues: Issue[],
+    relations: IssueRelation[],
+    primary: PrimaryEdit[],
+    workingDays: { weekdayMask: number, holidays: number[] } | null = cfgMonFri
+  ): Map<string, { newStart: number, newDue: number, reason: string }> {
+    const res = simulateCascade(
+      primary,
+      issues,
+      relations,
+      () => true,
+      workingDays === null ? undefined : { workingDays }
+    )
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return new Map()
+    return new Map(res.shifts.map((s) => [s.issue._id as string, s]))
+  }
+
+  it('push keeps a five-working-day successor at five working days across the weekend', () => {
+    const A = issue('A', may(18), may(22))
+    const B = issue('B', may(25), may(29))
+    const byId = run([A, B], [rel('A', 'B')], [{ issue: A, newStart: may(20), newDue: may(26) }])
+    expect(byId.get('B')).toMatchObject({ newStart: may(27), newDue: jun(2), reason: 'push-successor' })
+    expect(isWorkingDay(byId.get('B')?.newDue as number, cfgMonFri)).toBe(true)
+  })
+
+  it('FF push across a weekend anchors the due date and keeps the span', () => {
+    const A = issue('A', may(18), may(20))
+    const B = issue('B', may(18), may(20))
+    const byId = run([A, B], [rel('A', 'B', 'finish-to-finish')], [{ issue: A, newStart: may(18), newDue: may(26) }])
+    expect(byId.get('B')).toMatchObject({ newStart: may(22), newDue: may(26), reason: 'push-successor' })
+  })
+
+  it('FS pull across a weekend keeps the predecessor span', () => {
+    // A Thu 14 – Mon 18 = three working days.
+    const A = issue('A', may(14), may(18))
+    const B = issue('B', may(19), may(20))
+    const res = simulateCascade(
+      [{ issue: B, newStart: may(11), newDue: may(12) }],
+      [A, B],
+      [rel('A', 'B')],
+      () => true,
+      { workingDays: cfgMonFri }
+    )
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return
+    expect(res.shifts).toHaveLength(1)
+    expect(res.shifts[0]).toMatchObject({ newStart: may(6), newDue: may(8), reason: 'pull-predecessor' })
+  })
+
+  it('a pushed bar steps over a holiday', () => {
+    const cfgHol = { weekdayMask: 0b0011111, holidays: [may(21)] }
+    const A = issue('A', may(15), may(15))
+    const B = issue('B', may(18), may(19))
+    const byId = run([A, B], [rel('A', 'B')], [{ issue: A, newStart: may(19), newDue: may(19) }], cfgHol)
+    expect(byId.get('B')).toMatchObject({ newStart: may(20), newDue: may(22), reason: 'push-successor' })
+  })
+
+  it('a bar stored on non-working days becomes a one-working-day bar when pushed', () => {
+    const A = issue('A', may(15), may(15))
+    const B = issue('B', may(16), may(17))
+    const byId = run([A, B], [rel('A', 'B')], [{ issue: A, newStart: may(18), newDue: may(18) }])
+    expect(byId.get('B')).toMatchObject({ newStart: may(19), newDue: may(19), reason: 'push-successor' })
+  })
+
+  it('SS push across a weekend keeps the successor span', () => {
+    const A = issue('A', may(18), may(20))
+    const B = issue('B', may(18), may(19))
+    const byId = run([A, B], [rel('A', 'B', 'start-to-start')], [{ issue: A, newStart: may(22), newDue: may(26) }])
+    expect(byId.get('B')).toMatchObject({ newStart: may(22), newDue: may(25), reason: 'push-successor' })
+  })
+
+  it('SF push across a weekend anchors the due date and keeps the span', () => {
+    const A = issue('A', may(18), may(20))
+    const B = issue('B', may(11), may(12))
+    const byId = run([A, B], [rel('A', 'B', 'start-to-finish')], [{ issue: A, newStart: may(25), newDue: may(27) }])
+    expect(byId.get('B')).toMatchObject({ newStart: may(22), newDue: may(25), reason: 'push-successor' })
+  })
+
+  function pullOnly (
+    A: Issue,
+    B: Issue,
+    kind: 'start-to-start' | 'finish-to-finish' | 'start-to-finish',
+    primary: PrimaryEdit,
+    workingDays: { weekdayMask: number, holidays: number[] } | null = cfgMonFri
+  ): { newStart: number, newDue: number, reason: string } | undefined {
+    const res = simulateCascade(
+      [primary],
+      [A, B],
+      [rel('A', 'B', kind)],
+      () => true,
+      workingDays === null ? undefined : { workingDays }
+    )
+    expect(res.kind).toBe('cascade')
+    if (res.kind !== 'cascade') return undefined
+    expect(res.shifts).toHaveLength(1)
+    return res.shifts[0]
+  }
+
+  it('SS pull across a weekend keeps the predecessor span', () => {
+    // A Thu 21 – Mon 25 = three working days.
+    const A = issue('A', may(21), may(25))
+    const B = issue('B', may(21), may(22))
+    const s = pullOnly(A, B, 'start-to-start', { issue: B, newStart: may(18), newDue: may(19) })
+    expect(s).toMatchObject({ newStart: may(18), newDue: may(20), reason: 'pull-predecessor' })
+  })
+
+  it('SF pull across a weekend keeps the predecessor span', () => {
+    // A Fri 22 – Tue 26 = three working days.
+    const A = issue('A', may(22), may(26))
+    const B = issue('B', may(20), may(22))
+    const s = pullOnly(A, B, 'start-to-finish', { issue: B, newStart: may(18), newDue: may(20) })
+    expect(s).toMatchObject({ newStart: may(20), newDue: may(22), reason: 'pull-predecessor' })
+  })
+
+  it('FF pull across a weekend keeps the predecessor span', () => {
+    // A Thu 21 – Mon 25 = three working days.
+    const A = issue('A', may(21), may(25))
+    const B = issue('B', may(25), may(27))
+    const s = pullOnly(A, B, 'finish-to-finish', { issue: B, newStart: may(18), newDue: may(20) })
+    expect(s).toMatchObject({ newStart: may(18), newDue: may(20), reason: 'pull-predecessor' })
+  })
+
+  it('legacy mode keeps the calendar-day length on push', () => {
+    const A = issue('A', may(18), may(22))
+    const B = issue('B', may(25), may(29))
+    const byId = run([A, B], [rel('A', 'B')], [{ issue: A, newStart: may(20), newDue: may(26) }], null)
+    expect(byId.get('B')).toMatchObject({ newStart: may(27), newDue: may(31), reason: 'push-successor' })
+  })
+
+  it('legacy mode keeps the calendar-day length on pull', () => {
+    const A = issue('A', may(21), may(25))
+    const B = issue('B', may(21), may(22))
+    const s = pullOnly(A, B, 'start-to-start', { issue: B, newStart: may(18), newDue: may(19) }, null)
+    expect(s).toMatchObject({ newStart: may(18), newDue: may(22), reason: 'pull-predecessor' })
   })
 })
 
