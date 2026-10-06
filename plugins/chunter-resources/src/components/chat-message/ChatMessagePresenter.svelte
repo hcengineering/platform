@@ -32,6 +32,7 @@
   import view from '@hcengineering/view'
   import { getDocLinkTitle } from '@hcengineering/view-resources'
 
+  import { toChatDisplayMarkup } from '../../markdown'
   import { shownTranslatedMessagesStore, translatedMessagesStore, translatingMessagesStore } from '../../stores'
   import ChatMessageHeader from './ChatMessageHeader.svelte'
   import ChatMessageInput from './ChatMessageInput.svelte'
@@ -223,9 +224,9 @@
   let displayText: Markup = value?.message ?? EmptyMarkup
 
   $: if (value && $shownTranslatedMessagesStore.has(value._id)) {
-    displayText = $translatedMessagesStore.get(value._id) ?? value?.message ?? EmptyMarkup
+    displayText = toChatDisplayMarkup($translatedMessagesStore.get(value._id) ?? value?.message ?? EmptyMarkup)
   } else {
-    displayText = value?.message ?? EmptyMarkup
+    displayText = toChatDisplayMarkup(value?.message ?? EmptyMarkup)
   }
 </script>
 
