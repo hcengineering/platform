@@ -155,7 +155,7 @@
   import { GROUP_BY_KEYS, type GroupByKey } from './lib/group-by'
   import { buildGroupedRows, groupRowsToLayoutRows } from './lib/build-rows'
   import { ganttToolbarSnapshot } from './ganttToolbarStore'
-  import { pageTimeline } from './lib/timeline-navigation'
+  import { pageTimeline, restorePanOffsetDays, withPinnedPanOffset } from './lib/timeline-navigation'
   // E — GanttFilter / applyFilter removed in favour of the standard
   // FilterBar (FilterButton in IssuesView.svelte). The standard filter
   // flows into `query` via `resultQuery`, so the issue-side filtering is
@@ -222,7 +222,8 @@
     tracker.string.GanttMoreActions,
     tracker.string.GanttGroupBy,
     tracker.string.GanttColorBy,
-    tracker.string.GanttToolbarMore
+    tracker.string.GanttToolbarMore,
+    tracker.string.GanttZoomLabel
   ]
   let ariaLabels: Record<string, string> = {}
   $: {
@@ -473,7 +474,7 @@
   // Sidebar column visibility is wired to two ToggleViewOptions registered
   // in models/tracker/src/viewlets.ts (Customize-View dropdown). Issue-code
   // defaults OFF — the code is still surfaced in the hover tooltip.
-  $: showIssueCode = (viewOptions as Record<string, unknown>)?.ganttShowIssueCode !== false
+  $: showIssueCode = (viewOptions as Record<string, unknown>)?.ganttShowIssueCode === true
   $: showTitle = ((viewOptions as Record<string, unknown>)?.ganttShowTitle ?? true) !== false
   $: showStatus = ((viewOptions as Record<string, unknown>)?.ganttShowStatus ?? true) !== false
   $: confirmMove = ((viewOptions as Record<string, unknown>)?.ganttConfirmMove ?? true) !== false
@@ -754,13 +755,15 @@
     ganttShowSubIssueProgress.set(
       typeof raw?.ganttShowSubIssueProgress === 'boolean' ? raw.ganttShowSubIssueProgress : false
     )
-    // Wait one tick so the new zoom propagates into `timeScale` before we
-    // scroll — otherwise toX() uses the previous pxPerDay and the anchor
-    // lands at the wrong column when the mount is slow.
+    // Reset unpinned views, then let the new zoom update the base range.
+    if (opts.panAnchorDate === undefined) navigationOffsetDays = 0
     await tick()
     if (opts.panAnchorDate !== undefined) {
       const t = timestampForIsoDate(opts.panAnchorDate)
       if (Number.isFinite(t) && hScrollEl != null) {
+        navigationOffsetDays = restorePanOffsetDays(t, raw?.ganttPanOffsetDays, baseDateRange.from, baseDateRange.to)
+        // The time scale must reflect the restored offset before toX().
+        await tick()
         const x = timeScale.toX(t)
         hScrollEl.scrollTo({ left: Math.max(0, x), behavior: 'auto' })
         queueMicrotask(syncViewport)
@@ -804,7 +807,11 @@
       const t = timeScale.fromX(hScrollEl.scrollLeft)
       payload.panAnchorDate = isoDateForTimestamp(t)
     }
-    return mergeGanttSavedView(base, payload)
+    return withPinnedPanOffset(
+      mergeGanttSavedView(base, payload),
+      payload.panAnchorDate !== undefined,
+      navigationOffsetDays
+    )
   }
 
   async function saveCurrentGanttView (name: string, fixTimeWindow: boolean, sharable: boolean): Promise<void> {
@@ -1239,9 +1246,7 @@
   }
   $: missingStartCount = issues.filter((issue) => issue.startDate == null).length
   $: scheduledDates = [
-    ...issues
-      .filter((issue) => issue.startDate != null && issue.dueDate != null)
-      .flatMap((issue) => [issue.startDate as number, issue.dueDate as number]),
+    ...issues.flatMap((issue) => [issue.startDate, issue.dueDate].filter((date): date is number => date != null)),
     ...milestones.filter((milestone) => milestone.targetDate != null).map((milestone) => milestone.targetDate)
   ]
   $: hasScheduledTasks = scheduledDates.length > 0

@@ -311,13 +311,13 @@
         "GanttQuarterLabel": "{quarter}분기",
         "GanttWithoutDates": "날짜 없음: {count}",
         "GanttDates": "날짜",
-        "GanttSetDates": "Set dates",
-    "GanttNoScheduledTasks": "No scheduled tasks",
-        "GanttTodayAlreadyVisible": "Today is already in view",
-        "GanttVisibleRange": "Range",
-        "GanttNotScheduled": "Not scheduled",
-        "GanttMissingStartDates": "{count} issues have no start date.",
-        "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
+        "GanttSetDates": "날짜 설정",
+    "GanttNoScheduledTasks": "예정된 작업이 없습니다",
+        "GanttTodayAlreadyVisible": "오늘이 이미 표시되어 있습니다",
+        "GanttVisibleRange": "표시 범위",
+        "GanttNotScheduled": "일정 없음",
+        "GanttMissingStartDates": "{count}개 이슈에 시작일이 없습니다.",
+        "GanttSetDatesHint": "이슈의 시작일과 마감일을 설정하면 타임라인에 표시됩니다."
     },
     "status": {}
 }

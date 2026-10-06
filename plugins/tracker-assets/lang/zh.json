@@ -328,13 +328,13 @@
     "GanttQuarterLabel": "第{quarter}季度",
     "GanttWithoutDates": "无日期：{count}",
     "GanttDates": "日期",
-    "GanttSetDates": "Set dates",
-    "GanttNoScheduledTasks": "No scheduled tasks",
-    "GanttTodayAlreadyVisible": "Today is already in view",
-    "GanttVisibleRange": "Range",
-    "GanttNotScheduled": "Not scheduled",
-    "GanttMissingStartDates": "{count} issues have no start date.",
-    "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
+    "GanttSetDates": "设置日期",
+    "GanttNoScheduledTasks": "没有已安排的任务",
+    "GanttTodayAlreadyVisible": "今天已在当前视图中",
+    "GanttVisibleRange": "范围",
+    "GanttNotScheduled": "未安排",
+    "GanttMissingStartDates": "{count} 个任务没有开始日期。",
+    "GanttSetDatesHint": "为任务设置开始日期和截止日期，即可在时间轴上显示。"
   },
   "status": {}
 }

@@ -549,13 +549,13 @@
     "SearchEmptyAllProjects": "Tüm projelerde ara",
     "GanttWithoutDates": "Tarihsiz: {count}",
     "GanttDates": "Tarihler",
-    "GanttSetDates": "Set dates",
-    "GanttNoScheduledTasks": "No scheduled tasks",
-    "GanttTodayAlreadyVisible": "Today is already in view",
-    "GanttVisibleRange": "Range",
-    "GanttNotScheduled": "Not scheduled",
-    "GanttMissingStartDates": "{count} issues have no start date.",
-    "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
+    "GanttSetDates": "Tarihleri ayarla",
+    "GanttNoScheduledTasks": "Planlanmış görev yok",
+    "GanttTodayAlreadyVisible": "Bugün zaten görünür durumda",
+    "GanttVisibleRange": "Aralık",
+    "GanttNotScheduled": "Planlanmadı",
+    "GanttMissingStartDates": "{count} görevin başlangıç tarihi yok.",
+    "GanttSetDatesHint": "Zaman çizelgesinde görmek için bir göreve başlangıç ve bitiş tarihleri ekleyin."
   },
   "status": {}
 }

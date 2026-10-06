@@ -318,13 +318,13 @@
     "GanttQuarterLabel": "Q{quarter}",
     "GanttWithoutDates": "{count} bez dat",
     "GanttDates": "Data",
-    "GanttSetDates": "Set dates",
-    "GanttNoScheduledTasks": "No scheduled tasks",
-    "GanttTodayAlreadyVisible": "Today is already in view",
-    "GanttVisibleRange": "Range",
-    "GanttNotScheduled": "Not scheduled",
-    "GanttMissingStartDates": "{count} issues have no start date.",
-    "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
+    "GanttSetDates": "Nastavit data",
+    "GanttNoScheduledTasks": "Žádné naplánované úkoly",
+    "GanttTodayAlreadyVisible": "Dnešek je již zobrazen",
+    "GanttVisibleRange": "Rozsah",
+    "GanttNotScheduled": "Nenaplánováno",
+    "GanttMissingStartDates": "{count} úkolů nemá datum zahájení.",
+    "GanttSetDatesHint": "Nastavte u úkolu datum zahájení a termín dokončení, aby se zobrazil v časové ose."
   },
   "status": {}
 }

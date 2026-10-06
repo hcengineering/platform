@@ -295,13 +295,13 @@
     "GanttQuarterLabel": "K{quarter}",
     "GanttWithoutDates": "{count} bez dat",
     "GanttDates": "Daty",
-    "GanttSetDates": "Set dates",
-    "GanttNoScheduledTasks": "No scheduled tasks",
-    "GanttTodayAlreadyVisible": "Today is already in view",
-    "GanttVisibleRange": "Range",
-    "GanttNotScheduled": "Not scheduled",
-    "GanttMissingStartDates": "{count} issues have no start date.",
-    "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
+    "GanttSetDates": "Ustaw daty",
+    "GanttNoScheduledTasks": "Brak zaplanowanych zadań",
+    "GanttTodayAlreadyVisible": "Dzisiejsza data jest już widoczna",
+    "GanttVisibleRange": "Zakres",
+    "GanttNotScheduled": "Nie zaplanowano",
+    "GanttMissingStartDates": "{count} zadań nie ma daty rozpoczęcia.",
+    "GanttSetDatesHint": "Ustaw datę rozpoczęcia i termin zakończenia zadania, aby wyświetlić je na osi czasu."
   },
   "status": {}
 }

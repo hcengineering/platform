@@ -311,13 +311,13 @@
     "GanttQuarterLabel": "第{quarter}四半期",
     "GanttWithoutDates": "日付なし: {count}",
     "GanttDates": "日付",
-    "GanttSetDates": "Set dates",
-    "GanttNoScheduledTasks": "No scheduled tasks",
-    "GanttTodayAlreadyVisible": "Today is already in view",
-    "GanttVisibleRange": "Range",
-    "GanttNotScheduled": "Not scheduled",
-    "GanttMissingStartDates": "{count} issues have no start date.",
-    "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
+    "GanttSetDates": "日付を設定",
+    "GanttNoScheduledTasks": "予定されたタスクはありません",
+    "GanttTodayAlreadyVisible": "今日の日付はすでに表示されています",
+    "GanttVisibleRange": "表示範囲",
+    "GanttNotScheduled": "未予定",
+    "GanttMissingStartDates": "{count} 件の課題に開始日が設定されていません。",
+    "GanttSetDatesHint": "課題に開始日と期限を設定すると、タイムラインに表示されます。"
   },
   "status": {}
 }

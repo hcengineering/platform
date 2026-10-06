@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: EPL-2.0
 
-import { pageTimeline } from '../timeline-navigation'
+import { pageTimeline, restorePanOffsetDays, withPinnedPanOffset } from '../timeline-navigation'
 
 describe('timeline paging', () => {
   it('moves the time window in both directions without scroll overflow', () => {
@@ -21,5 +21,27 @@ describe('timeline paging', () => {
 
   it('does not change the window before viewport measurement', () => {
     expect(pageTimeline(1, 0, 0, 0, 20, 0)).toEqual({ scrollLeft: 0, offsetDays: 0 })
+  })
+})
+
+describe('pinned timeline window', () => {
+  const day = 86_400_000
+  const from = Date.UTC(2026, 8, 1)
+  const to = from + 30 * day
+
+  it('keeps a saved offset when its anchor remains inside the shifted window', () => {
+    expect(restorePanOffsetDays(from + 45 * day, 30, from, to)).toBe(30)
+  })
+
+  it('derives an offset for old views and changed issue ranges', () => {
+    expect(restorePanOffsetDays(from + 45 * day, undefined, from, to)).toBe(30)
+    expect(restorePanOffsetDays(from + 15 * day, 90, from, to)).toBe(0)
+  })
+
+  it('clears the offset when the fixed window is unchecked', () => {
+    const pinned = withPinnedPanOffset({ ganttPanAnchorDate: '2026-09-15' }, true, 30)
+    expect(pinned.ganttPanOffsetDays).toBe(30)
+    const unpinned = withPinnedPanOffset({ ...pinned, ganttPanAnchorDate: undefined }, false, 0)
+    expect(unpinned).not.toHaveProperty('ganttPanOffsetDays')
   })
 })

@@ -566,13 +566,13 @@
     "SearchEmptyAllProjects": "In allen Projekten suchen",
     "GanttWithoutDates": "{count} ohne Daten",
     "GanttDates": "Termine",
-    "GanttSetDates": "Set dates",
-    "GanttNoScheduledTasks": "No scheduled tasks",
-    "GanttTodayAlreadyVisible": "Today is already in view",
-    "GanttVisibleRange": "Range",
-    "GanttNotScheduled": "Not scheduled",
-    "GanttMissingStartDates": "{count} issues have no start date.",
-    "GanttSetDatesHint": "Set start and due dates in an issue to show its timeline."
+    "GanttSetDates": "Daten festlegen",
+    "GanttNoScheduledTasks": "Keine geplanten Aufgaben",
+    "GanttTodayAlreadyVisible": "Heute ist bereits sichtbar",
+    "GanttVisibleRange": "Zeitraum",
+    "GanttNotScheduled": "Nicht geplant",
+    "GanttMissingStartDates": "Für {count} Aufgaben ist kein Startdatum festgelegt.",
+    "GanttSetDatesHint": "Legen Sie für ein Issue Start- und Fälligkeitsdatum fest, damit es auf der Zeitachse erscheint."
   },
   "status": {}
 }
