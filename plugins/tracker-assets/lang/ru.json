@@ -443,6 +443,8 @@
     "CriticalPathBadge": "КП",
     "GanttHelpTitle": "Сочетания клавиш",
     "GanttHelpEsc": "Нажмите Esc или ?, чтобы закрыть",
+    "GanttHelpCalendarDaysDrag": "Удерживайте при перетаскивании, чтобы игнорировать рабочие дни (календарные дни)",
+    "GanttDragCalendarDays": "Календарные дни",
     "GanttExport": "Экспорт в PNG",
     "GanttExportFailed": "Не удалось выполнить экспорт",
     "GanttSidebarColumnsExtended": "Расширенные столбцы боковой панели",

@@ -296,6 +296,8 @@
     "GanttExpand": "Expand",
     "GanttCollapse": "Collapse",
     "GanttCornerNoOpInSwimlane": "No effect in group-by mode",
+    "GanttHelpCalendarDaysDrag": "Mantener pulsado al arrastrar para ignorar los días laborables (días naturales)",
+    "GanttDragCalendarDays": "Días naturales",
     "ModeSelectorDisabledByFilter": "El estado está controlado por un filtro activo. Elimina el filtro de estado para usar este atajo.",
     "ShowQuickModeSelector": "Filtro rápido: Todos / Activos / Atrasados",
     "SearchScopeLabel": "Buscar en…",

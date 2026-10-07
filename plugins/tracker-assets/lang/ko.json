@@ -296,6 +296,8 @@
         "GanttExpand": "Expand",
         "GanttCollapse": "Collapse",
         "GanttCornerNoOpInSwimlane": "No effect in group-by mode",
+    "GanttHelpCalendarDaysDrag": "드래그 중 누르고 있으면 근무일 무시 (달력일)",
+    "GanttDragCalendarDays": "달력일",
         "ModeSelectorDisabledByFilter": "상태가 활성 필터로 제어되고 있습니다. 이 단축키를 사용하려면 상태 필터를 제거하세요.",
         "ShowQuickModeSelector": "빠른 필터: 전체 / 활성 / 백로그",
         "SearchScopeLabel": "검색 범위…",

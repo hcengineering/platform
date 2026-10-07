@@ -3,8 +3,18 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import { detectCycle, addScheduleDays, simulateCascade } from '../scheduler'
 import {
+  detectCycle,
+  addScheduleDays,
+  simulateCascade,
+  shiftScheduleDays,
+  shiftWithPrimary,
+  keyboardWeekStep
+} from '../scheduler'
+import {
+  createTimeScale,
+  dragCalendar,
+  reduce,
   isWorkingDay,
   fsAnchor,
   fsReverseAnchor,
@@ -17,7 +27,7 @@ import {
 } from '@hcengineering/gantt'
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
-import type { PrimaryEdit } from '../types'
+import type { DragState, DragTarget, PrimaryEdit } from '../types'
 
 function issue (id: string, start?: number, due?: number): Issue {
   return {
@@ -95,6 +105,100 @@ describe('addScheduleDays', () => {
   it('returns base unchanged when days = 0', () => {
     const base = Date.UTC(2026, 4, 12)
     expect(addScheduleDays(base, 0)).toBe(base)
+  })
+})
+
+describe('shiftScheduleDays / shiftWithPrimary / keyboardWeekStep', () => {
+  // May 2026: Mon 18 .. Wed 27.
+  const D = (day: number): number => Date.UTC(2026, 4, day)
+  const cfgMonFri = { weekdayMask: 0b0011111, holidays: [] }
+
+  it('shiftScheduleDays counts working days with a calendar and calendar days without', () => {
+    expect(shiftScheduleDays(D(22), 1, cfgMonFri)).toBe(D(25))
+    expect(shiftScheduleDays(D(22), 1, undefined)).toBe(D(23))
+    expect(shiftScheduleDays(D(18), 7, undefined)).toBe(D(25))
+    expect(shiftScheduleDays(D(18), 5, cfgMonFri)).toBe(D(25))
+    expect(shiftScheduleDays(D(23), 0, cfgMonFri)).toBe(D(23))
+  })
+
+  it('shiftWithPrimary moves a child by the primary move in working days with a calendar', () => {
+    expect(shiftWithPrimary(D(22), D(18), D(19), cfgMonFri)).toBe(D(25))
+    expect(shiftWithPrimary(D(22), D(18), D(19), undefined)).toBe(D(23))
+  })
+
+  describe('parent drag with the calendar-days override (Shift held)', () => {
+    // Parent Mon 18 – Wed 20 with child Tue 19 – Wed 20, dragged +5 days so
+    // the pointer is on Saturday 23. GanttView shifts the children with
+    // shiftWithPrimary(…, dragCalendar(state, calendar)).
+    const parent = issue('P', D(18), D(20))
+    const ts = createTimeScale('week', D(18))
+    const start: DragState = {
+      kind: 'dragging-body',
+      target: { kind: 'issue', doc: parent },
+      originStart: D(18),
+      originEnd: D(20),
+      cursorStartX: 200,
+      previewStart: D(18),
+      previewEnd: D(20)
+    }
+    const move = (state: DragState, calendarDays: boolean | undefined, cfg: typeof cfgMonFri | undefined): DragState =>
+      reduce<DragTarget, Issue>(state, { type: 'mousemove', cursorX: 270, calendarDays }, ts, cfg)
+    const children = (state: DragState, cfg: typeof cfgMonFri | undefined): number[] => {
+      if (state.kind !== 'dragging-body') throw new Error('expected dragging-body')
+      const childCfg = dragCalendar(state, cfg)
+      return [D(19), D(20)].map((t) => shiftWithPrimary(t, state.originStart, state.previewStart, childCfg))
+    }
+
+    it('without Shift the parent snaps to Monday and the child moves by working days', () => {
+      const next = move(start, undefined, cfgMonFri)
+      if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+      expect([next.previewStart, next.previewEnd]).toEqual([D(25), D(27)])
+      expect(children(next, cfgMonFri)).toEqual([D(26), D(27)])
+    })
+
+    it('with Shift parent and child move by calendar days onto the weekend', () => {
+      const next = move(start, true, cfgMonFri)
+      if (next.kind !== 'dragging-body') throw new Error('expected dragging-body')
+      expect([next.previewStart, next.previewEnd]).toEqual([D(23), D(25)])
+      expect(children(next, cfgMonFri)).toEqual([D(24), D(25)])
+    })
+
+    it('releasing Shift before the drop restores the working-day result', () => {
+      const pressed = move(start, true, cfgMonFri)
+      const released = move(pressed, false, cfgMonFri)
+      expect(children(released, cfgMonFri)).toEqual([D(26), D(27)])
+    })
+
+    it('in legacy mode Shift changes nothing', () => {
+      const plain = move(start, undefined, undefined)
+      const pressed = move(start, true, undefined)
+      expect(pressed).toEqual(plain)
+      expect(children(pressed, undefined)).toEqual([D(24), D(25)])
+    })
+  })
+
+  it('shiftWithPrimary leaves the child unchanged for a zero move in both modes', () => {
+    expect(shiftWithPrimary(D(23), D(18), D(18), cfgMonFri)).toBe(D(23))
+    expect(shiftWithPrimary(D(23), D(18), D(18), undefined)).toBe(D(23))
+  })
+
+  it('shiftWithPrimary handles a move to the left', () => {
+    // Primary Mon 25 → Fri 22: one working day back, three calendar days back.
+    expect(shiftWithPrimary(D(27), D(25), D(22), cfgMonFri)).toBe(D(26))
+    expect(shiftWithPrimary(D(27), D(25), D(22), undefined)).toBe(D(24))
+  })
+
+  it('shiftWithPrimary falls back to the raw delta for a non-finite or huge move', () => {
+    const huge = 50_000 * 86_400_000
+    expect(shiftWithPrimary(D(22), D(18), D(18) + huge, cfgMonFri)).toBe(D(22) + huge)
+    expect(shiftWithPrimary(D(22), D(18), Infinity, cfgMonFri)).toBe(Infinity)
+    expect(shiftWithPrimary(D(22), D(18), NaN, cfgMonFri)).toBeNaN()
+  })
+
+  it('keyboardWeekStep is seven calendar days without a calendar and the active weekdays with one', () => {
+    expect(keyboardWeekStep(undefined)).toBe(7)
+    expect(keyboardWeekStep(cfgMonFri)).toBe(5)
+    expect(keyboardWeekStep({ weekdayMask: 0b1111111, holidays: [] })).toBe(7)
   })
 })
 

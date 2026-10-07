@@ -426,6 +426,8 @@
     "CriticalPathBadge": "KY",
     "GanttHelpTitle": "Klavye kısayolları",
     "GanttHelpEsc": "Kapatmak için Esc veya ? tuşuna basın",
+    "GanttHelpCalendarDaysDrag": "Sürüklerken basılı tutun: iş günlerini yok say (takvim günleri)",
+    "GanttDragCalendarDays": "Takvim günleri",
     "GanttExport": "PNG olarak dışa aktar",
     "GanttExportFailed": "Dışa aktarma başarısız",
     "GanttSidebarColumnsExtended": "Genişletilmiş kenar çubuğu sütunları",

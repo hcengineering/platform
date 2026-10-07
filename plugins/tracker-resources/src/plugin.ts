@@ -407,6 +407,8 @@ export default mergeIds(trackerId, tracker, {
     // Export + keyboard help
     GanttHelpTitle: '' as IntlString,
     GanttHelpEsc: '' as IntlString,
+    GanttHelpCalendarDaysDrag: '' as IntlString,
+    GanttDragCalendarDays: '' as IntlString,
     GanttExport: '' as IntlString,
     GanttExportFailed: '' as IntlString,
     // Fullscreen + PNG/PDF export buttons

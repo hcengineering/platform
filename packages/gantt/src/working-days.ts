@@ -15,6 +15,15 @@ import type { WorkingCalendar } from './types'
 const DAY_MS = 86_400_000
 
 /**
+ * Upper bound (about 100 years) for the day-stepping loops behind the span
+ * helpers ({@link workingDaySpan}, {@link dueForSpan}, {@link startForSpan})
+ * and for the step count of {@link addWorkingDays}. Keeps them bounded for
+ * degenerate input: a calendar without working weekdays, absurd date ranges,
+ * spans or lags.
+ */
+export const MAX_WORKING_SPAN_DAYS = 36_600
+
+/**
  * Canonical UTC-day normalizer: rounds a timestamp down to its UTC midnight.
  * Exported for the scheduler's day-granular resize gate, which must classify
  * a start move by calendar DAY rather than raw milliseconds (stored issues can
@@ -49,18 +58,45 @@ export function isWorkingDay (t: number, cfg: WorkingCalendar): boolean {
 }
 
 /**
+ * Calendar days {@link findWorkingDay} searches before it gives up. Covers any
+ * ordinary weekend/holiday run; a longer gap is treated as "no working day".
+ */
+const WORKING_DAY_SEARCH_DAYS = 60
+
+/**
+ * The nearest working day (UTC-midnight) from `t` in `direction` (`1` =
+ * forward, `-1` = backward); `t`'s own midnight when it is a working day.
+ * Returns `undefined` when no working day lies within
+ * {@link WORKING_DAY_SEARCH_DAYS} calendar days — a calendar without working
+ * weekdays, a longer holiday blackout, or a non-finite `t` — so callers that
+ * must land on a working day can tell a failed search from a result.
+ */
+export function findWorkingDay (t: number, direction: 1 | -1, cfg: WorkingCalendar): number | undefined {
+  if (!Number.isFinite(t)) return undefined
+  let cur = utcMidnight(t)
+  for (let i = 0; i < WORKING_DAY_SEARCH_DAYS; i++) {
+    if (isWorkingDay(cur, cfg)) return cur
+    cur += direction * DAY_MS
+  }
+  return undefined
+}
+
+/**
  * Returns the next working day ≥ `t` (UTC-midnight). If `t` itself is a
- * working day, returns its midnight. Falls back to the input's midnight after
- * 60 calendar-day iterations as a safety bail when no working days are
- * configured (weekdayMask = 0 + no holidays granting any day).
+ * working day, returns its midnight. When {@link findWorkingDay} finds none,
+ * falls back to the input's midnight, which is then NOT a working day; use
+ * {@link findWorkingDay} where that must be detected.
  */
 export function nextWorkingDay (t: number, cfg: WorkingCalendar): number {
-  let cur = utcMidnight(t)
-  for (let i = 0; i < 60; i++) {
-    if (isWorkingDay(cur, cfg)) return cur
-    cur += DAY_MS
-  }
-  return utcMidnight(t)
+  return findWorkingDay(t, 1, cfg) ?? utcMidnight(t)
+}
+
+/**
+ * Returns the latest working day ≤ `t` (UTC-midnight). Mirror of
+ * {@link nextWorkingDay}, with the same input-midnight fallback.
+ */
+export function prevWorkingDay (t: number, cfg: WorkingCalendar): number {
+  return findWorkingDay(t, -1, cfg) ?? utcMidnight(t)
 }
 
 /**
@@ -68,15 +104,19 @@ export function nextWorkingDay (t: number, cfg: WorkingCalendar): number {
  * returns `t` unchanged (no auto-snap), so a user-pinned non-working date
  * is preserved when no shift is requested.
  *
- * Safety: aborts after `|n| × 7 + 60` iterations to guard against
- * non-progressing loops when all weekdays are non-working.
+ * Safety: `|n|` is capped at {@link MAX_WORKING_SPAN_DAYS}, and the walk
+ * aborts after `|n| × 7 + 60` iterations to guard against non-progressing
+ * loops when all weekdays are non-working.
  */
 export function addWorkingDays (t: number, n: number, cfg: WorkingCalendar): number {
-  if (n === 0) return t
+  // A non-finite step count would never terminate (or never start); treat it
+  // like n = 0. A huge finite one (e.g. malformed persisted lag) is capped so
+  // the walk stays bounded.
+  if (n === 0 || !Number.isFinite(n)) return t
   const step = n > 0 ? DAY_MS : -DAY_MS
-  let remaining = Math.abs(n)
+  let remaining = Math.min(Math.abs(n), MAX_WORKING_SPAN_DAYS)
   let cur = t
-  let safety = Math.abs(n) * 7 + 60
+  let safety = remaining * 7 + 60
   while (remaining > 0 && safety-- > 0) {
     cur += step
     if (isWorkingDay(cur, cfg)) remaining--
@@ -103,6 +143,41 @@ export function workingDaysBetween (a: number, b: number, cfg: WorkingCalendar):
     cur += DAY_MS
   }
   return count * sign
+}
+
+/**
+ * Inclusive working-day length of a bar, never below 1: a bar stored entirely
+ * on non-working days counts as one working day once it is moved. Bounded:
+ * non-finite or inverted input yields 1, and only the first
+ * {@link MAX_WORKING_SPAN_DAYS} calendar days of a longer bar are counted.
+ */
+export function workingDaySpan (start: number, due: number, cfg: WorkingCalendar): number {
+  if (!Number.isFinite(start) || !Number.isFinite(due) || due < start) return 1
+  const end = Math.min(due, start + (MAX_WORKING_SPAN_DAYS - 1) * DAY_MS)
+  return Math.max(1, workingDaysBetween(start, end, cfg))
+}
+
+/** Clamps a span to `1..MAX_WORKING_SPAN_DAYS`; non-finite spans count as 1. */
+function boundedSpan (span: number): number {
+  if (!Number.isFinite(span)) return 1
+  return Math.min(MAX_WORKING_SPAN_DAYS, Math.max(1, span))
+}
+
+/** Due date of a bar that starts at `start` and lasts `span` working days (inclusive). */
+export function dueForSpan (start: number, span: number, cfg: WorkingCalendar): number {
+  return addWorkingDays(start, boundedSpan(span) - 1, cfg)
+}
+
+/** Start date of a bar that ends at `due` and lasts `span` working days (inclusive). */
+export function startForSpan (due: number, span: number, cfg: WorkingCalendar): number {
+  return addWorkingDays(due, -(boundedSpan(span) - 1), cfg)
+}
+
+/** Number of active weekdays in the mask — "one week" in working days. */
+export function workingDaysPerWeek (cfg: WorkingCalendar): number {
+  let n = 0
+  for (let bit = 0; bit < 7; bit++) if ((cfg.weekdayMask & (1 << bit)) !== 0) n++
+  return n
 }
 
 /**

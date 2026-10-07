@@ -313,6 +313,8 @@
     "GanttExpand": "Expand",
     "GanttCollapse": "Collapse",
     "GanttCornerNoOpInSwimlane": "No effect in group-by mode",
+    "GanttHelpCalendarDaysDrag": "拖动时按住可忽略工作日（按日历日）",
+    "GanttDragCalendarDays": "日历日",
     "ModeSelectorDisabledByFilter": "状态由活动筛选器控制。移除状态筛选器以使用此快捷方式。",
     "ShowQuickModeSelector": "快速筛选：全部 / 活跃 / 积压",
     "SearchScopeLabel": "搜索范围…",
