@@ -311,6 +311,7 @@
     "GanttQuarterLabel": "第{quarter}四半期",
     "GanttWithoutDates": "日付なし: {count}",
     "GanttDates": "日付",
+    "GanttZoomLabel": "ズーム",
     "GanttSetDates": "日付を設定",
     "GanttNoScheduledTasks": "予定されたタスクはありません",
     "GanttTodayAlreadyVisible": "今日の日付はすでに表示されています",

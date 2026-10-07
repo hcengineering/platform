@@ -318,6 +318,7 @@
     "GanttQuarterLabel": "Q{quarter}",
     "GanttWithoutDates": "{count} bez dat",
     "GanttDates": "Data",
+    "GanttZoomLabel": "Přiblížení",
     "GanttSetDates": "Nastavit data",
     "GanttNoScheduledTasks": "Žádné naplánované úkoly",
     "GanttTodayAlreadyVisible": "Dnešek je již zobrazen",

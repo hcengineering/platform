@@ -328,6 +328,7 @@
     "GanttQuarterLabel": "第{quarter}季度",
     "GanttWithoutDates": "无日期：{count}",
     "GanttDates": "日期",
+    "GanttZoomLabel": "缩放",
     "GanttSetDates": "设置日期",
     "GanttNoScheduledTasks": "没有已安排的任务",
     "GanttTodayAlreadyVisible": "今天已在当前视图中",

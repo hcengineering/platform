@@ -311,6 +311,7 @@
     "GanttQuarterLabel": "T{quarter}",
     "GanttWithoutDates": "{count} sans dates",
     "GanttDates": "Dates",
+    "GanttZoomLabel": "Zoom",
     "GanttSetDates": "Définir les dates",
     "GanttNoScheduledTasks": "Aucune tâche planifiée",
     "GanttTodayAlreadyVisible": "Aujourd'hui est déjà visible",

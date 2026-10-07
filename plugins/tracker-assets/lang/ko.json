@@ -311,6 +311,7 @@
         "GanttQuarterLabel": "{quarter}분기",
         "GanttWithoutDates": "날짜 없음: {count}",
         "GanttDates": "날짜",
+        "GanttZoomLabel": "확대/축소",
         "GanttSetDates": "날짜 설정",
     "GanttNoScheduledTasks": "예정된 작업이 없습니다",
         "GanttTodayAlreadyVisible": "오늘이 이미 표시되어 있습니다",
