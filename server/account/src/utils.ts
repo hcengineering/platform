@@ -38,12 +38,12 @@ import {
 import { getMongoClient } from '@hcengineering/mongo' // TODO: get rid of this import later
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
 import { getDBClient, setDBExtraOptions } from '@hcengineering/postgres'
-import { pbkdf2Sync, randomBytes } from 'crypto'
+import { createHmac, pbkdf2Sync, randomBytes } from 'crypto'
 import otpGenerator from 'otp-generator'
 import { authenticator } from 'otplib'
 
 import { Analytics } from '@hcengineering/analytics'
-import {
+import serverToken, {
   decodeToken,
   decodeTokenVerbose,
   generateToken,
@@ -176,6 +176,79 @@ export function isReadOnlyOrGuest (account: AccountUuid, extra: Record<string, a
 
 export function isGuest (account: AccountUuid, extra: Record<string, any> | undefined): boolean {
   return account === GUEST_ACCOUNT && extra?.guest === 'true'
+}
+
+/**
+ * Exact messages a `TokenError` can carry today (jwt-simple plus the checks in
+ * `@hcengineering/server-token`). Anything else is logged as `other`: decoder
+ * messages may quote the malformed input, so they are never logged verbatim.
+ */
+const KNOWN_TOKEN_ERROR_MESSAGES: ReadonlySet<string> = new Set([
+  'No token supplied',
+  'Not enough or too many segments',
+  'Algorithm not supported',
+  'Algorithm type not recognized',
+  'Require key',
+  'Signature verification failed',
+  'Token not yet active',
+  'Token expired',
+  'Token revoked',
+  'Token revocation could not be verified'
+])
+
+/**
+ * Fixed category for a failed token: a known `TokenError` message, `other` for
+ * any other `TokenError`, and `unexpected` for everything else.
+ */
+export function tokenErrorReason (err: unknown): string {
+  if (!(err instanceof TokenError)) return 'unexpected'
+  return KNOWN_TOKEN_ERROR_MESSAGES.has(err.message) ? err.message : 'other'
+}
+
+/**
+ * Short identifier of a raw token for log correlation. Tokens are bearer
+ * credentials and must never be written to logs or to the error reporter. The
+ * fingerprint is an HMAC-SHA256 keyed with a key derived from the server secret,
+ * so it cannot be recomputed without that secret; it lets operators correlate
+ * repeated failures of one token. Without a configured secret no fingerprint is
+ * produced.
+ */
+export function tokenFingerprint (token: string | undefined | null): string | undefined {
+  if (token == null || token === '') return undefined
+  const secret = getMetadata(serverToken.metadata.Secret)
+  if (secret == null || secret === '') return undefined
+  const key = createHmac('sha256', secret).update('account:token-fingerprint').digest()
+  return createHmac('sha256', key).update(token).digest('hex').slice(0, 16)
+}
+
+function safeErrorName (err: unknown, token: string): string {
+  if (!(err instanceof Error)) return typeof err
+  const name = err.name
+  if (typeof name !== 'string' || !/^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(name) || name.includes(token)) {
+    return 'Error'
+  }
+  return name
+}
+
+/**
+ * Logs a token that failed validation without exposing it. A `TokenError` (bad
+ * signature, expired, not yet active, revoked) is an expected authentication
+ * failure: it is logged at warn level with a fixed reason and is not reported to
+ * Analytics. Anything else is unexpected: it is logged at error level and a fresh
+ * error carrying only the error class name is reported to Analytics. The original
+ * error, its message, stack, cause and custom fields are never passed on.
+ */
+export function reportInvalidToken (ctx: MeasureContext, token: string, err: unknown): void {
+  const fingerprint = tokenFingerprint(token)
+  if (err instanceof TokenError) {
+    ctx.warn('Invalid token', { token: fingerprint, error: 'TokenError', reason: tokenErrorReason(err) })
+    return
+  }
+  const name = safeErrorName(err, token)
+  const reported = new Error('Unexpected error while validating a token')
+  if (err instanceof Error) reported.name = name
+  Analytics.handleError(reported)
+  ctx.error('Invalid token', { token: fingerprint, error: name, reason: 'unexpected' })
 }
 
 export function wrap (
