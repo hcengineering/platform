@@ -3,7 +3,9 @@ const { readFileSync, existsSync, mkdirSync, createWriteStream } = require('fs')
 const { spawn } = require('child_process')
 
 function parseSvelteCheckLog(logContent) {
-  const lines = logContent.split('\n')
+  // Human output includes ANSI colors, even when redirected to a log file.
+  // Strip them before looking for "Error:" so failed checks report the errors.
+  const lines = logContent.replace(/\x1b\[[0-9;]*m/g, '').split('\n')
   const errors = []
   let currentError = null
 

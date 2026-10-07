@@ -18,8 +18,8 @@
 
   const DAY_MS = 86_400_000
 
-  function fmt (ts: number): string {
-    return new Date(ts).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+  function fmt (ts: number, locale: string): string {
+    return new Date(ts).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
   }
 
   function originGeometry (state: DragState): { x: number, w: number } | null {
@@ -140,7 +140,7 @@
 {#if pd !== null && gx !== null}
   <g transform="translate({gx}, 0)" class="date-pill" pointer-events="none">
     <rect x={-44} y={2} width={88} height={18} rx={9} ry={9} fill="var(--theme-state-info-color, #6366f1)" />
-    <text x={0} y={15} text-anchor="middle" fill="white" class="date-pill-text">{fmt(pd)}</text>
+    <text x={0} y={15} text-anchor="middle" fill="white" class="date-pill-text">{fmt(pd, $themeStore.language)}</text>
   </g>
 {/if}
 

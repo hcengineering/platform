@@ -315,7 +315,19 @@
     "SearchEmptyTitle": "Pro „{query}\" nebyly nalezeny žádné úkoly",
     "SearchEmptyActiveFilters": "Aktivní filtry: {filters}",
     "SearchEmptyClearFilters": "Hledat bez filtrů",
-    "SearchEmptyAllProjects": "Hledat ve všech projektech"
+    "SearchEmptyAllProjects": "Hledat ve všech projektech",
+    "GanttWeekLabel": "T{week}",
+    "GanttQuarterLabel": "Q{quarter}",
+    "GanttWithoutDates": "{count} bez dat",
+    "GanttDates": "Data",
+    "GanttZoomLabel": "Přiblížení",
+    "GanttSetDates": "Nastavit data",
+    "GanttNoScheduledTasks": "Žádné naplánované úkoly",
+    "GanttTodayAlreadyVisible": "Dnešek je již zobrazen",
+    "GanttVisibleRange": "Rozsah",
+    "GanttNotScheduled": "Nenaplánováno",
+    "GanttMissingStartDates": "{count} úkolů nemá datum zahájení.",
+    "GanttSetDatesHint": "Nastavte u úkolu datum zahájení a termín dokončení, aby se zobrazil v časové ose."
   },
   "status": {}
 }

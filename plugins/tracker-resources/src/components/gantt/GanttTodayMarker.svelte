@@ -2,6 +2,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
+  import { themeStore } from '@hcengineering/ui'
   import { type TimeScale } from '@hcengineering/gantt'
 
   export let timeScale: TimeScale
@@ -14,7 +15,11 @@
 
   $: today = Date.now()
   $: x = timeScale.toX(today)
-  $: dateLabel = new Date(today).toLocaleDateString(undefined, { day: 'numeric', month: 'short', timeZone: 'UTC' })
+  $: dateLabel = new Date(today).toLocaleDateString($themeStore.language, {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC'
+  })
 </script>
 
 <line

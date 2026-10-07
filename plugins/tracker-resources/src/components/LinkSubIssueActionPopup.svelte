@@ -67,7 +67,7 @@
     // Descendants: BFS over parents[0].parentId pointers.
     const childrenByParent = new Map<Ref<Issue>, Issue[]>()
     for (const i of all) {
-      const parentId = i.parents?.[0]?.parentId as Ref<Issue> | undefined
+      const parentId = i.parents?.[0]?.parentId
       if (parentId === undefined) continue
       const bucket = childrenByParent.get(parentId)
       if (bucket === undefined) childrenByParent.set(parentId, [i])

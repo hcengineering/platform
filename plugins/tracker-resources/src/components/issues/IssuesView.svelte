@@ -172,13 +172,13 @@
        Gantt), so SearchInputAdvanced + prefix-operators + searchScope +
        rawSearchTextStore + match-highlight + empty-state all work in
        List / Kanban too. Gantt additionally lifts the GanttToolbarBar
-       sections (Group-by, Date-Nav, Zoom, Undo/Redo) into the same row
+       sections (View settings, Date-Nav, Zoom, Undo/Redo) into the same row
        so the toolbar stays a single visual unit. -->
   <svelte:fragment slot="search" let:search let:setSearch>
     {#if isGanttMode}
       <!-- Search cluster uses flex-direction: row-reverse (huly UI
            convention), so child markup order is REVERSED from visual L→R.
-           Desired visual L→R: Lupe → Filter → chips → toolbar. So markup:
+           Desired visual L→R: Lupe → Filter → View → chips → toolbar. So markup:
            FIRST=toolbar (visually rightmost) … LAST=Lupe (visually
            leftmost).
 
@@ -189,6 +189,7 @@
            1920, 1600 and 390 px — see GanttToolbarBar's header comment. -->
       <GanttToolbarBar section="cluster" />
       <InlineFilterChips _class={tracker.class.Issue} {space} constrained />
+      <GanttToolbarBar section="settings" />
       <FilterButton _class={tracker.class.Issue} {space} />
       {#if modeSelectorProps !== undefined && (viewOptions?.showQuickModeSelector ?? true) !== false}
         <ModeSelector kind={'subtle'} props={modeSelectorProps} />

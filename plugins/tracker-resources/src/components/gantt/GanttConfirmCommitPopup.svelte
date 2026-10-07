@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: EPL-2.0
 -->
 <script lang="ts">
-  import { Button, Label } from '@hcengineering/ui'
+  import { Button, Label, themeStore } from '@hcengineering/ui'
   import { type Issue } from '@hcengineering/tracker'
   import { createEventDispatcher } from 'svelte'
   import view from '@hcengineering/view'
@@ -25,8 +25,8 @@
 
   const dispatch = createEventDispatcher<{ close: boolean }>()
 
-  function fmt (ts: number): string {
-    return new Date(ts).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+  function fmt (ts: number, locale: string): string {
+    return new Date(ts).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
   }
 </script>
 
@@ -39,7 +39,11 @@
   <div class="body">
     <Label
       label={kind === 'move' ? tracker.string.GanttConfirmMoveBody : tracker.string.GanttConfirmResizeBody}
-      params={{ title: issue.title, start: fmt(newStart), due: fmt(newDue) }}
+      params={{
+        title: issue.title,
+        start: fmt(newStart, $themeStore.language),
+        due: fmt(newDue, $themeStore.language)
+      }}
     />
   </div>
   <div class="footer">

@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte'
-  import { Button, Label } from '@hcengineering/ui'
+  import { Button, Label, themeStore } from '@hcengineering/ui'
   import type { Issue } from '@hcengineering/tracker'
   import type { PrimaryEdit, CascadeShift } from './lib/types'
   import { computeCascadeBodyHeight } from '@hcengineering/gantt'
@@ -141,8 +141,8 @@
     return ((t - dateRange.min) / span) * barAreaWidth
   }
 
-  function fmtTick (t: number): string {
-    return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  function fmtTick (t: number, locale: string): string {
+    return new Date(t).toLocaleDateString(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' })
   }
 
   function ticks (): number[] {
@@ -236,7 +236,7 @@
           stroke-width="1"
         />
         <text x={LABEL_WIDTH + xOf(t)} y={BAR_TOP_PADDING - 8} text-anchor="middle" font-size="10" fill="#6b7280"
-          >{fmtTick(t)}</text
+          >{fmtTick(t, $themeStore.language)}</text
         >
       {/each}
 

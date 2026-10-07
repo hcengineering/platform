@@ -325,7 +325,19 @@
     "SearchEmptyTitle": "未找到与 \"{query}\" 匹配的问题",
     "SearchEmptyActiveFilters": "活动筛选器：{filters}",
     "SearchEmptyClearFilters": "不使用筛选器搜索",
-    "SearchEmptyAllProjects": "在所有项目中搜索"
+    "SearchEmptyAllProjects": "在所有项目中搜索",
+    "GanttWeekLabel": "第{week}周",
+    "GanttQuarterLabel": "第{quarter}季度",
+    "GanttWithoutDates": "无日期：{count}",
+    "GanttDates": "日期",
+    "GanttZoomLabel": "缩放",
+    "GanttSetDates": "设置日期",
+    "GanttNoScheduledTasks": "没有已安排的任务",
+    "GanttTodayAlreadyVisible": "今天已在当前视图中",
+    "GanttVisibleRange": "范围",
+    "GanttNotScheduled": "未安排",
+    "GanttMissingStartDates": "{count} 个任务没有开始日期。",
+    "GanttSetDatesHint": "为任务设置开始日期和截止日期，即可在时间轴上显示。"
   },
   "status": {}
 }

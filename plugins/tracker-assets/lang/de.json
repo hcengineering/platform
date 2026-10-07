@@ -358,6 +358,8 @@
     "GanttJumpToDate": "Zu Datum springen",
     "GanttZoomDay": "Tag",
     "GanttZoomWeek": "Woche",
+    "GanttWeekLabel": "KW{week}",
+    "GanttQuarterLabel": "Q{quarter}",
     "GanttZoomMonth": "Monat",
     "GanttZoomQuarter": "Quartal",
     "GanttZoomCustom": "Benutzerdefiniert",
@@ -563,7 +565,16 @@
     "SearchEmptyTitle": "Keine Treffer für \"{query}\"",
     "SearchEmptyActiveFilters": "Aktive Filter: {filters}",
     "SearchEmptyClearFilters": "Suche ohne Filter",
-    "SearchEmptyAllProjects": "In allen Projekten suchen"
+    "SearchEmptyAllProjects": "In allen Projekten suchen",
+    "GanttWithoutDates": "{count} ohne Daten",
+    "GanttDates": "Termine",
+    "GanttSetDates": "Daten festlegen",
+    "GanttNoScheduledTasks": "Keine geplanten Aufgaben",
+    "GanttTodayAlreadyVisible": "Heute ist bereits sichtbar",
+    "GanttVisibleRange": "Zeitraum",
+    "GanttNotScheduled": "Nicht geplant",
+    "GanttMissingStartDates": "Für {count} Aufgaben ist kein Startdatum festgelegt.",
+    "GanttSetDatesHint": "Legen Sie für ein Issue Start- und Fälligkeitsdatum fest, damit es auf der Zeitachse erscheint."
   },
   "status": {}
 }

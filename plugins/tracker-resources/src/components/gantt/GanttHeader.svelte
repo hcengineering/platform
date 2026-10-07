@@ -2,10 +2,12 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 -->
 <script lang="ts">
-  import { type TimeScale } from '@hcengineering/gantt'
+  import { type TimeScale, type ZoomLevel } from '@hcengineering/gantt'
+  import { themeStore } from '@hcengineering/ui'
   import { computeTickViewport } from '@hcengineering/gantt'
 
   export let timeScale: TimeScale
+  export let zoom: ZoomLevel = 'week'
   export let viewport: { left: number, right: number } // px
   export let totalWidth: number
   export let dataWidth: number = totalWidth
@@ -18,6 +20,13 @@
   $: tickViewport = computeTickViewport(viewport.left, viewport.right, dataWidth)
   $: visibleRange = [timeScale.fromX(tickViewport.left), timeScale.fromX(tickViewport.right)] as [number, number]
   $: ticks = timeScale.ticks(visibleRange)
+
+  function monthHeading (date: number, locale: string): string {
+    return new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(date)
+  }
+  function weekStart (date: number, locale: string): string {
+    return new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(date)
+  }
 </script>
 
 <!--
@@ -30,20 +39,37 @@
 <svg class="gantt-header" width={totalWidth} {height} viewBox="0 0 {totalWidth} {height}" preserveAspectRatio="none">
   <!-- Divider line between supra row and primary row. -->
   <line x1={0} x2={totalWidth} y1={height / 2} y2={height / 2} stroke="var(--theme-divider-color)" stroke-width={0.5} />
-  {#each ticks as tick (tick.date)}
+  {#each ticks as tick, index (tick.date)}
     {@const x = timeScale.toX(tick.date)}
+    {@const nextX = ticks[index + 1] !== undefined ? timeScale.toX(ticks[index + 1].date) : totalWidth}
+    {#if Date.now() >= tick.date && timeScale.toX(Date.now()) < nextX}
+      <rect
+        {x}
+        y={height / 2}
+        width={Math.max(0, nextX - x)}
+        height={height / 2}
+        fill="var(--theme-button-hovered)"
+        pointer-events="none"
+      />
+    {/if}
     <!-- Vertical gridline: short tick on the primary row by default; full
          height on segment-boundaries (when there's a secondary label) to
          visually anchor the supra-label to its column. -->
     <line
       x1={x}
       x2={x}
-      y1={tick.secondaryLabel !== undefined ? 0 : height / 2}
+      y1={tick.secondaryLabel !== undefined || (zoom === 'week' && new Date(tick.date).getUTCDate() <= 7)
+        ? 0
+        : height / 2}
       y2={height}
       stroke="var(--theme-divider-color)"
       stroke-width={tick.level === 'major' ? 1.5 : 0.5}
     />
-    {#if tick.secondaryLabel !== undefined}
+    {#if zoom === 'week' && (index === 0 || new Date(ticks[index - 1].date).getUTCMonth() !== new Date(tick.date).getUTCMonth())}
+      <text x={x + 8} y={height / 2 - 7} class="tick-label tick-label-secondary" fill="var(--theme-content-color)">
+        {monthHeading(tick.date, $themeStore.language)}
+      </text>
+    {:else if zoom !== 'week' && tick.secondaryLabel !== undefined}
       <text x={x + 4} y={height / 2 - 4} class="tick-label tick-label-secondary" fill="var(--theme-content-color)">
         {tick.secondaryLabel}
       </text>
@@ -51,6 +77,11 @@
     <text x={x + 4} y={height - 8} class="tick-label tick-label-{tick.level}" fill="var(--theme-content-color)">
       {tick.label}
     </text>
+    {#if zoom === 'week' && nextX - x >= 80}
+      <text x={x + 42} y={height - 8} class="tick-label tick-label-week-date" fill="var(--theme-dark-color)"
+        >{weekStart(tick.date, $themeStore.language)}</text
+      >
+    {/if}
   {/each}
 </svg>
 
@@ -65,6 +96,9 @@
     font-size: 12px;
     user-select: none;
     pointer-events: none;
+  }
+  .tick-label-week-date {
+    font-size: 11px;
   }
   .tick-label-major {
     font-weight: 600;

@@ -9,11 +9,12 @@
 <!--
   Lifted Gantt toolbar. The controls render in IssuesView's SpaceHeader
   row 2 via slot overrides; their state lives in GanttView and is
-  bridged here via `ganttToolbarSnapshot`. Two render sections share one
+  bridged here via `ganttToolbarSnapshot`. Three render sections share one
   component so the markup stays DRY:
-    section="cluster"  → the toolbar proper (Group-by/Colour-by, Date-Nav,
-                         Jump-to-date, Zoom, Undo/Redo, Saved-view), mounted
-                         inside the SpaceHeader's `search` group
+    section="cluster"  → timeline navigation, Zoom, Undo/Redo and Saved-view,
+                         mounted inside the SpaceHeader's `search` group
+    section="settings" → the View button beside Filter, opening Group-by and
+                         Colour-by settings
     section="trailing" → the "…" overflow trigger, More-actions (or the phone
                          drawer toggle) and the Fullscreen toggle, mounted
                          after the All/Active/Backlog ModeSelector in the
@@ -53,22 +54,26 @@
 <script lang="ts">
   import { onDestroy, onMount, tick } from 'svelte'
   import {
+    Button,
     Icon,
     IconMaximize,
     IconMinimize,
     IconMoreV,
+    IconSettings,
     eventToHTMLElement,
     resizeObserver,
     showPopup,
     tooltip
   } from '@hcengineering/ui'
   import tracker from '../../plugin'
+  import view from '@hcengineering/view'
   import GanttToolbarTiers from './GanttToolbarTiers.svelte'
   import GanttToolbarOverflowPopup from './GanttToolbarOverflowPopup.svelte'
+  import GanttViewSettingsPopup from './GanttViewSettingsPopup.svelte'
   import { ganttToolbarHiddenTiers, ganttToolbarSnapshot } from './ganttToolbarStore'
   import { TOOLBAR_TIERS, computeToolbarOverflow, type ToolbarTier } from '@hcengineering/gantt'
 
-  export let section: 'cluster' | 'trailing'
+  export let section: 'cluster' | 'settings' | 'trailing'
 
   // Fullscreen icon state. The toggle itself lives in GanttView
   // (`snap.toggleFullscreen`); here we only mirror the browser state so the
@@ -116,10 +121,15 @@
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : GAP_FALLBACK_PX
   }
 
-  // The saved-view tier only exists while the current view is dirty; every
-  // other tier is always present.
+  // The saved-view tier only exists while the current view is dirty. The
+  // date tier stays in the overflow menu; group and color live in the
+  // dedicated View popover beside Filter.
   $: presentTiers = TOOLBAR_TIERS.filter(
-    (t) => t !== 'savedview' || ($ganttToolbarSnapshot?.savedViewModified ?? false)
+    (t) =>
+      (t !== 'savedview' || ($ganttToolbarSnapshot?.savedViewModified ?? false)) &&
+      t !== 'date' &&
+      t !== 'group' &&
+      t !== 'color'
   )
 
   let visibleTiers: ToolbarTier[] = [...TOOLBAR_TIERS]
@@ -141,7 +151,7 @@
     lastPresentKey = presentKey
     visibleTiers = [...presentTiers]
     hiddenTiers = []
-    ganttToolbarHiddenTiers.set(hiddenTiers)
+    ganttToolbarHiddenTiers.set([...hiddenTiers, 'date'])
   }
 
   function sameTiers (a: readonly ToolbarTier[], b: readonly ToolbarTier[]): boolean {
@@ -169,7 +179,7 @@
     if (!sameTiers(r.visible, visibleTiers) || !sameTiers(r.hidden, hiddenTiers)) {
       visibleTiers = r.visible
       hiddenTiers = r.hidden
-      ganttToolbarHiddenTiers.set(hiddenTiers)
+      ganttToolbarHiddenTiers.set([...hiddenTiers, 'date'])
     }
   }
 
@@ -189,6 +199,10 @@
   function openOverflowPopup (e: MouseEvent): void {
     showPopup(GanttToolbarOverflowPopup, { tiers: $ganttToolbarHiddenTiers }, eventToHTMLElement(e))
   }
+
+  function openViewSettings (e: MouseEvent): void {
+    showPopup(GanttViewSettingsPopup, {}, eventToHTMLElement(e))
+  }
 </script>
 
 {#if $ganttToolbarSnapshot != null}
@@ -197,6 +211,17 @@
     <div class="gantt-tb-cluster" bind:this={clusterEl} use:resizeObserver={onClusterResize}>
       <GanttToolbarTiers {snap} tiers={visibleTiers} />
     </div>
+  {/if}
+
+  {#if section === 'settings'}
+    <Button
+      icon={IconSettings}
+      label={snap.layoutMode === 'desktop' ? view.string.View : undefined}
+      kind="regular"
+      size="medium"
+      showTooltip={{ label: view.string.View }}
+      on:click={openViewSettings}
+    />
   {/if}
 
   {#if section === 'trailing'}
@@ -318,8 +343,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 2rem;
+    height: 2rem;
     padding: 0;
     background: transparent;
     border: 1px solid transparent;

@@ -487,9 +487,9 @@
       y={barY}
       width={w}
       height={barH}
-      rx={3}
-      ry={3}
-      fill={resolvedFill}
+      rx={6}
+      ry={6}
+      fill={`color-mix(in srgb, ${resolvedBorder} 24%, var(--theme-comp-header-color))`}
       stroke={isCritical || isViolated ? 'var(--theme-state-negative-color)' : resolvedBorder}
       stroke-width={isCritical || isViolated || statusCategory === 'task:statusCategory:Lost' ? 2 : 1}
       stroke-dasharray={isViolated ? '4 2' : 'none'}
@@ -525,8 +525,8 @@
         y={barY}
         width={w * progressFrac}
         height={barH}
-        rx={3}
-        ry={3}
+        rx={6}
+        ry={6}
         fill="var(--theme-bg-accent-color)"
         fill-opacity="0.35"
         pointer-events="none"
@@ -547,8 +547,8 @@
         y={barY}
         width={w}
         height={barH}
-        rx={3}
-        ry={3}
+        rx={6}
+        ry={6}
         fill={`url(#hatch-${issue._id ?? 'syn'})`}
         pointer-events="none"
       />
@@ -634,7 +634,7 @@
         x={x + 6 + (manualPinVisible ? 14 : 0)}
         y={barY + barH / 2 + 4}
         class="bar-label-inside"
-        fill={resolvedText}
+        fill="var(--theme-content-color)"
         pointer-events="none">{insideLabel}</text
       >
     {/if}
@@ -730,9 +730,9 @@
    */
   .bar.selected {
     stroke: var(--theme-state-info-color, #6366f1);
-    stroke-width: 3px;
+    stroke-width: 2px;
     paint-order: stroke fill;
-    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--theme-state-info-color, #6366f1) 60%, transparent));
+    filter: drop-shadow(0 1px 2px color-mix(in srgb, var(--theme-content-color) 25%, transparent));
   }
   /* Parent-issue summary claw: invisible hit-rect with select/drag visual
      feedback when the user has armed the claw via click. Same cursor

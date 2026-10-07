@@ -3,11 +3,32 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { translateCB } from '@hcengineering/platform'
+  import { themeStore, ThrottledCaller } from '@hcengineering/ui'
+  import tracker from '../../plugin'
+
+  let unscheduledLabel = ''
+  let setDatesLabel = ''
+  $: translateCB(tracker.string.GanttNotScheduled, {}, $themeStore.language, (text) => {
+    unscheduledLabel = text
+  })
+  $: translateCB(tracker.string.GanttSetDates, {}, $themeStore.language, (text) => {
+    setDatesLabel = text
+  })
   import { writable, type Writable } from 'svelte/store'
   import type { Ref } from '@hcengineering/core'
   import type { Issue, IssueRelation, Milestone } from '@hcengineering/tracker'
   import { type DragState, type DragTarget, type LayoutRow, type MilestoneMarker, type SummaryRange } from './lib/types'
-  import { type LayoutMode, type TimeScale, type WorkingCalendar } from '@hcengineering/gantt'
+  import {
+    type LayoutMode,
+    type TimeScale,
+    type WorkingCalendar,
+    activeDragTargetId,
+    computeTickViewport,
+    nonWorkingDaysInRange,
+    snapToUtcMidnight,
+    type ZoomLevel
+  } from '@hcengineering/gantt'
   import { type BarLabelSlot } from './lib/bar-labels'
   import { filterVisibleRows } from './lib/layout'
   import GanttBar from './GanttBar.svelte'
@@ -17,9 +38,7 @@
   import GanttDependencyLayer from './GanttDependencyLayer.svelte'
   import GanttConnectorDot from './GanttConnectorDot.svelte'
   import GanttBarResizeHandles from './GanttBarResizeHandles.svelte'
-  import { activeDragTargetId, computeTickViewport, nonWorkingDaysInRange } from '@hcengineering/gantt'
   import { hasDeadline, isOverdue } from './lib/deadline-marker'
-  import { ThrottledCaller } from '@hcengineering/ui'
 
   // Coalesce hover updates to roughly one per frame so a fast pointer does not
   // re-trigger GanttView reactivity on every mousemove pixel (leading-edge).
@@ -51,6 +70,19 @@
   export let rows: LayoutRow[]
   export let milestones: MilestoneMarker[]
   export let timeScale: TimeScale
+  export let zoom: ZoomLevel = 'week'
+  $: groupRanges = (() => {
+    const ranges = new Map<string, { start: number, due: number }>()
+    for (const row of rows) {
+      if (row.groupKey === undefined || row.issue?.startDate == null || row.issue.dueDate == null) continue
+      const current = ranges.get(row.groupKey)
+      ranges.set(row.groupKey, {
+        start: Math.min(current?.start ?? Infinity, row.issue.startDate),
+        due: Math.max(current?.due ?? -Infinity, row.issue.dueDate)
+      })
+    }
+    return ranges
+  })()
   export let summaryRanges: Map<string, SummaryRange>
   export let scrollTop: number = 0
   export let viewportHeight: number = 600
@@ -298,6 +330,19 @@
     </g>
   {/if}
 
+  {#if zoom === 'week'}
+    {@const today = snapToUtcMidnight(Date.now())}
+    {@const monday = today - ((new Date(today).getUTCDay() + 6) % 7) * 86_400_000}
+    <rect
+      x={timeScale.toX(monday)}
+      y={0}
+      width={7 * timeScale.pxPerDay}
+      height={totalHeight}
+      class="current-week-rect"
+      pointer-events="none"
+    />
+  {/if}
+
   <!-- Vertical gridlines aligned to the time-scale ticks for visual rhythm. -->
   <g class="gridlines">
     {#each ticks as tick (tick.date)}
@@ -348,7 +393,20 @@
       >
         <!-- transparent hit-area covering the row width to capture hover -->
         <rect x={0} y={row.y} width={totalWidth} height={row.height} fill="transparent" />
-        {#if row.kind === 'milestone' && row.milestone !== null}
+        {#if row.kind === 'group-header' && row.groupKey !== undefined && groupRanges.has(row.groupKey)}
+          {@const range = groupRanges.get(row.groupKey)}
+          {#if range !== undefined}
+            <rect
+              x={timeScale.toX(range.start)}
+              y={row.y + row.height / 2 - 3}
+              width={timeScale.toX(range.due) - timeScale.toX(range.start) + timeScale.pxPerDay}
+              height={6}
+              rx={3}
+              class="group-summary-bar"
+              pointer-events="none"
+            />
+          {/if}
+        {:else if row.kind === 'milestone' && row.milestone !== null}
           {@const ms = row.milestone}
           {@const fullMs = milestonesById.get(String(ms._id))}
           {#if ms.startDate !== null && fullMs !== undefined}
@@ -386,6 +444,47 @@
             </g>
           {/if}
         {:else if row.issue !== null}
+          {#if (row.issue.startDate == null || row.issue.dueDate == null) && (summaryFor(row)?.startDate == null || summaryFor(row)?.dueDate == null)}
+            {#if dateMutable}
+              <g
+                class="unscheduled-action"
+                role="button"
+                tabindex="0"
+                aria-label={setDatesLabel}
+                on:click|stopPropagation={() => {
+                  if (row.issue !== null) openIssue(row.issue)
+                }}
+                on:keydown|stopPropagation={(event) => {
+                  if (event.key !== 'Enter' && event.key !== ' ') return
+                  event.preventDefault()
+                  if (row.issue !== null) openIssue(row.issue)
+                }}
+              >
+                <rect
+                  x={viewport.left + 12}
+                  y={row.y + (row.height - 26) / 2}
+                  width={116}
+                  height={26}
+                  rx={6}
+                  class="unscheduled-chip"
+                />
+                <text
+                  x={viewport.left + 24}
+                  y={row.y + row.height / 2}
+                  class="unscheduled-chip-label"
+                  dominant-baseline="middle">+ {setDatesLabel}</text
+                >
+              </g>
+            {:else}
+              <text
+                x={viewport.left + 16}
+                y={row.y + row.height / 2}
+                class="unscheduled-label"
+                dominant-baseline="middle"
+                pointer-events="none">{unscheduledLabel}</text
+              >
+            {/if}
+          {/if}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <!-- Mobile A11Y: on phones, iOS/Android intercept
                double-tap for system zoom, which collides with our
@@ -605,6 +704,33 @@
 </svg>
 
 <style lang="scss">
+  .current-week-rect {
+    fill: color-mix(in srgb, var(--theme-state-info-color, #6366f1) 4%, transparent);
+  }
+  .group-summary-bar {
+    fill: var(--theme-dark-color);
+    opacity: 0.65;
+  }
+  .unscheduled-action {
+    cursor: pointer;
+  }
+  .unscheduled-chip {
+    fill: var(--theme-comp-header-color);
+    stroke: var(--theme-state-info-color, #6366f1);
+    stroke-opacity: 0.55;
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+  }
+  .unscheduled-chip-label {
+    fill: var(--theme-state-info-color, #6366f1);
+    font-size: 12px;
+    pointer-events: none;
+  }
+  .unscheduled-label {
+    fill: var(--theme-dark-color);
+    font-size: 12px;
+  }
+
   .gantt-canvas {
     display: block;
     /* Lighter than --theme-bg-color so the canvas reads as a distinct
@@ -617,6 +743,8 @@
     cursor: pointer;
   }
   :global(svg.gantt-canvas .row-rect) {
+    stroke: var(--theme-divider-color);
+    stroke-width: 0.5;
     fill: transparent;
   }
   :global(svg.gantt-canvas .row-rect.hovered) {
@@ -636,8 +764,7 @@
   /* Swimlane header band painted behind the group-header row
      so the lane boundary reads across the entire canvas width. */
   :global(svg.gantt-canvas .row-rect.group-header-bg) {
-    fill: var(--theme-divider-color);
-    opacity: 0.7;
+    fill: var(--theme-button-hovered);
   }
   /* Phase-2 weekend / holiday tint — theme-aware via divider colour so it
      stays subtle in both light and dark themes. */

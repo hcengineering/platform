@@ -141,3 +141,29 @@ describe('time-scale — secondary label (year/month supra row)', () => {
     void DAY
   })
 })
+
+describe('time-scale locale', () => {
+  const origin = Date.UTC(2026, 0, 1)
+
+  it.each(['en', 'ru', 'de', 'ja'])('formats day and month labels using %s', (locale) => {
+    const expected = new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }).format(origin)
+    expect(createTimeScale('day', origin, undefined, { locale }).ticks([origin, origin])[0].secondaryLabel).toBe(
+      expected
+    )
+    expect(createTimeScale('month', origin, undefined, { locale }).ticks([origin, origin])[0].label).toBe(expected)
+  })
+
+  it('accepts translated week and quarter labels without changing geometry', () => {
+    const labels = {
+      locale: 'ru',
+      weekLabel: (week: number) => `Нед. ${week}`,
+      quarterLabel: (quarter: number) => `Кв. ${quarter}`
+    }
+    const week = createTimeScale('week', origin, 14, labels)
+    const first = week.ticks([origin, origin + 7 * DAY_MS])[0]
+    expect(first.label).toBe('Нед. 2')
+    expect(first.date).toBe(Date.UTC(2026, 0, 5))
+    expect(week.toX(first.date)).toBe(56)
+    expect(createTimeScale('quarter', origin, undefined, labels).ticks([origin, origin])[0].label).toBe('Кв. 1')
+  })
+})

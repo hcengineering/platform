@@ -308,7 +308,19 @@
     "SearchEmptyTitle": "No se encontraron tareas para \"{query}\"",
     "SearchEmptyActiveFilters": "Filtros activos: {filters}",
     "SearchEmptyClearFilters": "Buscar sin filtros",
-    "SearchEmptyAllProjects": "Buscar en todos los proyectos"
+    "SearchEmptyAllProjects": "Buscar en todos los proyectos",
+    "GanttWeekLabel": "S{week}",
+    "GanttQuarterLabel": "T{quarter}",
+    "GanttWithoutDates": "{count} sin fechas",
+    "GanttDates": "Fechas",
+    "GanttZoomLabel": "Zoom",
+    "GanttSetDates": "Establecer fechas",
+    "GanttNoScheduledTasks": "No hay tareas programadas",
+    "GanttTodayAlreadyVisible": "Hoy ya está visible",
+    "GanttVisibleRange": "Intervalo",
+    "GanttNotScheduled": "Sin programar",
+    "GanttMissingStartDates": "{count} tareas no tienen fecha de inicio.",
+    "GanttSetDatesHint": "Establece las fechas de inicio y vencimiento de una tarea para mostrarla en la línea de tiempo."
   },
   "status": {}
 }

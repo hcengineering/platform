@@ -308,7 +308,19 @@
         "SearchEmptyTitle": "\"{query}\"에 대한 이슈를 찾을 수 없습니다",
         "SearchEmptyActiveFilters": "활성 필터: {filters}",
         "SearchEmptyClearFilters": "필터 없이 검색",
-        "SearchEmptyAllProjects": "모든 프로젝트에서 검색"
+        "SearchEmptyAllProjects": "모든 프로젝트에서 검색",
+        "GanttWeekLabel": "{week}주",
+        "GanttQuarterLabel": "{quarter}분기",
+        "GanttWithoutDates": "날짜 없음: {count}",
+        "GanttDates": "날짜",
+        "GanttZoomLabel": "확대/축소",
+        "GanttSetDates": "날짜 설정",
+    "GanttNoScheduledTasks": "예정된 작업이 없습니다",
+        "GanttTodayAlreadyVisible": "오늘이 이미 표시되어 있습니다",
+        "GanttVisibleRange": "표시 범위",
+        "GanttNotScheduled": "일정 없음",
+        "GanttMissingStartDates": "{count}개 이슈에 시작일이 없습니다.",
+        "GanttSetDatesHint": "이슈의 시작일과 마감일을 설정하면 타임라인에 표시됩니다."
     },
     "status": {}
 }

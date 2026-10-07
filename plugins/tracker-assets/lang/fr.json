@@ -308,7 +308,19 @@
     "SearchEmptyTitle": "Aucun problème trouvé pour \"{query}\"",
     "SearchEmptyActiveFilters": "Filtres actifs : {filters}",
     "SearchEmptyClearFilters": "Rechercher sans filtres",
-    "SearchEmptyAllProjects": "Rechercher dans tous les projets"
+    "SearchEmptyAllProjects": "Rechercher dans tous les projets",
+    "GanttWeekLabel": "S{week}",
+    "GanttQuarterLabel": "T{quarter}",
+    "GanttWithoutDates": "{count} sans dates",
+    "GanttDates": "Dates",
+    "GanttZoomLabel": "Zoom",
+    "GanttSetDates": "Définir les dates",
+    "GanttNoScheduledTasks": "Aucune tâche planifiée",
+    "GanttTodayAlreadyVisible": "Aujourd'hui est déjà visible",
+    "GanttVisibleRange": "Période",
+    "GanttNotScheduled": "Non planifié",
+    "GanttMissingStartDates": "{count} tâches n'ont pas de date de début.",
+    "GanttSetDatesHint": "Définissez les dates de début et d'échéance d'une tâche pour l'afficher sur la chronologie."
   },
   "status": {}
 }
