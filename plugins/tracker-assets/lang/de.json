@@ -445,6 +445,8 @@
     "SlackColumn": "Puffer-Spalte",
     "GanttHelpTitle": "Tastenkürzel",
     "GanttHelpEsc": "Esc oder ? zum Schließen drücken",
+    "GanttHelpCalendarDaysDrag": "Beim Ziehen gedrückt halten, um Arbeitstage zu ignorieren (Kalendertage)",
+    "GanttDragCalendarDays": "Kalendertage",
     "GanttExport": "Als PNG exportieren",
     "GanttExportFailed": "Export fehlgeschlagen",
     "GanttSidebarColumnsExtended": "Erweiterte Sidebar-Spalten",

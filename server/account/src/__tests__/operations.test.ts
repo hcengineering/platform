@@ -25,7 +25,8 @@ import {
   systemAccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengineering/platform'
-import { decodeToken, decodeTokenVerbose } from '@hcengineering/server-token'
+import serverToken, { decodeToken, decodeTokenVerbose, TokenError } from '@hcengineering/server-token'
+import { Analytics } from '@hcengineering/analytics'
 
 import * as utils from '../utils'
 import { type AccountDB, type SocialId } from '../types'
@@ -35,6 +36,9 @@ import {
   sendInvite,
   resendInvite,
   getLoginInfoByToken,
+  getLoginWithWorkspaceInfo,
+  getWorkspacesInfo,
+  updateLastVisit,
   releaseSocialId,
   loginAsGuest,
   getLoginCapabilities,
@@ -74,6 +78,9 @@ jest.mock('@hcengineering/platform', () => {
 
 // Mock server-token
 jest.mock('@hcengineering/server-token', () => ({
+  __esModule: true,
+  default: jest.requireActual('@hcengineering/server-token').default,
+  TokenError: jest.requireActual('@hcengineering/server-token').TokenError,
   decodeTokenVerbose: jest.fn(),
   decodeToken: jest.fn(),
   generateToken: jest.fn().mockImplementation((account, workspace, extra, _, options) => {
@@ -91,7 +98,18 @@ jest.mock('@hcengineering/server-token', () => ({
   })
 }))
 
+// Mock analytics
+jest.mock('@hcengineering/analytics', () => ({
+  Analytics: {
+    handleError: jest.fn()
+  }
+}))
+
 describe('account operations', () => {
+  // The mocked function is a plain jest.fn(), so referencing it unbound is safe.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const handleError = Analytics.handleError as jest.Mock
+
   const mockCtx = {
     error: jest.fn(),
     info: jest.fn(),
@@ -1010,7 +1028,7 @@ describe('account operations', () => {
 
       ;(decodeToken as jest.Mock).mockReturnValue({ nbf: futureTime })
       ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
-        throw new Error('Token not yet active')
+        throw new TokenError('Token not yet active')
       })
 
       await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
@@ -1020,12 +1038,186 @@ describe('account operations', () => {
 
     test('should throw error when token has expired', async () => {
       ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
-        throw new Error('Token expired')
+        throw new TokenError('Token expired')
       })
 
       await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
         new PlatformError(new Status(Severity.ERROR, platform.status.TokenExpired, {}))
       )
+    })
+
+    describe('invalid token logging', () => {
+      const allLogged = (): string =>
+        JSON.stringify([
+          (mockCtx.warn as jest.Mock).mock.calls,
+          (mockCtx.error as jest.Mock).mock.calls,
+          (mockCtx.info as jest.Mock).mock.calls,
+          handleError.mock.calls.map((c) => [
+            String(c[0]),
+            c[0]?.name,
+            c[0]?.message,
+            c[0]?.stack,
+            String(c[0]?.cause),
+            { ...c[0] }
+          ])
+        ])
+
+      beforeEach(() => {
+        ;(getMetadata as jest.Mock).mockImplementation((key) =>
+          key === serverToken.metadata.Secret ? 'test-secret' : undefined
+        )
+      })
+
+      test('logs an expired token with a fingerprint and a reason only and does not report it', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+          throw new TokenError('Token expired')
+        })
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.TokenExpired, {}))
+        )
+
+        expect(handleError).not.toHaveBeenCalled()
+        expect(mockCtx.error).not.toHaveBeenCalled()
+        expect(mockCtx.warn).toHaveBeenCalledWith('Invalid token', {
+          token: utils.tokenFingerprint(mockToken),
+          error: 'TokenError',
+          reason: 'Token expired'
+        })
+        expect(utils.tokenFingerprint(mockToken)).toMatch(/^[0-9a-f]{16}$/)
+        expect(allLogged()).not.toContain(mockToken)
+      })
+
+      test('does not log a decoder message that quotes the token', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+          throw new TokenError(`Unexpected token ${mockToken} in JSON at position 0`)
+        })
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+        )
+
+        expect(mockCtx.warn).toHaveBeenCalledWith('Invalid token', {
+          token: utils.tokenFingerprint(mockToken),
+          error: 'TokenError',
+          reason: 'other'
+        })
+        expect(handleError).not.toHaveBeenCalled()
+        expect(allLogged()).not.toContain(mockToken)
+      })
+
+      test('still reports a non-token failure without leaking the token', async () => {
+        // Grant token without `sub`: the only other await inside the try block.
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: 'test-account',
+          grant: { workspace: 'test-workspace', role: AccountRole.User }
+        })
+        const dbErr = Object.assign(new Error(`connection reset while handling ${mockToken}`), { token: mockToken })
+        ;(mockDb.generatePersonUuid as jest.Mock).mockRejectedValueOnce(dbErr)
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+        )
+
+        expect(handleError).toHaveBeenCalledTimes(1)
+        expect(handleError.mock.calls[0][0]).not.toBe(dbErr)
+        expect(mockCtx.error).toHaveBeenCalledWith('Invalid token', {
+          token: utils.tokenFingerprint(mockToken),
+          error: 'Error',
+          reason: 'unexpected'
+        })
+        expect(mockCtx.warn).not.toHaveBeenCalled()
+        expect(allLogged()).not.toContain(mockToken)
+      })
+
+      test('does not log anything when no token was supplied', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+          throw new TokenError('Not enough or too many segments')
+        })
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, undefined as any)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+        )
+
+        expect(mockCtx.warn).not.toHaveBeenCalled()
+        expect(mockCtx.error).not.toHaveBeenCalled()
+        expect(handleError).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('getLoginWithWorkspaceInfo', () => {
+    const mockCtx = {
+      error: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn()
+    } as unknown as MeasureContext
+    const mockDb = {} as unknown as AccountDB
+    const mockToken = 'test-token'
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      ;(getMetadata as jest.Mock).mockImplementation((key) =>
+        key === serverToken.metadata.Secret ? 'test-secret' : undefined
+      )
+    })
+
+    test.each([
+      ['Signature verification failed', 'Signature verification failed'],
+      [`Signature verification failed ${mockToken}`, 'other']
+    ])(
+      'rejects an invalid token (%s) with Unauthorized, logs a fingerprint and reason only and skips Analytics',
+      async (message, reason) => {
+        ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+          throw new TokenError(message)
+        })
+
+        await expect(getLoginWithWorkspaceInfo(mockCtx, mockDb, null, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+        )
+
+        expect(handleError).not.toHaveBeenCalled()
+        expect(mockCtx.error).not.toHaveBeenCalled()
+        expect(mockCtx.warn).toHaveBeenCalledWith('Invalid token', {
+          token: utils.tokenFingerprint(mockToken),
+          error: 'TokenError',
+          reason
+        })
+        expect(JSON.stringify((mockCtx.warn as jest.Mock).mock.calls)).not.toContain(mockToken)
+      }
+    )
+  })
+
+  describe('getWorkspacesInfo / updateLastVisit caller check', () => {
+    const mockCtx = {
+      error: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn()
+    } as unknown as MeasureContext
+    const mockDb = {} as unknown as AccountDB
+    const mockToken = 'test-token'
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      ;(getMetadata as jest.Mock).mockImplementation((key) =>
+        key === serverToken.metadata.Secret ? 'test-secret' : undefined
+      )
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: 'not-system' })
+    })
+
+    test.each([
+      ['getWorkspacesInfo', getWorkspacesInfo],
+      ['updateLastVisit', updateLastVisit]
+    ])('%s rejects a non-system caller without logging the token', async (_, method) => {
+      await expect(method(mockCtx, mockDb, null, mockToken, { ids: ['ws' as WorkspaceUuid] })).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(mockCtx.error).toHaveBeenCalledWith(expect.any(String), {
+        account: 'not-system',
+        token: utils.tokenFingerprint(mockToken)
+      })
+      expect(JSON.stringify((mockCtx.error as jest.Mock).mock.calls)).not.toContain(mockToken)
     })
   })
 

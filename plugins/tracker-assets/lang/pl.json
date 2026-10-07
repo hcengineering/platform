@@ -302,7 +302,9 @@
     "GanttVisibleRange": "Zakres",
     "GanttNotScheduled": "Nie zaplanowano",
     "GanttMissingStartDates": "{count} zadań nie ma daty rozpoczęcia.",
-    "GanttSetDatesHint": "Ustaw datę rozpoczęcia i termin zakończenia zadania, aby wyświetlić je na osi czasu."
+    "GanttSetDatesHint": "Ustaw datę rozpoczęcia i termin zakończenia zadania, aby wyświetlić je na osi czasu.",
+    "GanttHelpCalendarDaysDrag": "Przytrzymaj podczas przeciągania, aby ignorować dni robocze (dni kalendarzowe)",
+    "GanttDragCalendarDays": "Dni kalendarzowe"
   },
   "status": {}
 }

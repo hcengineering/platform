@@ -296,6 +296,8 @@
     "GanttExpand": "Expand",
     "GanttCollapse": "Collapse",
     "GanttCornerNoOpInSwimlane": "No effect in group-by mode",
+    "GanttHelpCalendarDaysDrag": "ドラッグ中に押し続けると稼働日を無視（暦日）",
+    "GanttDragCalendarDays": "暦日",
     "ModeSelectorDisabledByFilter": "ステータスはアクティブなフィルターで制御されています。このショートカットを使用するにはステータスフィルターを解除してください。",
     "ShowQuickModeSelector": "クイックフィルター：すべて / アクティブ / バックログ",
     "SearchScopeLabel": "検索対象…",

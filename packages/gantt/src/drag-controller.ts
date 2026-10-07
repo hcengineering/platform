@@ -3,9 +3,17 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import type { DragEvent, DragState, DragTarget, GanttItem } from './types'
+import type { DragEvent, DragState, DragTarget, GanttItem, WorkingCalendar } from './types'
 import { snapToUtcMidnight } from './time-scale'
 import type { TimeScale } from './time-scale'
+import {
+  MAX_WORKING_SPAN_DAYS,
+  dueForSpan,
+  findWorkingDay,
+  isWorkingDay,
+  workingDaySpan,
+  workingDaysPerWeek
+} from './working-days'
 
 /**
  * Pure reduction over drag state. Given the current state and an input event
@@ -17,23 +25,37 @@ import type { TimeScale } from './time-scale'
  * and the captured drag target. `target.kind` (issue vs milestone) is
  * threaded through unchanged so commitDrag (in GanttView.svelte) can route
  * to the right update field.
+ *
+ * With a `calendar`, previews of single-bar body drags, resizes and drops
+ * land on working days (see `reduceFromActive`); a co-drag and any call
+ * without a calendar are unchanged. A `mousemove` with `calendarDays: true`
+ * suspends the snapping for that move (the per-drag override) and marks the
+ * state `snapSuspended`, so the next move without it snaps again.
  */
 export function reduce<TTarget extends DragTarget = DragTarget, TNode extends GanttItem = GanttItem> (
   state: DragState<TTarget, TNode>,
   event: DragEvent<TTarget, TNode>,
-  timeScale: TimeScale
+  timeScale: TimeScale,
+  calendar?: WorkingCalendar
 ): DragState<TTarget, TNode> {
   // The reducer is doc-agnostic: it only copies the `target` / `source` /
   // `hoveredBar` payloads through and reads their `_id`. Running the concrete
   // implementation and re-asserting the generic parameters is therefore sound —
   // whatever specific target/node the caller fed in is exactly what comes back.
-  return reduceImpl(state as unknown as DragState, event as unknown as DragEvent, timeScale) as unknown as DragState<
-  TTarget,
-  TNode
-  >
+  return reduceImpl(
+    state as unknown as DragState,
+    event as unknown as DragEvent,
+    timeScale,
+    calendar
+  ) as unknown as DragState<TTarget, TNode>
 }
 
-function reduceImpl (state: DragState, event: DragEvent, timeScale: TimeScale): DragState {
+function reduceImpl (
+  state: DragState,
+  event: DragEvent,
+  timeScale: TimeScale,
+  calendar: WorkingCalendar | undefined
+): DragState {
   switch (state.kind) {
     case 'idle':
       return reduceFromIdle(state, event)
@@ -43,7 +65,7 @@ function reduceImpl (state: DragState, event: DragEvent, timeScale: TimeScale): 
     case 'dragging-unscheduled':
     case 'resizing-left':
     case 'resizing-right':
-      return reduceFromActive(state, event, timeScale)
+      return reduceFromActive(state, event, timeScale, calendar)
     case 'connector-drawing':
     case 'connector-target-hover':
       return reduceFromConnector(state, event)
@@ -171,12 +193,97 @@ function reduceFromHover (state: DragState & { kind: 'hover-bar' }, event: DragE
   return state
 }
 
-function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeScale): DragState {
+/**
+ * The calendar the active drag snaps to, or `undefined` for calendar-day
+ * behaviour. Degenerate cases fall back to calendar days: a calendar without
+ * any working weekday (nothing to snap to) and a bar whose origin is not a
+ * finite range of at most {@link MAX_WORKING_SPAN_DAYS} days (its working-day
+ * span could not be measured within the helpers' bounds).
+ */
+function snapCalendar (state: DragState, calendar: WorkingCalendar | undefined): WorkingCalendar | undefined {
+  if (calendar === undefined || workingDaysPerWeek(calendar) === 0) return undefined
+  // A co-drag moves by its shared raw delta and never snaps.
+  if (state.kind === 'dragging-body' && state.coDrag !== undefined) return undefined
+  if (state.kind === 'dragging-body') {
+    const spanDays = (state.originEnd - state.originStart) / 86_400_000
+    if (!(spanDays >= 0 && spanDays <= MAX_WORKING_SPAN_DAYS)) return undefined
+  }
+  return calendar
+}
+
+/**
+ * The calendar a commit should use for date arithmetic that belongs to the
+ * drag itself (e.g. shifting a dragged parent's children): `undefined` when
+ * the drag suspended working-day snapping, so the whole gesture stays in
+ * calendar days, otherwise `calendar` unchanged.
+ */
+export function dragCalendar<TTarget extends DragTarget = DragTarget, TNode extends GanttItem = GanttItem> (
+  state: DragState<TTarget, TNode>,
+  calendar: WorkingCalendar | undefined
+): WorkingCalendar | undefined {
+  return 'snapSuspended' in state && state.snapSuspended === true ? undefined : calendar
+}
+
+/**
+ * The `mousemove` that re-syncs a running bar drag, resize or drop with the
+ * current state of the calendar-days modifier, replayed at the last pointer
+ * position, or `undefined` when there is nothing to re-sync (no such drag,
+ * no move yet, or the state already matches). Used on key presses, on
+ * pointer release (from the event's own modifier flag) and on window blur
+ * (modifier treated as released), so a Shift released outside the window
+ * cannot leave the drag suspended and commit calendar-day dates.
+ */
+export function modifierSyncMove<TTarget extends DragTarget = DragTarget, TNode extends GanttItem = GanttItem> (
+  state: DragState<TTarget, TNode>,
+  calendarDays: boolean,
+  lastMove: { cursorX: number, canvasX?: number } | undefined
+): (DragEvent<TTarget, TNode> & { type: 'mousemove' }) | undefined {
+  if (lastMove === undefined) return undefined
+  if (
+    state.kind !== 'dragging-body' &&
+    state.kind !== 'dragging-unscheduled' &&
+    state.kind !== 'resizing-left' &&
+    state.kind !== 'resizing-right'
+  ) {
+    return undefined
+  }
+  // Skip when already in sync. A press on an unflagged state is still
+  // replayed: the reducer flags it only when a calendar applies.
+  if ((state.snapSuspended === true) === calendarDays) return undefined
+  return { type: 'mousemove', cursorX: lastMove.cursorX, canvasX: lastMove.canvasX, calendarDays }
+}
+
+function reduceFromActive (
+  state: DragState,
+  event: DragEvent,
+  timeScale: TimeScale,
+  requestedCalendar: WorkingCalendar | undefined
+): DragState {
   if (event.type === 'mouseup' || event.type === 'cancel') {
     return { kind: 'idle' }
   }
   if (event.type !== 'mousemove') return state
+  const snapping = snapCalendar(state, requestedCalendar)
+  // The override only counts (and is only flagged) when there is snapping to
+  // suspend: without a calendar, for a co-drag or a degenerate calendar the
+  // move is calendar-day anyway.
+  const suspended = event.calendarDays === true && snapping !== undefined
+  const next = previewFromMove(state, event, timeScale, suspended ? undefined : snapping)
+  if (suspended) return { ...next, snapSuspended: true } as unknown as DragState
+  if ('snapSuspended' in next) {
+    const { snapSuspended, ...rest } = next
+    void snapSuspended
+    return rest as DragState
+  }
+  return next
+}
 
+function previewFromMove (
+  state: DragState,
+  event: DragEvent & { type: 'mousemove' },
+  timeScale: TimeScale,
+  calendar: WorkingCalendar | undefined
+): DragState {
   if (state.kind === 'dragging-body') {
     const deltaPx = event.cursorX - state.cursorStartX
     const rawDeltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
@@ -184,6 +291,9 @@ function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeSc
     // shared min/max window — the hard-stop semantic. Snap
     // is computed against the clamped delta so the entire group lands on
     // identical UTC-midnight boundaries.
+    // The shared delta stays in calendar days even with a calendar: the
+    // hard-stop window is a millisecond window, so per-member working-day
+    // snapping could breach it (bulk snapping is a follow-up).
     if (state.coDrag !== undefined) {
       const clampedDeltaMs = Math.max(state.coDrag.minDeltaMs, Math.min(state.coDrag.maxDeltaMs, rawDeltaMs))
       const previewStart = snapToUtcMidnight(state.originStart + clampedDeltaMs)
@@ -199,9 +309,25 @@ function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeSc
         coDrag: { ...state.coDrag, anchorDeltaMs }
       }
     }
+    const candidate = snapToUtcMidnight(state.originStart + rawDeltaMs)
+    // Working-days mode: the start lands on the nearest working day in the
+    // drag direction and the bar keeps its length in working days, so it can
+    // never start or end on a weekend or holiday. A zero-delta move is left
+    // untouched so a click without movement commits nothing, and when no
+    // working day is reachable (a holiday blackout longer than the search
+    // window) the bar moves in calendar days rather than onto a non-working
+    // day presented as snapped.
+    if (calendar !== undefined && candidate !== snapToUtcMidnight(state.originStart)) {
+      const previewStart = findWorkingDay(candidate, rawDeltaMs < 0 ? -1 : 1, calendar)
+      if (previewStart !== undefined) {
+        const span = workingDaySpan(state.originStart, state.originEnd, calendar)
+        const previewEnd = dueForSpan(previewStart, span, calendar)
+        if (isWorkingDay(previewEnd, calendar)) return { ...state, previewStart, previewEnd }
+      }
+    }
     return {
       ...state,
-      previewStart: snapToUtcMidnight(state.originStart + rawDeltaMs),
+      previewStart: candidate,
       previewEnd: snapToUtcMidnight(state.originEnd + rawDeltaMs)
     }
   }
@@ -210,25 +336,53 @@ function reduceFromActive (state: DragState, event: DragEvent, timeScale: TimeSc
     const deltaPx = event.cursorX - state.cursorStartX
     const deltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
     const candidate = snapToUtcMidnight(state.originStart + deltaMs)
+    // The start handle rounds up to the next working day (ceiling): with the
+    // pointer on a non-working day the start lands after it, so the bar is
+    // never extended onto a non-working day. No working day in reach: the
+    // handle follows the pointer in calendar days.
+    const snapped =
+      calendar === undefined || candidate === snapToUtcMidnight(state.originStart)
+        ? candidate
+        : (findWorkingDay(candidate, 1, calendar) ?? candidate)
     // Clamp so previewStart never crosses originEnd (would invert the bar).
-    return { ...state, previewStart: Math.min(candidate, state.originEnd) }
+    return { ...state, previewStart: Math.min(snapped, state.originEnd) }
   }
 
   if (state.kind === 'resizing-right') {
     const deltaPx = event.cursorX - state.cursorStartX
     const deltaMs = (deltaPx / timeScale.pxPerDay) * 86_400_000
     const candidate = snapToUtcMidnight(state.originEnd + deltaMs)
-    return { ...state, previewEnd: Math.max(candidate, state.originStart) }
+    // The end handle rounds down to the previous working day (floor): with the
+    // pointer on a non-working day the end stays before it. No working day in
+    // reach: the handle follows the pointer in calendar days.
+    const snapped =
+      calendar === undefined || candidate === snapToUtcMidnight(state.originEnd)
+        ? candidate
+        : (findWorkingDay(candidate, -1, calendar) ?? candidate)
+    return { ...state, previewEnd: Math.max(snapped, state.originStart) }
   }
 
   if (state.kind === 'dragging-unscheduled') {
     // Only update the preview when the cursor is actually over the canvas.
     if (event.canvasX === undefined) return state
-    const newStart = snapToUtcMidnight(timeScale.fromX(event.canvasX))
+    const dropped = snapToUtcMidnight(timeScale.fromX(event.canvasX))
+    // With a calendar the drop starts on the next working day and the default
+    // two-day span counts working days; with no working day in reach it keeps
+    // the calendar-day drop.
+    let newStart = dropped
+    let newEnd = dropped + 86_400_000
+    if (calendar !== undefined) {
+      const workingStart = findWorkingDay(dropped, 1, calendar)
+      const workingEnd = workingStart === undefined ? undefined : dueForSpan(workingStart, 2, calendar)
+      if (workingStart !== undefined && workingEnd !== undefined && isWorkingDay(workingEnd, calendar)) {
+        newStart = workingStart
+        newEnd = workingEnd
+      }
+    }
     return {
       ...state,
       previewStart: newStart,
-      previewEnd: newStart + 86_400_000,
+      previewEnd: newEnd,
       hasCanvasTarget: true
     }
   }

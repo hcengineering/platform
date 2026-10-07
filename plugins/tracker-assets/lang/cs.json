@@ -303,6 +303,8 @@
     "GanttExpand": "Expand",
     "GanttCollapse": "Collapse",
     "GanttCornerNoOpInSwimlane": "No effect in group-by mode",
+    "GanttHelpCalendarDaysDrag": "Podržením při přetahování ignorovat pracovní dny (kalendářní dny)",
+    "GanttDragCalendarDays": "Kalendářní dny",
     "ModeSelectorDisabledByFilter": "Stav je řízen aktivním filtrem. Chcete-li použít tuto zkratku, odstraňte filtr stavu.",
     "ShowQuickModeSelector": "Rychlý filtr: Vše / Aktivní / Návrhy",
     "SearchScopeLabel": "Hledat v…",

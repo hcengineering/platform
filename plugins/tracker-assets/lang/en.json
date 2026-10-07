@@ -445,6 +445,8 @@
     "CriticalPathBadge": "CP",
     "GanttHelpTitle": "Keyboard shortcuts",
     "GanttHelpEsc": "Press Esc or ? to close",
+    "GanttHelpCalendarDaysDrag": "Hold while dragging to ignore working days (calendar days)",
+    "GanttDragCalendarDays": "Calendar days",
     "GanttExport": "Export to PNG",
     "GanttExportFailed": "Export failed",
     "GanttSidebarColumnsExtended": "Extended sidebar columns",

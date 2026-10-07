@@ -296,6 +296,8 @@
     "GanttExpand": "Expand",
     "GanttCollapse": "Collapse",
     "GanttCornerNoOpInSwimlane": "No effect in group-by mode",
+    "GanttHelpCalendarDaysDrag": "Segure ao arrastar para ignorar os dias úteis (dias corridos)",
+    "GanttDragCalendarDays": "Dias corridos",
     "ModeSelectorDisabledByFilter": "O estado é controlado por um filtro ativo. Remova o filtro de estado para usar este atalho.",
     "ShowQuickModeSelector": "Filtro rápido: Todos / Ativos / Backlog",
     "SearchScopeLabel": "Procurar em…",

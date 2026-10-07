@@ -10,6 +10,8 @@ import {
   type WorkingCalendar,
   addWorkingDays,
   workingDayDelta,
+  workingDaysPerWeek,
+  MAX_WORKING_SPAN_DAYS,
   utcMidnight,
   fsAnchor,
   ssAnchor,
@@ -31,6 +33,35 @@ const DAY_MS = 86_400_000
  */
 export function addScheduleDays (t: number, days: number): number {
   return t + days * DAY_MS
+}
+
+/** `days` as calendar days (legacy) or working days (calendar active). */
+export function shiftScheduleDays (t: number, days: number, cfg: WorkingCalendar | undefined): number {
+  return cfg === undefined ? addScheduleDays(t, days) : addWorkingDays(t, days, cfg)
+}
+
+/**
+ * Moves `t` by the same amount as a primary bar whose start went from
+ * `originStart` to `previewStart`: the raw delta in legacy mode, the move
+ * measured in working days when a calendar is active, so a child bar lands on
+ * working days like its parent. A move that is not a finite distance of at
+ * most MAX_WORKING_SPAN_DAYS days falls back to the raw delta, which keeps the
+ * day-stepping working-day count bounded.
+ */
+export function shiftWithPrimary (
+  t: number,
+  originStart: number,
+  previewStart: number,
+  cfg: WorkingCalendar | undefined
+): number {
+  const delta = previewStart - originStart
+  if (cfg === undefined || !(Math.abs(delta) <= MAX_WORKING_SPAN_DAYS * DAY_MS)) return t + delta
+  return addWorkingDays(t, workingDayDelta(originStart, previewStart, cfg), cfg)
+}
+
+/** Step of Shift+Arrow: seven calendar days (legacy) or the active weekdays of the mask. */
+export function keyboardWeekStep (cfg: WorkingCalendar | undefined): number {
+  return cfg === undefined ? 7 : workingDaysPerWeek(cfg)
 }
 
 /**
