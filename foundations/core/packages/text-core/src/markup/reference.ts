@@ -24,6 +24,9 @@ export interface Reference {
   objectId: Ref<Doc>
   objectClass: Ref<Class<Doc>>
   parentNode: MarkupNode | null
+  // V3: undefined = grant (default); 'false' = explicit deny. Merged any-wins
+  // across duplicate references to the same object (see extractReferences).
+  grantsAccess?: 'true' | 'false'
 }
 
 /**
@@ -37,9 +40,19 @@ export function extractReferences (content: MarkupNode): Array<Reference> {
       const reference = node as ReferenceMarkupNode
       const objectId = reference.attrs.id as Ref<Doc>
       const objectClass = reference.attrs.objectclass as Ref<Class<Doc>>
+      const grantsAccess = reference.attrs.grantsAccess
       const e = result.find((e) => e.objectId === objectId && e.objectClass === objectClass)
       if (e === undefined) {
-        result.push({ objectId, objectClass, parentNode: parent ?? node })
+        result.push({ objectId, objectClass, parentNode: parent ?? node, grantsAccess })
+      } else {
+        // any-wins: a person is denied only if EVERY reference is explicitly
+        // 'false'. Upgrade away from 'false' as soon as a non-'false' (grant
+        // or default) reference appears; upgrade default->'true' cosmetically.
+        if (e.grantsAccess === 'false' && grantsAccess !== 'false') {
+          e.grantsAccess = grantsAccess
+        } else if (e.grantsAccess === undefined && grantsAccess === 'true') {
+          e.grantsAccess = 'true'
+        }
       }
     }
     return true
