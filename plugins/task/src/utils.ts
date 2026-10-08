@@ -21,6 +21,7 @@ import core, {
   DocumentQuery,
   Hierarchy,
   IdMap,
+  Mixin,
   Ref,
   Status,
   TxOperations,
@@ -330,11 +331,14 @@ async function createTaskTypes (
       const targetClassId = `${taskId}:type:mixin` as Ref<Class<Task>>
       tdata.targetClass = targetClassId
 
+      // Use baseMixin if provided, otherwise extend ofClass directly
+      const extendsClass = data.baseMixin ?? data.ofClass
+
       await client.createDoc(
         core.class.Mixin,
         core.space.Model,
         {
-          extends: data.ofClass,
+          extends: extendsClass,
           kind: ClassifierKind.MIXIN,
           label: ofClassClass.label,
           icon: ofClassClass.icon
@@ -352,4 +356,18 @@ async function createTaskTypes (
     _tasks.push(taskId)
   }
   return hasUpdates
+}
+
+/**
+ * @public
+ * Validates that a baseMixin is compatible with the ofClass hierarchy.
+ * Returns true if baseMixin is undefined or if it derives from ofClass.
+ */
+export function validateMixinHierarchy (
+  hierarchy: Hierarchy,
+  baseMixin: Ref<Mixin<Task>> | undefined,
+  ofClass: Ref<Class<Task>>
+): boolean {
+  if (baseMixin === undefined) return true
+  return hierarchy.isDerived(baseMixin, ofClass)
 }
