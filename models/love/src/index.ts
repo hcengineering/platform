@@ -180,7 +180,7 @@ export class TMeeting extends TEvent implements Meeting {
   room!: Ref<Room>
 }
 
-@Model(love.class.MeetingMinutes, core.class.Doc, DOMAIN_MEETING_MINUTES)
+@Model(love.class.MeetingMinutes, core.class.AttachedDoc, DOMAIN_MEETING_MINUTES)
 @UX(
   love.string.MeetingMinutes,
   love.icon.MeetingMinutes,
