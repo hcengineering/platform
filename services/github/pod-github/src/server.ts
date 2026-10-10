@@ -2,7 +2,12 @@ import { createNodeMiddleware } from '@octokit/webhooks'
 import { App } from 'octokit'
 
 import config from './config'
-import { getInstallationLogContext, getOAuthCallbackLogContext, githubLogErrorCategory } from './logContext'
+import {
+  getInstallationLogContext,
+  getOAuthCallbackLogContext,
+  githubLogErrorCategory,
+  reportGithubCredentialError
+} from './logContext'
 import { PlatformWorker } from './platform'
 
 import bp from 'body-parser'
@@ -91,16 +96,10 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       )
       res.status(200)
       res.json({})
-    } catch (err: any) {
-      Analytics.handleError(err)
-      const tok = decodeToken(payloadData.token, false)
-      ctx.error('failed to map-installation', {
-        workspace: tok.workspace,
-        installationId: payloadData.installationId,
-        error: githubLogErrorCategory.installationMapping
-      })
+    } catch {
+      reportGithubCredentialError(ctx, 'failed to map-installation', githubLogErrorCategory.installationMapping)
       res.status(401)
-      res.json({ error: err.message })
+      res.json({ error: githubLogErrorCategory.installationMapping })
     }
   })
 
@@ -132,11 +131,10 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       })
       res.status(200)
       res.json({})
-    } catch (err: any) {
-      Analytics.handleError(err)
-      ctx.error('failed to request github access token', { error: githubLogErrorCategory.oauthCallback })
+    } catch {
+      reportGithubCredentialError(ctx, 'failed to request github access token', githubLogErrorCategory.oauthCallback)
       res.status(401)
-      res.json({ error: err.message })
+      res.json({ error: githubLogErrorCategory.oauthCallback })
     }
   })
 
@@ -163,10 +161,10 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       )
       res.status(200)
       res.json({})
-    } catch (err: any) {
-      Analytics.handleError(err)
+    } catch {
+      reportGithubCredentialError(ctx, 'failed to remove installation', githubLogErrorCategory.installationRemoval)
       res.status(401)
-      res.json({ error: err.message })
+      res.json({ error: githubLogErrorCategory.installationRemoval })
     }
   })
 
