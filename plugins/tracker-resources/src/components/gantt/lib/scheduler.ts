@@ -12,6 +12,9 @@ import {
   workingDayDelta,
   workingDaysPerWeek,
   MAX_WORKING_SPAN_DAYS,
+  workingDaySpan,
+  dueForSpan,
+  startForSpan,
   utcMidnight,
   fsAnchor,
   ssAnchor,
@@ -360,9 +363,20 @@ export function simulateCascade (
             ? targetAnchor + curStartDelta
             : addWorkingDays(utcMidnight(targetAnchor), curDueDeltaWd, cfg)
         const newAnchor = r.kind === 'finish-to-start' ? Math.max(snap, gapFloor) : snap
-        const delta = newAnchor - targetAnchor
-        const newStart = targetAnchorIsStart ? newAnchor : targetDates.start + delta
-        const newDue = targetAnchorIsStart ? targetDates.due + delta : newAnchor
+        let newStart: number
+        let newDue: number
+        if (cfg === undefined) {
+          const delta = newAnchor - targetAnchor
+          newStart = targetAnchorIsStart ? newAnchor : targetDates.start + delta
+          newDue = targetAnchorIsStart ? targetDates.due + delta : newAnchor
+        } else {
+          // Working-days mode: the shifted issue keeps its length in working
+          // days, so a bar pushed across a weekend or a holiday never ends on
+          // a non-working day. Legacy mode keeps the calendar-day length.
+          const span = workingDaySpan(targetDates.start, targetDates.due, cfg)
+          newStart = targetAnchorIsStart ? newAnchor : startForSpan(newAnchor, span, cfg)
+          newDue = targetAnchorIsStart ? dueForSpan(newAnchor, span, cfg) : newAnchor
+        }
         current.set(r.target, { start: newStart, due: newDue })
         shifts.set(r.target, {
           issue: targetIssue,
@@ -434,9 +448,18 @@ export function simulateCascade (
         succAnchor = curDates.due
       }
       if (forwardRequired > succAnchor && requiredAnchor < predAnchor) {
-        const delta = predAnchor - requiredAnchor
-        const newStart = predAnchorIsDue ? predDates.start - delta : requiredAnchor
-        const newDue = predAnchorIsDue ? requiredAnchor : predDates.due - delta
+        let newStart: number
+        let newDue: number
+        if (cfg === undefined) {
+          const delta = predAnchor - requiredAnchor
+          newStart = predAnchorIsDue ? predDates.start - delta : requiredAnchor
+          newDue = predAnchorIsDue ? requiredAnchor : predDates.due - delta
+        } else {
+          // Working-days mode: the pulled predecessor keeps its working-day span.
+          const span = workingDaySpan(predDates.start, predDates.due, cfg)
+          newStart = predAnchorIsDue ? startForSpan(requiredAnchor, span, cfg) : requiredAnchor
+          newDue = predAnchorIsDue ? requiredAnchor : dueForSpan(requiredAnchor, span, cfg)
+        }
         current.set(r.attachedTo, { start: newStart, due: newDue })
         shifts.set(r.attachedTo, {
           issue: predIssue,

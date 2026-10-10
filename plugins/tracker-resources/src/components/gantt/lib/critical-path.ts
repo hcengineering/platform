@@ -16,7 +16,10 @@ import {
   fsReverseAnchor,
   ssReverseAnchor,
   ffReverseAnchor,
-  sfReverseAnchor
+  sfReverseAnchor,
+  workingDaySpan,
+  dueForSpan,
+  startForSpan
 } from '@hcengineering/gantt'
 
 const EMPTY_RESULT: CriticalPathResult = {
@@ -137,6 +140,20 @@ function topoSort (issues: ScheduledIssue[], relations: IssueRelation[]): Schedu
  * side-effects. Callers memoize the result via 200ms debounce in GanttView's
  * reactive recompute.
  */
+/** Due date of a bar that starts at `start` and keeps `i`'s length (ms in legacy mode, working days with a calendar). */
+function endFor (i: ScheduledIssue, start: number, cfg: WorkingCalendar | undefined): number {
+  if (!isFinite(start)) return start
+  if (cfg === undefined) return start + (i.dueDate - i.startDate)
+  return dueForSpan(start, workingDaySpan(i.startDate, i.dueDate, cfg), cfg)
+}
+
+/** Start date of a bar that ends at `due` and keeps `i`'s length. */
+function startFor (i: ScheduledIssue, due: number, cfg: WorkingCalendar | undefined): number {
+  if (!isFinite(due)) return due
+  if (cfg === undefined) return due - (i.dueDate - i.startDate)
+  return startForSpan(due, workingDaySpan(i.startDate, i.dueDate, cfg), cfg)
+}
+
 export function computeCriticalPath (
   issues: Issue[],
   relations: IssueRelation[],
@@ -197,7 +214,8 @@ export function computeCriticalPath (
   for (const i of order) {
     const incRels = incoming.get(i._id) ?? []
     if (incRels.length === 0) continue
-    const dur = i.dueDate - i.startDate // inclusive: EF - ES in ms
+    // Duration (inclusive: EF - ES) is preserved in ms, or in working days
+    // when a calendar is active — see endFor / startFor.
     let newES = i.startDate
     let newEF = i.dueDate
     for (const r of incRels) {
@@ -209,12 +227,12 @@ export function computeCriticalPath (
       if (b.field === 'ES') {
         if (b.value > newES) {
           newES = b.value
-          newEF = newES + dur
+          newEF = endFor(i, newES, cfg)
         }
       } else {
         if (b.value > newEF) {
           newEF = b.value
-          newES = newEF - dur
+          newES = startFor(i, newEF, cfg)
         }
       }
     }
@@ -257,10 +275,9 @@ export function computeCriticalPath (
   const lf = new Map<Ref<Issue>, number>()
   const reverseOrder = order.slice().reverse()
   for (const i of reverseOrder) {
-    const dur = i.dueDate - i.startDate
     const outRels = outgoing.get(i._id) ?? []
     let newLF = outRels.length === 0 ? projectFinish : Infinity
-    let newLS = newLF - dur
+    let newLS = startFor(i, newLF, cfg)
     for (const r of outRels) {
       const succ = byRef.get(r.target)
       if (succ === undefined) continue
@@ -270,12 +287,12 @@ export function computeCriticalPath (
       if (b.field === 'EF') {
         if (b.value < newLF) {
           newLF = b.value
-          newLS = newLF - dur
+          newLS = startFor(i, newLF, cfg)
         }
       } else {
         if (b.value < newLS) {
           newLS = b.value
-          newLF = newLS + dur
+          newLF = endFor(i, newLS, cfg)
         }
       }
     }

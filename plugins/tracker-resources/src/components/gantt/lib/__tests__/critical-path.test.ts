@@ -206,6 +206,24 @@ describe('computeCriticalPath — working-days mode', () => {
     expect(res.violatedRelations.has(r1._id)).toBe(true)
   })
 
+  it('latest start of a predecessor across a weekend is measured in working days', () => {
+    const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 20)) // Mon..Wed, 3 wd
+    const B = issue('B', Date.UTC(2026, 4, 27), Date.UTC(2026, 4, 27)) // Wed next week
+    const res = computeCriticalPath([A, B], [rel('A', 'B')], cfgMonFri)
+    // LF(A) = fsReverseAnchor(Wed 27) = Tue 26; LS(A) = startForSpan(Tue 26, 3) = Fri 22.
+    expect(res.slack.get('A' as Ref<Issue>)).toBe(4 * 86_400_000)
+    expect(res.slack.get('B' as Ref<Issue>)).toBe(0)
+    expect(res.critical).toEqual(new Set(['B']))
+  })
+
+  it('legacy mode: latest start of the same predecessor uses the calendar-day duration', () => {
+    const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 20))
+    const B = issue('B', Date.UTC(2026, 4, 27), Date.UTC(2026, 4, 27))
+    const res = computeCriticalPath([A, B], [rel('A', 'B')])
+    // LF(A) = Wed 27 - 1 d = Tue 26; LS(A) = Tue 26 - 2 d = Sun 24.
+    expect(res.slack.get('A' as Ref<Issue>)).toBe(6 * 86_400_000)
+  })
+
   it('legacy mode unchanged: simple chain still matches existing semantics', () => {
     const A = issue('A', Date.UTC(2026, 4, 1), Date.UTC(2026, 4, 5))
     const B = issue('B', Date.UTC(2026, 4, 6), Date.UTC(2026, 4, 10))
