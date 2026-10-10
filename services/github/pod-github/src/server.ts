@@ -2,6 +2,12 @@ import { createNodeMiddleware } from '@octokit/webhooks'
 import { App } from 'octokit'
 
 import config from './config'
+import {
+  getInstallationLogContext,
+  getOAuthCallbackLogContext,
+  githubLogErrorCategory,
+  reportGithubCredentialError
+} from './logContext'
 import { PlatformWorker } from './platform'
 
 import bp from 'body-parser'
@@ -80,28 +86,20 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
     } = req.body
     try {
       const decodedToken = decodeToken(payloadData.token)
-      ctx.info('/api/v1/installation', {
-        email: decodedToken.account,
-        workspaceName: decodedToken.workspace,
-        body: req.body
-      })
+      ctx.info(
+        '/api/v1/installation',
+        getInstallationLogContext(decodedToken.workspace, payloadData.accountId, payloadData.installationId)
+      )
 
       await ctx.with('map-installation', {}, (ctx) =>
         worker.mapInstallation(ctx, decodedToken.workspace, payloadData.installationId, payloadData.accountId)
       )
       res.status(200)
       res.json({})
-    } catch (err: any) {
-      Analytics.handleError(err)
-      const tok = decodeToken(payloadData.token, false)
-      ctx.error('failed to map-installation', {
-        workspace: tok.workspace,
-        installationid: payloadData.installationId,
-        email: tok?.account,
-        error: err.message
-      })
+    } catch {
+      reportGithubCredentialError(ctx, 'failed to map-installation', githubLogErrorCategory.installationMapping)
       res.status(401)
-      res.json({ error: err.message })
+      res.json({ error: githubLogErrorCategory.installationMapping })
     }
   })
 
@@ -122,12 +120,7 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       } = JSON.parse(atob(payloadData.state))
 
       const decodedToken = decodeToken(decodedData.token)
-      ctx.info('request github access-token', {
-        workspace: decodedToken.workspace,
-        accountId: payloadData.accountId,
-        code: payloadData.code,
-        state: payloadData.state
-      })
+      ctx.info('request github access-token', getOAuthCallbackLogContext(decodedToken.workspace, decodedData.accountId))
       await ctx.with('request-github-access-token', {}, async (ctx) => {
         await worker.requestGithubAccessToken(ctx, {
           workspace: decodedToken.workspace,
@@ -138,10 +131,10 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       })
       res.status(200)
       res.json({})
-    } catch (err: any) {
-      Analytics.handleError(err)
+    } catch {
+      reportGithubCredentialError(ctx, 'failed to request github access token', githubLogErrorCategory.oauthCallback)
       res.status(401)
-      res.json({ error: err.message })
+      res.json({ error: githubLogErrorCategory.oauthCallback })
     }
   })
 
@@ -154,11 +147,10 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       } = req.body
 
       const decodedToken = decodeToken(payloadData.token)
-      ctx.info('/api/v1/installation-remove', {
-        email: decodedToken.account,
-        workspaceName: decodedToken.workspace,
-        body: req.body
-      })
+      ctx.info(
+        '/api/v1/installation-remove',
+        getInstallationLogContext(decodedToken.workspace, decodedToken.account, payloadData.installationId)
+      )
 
       ctx.info('remove-installation', {
         workspace: decodedToken.workspace,
@@ -169,10 +161,10 @@ export async function start (ctx: MeasureContext, brandingMap: BrandingMap): Pro
       )
       res.status(200)
       res.json({})
-    } catch (err: any) {
-      Analytics.handleError(err)
+    } catch {
+      reportGithubCredentialError(ctx, 'failed to remove installation', githubLogErrorCategory.installationRemoval)
       res.status(401)
-      res.json({ error: err.message })
+      res.json({ error: githubLogErrorCategory.installationRemoval })
     }
   })
 
