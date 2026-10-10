@@ -25,17 +25,18 @@ interface AdminEmailsLogger {
  * - toLowerCase() each entry
  * - drop empty entries (ADMIN_EMAILS='', ',admin', 'admin,', 'a,,b'), so an
  *   empty email can never match an admin entry
- * - entries without '@' are KEPT by default. Existing deployments use
+ * - entries that are not email-shaped are KEPT by default. Existing deployments use
  *   login-id style values (the repo's own dev/tests compose files ship
  *   ADMIN_EMAILS=admin,...), so dropping them would silently revoke admin
  *   rights on upgrade. A warning lists such entries so that a typo like
  *   ADMIN_EMAILS=admin,michel@... stays visible. Deployments that want the
  *   fail-closed behaviour opt in with ADMIN_EMAILS_STRICT=true, which drops
- *   every entry without '@'.
+ *   every non-email-shaped entry. The strict flag is case-insensitive so the
+ *   conventional TRUE spelling does not silently disable strict mode.
  */
 export function parseAdminEmails (envValue: string | undefined, logger?: AdminEmailsLogger): Set<string> {
   if (envValue == null || envValue === '') return new Set()
-  const strict = process.env.ADMIN_EMAILS_STRICT === 'true'
+  const strict = process.env.ADMIN_EMAILS_STRICT?.toLowerCase() === 'true'
   const entries = envValue
     .split(',')
     .map((s) => s.trim().toLowerCase())
@@ -43,7 +44,7 @@ export function parseAdminEmails (envValue: string | undefined, logger?: AdminEm
   const nonEmail: string[] = []
   const kept: string[] = []
   for (const entry of entries) {
-    if (!entry.includes('@')) {
+    if (!isEmailLike(entry)) {
       nonEmail.push(entry)
       if (strict) continue // fail-closed: dropped
     }
@@ -57,11 +58,15 @@ export function parseAdminEmails (envValue: string | undefined, logger?: AdminEm
         console.warn(msg, attrs)
       })
     const msg = strict
-      ? 'ADMIN_EMAILS: entries without "@" dropped (ADMIN_EMAILS_STRICT=true)'
-      : 'ADMIN_EMAILS: entries without "@" kept for backwards compatibility; set ADMIN_EMAILS_STRICT=true to drop them'
+      ? 'ADMIN_EMAILS: non-email entries dropped (ADMIN_EMAILS_STRICT=true)'
+      : 'ADMIN_EMAILS: non-email entries kept for backwards compatibility; set ADMIN_EMAILS_STRICT=true to drop them'
     warn(msg, { entries: nonEmail })
   }
   return new Set(kept)
+}
+
+function isEmailLike (value: string): boolean {
+  return /^[^\s@]+@[^\s@]+$/.test(value)
 }
 
 const ADMIN_EMAILS = parseAdminEmails(process.env.ADMIN_EMAILS)

@@ -11,7 +11,8 @@
 // lookup (isAdminEmail) must trim+lowercase, empty entries (in any position)
 // must never make an empty email an admin, and entries without "@" must stay
 // admins by default (existing deployments use ADMIN_EMAILS=admin,...) unless
-// ADMIN_EMAILS_STRICT=true opts into dropping them.
+// ADMIN_EMAILS_STRICT=true opts into dropping them. Malformed entries are also
+// called out, so a typo such as multiple @ signs is visible to operators.
 //
 
 import type * as AdminModuleType from '../admin'
@@ -19,8 +20,8 @@ import type * as AdminModuleType from '../admin'
 type AdminModule = typeof AdminModuleType
 
 const KEPT_MSG =
-  'ADMIN_EMAILS: entries without "@" kept for backwards compatibility; set ADMIN_EMAILS_STRICT=true to drop them'
-const DROPPED_MSG = 'ADMIN_EMAILS: entries without "@" dropped (ADMIN_EMAILS_STRICT=true)'
+  'ADMIN_EMAILS: non-email entries kept for backwards compatibility; set ADMIN_EMAILS_STRICT=true to drop them'
+const DROPPED_MSG = 'ADMIN_EMAILS: non-email entries dropped (ADMIN_EMAILS_STRICT=true)'
 
 /**
  * Re-import admin.ts with a controlled ADMIN_EMAILS env value.
@@ -84,12 +85,12 @@ describe('admin.ts — env parsing + lookup normalization', () => {
     expect(isAdminEmail('ADMIN@EXAMPLE.COM')).toBe(true)
   })
 
-  test('4. no-@ entries are KEPT by default (backwards compatible) + warn', () => {
+  test('4. non-email entries are KEPT by default (backwards compatible) + warn', () => {
     const { isAdminEmail } = loadAdmin('foo,bar@@,baz')
     expect(isAdminEmail('foo')).toBe(true)
     expect(isAdminEmail('baz')).toBe(true)
     expect(isAdminEmail('bar@@')).toBe(true)
-    expect(warnSpy).toHaveBeenCalledWith(KEPT_MSG, { entries: ['foo', 'baz'] })
+    expect(warnSpy).toHaveBeenCalledWith(KEPT_MSG, { entries: ['foo', 'bar@@', 'baz'] })
   })
 
   test('4a. ADMIN_EMAILS=admin,<email> keeps the login-id admin (dev/tests compose default)', () => {
@@ -133,19 +134,27 @@ describe('admin.ts — env parsing + lookup normalization', () => {
     expect(warnSpy).toHaveBeenCalledWith(DROPPED_MSG, { entries: ['admin'] })
   })
 
-  test.each(['false', 'TRUE', '1', ''])(
-    '4e. ADMIN_EMAILS_STRICT=%p (anything but "true") keeps no-@ entries',
-    (value) => {
-      process.env.ADMIN_EMAILS_STRICT = value
-      const { parseAdminEmails, isAdminEmail } = loadAdmin('admin,alice@example.com')
-      expect(isAdminEmail('admin')).toBe(true)
-      const warn = jest.fn()
-      const set = parseAdminEmails('admin,alice@example.com', { warn })
-      expect(set.has('admin')).toBe(true)
-      expect(set.size).toBe(2)
-      expect(warn).toHaveBeenCalledWith(KEPT_MSG, { entries: ['admin'] })
-    }
-  )
+  test.each(['false', '1', ''])('4e. ADMIN_EMAILS_STRICT=%p (anything but "true") keeps no-@ entries', (value) => {
+    process.env.ADMIN_EMAILS_STRICT = value
+    const { parseAdminEmails, isAdminEmail } = loadAdmin('admin,alice@example.com')
+    expect(isAdminEmail('admin')).toBe(true)
+    const warn = jest.fn()
+    const set = parseAdminEmails('admin,alice@example.com', { warn })
+    expect(set.has('admin')).toBe(true)
+    expect(set.size).toBe(2)
+    expect(warn).toHaveBeenCalledWith(KEPT_MSG, { entries: ['admin'] })
+  })
+
+  test.each(['TRUE', 'True', 'true'])('4e. ADMIN_EMAILS_STRICT=%p enables strict mode case-insensitively', (value) => {
+    process.env.ADMIN_EMAILS_STRICT = value
+    const { parseAdminEmails, isAdminEmail } = loadAdmin('admin,alice@example.com')
+    expect(isAdminEmail('admin')).toBe(false)
+    const warn = jest.fn()
+    const set = parseAdminEmails('admin,alice@example.com', { warn })
+    expect(set.has('admin')).toBe(false)
+    expect(set.size).toBe(1)
+    expect(warn).toHaveBeenCalledWith(DROPPED_MSG, { entries: ['admin'] })
+  })
 
   test('4f. only "@" entries — no warning at all', () => {
     const { parseAdminEmails } = loadAdmin('')

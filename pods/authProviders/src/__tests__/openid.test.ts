@@ -21,10 +21,16 @@
 import Router from 'koa-router'
 import { Issuer, Strategy } from 'openid-client'
 import { registerOidcStrategyWithRetry, registerOpenid, shouldWarnOnAttempt } from '../openid'
+import { handleProviderAuth } from '../utils'
 
 jest.mock('openid-client', () => ({
   Issuer: { discover: jest.fn() },
   Strategy: jest.fn().mockImplementation(() => ({}))
+}))
+
+jest.mock('../utils', () => ({
+  ...jest.requireActual('../utils'),
+  handleProviderAuth: jest.fn()
 }))
 
 function makeMeasureCtx (): any {
@@ -210,6 +216,25 @@ describe('A. registerOidcStrategyWithRetry — schedule, cap, whole-attempt retr
     expect(res.attempts).toBe(2)
     expect(passport.use).toHaveBeenCalledTimes(1)
   })
+
+  test('10. abort signal stops a pending retry without registering a strategy', async () => {
+    const ctx = makeMeasureCtx()
+    const passport = { use: jest.fn() }
+    const controller = new AbortController()
+    const discover = jest.fn().mockRejectedValue(new Error('ECONNREFUSED'))
+    const sleep = async (): Promise<void> => {
+      controller.abort()
+    }
+
+    const res = await registerOidcStrategyWithRetry(ctx, passport, params, {
+      discover,
+      sleep,
+      signal: controller.signal
+    })
+
+    expect(res).toEqual({ attempts: 1, registered: false })
+    expect(passport.use).not.toHaveBeenCalled()
+  })
 })
 
 describe('B. registerOpenid wiring — non-blocking startup, 503 pending window, exactly-once use', () => {
@@ -260,6 +285,19 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
       set: jest.fn(),
       status: undefined,
       body: undefined,
+      query: {},
+      state: {},
+      request: { headers: {} }
+    }
+    await (layer as any).stack[0](koaCtx, async () => {})
+    return koaCtx
+  }
+
+  async function invokeCallbackRoute (router: Router<any, any>): Promise<any> {
+    const layer = router.stack.find((l) => l.path === '/auth/openid/callback')
+    expect(layer).toBeDefined()
+    const koaCtx: any = {
+      redirect: jest.fn(),
       query: {},
       state: {},
       request: { headers: {} }
@@ -323,5 +361,92 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
       'oidc',
       expect.objectContaining({ scope: 'openid profile email' })
     )
+  })
+
+  test('4. callback strategy errors redirect to login and log at warn level', async () => {
+    ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
+    const { passport, router, ctx } = callRegister()
+    passport.authenticate.mockImplementation((_name: string, _options: any, done: any) => async () => {
+      done(new Error('unknown authentication strategy'), undefined, undefined, 500)
+    })
+
+    const koaCtx = await invokeCallbackRoute(router)
+
+    expect(koaCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_callback_failed')
+    expect(ctx.warn).toHaveBeenCalledWith('OIDC callback failed', expect.objectContaining({ hasErr: true }))
+    expect(ctx.error).not.toHaveBeenCalled()
+  })
+
+  test('5. callback with no user redirects to login instead of falling through', async () => {
+    ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
+    const { passport, router } = callRegister()
+    passport.authenticate.mockImplementation((_name: string, _options: any, done: any) => async () => {
+      done(null, false, { message: 'denied' }, 401)
+    })
+
+    const koaCtx = await invokeCallbackRoute(router)
+
+    expect(koaCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_callback_failed')
+  })
+
+  test('6. callback middleware rejection is caught and redirected instead of hanging', async () => {
+    ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
+    const { passport, router, ctx } = callRegister()
+    passport.authenticate.mockImplementation(() => async () => {
+      throw new Error('unknown authentication strategy')
+    })
+
+    const koaCtx = await invokeCallbackRoute(router)
+
+    expect(koaCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_callback_failed')
+    expect(ctx.error).toHaveBeenCalledWith('OIDC callback failed', expect.objectContaining({ hasErr: true }))
+  })
+
+  test('7. no account and handleProviderAuth failures both redirect safely', async () => {
+    ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
+    const { passport, router, ctx } = callRegister()
+    const user = { email: 'person@example.com', email_verified: true, sub: 'subject' }
+    passport.authenticate.mockImplementation((_name: string, _options: any, done: any) => async () => {
+      done(null, user, undefined, 200)
+    })
+    ;(handleProviderAuth as jest.Mock).mockResolvedValueOnce('')
+    const noAccountCtx = await invokeCallbackRoute(router)
+    expect(noAccountCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_no_account')
+    ;(handleProviderAuth as jest.Mock).mockRejectedValueOnce(new Error('database unavailable'))
+    const failedHandlerCtx = await invokeCallbackRoute(router)
+    expect(failedHandlerCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_callback_failed')
+    expect(ctx.error).toHaveBeenCalledWith('OIDC callback failed', expect.objectContaining({ hasErr: true }))
+  })
+
+  test('8. registering OIDC twice on the same router is rejected', () => {
+    ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
+    const { passport, router, ctx } = callRegister()
+
+    expect(() => {
+      registerOpenid(
+        ctx,
+        passport,
+        router,
+        'http://accounts.example.com',
+        Promise.resolve({} as any),
+        'http://front.example.com',
+        {}
+      )
+    }).toThrow('OIDC provider is already registered on this router')
+  })
+
+  test('9. a callback failure still redirects if warning logging fails', async () => {
+    ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
+    const { passport, router, ctx } = callRegister()
+    ctx.warn.mockImplementation(() => {
+      throw new Error('log sink unavailable')
+    })
+    passport.authenticate.mockImplementation((_name: string, _options: any, done: any) => async () => {
+      done(new Error('invalid callback'), undefined, undefined, 400)
+    })
+
+    const koaCtx = await invokeCallbackRoute(router)
+
+    expect(koaCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_callback_failed')
   })
 })

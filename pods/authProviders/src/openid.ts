@@ -42,6 +42,13 @@ export interface OidcRetryOptions {
   discover?: (url: string) => Promise<Issuer<any>>
   /** Injectable for tests; defaults to a real setTimeout-based sleep. */
   sleep?: (ms: number) => Promise<void>
+  /** Stops retrying during graceful shutdown. */
+  signal?: AbortSignal
+}
+
+export interface OidcRegistrationResult {
+  attempts: number
+  registered: boolean
 }
 
 /** Structural subset of passport used by the retry loop — keeps tests free of a real passport instance. */
@@ -59,6 +66,42 @@ export function shouldWarnOnAttempt (attempt: number): boolean {
   return attempt <= RETRY_WARN_FIRST_ATTEMPTS || attempt % RETRY_WARN_EVERY_NTH_ATTEMPT === 0
 }
 
+async function sleepUntilRetryOrAbort (
+  sleep: (ms: number) => Promise<void>,
+  delayMs: number,
+  signal?: AbortSignal
+): Promise<boolean> {
+  if (signal == null) {
+    await sleep(delayMs)
+    return false
+  }
+  if (signal.aborted) return true
+
+  return await new Promise<boolean>((resolve, reject) => {
+    const finish = (aborted: boolean): void => {
+      signal.removeEventListener('abort', onAbort)
+      resolve(aborted)
+    }
+    const onAbort = (): void => {
+      finish(true)
+    }
+    signal.addEventListener('abort', onAbort, { once: true })
+    void Promise.resolve()
+      .then(async () => {
+        await sleep(delayMs)
+      })
+      .then(
+        () => {
+          finish(false)
+        },
+        (err) => {
+          signal.removeEventListener('abort', onAbort)
+          reject(err)
+        }
+      )
+  })
+}
+
 /**
  * Retry the ENTIRE OIDC strategy registration — discover, client construction,
  * strategy construction, passport.use — with capped exponential backoff until
@@ -70,14 +113,15 @@ export function shouldWarnOnAttempt (attempt: number): boolean {
  * deliberately without transient/permanent classification: misclassifying a
  * transient error would recreate the incident, the steady-state cost is
  * <= 1 attempt/min, and a truly broken configuration stays visible through the
- * gated warn cadence (shouldWarnOnAttempt). Never rejects.
+ * gated warn cadence (shouldWarnOnAttempt). An optional AbortSignal lets the
+ * caller stop waiting during graceful shutdown.
  */
 export async function registerOidcStrategyWithRetry (
   measureCtx: MeasureContext,
   passport: PassportLike,
   params: OidcRegistrationParams,
   options: OidcRetryOptions = {}
-): Promise<{ attempts: number }> {
+): Promise<OidcRegistrationResult> {
   const initialDelayMs = options.initialDelayMs ?? DISCOVERY_INITIAL_DELAY_MS
   const maxDelayMs = options.maxDelayMs ?? DISCOVERY_MAX_DELAY_MS
   const backoffFactor = options.backoffFactor ?? DISCOVERY_BACKOFF_FACTOR
@@ -89,7 +133,9 @@ export async function registerOidcStrategyWithRetry (
     })
 
   let delayMs = initialDelayMs
-  for (let attempt = 1; ; attempt++) {
+  let attempts = 0
+  for (let attempt = 1; options.signal == null || !options.signal.aborted; attempt++) {
+    attempts = attempt
     try {
       const issuerObj = await discover(params.issuerUrl)
       measureCtx.info('Discovered issuer', { issuer: issuerObj, attempts: attempt })
@@ -117,7 +163,7 @@ export async function registerOidcStrategyWithRetry (
       } catch {
         /* logging must never undo a successful registration */
       }
-      return { attempts: attempt }
+      return { attempts: attempt, registered: true }
     } catch (err: any) {
       if (shouldWarnOnAttempt(attempt)) {
         try {
@@ -133,17 +179,57 @@ export async function registerOidcStrategyWithRetry (
           /* the retry contract ("never rejects") outranks a warn that throws */
         }
       }
-      await sleep(delayMs)
+      if (await sleepUntilRetryOrAbort(sleep, delayMs, options.signal)) break
       delayMs = Math.min(delayMs * backoffFactor, maxDelayMs)
     }
   }
+  return { attempts, registered: false }
 }
 
+function buildOidcCallbackDiagnostic (ctx: any, err: any, info: any, status: any, user: any): Record<string, unknown> {
+  const baseDiag = {
+    stage: 'oidc_callback',
+    hasErr: err != null,
+    errName: err?.name,
+    errMessage: err?.message,
+    statusCode: status,
+    hasUser: user != null && user !== false
+  }
+  if (process.env.OIDC_DEBUG !== 'true') return baseDiag
+
+  return {
+    ...baseDiag,
+    errStack: err?.stack,
+    infoSummary: info?.message ?? String(info ?? ''),
+    hasSession: ctx.session != null,
+    sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
+    hasCookieHeader: ctx.request.headers.cookie != null,
+    host: ctx.request.headers.host,
+    forwardedProto: ctx.request.headers['x-forwarded-proto'],
+    statePresent: typeof ctx.query?.state === 'string',
+    stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
+    codePresent: typeof ctx.query?.code === 'string'
+  }
+}
+
+function logOidcCallbackFailure (
+  measureCtx: MeasureContext,
+  level: 'warn' | 'error',
+  diagnostic: Record<string, unknown>
+): void {
+  try {
+    measureCtx[level]('OIDC callback failed', diagnostic)
+  } catch {
+    // Callback failure handling must still redirect if the log sink is down.
+  }
+}
+
+const openidRouters = new WeakSet<object>()
+
 /**
- * Invariant: called exactly once per process, from registerProviders at
- * account-service startup (pods/authProviders/src/index.ts, the only caller).
- * A second invocation would duplicate routes and the retry loop; that would
- * already be a caller bug today (duplicate routes, duplicate passport.use).
+ * Called once per router from registerProviders at account-service startup
+ * (pods/authProviders/src/index.ts, the only caller). Re-registering on the
+ * same router is rejected to prevent duplicate routes and retry loops.
  */
 export function registerOpenid (
   measureCtx: MeasureContext,
@@ -163,6 +249,10 @@ export function registerOpenid (
 
   const redirectURL = '/auth/openid/callback'
   if (openidClientId === undefined || openidClientSecret === undefined || issuer === undefined) return
+  if (openidRouters.has(router)) {
+    throw new Error('OIDC provider is already registered on this router')
+  }
+  openidRouters.add(router)
 
   let oidcReady = false
 
@@ -178,8 +268,8 @@ export function registerOpenid (
     clientSecret: openidClientSecret,
     redirectUri: concatLink(accountsUrl, redirectURL)
   })
-    .then(() => {
-      oidcReady = true
+    .then(({ registered }) => {
+      oidcReady = registered
     })
     .catch(() => {})
 
@@ -216,48 +306,37 @@ export function registerOpenid (
       // INSTRUMENTATION (Codex-approved): explicit-callback variant captures
       // err/info/status that would otherwise be swallowed by the strategy.
       // PRIVACY: never log raw code, raw state, tokens, or full ctx.state.user.
-      await new Promise<void>((resolve) => {
-        passport.authenticate('oidc', { failureRedirect: loginUrl }, (err: any, user: any, info: any, status: any) => {
-          // L-AUTH-2: keep only a terse error line in normal operation; the
-          // verbose diagnostics (errStack/sessionKeys/host/…) are enabled by
-          // OIDC_DEBUG so anonymous repeated invalid callbacks cannot flood logs.
-          const baseDiag = {
-            stage: 'oidc_callback',
-            hasErr: err != null,
-            errName: err?.name,
-            errMessage: err?.message,
-            statusCode: status,
-            hasUser: user != null
-          }
-          const diag =
-            process.env.OIDC_DEBUG === 'true'
-              ? {
-                  ...baseDiag,
-                  errStack: err?.stack,
-                  infoSummary: info?.message ?? String(info ?? ''),
-                  hasSession: ctx.session != null,
-                  sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
-                  hasCookieHeader: ctx.request.headers.cookie != null,
-                  host: ctx.request.headers.host,
-                  forwardedProto: ctx.request.headers['x-forwarded-proto'],
-                  statePresent: typeof ctx.query?.state === 'string',
-                  stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
-                  codePresent: typeof ctx.query?.code === 'string'
-                }
-              : baseDiag
-          if (err != null || user == null) {
-            measureCtx.error('OIDC callback failed', diag)
-          } else {
-            measureCtx.info('OIDC callback succeeded — entering handleProviderAuth', {
-              hasSession: ctx.session != null
-            })
-            ctx.state.user = user
-          }
-          resolve()
-        })(ctx, async () => {})
+      await new Promise<void>((resolve, reject) => {
+        try {
+          const middleware = passport.authenticate(
+            'oidc',
+            { failureRedirect: loginUrl },
+            (err: any, user: any, info: any, status: any) => {
+              const diag = buildOidcCallbackDiagnostic(ctx, err, info, status, user)
+              if (err != null || user == null || user === false) {
+                // Anonymous callback errors are expected internet-facing input;
+                // keep them visible without promoting scanner noise to errors.
+                logOidcCallbackFailure(measureCtx, 'warn', diag)
+              } else {
+                measureCtx.info('OIDC callback succeeded — entering handleProviderAuth', {
+                  hasSession: ctx.session != null
+                })
+                ctx.state.user = user
+              }
+              resolve()
+            }
+          )
+          // Koa passport middleware can reject before it calls its explicit
+          // callback (for example while the strategy is not registered). Do
+          // not discard that promise: rejecting here lets the outer guard turn
+          // it into the same safe login redirect instead of hanging the request.
+          void Promise.resolve(middleware(ctx, async () => {})).catch(reject)
+        } catch (err) {
+          reject(err)
+        }
       })
 
-      if (ctx.state.user == null) {
+      if (ctx.state.user == null || ctx.state.user === false) {
         // Strategy failed; redirect explicitly so we never bubble a 500.
         ctx.redirect(loginUrl + '?error=oidc_callback_failed')
         return
@@ -297,32 +376,10 @@ export function registerOpenid (
       await next()
     } catch (err: any) {
       // Permanent invalid-callback guard: ANY failure → 302 to /login, never 500.
-      // L-AUTH-2: verbose fields behind OIDC_DEBUG (see the callback diag above).
-      const baseDiag = {
-        stage: 'oidc_callback',
-        hasErr: true,
-        errName: err?.name,
-        errMessage: err?.message,
-        statusCode: undefined,
-        hasUser: ctx.state?.user != null
-      }
-      measureCtx.error(
-        'OIDC callback failed',
-        process.env.OIDC_DEBUG === 'true'
-          ? {
-              ...baseDiag,
-              errStack: err?.stack,
-              infoSummary: '',
-              hasSession: ctx.session != null,
-              sessionKeys: ctx.session != null ? Object.keys(ctx.session) : [],
-              hasCookieHeader: ctx.request.headers.cookie != null,
-              host: ctx.request.headers.host,
-              forwardedProto: ctx.request.headers['x-forwarded-proto'],
-              statePresent: typeof ctx.query?.state === 'string',
-              stateLength: typeof ctx.query?.state === 'string' ? (ctx.query.state as string).length : 0,
-              codePresent: typeof ctx.query?.code === 'string'
-            }
-          : baseDiag
+      logOidcCallbackFailure(
+        measureCtx,
+        'error',
+        buildOidcCallbackDiagnostic(ctx, err, undefined, undefined, ctx.state?.user)
       )
       ctx.redirect(loginUrl + '?error=oidc_callback_failed')
     }
