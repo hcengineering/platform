@@ -1,7 +1,8 @@
 import Koa from 'koa'
 import passport from 'koa-passport'
 import Router from 'koa-router'
-import session from 'koa-session'
+import { resolveSessionCookieOptions } from './cookieDomain'
+import { installSession } from './sessionCookie'
 import { registerGithub } from './github'
 import { registerGoogle } from './google'
 import { registerOpenid } from './openid'
@@ -45,7 +46,14 @@ export function registerProviders (
   }
 
   app.keys = [serverSecret]
-  app.use(session({}, app))
+  // SESSION_COOKIE_DOMAIN=.example.com lets an OIDC flow begin on one
+  // subdomain and finish on another. It changes only the cookie scope; see the
+  // package README for the independent TLS and browser-cookie configuration.
+  const decision = resolveSessionCookieOptions(process.env.SESSION_COOKIE_DOMAIN, process.env.SESSION_COOKIE_SECURE)
+  for (const warning of decision.warnings) {
+    ctx.warn(warning.message, { value: warning.value })
+  }
+  installSession(app, decision)
   app.use(passport.initialize())
   app.use(passport.session())
 
