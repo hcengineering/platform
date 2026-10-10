@@ -60,7 +60,9 @@ export function registerGoogle (
     },
     async (ctx, next) => {
       measureCtx.info('Provider auth success', { type: 'google', user: ctx.state?.user })
+      // passport-google-oauth20 maps Google's email_verified claim to this field.
       const email = ctx.state.user.emails?.[0]?.value
+      const verifiedEmail = ctx.state.user.emails?.[0]?.verified === true ? email : undefined
       const first = ctx.state.user.name.givenName
       const last = ctx.state.user.name.familyName
       const db = await dbPromise
@@ -73,7 +75,7 @@ export function registerGoogle (
         'google',
         ctx.query?.state,
         ctx.state?.user,
-        email,
+        verifiedEmail,
         first,
         last,
         { type: SocialIdType.GOOGLE, value: email },
