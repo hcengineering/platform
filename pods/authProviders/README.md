@@ -28,6 +28,13 @@ the default `koa.sess`, preventing collisions with another koa-session
 application on a sibling subdomain. Deployments without this setting retain
 the existing `koa.sess` name.
 
+Enabling `SESSION_COOKIE_DOMAIN` is a one-time cookie-name transition: the
+session middleware reads `huly.sess` and does not migrate or read an existing
+`koa.sess` session. Users must sign in again after the change. An OIDC flow
+started before the deployment loses its stored state, nonce, and PKCE values;
+restart that login flow. Schedule the change with that short-lived interruption
+in mind.
+
 `SESSION_COOKIE_DOMAIN` changes only the cookie scope. In particular, it does
 not assert anything about TLS and does not add `Secure` or `SameSite`.
 

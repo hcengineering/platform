@@ -30,10 +30,18 @@ const routes: Koa.Middleware = async (ctx) => {
   if (ctx.path === '/implicit') {
     ctx.cookies.set('u', 'v')
     ctx.status = 204
+    return
+  }
+  if (ctx.path === '/state') {
+    ctx.body = JSON.stringify(ctx.session?.oidc ?? null)
   }
 }
 
-async function request (install: Install, path: string): Promise<{ status: number, cookies: string[] }> {
+async function request (
+  install: Install,
+  path: string,
+  headers?: Record<string, string>
+): Promise<{ status: number, cookies: string[], body: string }> {
   const app = new Koa()
   app.keys = ['test-secret']
   app.silent = true
@@ -46,8 +54,8 @@ async function request (install: Install, path: string): Promise<{ status: numbe
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
   try {
     const { port } = server.address() as AddressInfo
-    const res = await fetch(`http://127.0.0.1:${port}${path}`, { redirect: 'manual' })
-    return { status: res.status, cookies: res.headers.getSetCookie() }
+    const res = await fetch(`http://127.0.0.1:${port}${path}`, { headers, redirect: 'manual' })
+    return { status: res.status, cookies: res.headers.getSetCookie(), body: await res.text() }
   } finally {
     await new Promise<void>((resolve, reject) => {
       server.close((err) => {
@@ -56,6 +64,10 @@ async function request (install: Install, path: string): Promise<{ status: numbe
       })
     })
   }
+}
+
+function cookieHeader (cookies: string[]): string {
+  return cookies.map((cookie) => cookie.split(';', 1)[0]).join('; ')
 }
 
 function attributes (cookies: string[], name: string): string[] {
@@ -103,6 +115,16 @@ describe('installSession over a plain-HTTP listener', () => {
     const attrs = attributes(cookies, 'koa.sess')
     expect(attrs).toEqual(expect.arrayContaining(['path=/', 'httponly']))
     expect(attrs.some((a) => a.startsWith('domain='))).toBe(false)
+  })
+
+  it('does not reuse a koa.sess OIDC session after domain isolation is enabled', async () => {
+    const legacy = await request(withDecision(undefined, undefined), '/login')
+    const upgraded = await request(withDecision('.uray.io', undefined), '/state', {
+      cookie: cookieHeader(legacy.cookies)
+    })
+
+    expect(upgraded.status).toBe(200)
+    expect(upgraded.body).toBe('null')
   })
 
   it('reproduces the plain-HTTP failure without the narrow Secure-cookie handler', async () => {
