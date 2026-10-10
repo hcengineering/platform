@@ -15,83 +15,77 @@
 import { isValidCookieDomain, resolveSessionCookieOptions } from '../cookieDomain'
 
 describe('isValidCookieDomain', () => {
-  it('accepts a leading-dot parent domain', () => {
-    expect(isValidCookieDomain('.example.com')).toBe(true)
-  })
+  it.each(['.example.com', 'example.com', '.app.example.com', 'dev.example.co.uk', 'xn--e1afmkfd.xn--p1ai'])(
+    'accepts the syntactically valid domain %p',
+    (domain) => {
+      expect(isValidCookieDomain(domain)).toBe(true)
+    }
+  )
 
-  it('accepts a bare parent domain', () => {
-    expect(isValidCookieDomain('example.com')).toBe(true)
-  })
-
-  it('accepts nested subdomains', () => {
-    expect(isValidCookieDomain('.app.example.com')).toBe(true)
-    expect(isValidCookieDomain('dev.example.co.uk')).toBe(true)
-  })
-
-  it('accepts hyphenated labels', () => {
-    expect(isValidCookieDomain('.my-app.example.com')).toBe(true)
-  })
-
-  it('rejects a single-label TLD like "com"', () => {
-    expect(isValidCookieDomain('com')).toBe(false)
-    expect(isValidCookieDomain('.com')).toBe(false)
-  })
-
-  it('rejects values with whitespace', () => {
-    expect(isValidCookieDomain(' example.com')).toBe(false)
-    expect(isValidCookieDomain('example.com ')).toBe(false)
-    expect(isValidCookieDomain('exa mple.com')).toBe(false)
-  })
-
-  it('rejects protocol or port', () => {
-    expect(isValidCookieDomain('https://example.com')).toBe(false)
-    expect(isValidCookieDomain('example.com:8080')).toBe(false)
-  })
-
-  it('rejects empty and trailing-dot values', () => {
-    expect(isValidCookieDomain('')).toBe(false)
-    expect(isValidCookieDomain('example.')).toBe(false)
+  it.each([
+    'com',
+    '.com',
+    ' example.com',
+    'example.com ',
+    'exa mple.com',
+    'https://example.com',
+    'example.com:8080',
+    'example.',
+    '-example.com'
+  ])('rejects the invalid domain %p', (domain) => {
+    expect(isValidCookieDomain(domain)).toBe(false)
   })
 })
 
 describe('resolveSessionCookieOptions', () => {
   it.each([undefined, '', '   '])('keeps prior behaviour when the domain is %p', (rawDomain) => {
-    expect(resolveSessionCookieOptions(rawDomain, undefined)).toEqual({ opts: {}, forceSecure: false })
+    expect(resolveSessionCookieOptions(rawDomain, undefined)).toEqual({
+      opts: {},
+      forceSecureSessionCookie: false,
+      warnings: []
+    })
   })
 
-  it('warns that SESSION_COOKIE_SECURE is ignored without a domain', () => {
-    const decision = resolveSessionCookieOptions(undefined, 'false')
-    expect(decision.opts).toEqual({})
-    expect(decision.forceSecure).toBe(false)
-    expect(decision.warning).toContain('SESSION_COOKIE_SECURE ignored')
+  it('uses a distinct key only for a valid domain-scoped session', () => {
+    expect(resolveSessionCookieOptions('.uray.io', undefined)).toEqual({
+      opts: { domain: '.uray.io', key: 'huly.sess' },
+      forceSecureSessionCookie: false,
+      warnings: []
+    })
   })
 
-  it('ignores an invalid domain with a warning', () => {
+  it('does not force SameSite or Secure when only the domain is set', () => {
+    const { opts } = resolveSessionCookieOptions('.uray.io', undefined)
+    expect(opts.sameSite).toBeUndefined()
+    expect(opts.secure).toBeUndefined()
+  })
+
+  it('ignores an invalid domain and identifies that setting in the warning', () => {
     const decision = resolveSessionCookieOptions('com', undefined)
     expect(decision.opts).toEqual({})
-    expect(decision.forceSecure).toBe(false)
-    expect(decision.warning).toContain('ignored: not a valid domain')
+    expect(decision.warnings).toEqual([expect.objectContaining({ variable: 'SESSION_COOKIE_DOMAIN', value: 'com' })])
   })
 
-  it('forces a Secure, SameSite=Lax cookie for a valid domain', () => {
-    expect(resolveSessionCookieOptions('.uray.io', undefined)).toEqual({
-      opts: { domain: '.uray.io', sameSite: 'lax', secure: true },
-      forceSecure: true
-    })
-  })
-
-  it.each(['true', 'yes'])('treats SESSION_COOKIE_SECURE=%p as the default', (rawSecure) => {
-    expect(resolveSessionCookieOptions('.uray.io', rawSecure)).toEqual({
-      opts: { domain: '.uray.io', sameSite: 'lax', secure: true },
-      forceSecure: true
-    })
-  })
-
-  it.each(['false', ' FALSE '])('opts out of Secure for SESSION_COOKIE_SECURE=%p', (rawSecure) => {
+  it.each([
+    ['true', true],
+    ['1', true],
+    ['yes', true],
+    ['false', false],
+    ['0', false],
+    ['no', false]
+  ])('recognises SESSION_COOKIE_SECURE=%p', (rawSecure, secure) => {
     const decision = resolveSessionCookieOptions('.uray.io', rawSecure)
-    expect(decision.opts).toEqual({ domain: '.uray.io', sameSite: 'lax', secure: false })
-    expect(decision.forceSecure).toBe(false)
-    expect(decision.warning).toContain('SESSION_COOKIE_SECURE=false')
+    expect(decision.opts.secure).toBe(secure)
+    expect(decision.forceSecureSessionCookie).toBe(secure)
+    expect(decision.warnings).toEqual([])
+  })
+
+  it('keeps the cookie default for an invalid secure value and identifies that setting in the warning', () => {
+    const decision = resolveSessionCookieOptions('.uray.io', 'sometimes')
+    expect(decision.opts).toEqual({ domain: '.uray.io', key: 'huly.sess' })
+    expect(decision.warnings).toEqual([
+      expect.objectContaining({ variable: 'SESSION_COOKIE_SECURE', value: 'sometimes' })
+    ])
   })
 
   it('trims the domain', () => {

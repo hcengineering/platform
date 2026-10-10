@@ -46,19 +46,12 @@ export function registerProviders (
   }
 
   app.keys = [serverSecret]
-  // koa-session defaults the cookie domain to the request host, which breaks
-  // OIDC flows that start on one subdomain and get the callback on another
-  // (Passport then fails with "did not find expected authorization request
-  // details in session"). SESSION_COOKIE_DOMAIN=.example.com spans the cookie
-  // across both hosts. Setting it is also the operator's assertion that HTTPS
-  // is terminated in front of this service: the widened, signed, httpOnly
-  // cookie (OIDC state/nonce/PKCE verifier) is then always written with
-  // Secure + SameSite=Lax, without trusting any X-Forwarded-* header (see
-  // sessionCookie.ts). SESSION_COOKIE_SECURE=false opts out for local
-  // plain-HTTP development only. Invalid or unset values keep prior behaviour.
+  // SESSION_COOKIE_DOMAIN=.example.com lets an OIDC flow begin on one
+  // subdomain and finish on another. It changes only the cookie scope; see the
+  // package README for the independent TLS and browser-cookie configuration.
   const decision = resolveSessionCookieOptions(process.env.SESSION_COOKIE_DOMAIN, process.env.SESSION_COOKIE_SECURE)
-  if (decision.warning !== undefined) {
-    ctx.warn(decision.warning, { value: process.env.SESSION_COOKIE_DOMAIN })
+  for (const warning of decision.warnings) {
+    ctx.warn(warning.message, { value: warning.value })
   }
   installSession(app, decision)
   app.use(passport.initialize())

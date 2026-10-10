@@ -19,29 +19,15 @@ import session from 'koa-session'
 import { resolveSessionCookieOptions } from '../cookieDomain'
 import { installSession } from '../sessionCookie'
 
-// The account service listens on plain HTTP behind a TLS-terminating proxy and
-// never sets app.proxy, so these tests deliberately run over plain HTTP too.
-
 type Install = (app: Koa) => void
 
 const routes: Koa.Middleware = async (ctx) => {
   if (ctx.path === '/login') {
-    // Mirrors /auth/openid: the session is populated for the first time, so
-    // koa-session's commit() writes the cookie, then the IdP redirect follows.
-    if (ctx.session != null) {
-      ctx.session.oidc = { state: 's', nonce: 'n' }
-    }
+    if (ctx.session != null) ctx.session.oidc = { state: 's', nonce: 'n' }
     ctx.redirect('https://idp.example/authorize')
     return
   }
-  if (ctx.path === '/explicit') {
-    // Mirrors PUT/DELETE /cookie, which pass `secure: ctx.request.secure`.
-    ctx.cookies.set('t', 'v', { httpOnly: true, secure: false })
-    ctx.status = 204
-    return
-  }
   if (ctx.path === '/implicit') {
-    // A writer that passes no `secure` option at all.
     ctx.cookies.set('u', 'v')
     ctx.status = 204
   }
@@ -87,72 +73,42 @@ const withDecision =
       installSession(app, resolveSessionCookieOptions(rawDomain, rawSecure))
     }
 
-describe('installSession over plain HTTP', () => {
-  describe('SESSION_COOKIE_DOMAIN set (default)', () => {
-    const install = withDecision('.uray.io', undefined)
-
-    it('answers the login redirect with a Secure cross-subdomain session cookie', async () => {
-      const { status, cookies } = await request(install, '/login')
-      expect(status).toBe(302)
-      for (const name of ['koa.sess', 'koa.sess.sig']) {
-        const attrs = attributes(cookies, name)
-        expect(attrs).toEqual(
-          expect.arrayContaining(['path=/', 'domain=.uray.io', 'samesite=lax', 'secure', 'httponly'])
-        )
-      }
-    })
-
-    it('keeps an explicit secure: false (login cookie written by PUT/DELETE /cookie)', async () => {
-      const { status, cookies } = await request(install, '/explicit')
-      expect(status).toBe(204)
-      const attrs = attributes(cookies, 't')
-      expect(attrs).toContain('httponly')
+describe('installSession over a plain-HTTP listener', () => {
+  it('keeps domain-only cookies on koa-session defaults and uses the huly key', async () => {
+    const { status, cookies } = await request(withDecision('.uray.io', undefined), '/login')
+    expect(status).toBe(302)
+    for (const name of ['huly.sess', 'huly.sess.sig']) {
+      const attrs = attributes(cookies, name)
+      expect(attrs).toEqual(expect.arrayContaining(['path=/', 'domain=.uray.io', 'httponly']))
       expect(attrs).not.toContain('secure')
-    })
-
-    it('defaults a cookie written without a secure option to Secure (documented side effect)', async () => {
-      const { status, cookies } = await request(install, '/implicit')
-      expect(status).toBe(204)
-      expect(attributes(cookies, 'u')).toContain('secure')
-    })
-  })
-
-  describe('SESSION_COOKIE_SECURE=false opt-out', () => {
-    const install = withDecision('.uray.io', 'false')
-
-    it('writes the domain cookie without Secure', async () => {
-      const { status, cookies } = await request(install, '/login')
-      expect(status).toBe(302)
-      const attrs = attributes(cookies, 'koa.sess')
-      expect(attrs).toEqual(expect.arrayContaining(['domain=.uray.io', 'samesite=lax', 'httponly']))
-      expect(attrs).not.toContain('secure')
-    })
-
-    it('does not force Secure on other cookies', async () => {
-      const { status, cookies } = await request(install, '/implicit')
-      expect(status).toBe(204)
-      expect(attributes(cookies, 'u')).not.toContain('secure')
-    })
-  })
-
-  describe('SESSION_COOKIE_DOMAIN unset', () => {
-    it('keeps the prior host-scoped cookie', async () => {
-      const { status, cookies } = await request(withDecision(undefined, undefined), '/login')
-      expect(status).toBe(302)
-      const attrs = attributes(cookies, 'koa.sess')
-      expect(attrs).toEqual(expect.arrayContaining(['path=/', 'httponly']))
-      expect(attrs.some((a) => a.startsWith('domain='))).toBe(false)
       expect(attrs.some((a) => a.startsWith('samesite='))).toBe(false)
-      expect(attrs).not.toContain('secure')
-    })
+    }
   })
 
-  describe('negative control: secure session cookie without the marker', () => {
-    it('reproduces the 500 (Cannot send secure cookie over unencrypted connection)', async () => {
-      const { status } = await request((app) => {
-        app.use(session({ domain: '.uray.io', secure: true, sameSite: 'lax' }, app))
-      }, '/login')
-      expect(status).toBe(500)
-    })
+  it('emits a Secure session cookie when SESSION_COOKIE_SECURE=true', async () => {
+    const { status, cookies } = await request(withDecision('.uray.io', 'true'), '/login')
+    expect(status).toBe(302)
+    expect(attributes(cookies, 'huly.sess')).toContain('secure')
+  })
+
+  it('does not force Secure on other cookies', async () => {
+    const { status, cookies } = await request(withDecision('.uray.io', 'true'), '/implicit')
+    expect(status).toBe(204)
+    expect(attributes(cookies, 'u')).not.toContain('secure')
+  })
+
+  it('keeps the existing host-scoped koa.sess name without a domain', async () => {
+    const { status, cookies } = await request(withDecision(undefined, undefined), '/login')
+    expect(status).toBe(302)
+    const attrs = attributes(cookies, 'koa.sess')
+    expect(attrs).toEqual(expect.arrayContaining(['path=/', 'httponly']))
+    expect(attrs.some((a) => a.startsWith('domain='))).toBe(false)
+  })
+
+  it('reproduces the plain-HTTP failure without the narrow Secure-cookie handler', async () => {
+    const { status } = await request((app) => {
+      app.use(session({ domain: '.uray.io', secure: true }, app))
+    }, '/login')
+    expect(status).toBe(500)
   })
 })
