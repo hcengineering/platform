@@ -20,7 +20,8 @@ export type AuthProvider = (
   db: Promise<AccountDB>,
   frontUrl: string,
   brandings: BrandingMap,
-  signUpDisabled?: boolean
+  signUpDisabled?: boolean,
+  shutdownSignal?: AbortSignal
 ) => ProviderInfo | undefined
 
 export function registerProviders (
@@ -31,7 +32,8 @@ export function registerProviders (
   serverSecret: string,
   frontUrl: string | undefined,
   brandings: BrandingMap,
-  signUpDisabled: boolean = false
+  signUpDisabled: boolean = false,
+  shutdownSignal?: AbortSignal
 ): void {
   const accountsUrl = process.env.ACCOUNTS_URL
   if (accountsUrl === undefined) {
@@ -66,7 +68,7 @@ export function registerProviders (
   const res: ProviderInfo[] = []
   const providers: AuthProvider[] = [registerGoogle, registerGithub, registerOpenid]
   for (const provider of providers) {
-    const value = provider(ctx, passport, router, accountsUrl, db, frontUrl, brandings, signUpDisabled)
+    const value = provider(ctx, passport, router, accountsUrl, db, frontUrl, brandings, signUpDisabled, shutdownSignal)
     if (value !== undefined) res.push(value)
   }
 

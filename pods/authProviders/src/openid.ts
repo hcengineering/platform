@@ -239,7 +239,8 @@ export function registerOpenid (
   dbPromise: Promise<AccountDB>,
   frontUrl: string,
   brandings: BrandingMap,
-  signUpDisabled?: boolean
+  signUpDisabled?: boolean,
+  shutdownSignal?: AbortSignal
 ): ProviderInfo | undefined {
   const openidClientId = process.env.OPENID_CLIENT_ID
   const openidClientSecret = process.env.OPENID_CLIENT_SECRET
@@ -262,12 +263,17 @@ export function registerOpenid (
   // this chain is fire-and-forget, so even a hypothetical rejection must never
   // surface as an unhandled rejection (which could crash the process). Success
   // logging happens inside the helper ('Registered OIDC strategy' { attempts }).
-  void registerOidcStrategyWithRetry(measureCtx, passport, {
-    issuerUrl: issuer,
-    clientId: openidClientId,
-    clientSecret: openidClientSecret,
-    redirectUri: concatLink(accountsUrl, redirectURL)
-  })
+  void registerOidcStrategyWithRetry(
+    measureCtx,
+    passport,
+    {
+      issuerUrl: issuer,
+      clientId: openidClientId,
+      clientSecret: openidClientSecret,
+      redirectUri: concatLink(accountsUrl, redirectURL)
+    },
+    { signal: shutdownSignal }
+  )
     .then(({ registered }) => {
       oidcReady = registered
     })

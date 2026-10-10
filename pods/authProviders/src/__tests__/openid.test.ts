@@ -257,7 +257,7 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
     process.env = env
   })
 
-  function callRegister (): { passport: any, router: Router<any, any>, ctx: any } {
+  function callRegister (shutdownSignal?: AbortSignal): { passport: any, router: Router<any, any>, ctx: any } {
     const passport: any = { use: jest.fn(), authenticate: jest.fn(() => async () => {}) }
     const router = new Router<any, any>()
     const ctx = makeMeasureCtx()
@@ -268,7 +268,9 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
       'http://accounts.example.com',
       Promise.resolve({} as any),
       'http://front.example.com',
-      {}
+      {},
+      undefined,
+      shutdownSignal
     )
     expect(info).toEqual({ name: 'openid', displayName: 'Example IdP' })
     return { passport, router, ctx }
@@ -402,7 +404,7 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
     expect(ctx.error).toHaveBeenCalledWith('OIDC callback failed', expect.objectContaining({ hasErr: true }))
   })
 
-  test('7. no account and handleProviderAuth failures both redirect safely', async () => {
+  test('7. no account and provider-handler failures redirect with oidc_no_account', async () => {
     ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
     const { passport, router, ctx } = callRegister()
     const user = { email: 'person@example.com', email_verified: true, sub: 'subject' }
@@ -412,13 +414,27 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
     ;(handleProviderAuth as jest.Mock).mockResolvedValueOnce('')
     const noAccountCtx = await invokeCallbackRoute(router)
     expect(noAccountCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_no_account')
-    ;(handleProviderAuth as jest.Mock).mockRejectedValueOnce(new Error('database unavailable'))
+    // handleProviderAuth catches its own failures and reports them as ''.
+    ;(handleProviderAuth as jest.Mock).mockResolvedValueOnce('')
     const failedHandlerCtx = await invokeCallbackRoute(router)
-    expect(failedHandlerCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_callback_failed')
+    expect(failedHandlerCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_no_account')
+    expect(ctx.error).not.toHaveBeenCalled()
+  })
+
+  test('8. a synchronous passport.authenticate throw is caught and redirected', async () => {
+    ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
+    const { passport, router, ctx } = callRegister()
+    passport.authenticate.mockImplementation(() => {
+      throw new Error('unknown authentication strategy')
+    })
+
+    const koaCtx = await invokeCallbackRoute(router)
+
+    expect(koaCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_callback_failed')
     expect(ctx.error).toHaveBeenCalledWith('OIDC callback failed', expect.objectContaining({ hasErr: true }))
   })
 
-  test('8. registering OIDC twice on the same router is rejected', () => {
+  test('9. registering OIDC twice on the same router is rejected', () => {
     ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
     const { passport, router, ctx } = callRegister()
 
@@ -435,7 +451,7 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
     }).toThrow('OIDC provider is already registered on this router')
   })
 
-  test('9. a callback failure still redirects if warning logging fails', async () => {
+  test('10. a callback failure still redirects if warning logging fails', async () => {
     ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
     const { passport, router, ctx } = callRegister()
     ctx.warn.mockImplementation(() => {
@@ -448,5 +464,20 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
     const koaCtx = await invokeCallbackRoute(router)
 
     expect(koaCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_callback_failed')
+  })
+
+  test('11. shutdown signal stops the registration retry loop', async () => {
+    const controller = new AbortController()
+    const discover = Issuer.discover as jest.Mock
+    discover.mockRejectedValue(new Error('ECONNREFUSED'))
+
+    const { passport } = callRegister(controller.signal)
+    await Promise.resolve()
+    controller.abort()
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(discover).toHaveBeenCalledTimes(1)
+    expect(passport.use).not.toHaveBeenCalled()
   })
 })
