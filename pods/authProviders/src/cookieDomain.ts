@@ -15,69 +15,89 @@
 
 import type session from 'koa-session'
 
+export interface SessionCookieWarning {
+  message: string
+  variable: 'SESSION_COOKIE_DOMAIN' | 'SESSION_COOKIE_SECURE'
+  value: string | undefined
+}
+
 /**
- * Validates a `SESSION_COOKIE_DOMAIN` value before it is used to widen the
- * session cookie scope across subdomains.
- *
- * Accepts only plausible parent-domain values: an optional leading dot
- * followed by at least two dot-separated labels ending in a 2+ character TLD
- * (e.g. `.example.com`, `example.com`). Rejects whitespace, protocol, port
- * and single-label values like `com` — the latter would span the cookie
- * across a whole TLD and is a common misconfiguration footgun.
+ * Checks that a value is syntactically suitable for a cookie Domain attribute.
+ * This deliberately does not try to identify public suffixes: that requires a
+ * current public-suffix list, and browsers remain the authority that rejects a
+ * public suffix or a domain unrelated to the request host.
  */
 export function isValidCookieDomain (domain: string): boolean {
-  return /^\.?([a-z0-9-]+\.)+[a-z]{2,}$/i.test(domain)
+  return /^\.?[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i.test(domain)
+}
+
+function parseBoolean (value: string | undefined): boolean | undefined {
+  switch (value?.trim().toLowerCase()) {
+    case 'true':
+    case '1':
+    case 'yes':
+      return true
+    case 'false':
+    case '0':
+    case 'no':
+      return false
+    default:
+      return undefined
+  }
 }
 
 export interface SessionCookieDecision {
   /** Options handed to koa-session. */
   opts: Partial<session.opts>
   /**
-   * True when the operator asserted TLS termination via SESSION_COOKIE_DOMAIN:
-   * the app must then mark every request's cookie jar as secure (see
-   * forceSecureCookies) so the Secure session cookie can be written although
-   * the service itself listens on plain HTTP.
+   * True only when SESSION_COOKIE_SECURE explicitly enabled Secure cookies.
+   * installSession uses this to permit the session cookie on a TLS-terminating
+   * proxy without changing the defaults of any other cookie writer.
    */
-  forceSecure: boolean
-  warning?: string
+  forceSecureSessionCookie: boolean
+  warnings: SessionCookieWarning[]
 }
 
 /**
- * Pure decision for the koa-session cookie options. No forwarded header is
- * consulted and app.proxy stays false.
+ * Builds the koa-session options from the deployment configuration.
  *
- * - SESSION_COOKIE_DOMAIN unset/empty  -> prior behaviour (host-scoped cookie, no Secure)
- * - invalid domain                     -> ignored with a warning
- * - valid domain                       -> cross-subdomain cookie, sameSite=lax, Secure.
- *   Setting the variable is the operator's assertion that HTTPS is terminated
- *   in front of this service.
- * - SESSION_COOKIE_SECURE=false        -> local plain-HTTP development only: the
- *   domain cookie is written without Secure and nothing is forced.
+ * SESSION_COOKIE_DOMAIN only widens the session cookie's scope. It does not
+ * change Secure or SameSite defaults. SESSION_COOKIE_SECURE is independent and
+ * accepts true/false, 1/0, or yes/no. An unset value preserves koa-session's
+ * existing behaviour.
  */
 export function resolveSessionCookieOptions (
   rawDomain: string | undefined,
   rawSecure: string | undefined
 ): SessionCookieDecision {
+  const warnings: SessionCookieWarning[] = []
+  const opts: Partial<session.opts> = {}
   const domain = rawDomain?.trim()
-  const secureOptOut = rawSecure?.trim().toLowerCase() === 'false'
-  if (domain === undefined || domain.length === 0) {
-    return {
-      opts: {},
-      forceSecure: false,
-      warning: secureOptOut ? 'SESSION_COOKIE_SECURE ignored: SESSION_COOKIE_DOMAIN is not set' : undefined
+
+  if (domain !== undefined && domain.length > 0) {
+    if (isValidCookieDomain(domain)) {
+      // A domain-scoped cookie can collide with koa-session applications on
+      // sibling subdomains. Keep the established default where no domain is set.
+      opts.domain = domain
+      opts.key = 'huly.sess'
+    } else {
+      warnings.push({
+        message: 'SESSION_COOKIE_DOMAIN ignored: not a valid domain',
+        variable: 'SESSION_COOKIE_DOMAIN',
+        value: rawDomain
+      })
     }
   }
-  if (!isValidCookieDomain(domain)) {
-    return { opts: {}, forceSecure: false, warning: 'SESSION_COOKIE_DOMAIN ignored: not a valid domain' }
+
+  const secure = parseBoolean(rawSecure)
+  if (rawSecure !== undefined && rawSecure.trim().length > 0 && secure === undefined) {
+    warnings.push({
+      message: 'SESSION_COOKIE_SECURE ignored: expected true/false, 1/0, or yes/no',
+      variable: 'SESSION_COOKIE_SECURE',
+      value: rawSecure
+    })
   }
-  if (secureOptOut) {
-    return {
-      opts: { domain, sameSite: 'lax', secure: false },
-      forceSecure: false,
-      warning:
-        'SESSION_COOKIE_SECURE=false: the cross-subdomain session cookie is NOT marked Secure. ' +
-        'Use this only for local plain-HTTP development.'
-    }
-  }
-  return { opts: { domain, sameSite: 'lax', secure: true }, forceSecure: true }
+  if (secure !== undefined) opts.secure = secure
+
+  return { opts, forceSecureSessionCookie: secure === true, warnings }
 }
