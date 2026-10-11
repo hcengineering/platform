@@ -267,6 +267,7 @@
     "ShowQRCode": "Show QR code",
     "EnterVerificationCode": "Enter verification code",
     "OverrideAttribute": "Override attribute",
+    "OverriddenAttribute": "Overridden attribute",
     "Required": "Required",
     "RelationFilter": "Filter",
     "AddRelationFilter": "Add filter",

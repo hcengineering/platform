@@ -264,6 +264,7 @@
     "ShowQRCode": "Pokaż kod QR",
     "EnterVerificationCode": "Wpisz kod weryfikacyjny",
     "OverrideAttribute": "Nadpisz atrybut",
+    "OverriddenAttribute": "Nadpisany atrybut",
     "Required": "Obowiązkowe",
     "RelationFilter": "Filtr",
     "AddRelationFilter": "Dodaj filtr",

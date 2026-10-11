@@ -264,6 +264,7 @@
         "ShowQRCode": "QR 코드 표시",
         "EnterVerificationCode": "인증 코드 입력",
         "OverrideAttribute": "속성 재정의",
+        "OverriddenAttribute": "재정의된 속성",
         "Required": "필수",
         "RelationFilter": "필터",
         "AddRelationFilter": "필터 추가",

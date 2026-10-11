@@ -192,6 +192,7 @@ export default mergeIds(settingId, setting, {
     LastOwnerLeaveTitle: '' as IntlString,
     LastOwnerLeaveMessage: '' as IntlString,
     OverrideAttribute: '' as IntlString,
+    OverriddenAttribute: '' as IntlString,
     ShowInForm: '' as IntlString,
     ShowInCreate: '' as IntlString,
     Required: '' as IntlString

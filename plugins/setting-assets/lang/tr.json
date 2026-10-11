@@ -264,6 +264,7 @@
     "ShowQRCode": "QR kodu göster",
     "EnterVerificationCode": "Doğrulama kodunu gir",
     "OverrideAttribute": "Özniteliği geçersiz kıl",
+    "OverriddenAttribute": "Geçersiz kılınmış öznitelik",
     "Required": "Zorunlu",
     "RelationFilter": "Filtre",
     "AddRelationFilter": "Filtre ekle",

@@ -264,6 +264,7 @@
     "ShowQRCode": "QRコードを表示",
     "EnterVerificationCode": "確認コードを入力",
     "OverrideAttribute": "属性を上書き",
+    "OverriddenAttribute": "上書きされた属性",
     "Required": "必須",
     "RelationFilter": "フィルター",
     "AddRelationFilter": "フィルターを追加",
