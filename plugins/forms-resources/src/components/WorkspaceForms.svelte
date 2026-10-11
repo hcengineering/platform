@@ -99,10 +99,19 @@
                     <span slot="content"><Label label={row.masterTag.label} /></span>
                   </Button></td
                 >
-                <td>{#if row.configuration.mode === 'private-auto'}<Label label={forms.string.AutoSpace} />
-                  {:else}{row.space?.name ?? '—'}{/if}</td>
-                <td><Label label={row.configuration.mode === 'private-auto' ? forms.string.PrivateAutoForm :
-                  row.configuration.mode === 'private-fixed' ? forms.string.PrivateFixedForm : forms.string.PublicForm} /></td>
+                <td
+                  >{#if row.configuration.mode === 'private-auto'}<Label label={forms.string.AutoSpace} />
+                  {:else}{row.space?.name ?? '—'}{/if}</td
+                >
+                <td
+                  ><Label
+                    label={row.configuration.mode === 'private-auto'
+                      ? forms.string.PrivateAutoForm
+                      : row.configuration.mode === 'private-fixed'
+                        ? forms.string.PrivateFixedForm
+                        : forms.string.PublicForm}
+                  /></td
+                >
                 <td><Label label={row.configuration.enabled ? forms.string.Published : forms.string.Unpublished} /></td>
                 <td
                   >{#if row.configuration.enabled}

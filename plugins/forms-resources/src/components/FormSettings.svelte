@@ -32,10 +32,15 @@
   let saving = false
   let failed = false
 
-  $: query.query(forms.class.FormConfiguration, { masterTag: masterTag._id }, (docs) => {
-    configurations = docs
-    loaded = true
-  }, { sort: { createdOn: 1, _id: 1 } })
+  $: query.query(
+    forms.class.FormConfiguration,
+    { masterTag: masterTag._id },
+    (docs) => {
+      configurations = docs
+      loaded = true
+    },
+    { sort: { createdOn: 1, _id: 1 } }
+  )
   $: baseType = isBaseTypeWithSubtypes(client.getHierarchy(), masterTag._id)
 
   async function addForm (): Promise<void> {

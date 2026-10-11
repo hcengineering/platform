@@ -45,13 +45,17 @@ export function canCreateFormCard (
     roles.filter((role) => (assignment[role._id] ?? []).includes(account)).flatMap((role) => role.permissions)
   )
   const permissions = client.getModel().findAllSync(core.class.Permission, {})
-  const tx = new TxFactory(author).createTxCreateDoc(type._id, space._id, data ?? {
-    title: '',
-    parentInfo: [],
-    blobs: {},
-    rank: '',
-    content: '' as Card['content']
-  })
+  const tx = new TxFactory(author).createTxCreateDoc(
+    type._id,
+    space._id,
+    data ?? {
+      title: '',
+      parentInfo: [],
+      blobs: {},
+      rank: '',
+      content: '' as Card['content']
+    }
+  )
   function matches (permission: Permission): boolean {
     if (permission.txClass !== core.class.TxCreateDoc) return false
     if (permission.objectClass !== undefined && !hierarchy.isDerived(type._id, permission.objectClass)) return false
@@ -75,7 +79,9 @@ export function canCreateFormCard (
 
 /** Keeps only active spaces that accept this card type, preserving the caller's stable order. */
 export function compatibleFormSpaces (client: Client, type: MasterTag, spaces: CardSpace[]): CardSpace[] {
-  return spaces.filter((space) => !space.archived && (
-    space.types.length === 0 || space.types.some((parent) => client.getHierarchy().isDerived(type._id, parent))
-  ))
+  return spaces.filter(
+    (space) =>
+      !space.archived &&
+      (space.types.length === 0 || space.types.some((parent) => client.getHierarchy().isDerived(type._id, parent)))
+  )
 }

@@ -19,7 +19,16 @@
   import presentation from '@hcengineering/presentation'
   import { concatLink, generateId } from '@hcengineering/core'
   import { getAccount } from '@hcengineering/login-resources'
-  import { Button, Label, Loading, Popup, TraceXLogo, location, getCurrentLocation, type Location } from '@hcengineering/ui'
+  import {
+    Button,
+    Label,
+    Loading,
+    Popup,
+    TraceXLogo,
+    location,
+    getCurrentLocation,
+    type Location
+  } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import FormFieldInput from './FormFieldInput.svelte'
   import FormIdentity from './FormIdentity.svelte'
@@ -214,8 +223,13 @@
     {:else if accessDenied}<p role="alert"><Label label={forms.string.AccessDenied} /></p>
     {:else if authenticationRequired}
       <FormIdentity
-        {endpoint} {workspace} {formId} privateForm
-        on:verified={(event) => { void load(getCurrentLocation(), event.detail.token) }}
+        {endpoint}
+        {workspace}
+        {formId}
+        privateForm
+        on:verified={(event) => {
+          void load(getCurrentLocation(), event.detail.token)
+        }}
         on:redirect={saveDraft}
       />
     {:else if result !== undefined}

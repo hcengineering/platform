@@ -18,7 +18,12 @@
   import { concatLink, type Ref, type Space } from '@hcengineering/core'
   import { formsId, type FormConfiguration, type FormMode } from '@hcengineering/forms'
   import { getMetadata } from '@hcengineering/platform'
-  import presentation, { createQuery, getClient, getCurrentWorkspaceUrl, SpaceSelector } from '@hcengineering/presentation'
+  import presentation, {
+    createQuery,
+    getClient,
+    getCurrentWorkspaceUrl,
+    SpaceSelector
+  } from '@hcengineering/presentation'
   import { Button, DropdownLabelsIntl, Label, Toggle } from '@hcengineering/ui'
   import forms from '../plugin'
 
@@ -38,13 +43,17 @@
     { id: 'private-fixed', label: forms.string.PrivateFixedForm },
     { id: 'private-auto', label: forms.string.PrivateAutoForm }
   ]
-  spacesQuery.query(card.class.CardSpace, { archived: false }, (docs) => { spaces = docs })
+  spacesQuery.query(card.class.CardSpace, { archived: false }, (docs) => {
+    spaces = docs
+  })
   $: ancestors = hierarchy.getAncestors(masterTag._id)
   $: spaceQuery = {
     archived: false,
-    _id: { $in: spaces.filter((space) =>
-      space.types.length === 0 || space.types.some((type) => ancestors.includes(type))
-    ).map((space) => space._id) }
+    _id: {
+      $in: spaces
+        .filter((space) => space.types.length === 0 || space.types.some((type) => ancestors.includes(type)))
+        .map((space) => space._id)
+    }
   }
   $: mode = configuration.mode ?? 'public'
   $: targetSpace = configuration.targetSpace
@@ -102,12 +111,7 @@
 <div class="form-settings">
   <div class="row">
     <Label label={forms.string.FormMode} />
-    <DropdownLabelsIntl
-      items={modes}
-      selected={mode}
-      disabled={saving}
-      on:selected={changeMode}
-    />
+    <DropdownLabelsIntl items={modes} selected={mode} disabled={saving} on:selected={changeMode} />
   </div>
   {#if mode !== 'private-auto'}
     <div class="row">
@@ -125,7 +129,13 @@
   {:else}<p><Label label={forms.string.AutoSpace} /></p>{/if}
   <div class="row">
     <Label label={forms.string.Enabled} />
-    <Toggle on={enabled} disabled={toggleDisabled} on:change={(event) => { void save(mode, targetSpace, event.detail) }} />
+    <Toggle
+      on={enabled}
+      disabled={toggleDisabled}
+      on:change={(event) => {
+        void save(mode, targetSpace, event.detail)
+      }}
+    />
   </div>
   <p><Label label={mode === 'public' ? forms.string.PublicHint : forms.string.PrivateHint} /></p>
   {#if enabled}<a href={link} target="_blank" rel="noreferrer">{link}</a>{/if}

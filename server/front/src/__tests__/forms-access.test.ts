@@ -13,8 +13,16 @@
 // limitations under the License.
 
 import card, { type CardSpace, type MasterTag } from '@hcengineering/card'
-import core, { type Client, type MeasureContext, type PersonUuid, type Ref, type WorkspaceUuid } from '@hcengineering/core'
-import { type FormConfiguration } from '@hcengineering/forms'
+import core, {
+  ClassifierKind,
+  type Client,
+  type Doc,
+  type MeasureContext,
+  type PersonUuid,
+  type Ref,
+  type WorkspaceUuid
+} from '@hcengineering/core'
+import forms, { type FormConfiguration } from '@hcengineering/forms'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { createClient } from '@hcengineering/server-client'
 import guest from '@hcengineering/guest'
@@ -30,23 +38,63 @@ jest.mock('@hcengineering/server-token', () => ({
 }))
 
 const workspace = 'workspace' as WorkspaceUuid
-const type = { _id: 'card-type', _class: card.class.MasterTag, label: 'Type' } as MasterTag
-const space = {
-  _id: 'space', _class: card.class.CardSpace, archived: false, types: [type._id]
-} as CardSpace
-const title = {
-  _id: 'title', label: 'Title', type: { _class: core.class.TypeString }, name: 'title'
+const metadata: Pick<Doc, 'space' | 'modifiedBy' | 'modifiedOn'> = {
+  space: core.space.Model,
+  modifiedBy: core.account.System,
+  modifiedOn: 0
 }
-const configuration = {
-  _id: 'form-one', _class: 'forms:class:FormConfiguration', masterTag: type._id,
-  enabled: true, targetSpace: space._id, mode: 'public'
-} as FormConfiguration
+const type: MasterTag = {
+  ...metadata,
+  _id: 'card-type' as Ref<MasterTag>,
+  _class: card.class.MasterTag,
+  label: card.string.Card,
+  kind: ClassifierKind.CLASS
+}
+const space: CardSpace = {
+  ...metadata,
+  _id: 'space' as Ref<CardSpace>,
+  _class: card.class.CardSpace,
+  archived: false,
+  types: [type._id],
+  type: card.spaceType.SpaceType,
+  name: 'Space',
+  description: '',
+  private: false,
+  members: []
+}
+const title = {
+  _id: 'title',
+  label: 'Title',
+  type: { _class: core.class.TypeString },
+  name: 'title'
+}
+const configuration: FormConfiguration = {
+  ...metadata,
+  _id: 'form-one' as Ref<FormConfiguration>,
+  _class: forms.class.FormConfiguration,
+  masterTag: type._id,
+  enabled: true,
+  targetSpace: space._id,
+  mode: 'public'
+}
 
-function setup (current: FormConfiguration | undefined = configuration, member = false, accessible = [space]) {
+interface FormAccessTestSetup {
+  get: (id: string, authenticated?: boolean, method?: string) => Promise<{ status: number, body: unknown }>
+  service: { tx: jest.Mock, findAll: jest.Mock }
+  user: { tx: jest.Mock, findAll: jest.Mock }
+  userAccounts: { selectWorkspace: jest.Mock }
+}
+
+function setup (
+  current: FormConfiguration | undefined = configuration,
+  member = false,
+  accessible = [space]
+): FormAccessTestSetup {
   const hierarchy = {
     findClass: () => type,
     isMixin: () => false,
-    isDerived: (child: string, parent: string) => child === parent || (child === type._id && parent === card.class.Card),
+    isDerived: (child: string, parent: string) =>
+      child === parent || (child === type._id && parent === card.class.Card),
     getAllAttributes: () => new Map([['title', title]]),
     findDomain: () => 'card',
     classHierarchyMixin: () => undefined
@@ -62,45 +110,78 @@ function setup (current: FormConfiguration | undefined = configuration, member =
     tx: jest.fn().mockResolvedValue({ success: true, serverTime: 0 })
   }
   const user = {
-    ...service, findAll: jest.fn(async () => accessible), close: jest.fn(async () => {}),
+    ...service,
+    findAll: jest.fn(async () => accessible),
+    close: jest.fn(async () => {}),
     tx: jest.fn().mockResolvedValue({ success: true, serverTime: 0 })
   }
   const systemAccounts = {
-    selectWorkspace: jest.fn(async () => ({ workspace, token: 'system-workspace', endpoint: 'service', workspaceUrl: 'slug' }))
+    selectWorkspace: jest.fn(async () => ({
+      workspace,
+      token: 'system-workspace',
+      endpoint: 'service',
+      workspaceUrl: 'slug'
+    }))
   }
   const userAccounts = {
     getLoginInfoByToken: jest.fn(async () => ({ account: 'account' })),
     isReadOnlyGuest: jest.fn(async () => false),
-    getSocialIds: jest.fn(async () => [{
-      _id: 'email-id', type: 'email', value: 'member@example.com', verifiedOn: 123
-    }]),
+    getSocialIds: jest.fn(async () => [
+      {
+        _id: 'email-id',
+        type: 'email',
+        value: 'member@example.com',
+        verifiedOn: 123
+      }
+    ]),
     getPerson: jest.fn(async () => ({ uuid: 'account' as PersonUuid, firstName: 'Member', lastName: 'Name' })),
-    getUserWorkspaces: jest.fn(async () => member ? [{ uuid: workspace }] : []),
-    selectWorkspace: jest.fn(async () => ({ workspace, token: 'user-workspace', endpoint: 'user', workspaceUrl: 'slug' }))
+    getUserWorkspaces: jest.fn(async () => (member ? [{ uuid: workspace }] : [])),
+    selectWorkspace: jest.fn(async () => ({
+      workspace,
+      token: 'user-workspace',
+      endpoint: 'user',
+      workspaceUrl: 'slug'
+    }))
   }
-  jest.mocked(getAccountClient).mockImplementation((_, token) =>
-    (token === 'system-token' ? systemAccounts : userAccounts) as unknown as ReturnType<typeof getAccountClient>)
-  jest.mocked(createClient).mockImplementation(async (endpoint) =>
-    (endpoint === 'service' ? service : user) as unknown as Client)
+  jest
+    .mocked(getAccountClient)
+    .mockImplementation(
+      (_, token) =>
+        (token === 'system-token' ? systemAccounts : userAccounts) as unknown as ReturnType<typeof getAccountClient>
+    )
+  jest
+    .mocked(createClient)
+    .mockImplementation(async (endpoint) => (endpoint === 'service' ? service : user) as unknown as Client)
   const routes = new Map<string, (req: Request, res: Response) => void>()
   const app = {
     get: (path: string, handler: (req: Request, res: Response) => void) => routes.set(path, handler),
     post: (path: string, handler: (req: Request, res: Response) => void) => routes.set(path, handler)
   } as unknown as Express
-  registerFormsRoutes(app, { error: jest.fn() } as unknown as MeasureContext, { accountsUrl: 'accounts', collaboratorUrl: 'collaborator' })
+  registerFormsRoutes(app, { error: jest.fn() } as unknown as MeasureContext, {
+    accountsUrl: 'accounts',
+    collaboratorUrl: 'collaborator'
+  })
 
   async function get (id: string, authenticated = false, method = 'GET'): Promise<{ status: number, body: unknown }> {
     return await new Promise((resolve) => {
       let status = 200
       const response = {
         setHeader: jest.fn(),
-        status: (code: number) => { status = code; return response },
-        json: (body: unknown) => { resolve({ status, body }); return response }
+        status: (code: number) => {
+          status = code
+          return response
+        },
+        json: (body: unknown) => {
+          resolve({ status, body })
+          return response
+        }
       } as unknown as Response
       const request = {
-        method, ip: '127.0.0.1', params: { workspace: 'slug', form: id },
+        method,
+        ip: '127.0.0.1',
+        params: { workspace: 'slug', form: id },
         body: { requestId: '123456789012345678901234', fields: { title: 'Response' } },
-        header: () => authenticated ? 'Bearer member-token' : undefined
+        header: () => (authenticated ? 'Bearer member-token' : undefined)
       } as unknown as Request
       routes.get('/api/forms/:workspace/:form')?.(request, response)
     })
@@ -139,7 +220,11 @@ describe('form instance access', () => {
     const { get, userAccounts, user } = setup({ ...configuration, mode: 'private-fixed' }, true)
     expect(await get(configuration._id, true)).toMatchObject({ status: 200, body: { mode: 'private-fixed' } })
     expect(userAccounts.selectWorkspace).toHaveBeenCalledWith('slug', 'internal')
-    expect(user.findAll).toHaveBeenCalledWith(card.class.CardSpace, { archived: false, _id: space._id }, { sort: { _id: 1 } })
+    expect(user.findAll).toHaveBeenCalledWith(
+      card.class.CardSpace,
+      { archived: false, _id: space._id },
+      { sort: { _id: 1 } }
+    )
   })
 
   it('rejects fixed private forms when the user cannot access the target space', async () => {
@@ -157,10 +242,16 @@ describe('form instance access', () => {
     const { get, user, service } = setup({ ...configuration, mode: 'private-fixed' }, true)
     expect(await get(configuration._id, true, 'POST')).toMatchObject({ status: 200 })
     expect(service.tx).not.toHaveBeenCalled()
-    expect(user.tx).toHaveBeenCalledWith(expect.objectContaining({
-      txes: expect.arrayContaining([expect.objectContaining({
-        objectClass: type._id, objectSpace: space._id, modifiedBy: 'email-id'
-      })])
-    }))
+    expect(user.tx).toHaveBeenCalledWith(
+      expect.objectContaining({
+        txes: expect.arrayContaining([
+          expect.objectContaining({
+            objectClass: type._id,
+            objectSpace: space._id,
+            modifiedBy: 'email-id'
+          })
+        ])
+      })
+    )
   })
 })

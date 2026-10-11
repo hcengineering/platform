@@ -476,28 +476,46 @@ export function registerFormsRoutes (app: Express, ctx: MeasureContext, config: 
         )
         const schema = getSchema(client, type, configuration)
         const values = req.method === 'POST' ? validateFields(schema.fields, req.body?.fields) : undefined
-        const creationData = values === undefined
-          ? undefined
-          : fillDefaults(writer.getHierarchy(), {
-            parentInfo: [],
-            blobs: {},
-            rank: '',
-            content: '' as MarkupBlobRef,
-            ...values,
-            title: values.title ?? schema.fields.find((field) => field.name === 'title')?.defaultValue ?? ''
-          }, type._id) as Data<Card>
-        const space = candidates.find((space) =>
-          !privateForm || (identity !== undefined &&
-            canCreateFormCard(writer, space, type, identity.account, identity.socialId, creationData))
+        const creationData =
+          values === undefined
+            ? undefined
+            : (fillDefaults(
+                writer.getHierarchy(),
+                {
+                  parentInfo: [],
+                  blobs: {},
+                  rank: '',
+                  content: '' as MarkupBlobRef,
+                  ...values,
+                  title: values.title ?? schema.fields.find((field) => field.name === 'title')?.defaultValue ?? ''
+                },
+                type._id
+              ) as Data<Card>)
+        const space = candidates.find(
+          (space) =>
+            !privateForm ||
+            (identity !== undefined &&
+              canCreateFormCard(writer, space, type, identity.account, identity.socialId, creationData))
         )
         if (space === undefined) {
           throw new FormError(privateForm ? 403 : 404, privateForm ? 'access_denied' : 'unavailable')
         }
         if (req.method === 'POST' && identity !== undefined) {
-          res.json(await submit(
-            client, writer, configuration, type, space, req, identity, workspace, token,
-            login.workspaceUrl, config.collaboratorUrl
-          ))
+          res.json(
+            await submit(
+              client,
+              writer,
+              configuration,
+              type,
+              space,
+              req,
+              identity,
+              workspace,
+              token,
+              login.workspaceUrl,
+              config.collaboratorUrl
+            )
+          )
         } else res.json(schema)
       } finally {
         try {
