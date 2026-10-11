@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Mostra nel modulo pubblico",
+    "ShowInCreate": "Mostra durante la creazione di una scheda",
     "Setting": "Impostazione",
     "Spaces": "Spazi",
     "Integrations": "Integrazioni",

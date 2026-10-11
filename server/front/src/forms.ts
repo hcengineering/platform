@@ -104,6 +104,7 @@ function visibleAttributes (hierarchy: Hierarchy, type: Ref<MasterTag>): [string
         /^[a-zA-Z][a-zA-Z0-9_]*$/.test(name) &&
         !RESERVED_FIELDS.has(name) &&
         attr.hidden !== true &&
+        attr.showInForm !== false &&
         attr.readonly !== true &&
         attr.automationOnly !== true &&
         !containsIdentifier(hierarchy, attr.type) &&

@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Show in public form",
+    "ShowInCreate": "Show when creating a card",
     "Setting": "Setting",
     "Spaces": "Spaces",
     "Integrations": "Integrations",

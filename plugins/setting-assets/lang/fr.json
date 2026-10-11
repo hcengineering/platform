@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Afficher dans le formulaire public",
+    "ShowInCreate": "Afficher lors de la création d’une carte",
     "Setting": "Paramètre",
     "Spaces": "Espaces",
     "Integrations": "Intégrations",

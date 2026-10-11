@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import card from '@hcengineering/card'
   import core, {
     AnyAttribute,
     Class,
@@ -56,9 +57,12 @@
   let defaultValue: any | undefined
   let is: AnyComponent | undefined
   let readonly: boolean = false
+  let showInForm = true
+  let showInCreate = true
   let extra: Record<string, any> = {}
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  $: cardAttribute = isCard || hierarchy.isDerived(_class, card.class.Card)
 
   const dispatch = createEventDispatcher()
 
@@ -75,7 +79,9 @@
       type,
       defaultValue,
       readonly,
-      automationOnly: readonly
+      automationOnly: readonly,
+      showInForm,
+      showInCreate
     }
     if (index !== undefined) {
       data.index = index
@@ -191,6 +197,12 @@
         <Label label={view.string.AutomationOnly} />
       </span>
       <Toggle bind:on={readonly} />
+      {#if cardAttribute}
+        <span class="label"><Label label={setting.string.ShowInForm} /></span>
+        <Toggle bind:on={showInForm} />
+        <span class="label"><Label label={setting.string.ShowInCreate} /></span>
+        <Toggle bind:on={showInCreate} />
+      {/if}
     </div>
   </div>
 </Card>

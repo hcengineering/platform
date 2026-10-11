@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "公開フォームに表示",
+    "ShowInCreate": "カード作成時に表示",
     "Setting": "設定",
     "Spaces": "スペース",
     "Integrations": "連携",

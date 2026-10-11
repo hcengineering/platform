@@ -1,5 +1,7 @@
 {
     "string": {
+    "ShowInForm": "공개 양식에 표시",
+    "ShowInCreate": "카드 생성 시 표시",
         "Setting": "설정",
         "Spaces": "스페이스",
         "Integrations": "연동",

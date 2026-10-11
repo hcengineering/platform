@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Mostrar en el formulario público",
+    "ShowInCreate": "Mostrar al crear una tarjeta",
     "Setting": "Configuración",
     "Spaces": "Espacios",
     "Integrations": "Integraciones",

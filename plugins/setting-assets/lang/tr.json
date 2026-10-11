@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Herkese açık formda göster",
+    "ShowInCreate": "Kart oluştururken göster",
     "Setting": "Ayar",
     "Spaces": "Alanlar",
     "Integrations": "Entegrasyonlar",

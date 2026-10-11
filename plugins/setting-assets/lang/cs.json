@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Zobrazit ve veřejném formuláři",
+    "ShowInCreate": "Zobrazit při vytváření karty",
     "Setting": "Nastavení",
     "Spaces": "Prostory",
     "Integrations": "Integrace",

@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "在公开表单中显示",
+    "ShowInCreate": "创建卡片时显示",
     "Setting": "设置",
     "Spaces": "空间",
     "Integrations": "集成",
