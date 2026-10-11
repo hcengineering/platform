@@ -1,6 +1,7 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -27,6 +28,7 @@
   export let value: string
   // export let focus: boolean = false
   export let onChange: (value: string) => void
+  export let onInput: ((value: string) => void) | undefined = undefined
   export let kind: 'no-border' | 'link' = 'no-border'
   export let readonly = false
   // export let size: ButtonSize = 'x-large'
@@ -79,6 +81,9 @@
     {readonly}
     {isScrollable}
     {attachFile}
+    on:changeContent={(e) => {
+      onInput?.(e.detail)
+    }}
     on:value={(e) => {
       onChange(e.detail)
     }}
