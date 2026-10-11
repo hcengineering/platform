@@ -19,7 +19,7 @@
   import presentation from '@hcengineering/presentation'
   import { concatLink, generateId } from '@hcengineering/core'
   import { getAccount } from '@hcengineering/login-resources'
-  import { Button, Label, Loading, Popup, TraceXLogo, location, type Location } from '@hcengineering/ui'
+  import { Button, Label, Loading, Popup, TraceXLogo, location, getCurrentLocation, type Location } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import FormFieldInput from './FormFieldInput.svelte'
   import FormIdentity from './FormIdentity.svelte'
@@ -38,13 +38,15 @@
   let identity: Identity | undefined
   let loading = true
   let unavailable = false
+  let authenticationRequired = false
+  let accessDenied = false
   let submitting = false
   let failed = false
   let fields: Record<string, unknown> = {}
   let invalid: Record<string, boolean> = {}
   let result: FormSubmissionResult | undefined
   let workspace = ''
-  let type = ''
+  let formId = ''
   let draftKey = ''
   let requestId = ''
   let lastPath = ''
@@ -78,17 +80,19 @@
     }
   }
 
-  async function load (loc: Location): Promise<void> {
-    if (loc.path[0] !== formsId || loc.path.join('/') === lastPath) return
+  async function load (loc: Location, verifiedToken?: string): Promise<void> {
+    if (loc.path[0] !== formsId || (loc.path.join('/') === lastPath && verifiedToken === undefined)) return
     lastPath = loc.path.join('/')
     controller?.abort()
     const abort = new AbortController()
     controller = abort
     workspace = loc.path[1] ?? ''
-    type = loc.path[2] ?? ''
-    draftKey = `forms:draft:${workspace}:${type}`
+    formId = loc.path[2] ?? ''
+    draftKey = `forms:draft:${workspace}:${formId}`
     loading = true
     unavailable = false
+    authenticationRequired = false
+    accessDenied = false
     failed = false
     result = undefined
     schema = undefined
@@ -96,10 +100,22 @@
     invalid = {}
     try {
       restoreDraft()
-      if (workspace === '' || type === '') throw new Error('Workspace and card type are required')
-      const url = `${endpoint}/${encodeURIComponent(workspace)}/${encodeURIComponent(type)}`
-      const [response, account] = await Promise.all([fetch(url, { signal: abort.signal }), getAccount(false)])
+      if (workspace === '' || formId === '') throw new Error('Workspace and form ID are required')
+      const url = `${endpoint}/${encodeURIComponent(workspace)}/${encodeURIComponent(formId)}`
+      const token = verifiedToken ?? (await getAccount(false))?.token
+      const response = await fetch(url, {
+        signal: abort.signal,
+        headers: token === undefined ? {} : { Authorization: `Bearer ${token}` }
+      })
       if (abort.signal.aborted) return
+      if (response.status === 401) {
+        authenticationRequired = true
+        return
+      }
+      if (response.status === 403) {
+        accessDenied = true
+        return
+      }
       if (!response.ok) throw new Error('Form unavailable')
       const loadedSchema: FormSchema = await response.json()
       const inputFields = loadedSchema.fields.filter(isFormInputField)
@@ -112,14 +128,14 @@
       }
       const allowed = new Set(schema.fields.map((field) => field.name))
       fields = Object.fromEntries(Object.entries(fields).filter(([name]) => allowed.has(name)))
-      if (account?.token !== undefined) {
+      if (token !== undefined) {
         const user = await fetch(`${endpoint}/identity`, {
-          headers: { Authorization: `Bearer ${account.token}` },
+          headers: { Authorization: `Bearer ${token}` },
           signal: abort.signal
         })
         if (user.ok) {
           const data: { name: string } = await user.json()
-          identity = { name: data.name, token: account.token }
+          identity = { name: data.name, token }
         }
       }
     } catch (error) {
@@ -150,13 +166,18 @@
     submitting = true
     failed = false
     try {
-      const response = await fetch(`${endpoint}/${encodeURIComponent(workspace)}/${encodeURIComponent(type)}`, {
+      const response = await fetch(`${endpoint}/${encodeURIComponent(workspace)}/${encodeURIComponent(formId)}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${identity.token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ fields, requestId })
       })
       if (response.status === 401) {
         identity = undefined
+        if (schema.mode !== 'public') authenticationRequired = true
+        return
+      }
+      if (response.status === 403) {
+        accessDenied = true
         return
       }
       if (!response.ok) throw new Error('Submission failed')
@@ -190,6 +211,13 @@
     <div class="brand"><TraceXLogo /><span><Label label={forms.string.Forms} /></span></div>
     {#if loading}<Loading />
     {:else if unavailable}<p role="alert"><Label label={forms.string.Unavailable} /></p>
+    {:else if accessDenied}<p role="alert"><Label label={forms.string.AccessDenied} /></p>
+    {:else if authenticationRequired}
+      <FormIdentity
+        {endpoint} {workspace} {formId} privateForm
+        on:verified={(event) => { void load(getCurrentLocation(), event.detail.token) }}
+        on:redirect={saveDraft}
+      />
     {:else if result !== undefined}
       <h1><Label label={forms.string.Submitted} /></h1>
       <a href={new URL(result.url, front).toString()}><Label label={forms.string.OpenCard} /></a>
@@ -203,7 +231,7 @@
           <FormIdentity
             {endpoint}
             {workspace}
-            {type}
+            {formId}
             disabled={submitting}
             on:verified={(event) => {
               identity = event.detail

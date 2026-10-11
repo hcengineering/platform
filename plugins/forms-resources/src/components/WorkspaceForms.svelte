@@ -56,7 +56,7 @@
         space: spaces.find((space) => space._id === configuration.targetSpace),
         link: concatLink(
           front,
-          `${formsId}/${encodeURIComponent(getCurrentWorkspaceUrl())}/${encodeURIComponent(masterTag._id)}`
+          `${formsId}/${encodeURIComponent(getCurrentWorkspaceUrl())}/${encodeURIComponent(configuration._id)}`
         )
       }
     ]
@@ -86,6 +86,7 @@
             ><tr>
               <th scope="col"><Label label={card.string.MasterTag} /></th>
               <th scope="col"><Label label={forms.string.TargetSpace} /></th>
+              <th scope="col"><Label label={forms.string.FormMode} /></th>
               <th scope="col"><Label label={forms.string.PublicationStatus} /></th>
               <th scope="col"><Label label={forms.string.FormLink} /></th>
             </tr></thead
@@ -98,7 +99,10 @@
                     <span slot="content"><Label label={row.masterTag.label} /></span>
                   </Button></td
                 >
-                <td>{row.space?.name ?? '—'}</td>
+                <td>{#if row.configuration.mode === 'private-auto'}<Label label={forms.string.AutoSpace} />
+                  {:else}{row.space?.name ?? '—'}{/if}</td>
+                <td><Label label={row.configuration.mode === 'private-auto' ? forms.string.PrivateAutoForm :
+                  row.configuration.mode === 'private-fixed' ? forms.string.PrivateFixedForm : forms.string.PublicForm} /></td>
                 <td><Label label={row.configuration.enabled ? forms.string.Published : forms.string.Unpublished} /></td>
                 <td
                   >{#if row.configuration.enabled}

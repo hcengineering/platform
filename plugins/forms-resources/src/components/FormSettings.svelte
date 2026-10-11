@@ -14,89 +14,43 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import card, { type CardSpace, type MasterTag } from '@hcengineering/card'
-  import core, { concatLink, type Ref, type Space } from '@hcengineering/core'
-  import { formsId, type FormConfiguration } from '@hcengineering/forms'
-  import { getMetadata } from '@hcengineering/platform'
-  import presentation, {
-    createQuery,
-    getClient,
-    getCurrentWorkspaceUrl,
-    SpaceSelector
-  } from '@hcengineering/presentation'
-  import { Icon, IconFolder, Label, Toggle } from '@hcengineering/ui'
+  import type { MasterTag } from '@hcengineering/card'
+  import core from '@hcengineering/core'
+  import type { FormConfiguration } from '@hcengineering/forms'
+  import { createQuery, getClient } from '@hcengineering/presentation'
+  import { Button, Icon, IconFolder, Label, Loading } from '@hcengineering/ui'
   import forms from '../plugin'
   import { isBaseTypeWithSubtypes } from '../utils'
+  import FormSettingsItem from './FormSettingsItem.svelte'
 
   export let masterTag: MasterTag
 
   const client = getClient()
-  const hierarchy = client.getHierarchy()
+  const query = createQuery()
+  let configurations: FormConfiguration[] = []
+  let loaded = false
   let saving = false
   let failed = false
-  let targetSpace: Ref<CardSpace> | undefined
-  let configuration: FormConfiguration | undefined
-  let loaded = false
-  const query = createQuery()
-  const spacesQuery = createQuery()
-  let spaces: CardSpace[] = []
 
-  spacesQuery.query(card.class.CardSpace, { archived: false }, (docs) => {
-    spaces = docs
-  })
+  $: query.query(forms.class.FormConfiguration, { masterTag: masterTag._id }, (docs) => {
+    configurations = docs
+    loaded = true
+  }, { sort: { createdOn: 1, _id: 1 } })
+  $: baseType = isBaseTypeWithSubtypes(client.getHierarchy(), masterTag._id)
 
-  $: ancestors = hierarchy.getAncestors(masterTag._id)
-  $: spaceQuery = {
-    archived: false,
-    _id: {
-      $in: spaces
-        .filter((space) => space.types.length === 0 || space.types.some((type) => ancestors.includes(type)))
-        .map((space) => space._id)
-    }
-  }
-
-  $: configurationId = `${formsId}:configuration:${masterTag._id}` as Ref<FormConfiguration>
-  $: loadConfiguration(configurationId)
-  $: enabled = configuration?.enabled === true
-  $: baseType = isBaseTypeWithSubtypes(hierarchy, masterTag._id)
-  $: toggleDisabled = saving || !loaded || (!enabled && (targetSpace === undefined || baseType))
-  $: link = concatLink(
-    getMetadata(presentation.metadata.FrontUrl) || window.location.origin,
-    `${formsId}/${encodeURIComponent(getCurrentWorkspaceUrl())}/${encodeURIComponent(masterTag._id)}`
-  )
-
-  function loadConfiguration (id: Ref<FormConfiguration>): void {
-    loaded = false
-    query.query(forms.class.FormConfiguration, { _id: id }, (docs) => {
-      configuration = docs[0]
-      targetSpace = configuration?.targetSpace
-      loaded = true
-    })
-  }
-
-  function changeEnabled (event: CustomEvent<boolean>): void {
-    void save(event.detail, targetSpace)
-  }
-
-  function changeSpace (event: CustomEvent<Ref<Space> | undefined>): void {
-    void save(enabled, event.detail as Ref<CardSpace> | undefined)
-  }
-
-  async function save (publish: boolean, space: Ref<CardSpace> | undefined): Promise<void> {
-    if (!loaded || saving || (publish && (space === undefined || baseType))) return
+  async function addForm (): Promise<void> {
+    if (saving || baseType) return
     saving = true
     failed = false
     try {
-      const data = { masterTag: masterTag._id, enabled: publish, targetSpace: space }
-      if (configuration !== undefined) {
-        await client.update(configuration, data)
-      } else {
-        await client.createDoc(forms.class.FormConfiguration, core.space.Workspace, data, configurationId)
-      }
+      await client.createDoc(forms.class.FormConfiguration, core.space.Workspace, {
+        masterTag: masterTag._id,
+        mode: 'public',
+        enabled: false
+      })
     } catch (error) {
-      console.error('[FormSettings.save] Failed to save form configuration', { type: masterTag._id, error })
+      console.error('[FormSettings.addForm] Failed to create form', { error })
       failed = true
-      targetSpace = configuration?.targetSpace
     } finally {
       saving = false
     }
@@ -109,28 +63,12 @@
 </div>
 <div class="hulyTableAttr-content">
   <div class="settings-list">
-    <div class="row">
-      <Label label={forms.string.TargetSpace} />
-      <SpaceSelector
-        _class={card.class.CardSpace}
-        query={spaceQuery}
-        label={forms.string.TargetSpace}
-        autoSelect={false}
-        bind:space={targetSpace}
-        readonly={saving || !loaded}
-        on:change={changeSpace}
-      />
-    </div>
-    <div class="row">
-      <Label label={forms.string.Enabled} />
-      <Toggle on={enabled} disabled={toggleDisabled} on:change={changeEnabled} />
-    </div>
-    <p><Label label={forms.string.PublicHint} /></p>
-    {#if enabled}
-      <div class="row">
-        <Label label={forms.string.FormLink} />
-        <a href={link} target="_blank" rel="noreferrer">{link}</a>
-      </div>
+    {#if !loaded}<Loading />
+    {:else}
+      {#each configurations as configuration (configuration._id)}
+        <FormSettingsItem {configuration} {masterTag} {baseType} />
+      {/each}
+      <Button label={forms.string.AddForm} disabled={saving || baseType} on:click={addForm} />
     {/if}
     {#if failed}<p role="alert"><Label label={forms.string.Failed} /></p>{/if}
   </div>
@@ -140,31 +78,10 @@
   .settings-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-1);
+    gap: var(--spacing-2);
     padding: var(--spacing-2) var(--spacing-2_5);
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-  }
-
-  .row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-2);
-    min-height: 2rem;
-  }
-
-  p {
-    color: var(--global-secondary-TextColor);
-    margin: 0;
-  }
-
-  a {
-    color: var(--theme-accent-color);
-    min-width: 0;
-    overflow-wrap: anywhere;
   }
 </style>

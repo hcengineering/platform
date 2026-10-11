@@ -1,7 +1,16 @@
 {
   "string": {
+    "AddForm": "Add form",
+    "DeleteForm": "Delete form",
+    "FormMode": "Form access",
+    "PublicForm": "Public · fixed space",
+    "PrivateFixedForm": "Private · fixed space",
+    "PrivateAutoForm": "Private · automatic space",
+    "PrivateHint": "This form requires existing workspace access and permission to create cards.",
+    "AccessDenied": "You do not have permission to submit this form in this workspace.",
+    "AutoSpace": "The first available space that accepts this card type is selected automatically.",
     "Forms": "Forms",
-    "Enabled": "Publish a public form",
+    "Enabled": "Povolit formulář",
     "TargetSpace": "Create cards in",
     "FormLink": "Form link",
     "Submit": "Submit",

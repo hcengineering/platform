@@ -19,10 +19,13 @@ import { plugin, type IntlString, type Plugin } from '@hcengineering/platform'
 export const formsId = 'forms' as Plugin
 export const DOMAIN_FORMS = 'forms' as Domain
 
+export type FormMode = 'public' | 'private-fixed' | 'private-auto'
+
 /** Workspace publication settings for a dynamically generated card form. */
 export interface FormConfiguration extends Doc {
   masterTag: Ref<MasterTag>
   enabled: boolean
+  mode?: FormMode
   targetSpace?: Ref<CardSpace>
 }
 
@@ -45,6 +48,7 @@ export function isFormInputField (field: FormField): boolean {
 /** Transient schema derived from the referenced MasterTag; never persisted. */
 export interface FormSchema {
   id: string
+  mode: FormMode
   label: IntlString
   description?: string
   fields: FormField[]

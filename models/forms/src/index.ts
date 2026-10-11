@@ -16,7 +16,7 @@ import card, { type CardSpace, type MasterTag } from '@hcengineering/card'
 import core, { AccountRole, IndexKind, type Ref } from '@hcengineering/core'
 import forms, { DOMAIN_FORMS, formsId, type FormConfiguration } from '@hcengineering/forms'
 import formsResources from '@hcengineering/forms-resources/src/plugin'
-import { Builder, Index, Model, Prop, TypeBoolean, TypeRef } from '@hcengineering/model'
+import { Builder, Index, Model, Prop, TypeBoolean, TypeRef, TypeString } from '@hcengineering/model'
 import { TDoc } from '@hcengineering/model-core'
 import setting from '@hcengineering/setting'
 
@@ -25,6 +25,8 @@ export default forms
 
 @Model(forms.class.FormConfiguration, core.class.Doc, DOMAIN_FORMS)
 export class TFormConfiguration extends TDoc implements FormConfiguration {
+  @Prop(TypeString(), formsResources.string.FormMode)
+    mode?: FormConfiguration['mode']
   @Prop(TypeRef(card.class.MasterTag), card.string.MasterTag)
   @Index(IndexKind.Indexed)
     masterTag!: Ref<MasterTag>
