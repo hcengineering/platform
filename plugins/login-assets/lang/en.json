@@ -107,12 +107,17 @@
     "ActiveInviteLinks": "Active invite links",
     "NoActiveInviteLinks": "No active invite links",
     "UnlimitedUses": "Unlimited uses",
-    "RemainingUses": "Remaining uses:",
+    "RemainingUses": "{count, plural, =1 {# use left} other {# uses left}}",
     "RevokeInviteLink": "Revoke",
-    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteLinkError": "Something went wrong. Please try again.",
     "InviteRoleGuest": "Guest",
     "InviteRoleUser": "User",
     "InviteRoleMaintainer": "Maintainer",
-    "InviteRoleOwner": "Owner"
+    "InviteRoleOwner": "Owner",
+    "InviteLinksLoadError": "Could not load invite links.",
+    "RetryInviteLinks": "Try again",
+    "ManageInviteLinks": "Manage active invite links",
+    "RevokeInviteLinkConfirm": "People will no longer be able to join the workspace with this link. This cannot be undone.",
+    "InviteLinkExpires": "Expires {date}"
   }
 }

@@ -112,6 +112,7 @@ export interface ManagedInviteLink {
   role: AccountRole
   createdBy?: AccountUuid
   createdOn?: Timestamp
+  navigateUrl?: string
 }
 
 export interface OtpInfo {

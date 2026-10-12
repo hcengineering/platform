@@ -107,12 +107,17 @@
     "ActiveInviteLinks": "Активные ссылки-приглашения",
     "NoActiveInviteLinks": "Активных ссылок нет",
     "UnlimitedUses": "Без ограничения использований",
-    "RemainingUses": "Осталось использований:",
+    "RemainingUses": "{count, plural, one {Осталось # использование} few {Осталось # использования} other {Осталось # использований}}",
     "RevokeInviteLink": "Отозвать",
-    "InviteLinkError": "Не удалось управлять ссылками-приглашениями. Попробуйте ещё раз.",
+    "InviteLinkError": "Что-то пошло не так. Попробуйте ещё раз.",
     "InviteRoleGuest": "Гость",
     "InviteRoleUser": "Участник",
     "InviteRoleMaintainer": "Администратор",
-    "InviteRoleOwner": "Владелец"
+    "InviteRoleOwner": "Владелец",
+    "InviteLinksLoadError": "Не удалось загрузить ссылки-приглашения.",
+    "RetryInviteLinks": "Повторить",
+    "ManageInviteLinks": "Управлять активными ссылками",
+    "RevokeInviteLinkConfirm": "По этой ссылке больше нельзя будет присоединиться к рабочему пространству. Это действие нельзя отменить.",
+    "InviteLinkExpires": "Действует до {date}"
   }
 }

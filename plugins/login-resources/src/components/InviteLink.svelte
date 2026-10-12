@@ -14,17 +14,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import type { ManagedInviteLink } from '@hcengineering/account-client'
   import { AccountRole, getCurrentAccount, hasAccountRole, Timestamp } from '@hcengineering/core'
   import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
-  import setting, { RoleCapability } from '@hcengineering/setting'
+  import setting, { RoleCapability, settingId } from '@hcengineering/setting'
   import { getDefaultInviteRole, resolveInviteSettings } from '@hcengineering/setting-resources'
-  import { getResource, type IntlString } from '@hcengineering/platform'
-  import { AnySvelteComponent, Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
-  import { createEventDispatcher, onMount } from 'svelte'
+  import { getResource } from '@hcengineering/platform'
+  import {
+    AnySvelteComponent,
+    Button,
+    EditBox,
+    getCurrentResolvedLocation,
+    Grid,
+    Label,
+    Loading,
+    locationToUrl,
+    MiniToggle,
+    ticker
+  } from '@hcengineering/ui'
+  import { createEventDispatcher } from 'svelte'
 
   import login from '../plugin'
-  import { getAccountClient, getInviteLink, getInviteLinkUrl } from '../utils'
+  import { getInviteLink } from '../utils'
   import InviteWorkspace from './icons/InviteWorkspace.svelte'
 
   export let role: AccountRole | undefined = undefined
@@ -71,69 +81,16 @@
 
   async function getLink (expHours: number, mask: string, limit: number | undefined, role: AccountRole): Promise<void> {
     loading = true
-    hasError = false
+    linkError = false
+    link = undefined
     try {
       link = await getInviteLink(expHours, mask, limit ?? -1, role)
-      await loadInviteLinks()
     } catch {
-      hasError = true
+      linkError = true
     } finally {
       loading = false
     }
   }
-
-  async function loadInviteLinks (): Promise<void> {
-    if (!isOwnerOrMaintainer) return
-    loadingInviteLinks = true
-    try {
-      inviteLinks = await getAccountClient().getActiveInviteLinks()
-      hasError = false
-    } catch {
-      hasError = true
-    } finally {
-      loadingInviteLinks = false
-    }
-  }
-
-  function getRoleLabel (inviteRole: AccountRole): IntlString {
-    switch (inviteRole) {
-      case AccountRole.Guest:
-        return login.string.InviteRoleGuest
-      case AccountRole.Maintainer:
-        return login.string.InviteRoleMaintainer
-      case AccountRole.Owner:
-        return login.string.InviteRoleOwner
-      default:
-        return login.string.InviteRoleUser
-    }
-  }
-
-  async function revokeLink (id: string): Promise<void> {
-    revokingId = id
-    hasError = false
-    try {
-      await getAccountClient().revokeInviteLink(id)
-      inviteLinks = inviteLinks.filter((item) => item.id !== id)
-      if (link === getInviteLinkUrl(id)) link = undefined
-    } catch {
-      hasError = true
-    } finally {
-      revokingId = undefined
-    }
-  }
-
-  async function copyInviteLink (id: string): Promise<void> {
-    if (!isSecureContext) return
-    try {
-      await copyTextToClipboard(getInviteLinkUrl(id))
-    } catch {
-      hasError = true
-    }
-  }
-
-  onMount(() => {
-    void loadInviteLinks()
-  })
 
   let copiedTime: Timestamp | undefined
   let copied = false
@@ -181,10 +138,12 @@
 
   let link: string | undefined
   let loading = false
-  let inviteLinks: ManagedInviteLink[] = []
-  let loadingInviteLinks = false
-  let revokingId: string | undefined
-  let hasError = false
+  let linkError = false
+
+  function getManageInviteLinksUrl (): string {
+    const loc = getCurrentResolvedLocation()
+    return locationToUrl({ path: [loc.path[0], loc.path[1], settingId, 'invites'] })
+  }
 
   function handleInviteRoleSelected (e: CustomEvent<AccountRole>): void {
     role = e.detail
@@ -247,7 +206,7 @@
   {#if noExpiration && noLimit && !useDefault}
     <div class="invite-warning"><Label label={login.string.UnlimitedInviteWarning} /></div>
   {/if}
-  {#if hasError}
+  {#if linkError}
     <div class="invite-error"><Label label={login.string.InviteLinkError} /></div>
   {/if}
   {#if loading}
@@ -288,49 +247,9 @@
     </div>
   {/if}
   {#if isOwnerOrMaintainer}
-    <div class="active-links">
-      <Label label={login.string.ActiveInviteLinks} />
-      {#if loadingInviteLinks}
-        <Loading />
-      {:else if inviteLinks.length === 0}
-        <div class="muted"><Label label={login.string.NoActiveInviteLinks} /></div>
-      {:else}
-        <div class="invite-list">
-          {#each inviteLinks as invite (invite.id)}
-            <div class="invite-item">
-              <div class="invite-details">
-                <span><Label label={getRoleLabel(invite.role)} /></span>
-                <span>
-                  {#if invite.expiresOn < 0}
-                    <Label label={login.string.NoExpiration} />
-                  {:else}
-                    {new Date(invite.expiresOn).toLocaleString()}
-                  {/if}
-                </span>
-                <span>
-                  {#if invite.remainingUses < 0}
-                    <Label label={login.string.UnlimitedUses} />
-                  {:else}
-                    <Label label={login.string.RemainingUses} /> {invite.remainingUses}
-                  {/if}
-                </span>
-              </div>
-              <div class="invite-actions">
-                {#if isSecureContext}
-                  <Button label={login.string.Copy} size={'small'} on:click={() => void copyInviteLink(invite.id)} />
-                {/if}
-                <Button
-                  label={login.string.RevokeInviteLink}
-                  size={'small'}
-                  disabled={revokingId === invite.id}
-                  on:click={() => void revokeLink(invite.id)}
-                />
-              </div>
-            </div>
-          {/each}
-        </div>
-      {/if}
-    </div>
+    <a class="manage-links" href={getManageInviteLinksUrl()} target="_blank" rel="noopener noreferrer">
+      <Label label={login.string.ManageInviteLinks} />
+    </a>
   {/if}
 </div>
 
@@ -376,36 +295,11 @@
       color: var(--theme-error-color);
     }
 
-    .active-links {
+    .manage-links {
       margin-top: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .muted {
-      opacity: 0.7;
-    }
-
-    .invite-list {
-      max-height: 14rem;
-      overflow-y: auto;
-    }
-
-    .invite-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 0;
-      border-top: 1px solid var(--theme-divider-color);
-    }
-
-    .invite-details,
-    .invite-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
+      align-self: flex-start;
+      font-size: 0.8125rem;
+      color: var(--theme-link-color);
     }
   }
 </style>

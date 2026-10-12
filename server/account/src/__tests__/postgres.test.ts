@@ -1,5 +1,6 @@
 //
 // Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -481,6 +482,19 @@ describe('PostgresAccountDB', () => {
 
   afterEach(() => {
     spyValue = []
+  })
+
+  test('consumeInviteUse takes a use only while uses remain', async () => {
+    spyValue = [{ id: '123' }]
+    await expect(accountDb.consumeInviteUse('123')).resolves.toBe(true)
+
+    const sqlCall = spyTag.mock.calls.find(([first]) => Array.isArray(first))
+    const sql = (sqlCall?.[0] as string[]).join(' ')
+    expect(sql).toContain('SET remaining_uses = remaining_uses - 1')
+    expect(sql).toContain('remaining_uses > 0')
+
+    spyValue = []
+    await expect(accountDb.consumeInviteUse('123')).resolves.toBe(false)
   })
 
   describe('init', () => {

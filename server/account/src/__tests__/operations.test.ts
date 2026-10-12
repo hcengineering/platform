@@ -119,6 +119,7 @@ describe('account operations', () => {
       findOne: jest.fn(),
       update: jest.fn()
     },
+    consumeInviteUse: jest.fn(),
     getWorkspaceRole: jest.fn(),
     getWorkspaceMembers: jest.fn(),
     unassignWorkspace: jest.fn(),
@@ -152,6 +153,7 @@ describe('account operations', () => {
 
   describe('createInvite', () => {
     test('creates a share link without expiration and records its owner', async () => {
+      const navigateUrl = encodeURIComponent(JSON.stringify({ path: ['workbench', 'ws', 'tracker'] }))
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
       ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
       ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
@@ -162,7 +164,8 @@ describe('account operations', () => {
         emailMask: '',
         limit: -1,
         role: AccountRole.User,
-        isShareLink: true
+        isShareLink: true,
+        navigateUrl
       })
 
       expect(mockDb.invite.insertOne).toHaveBeenCalledWith(
@@ -171,9 +174,39 @@ describe('account operations', () => {
           remainingUses: -1,
           isShareLink: true,
           createdBy: mockAccount.uuid,
-          createdOn: expect.any(Number)
+          createdOn: expect.any(Number),
+          navigateUrl
         })
       )
+    })
+
+    test('rejects an oversized navigate url', async () => {
+      await expect(
+        createInvite(mockCtx, mockDb, mockBranding, mockToken, {
+          exp: -1,
+          emailMask: '',
+          limit: -1,
+          role: AccountRole.User,
+          isShareLink: true,
+          navigateUrl: 'x'.repeat(2049)
+        })
+      ).rejects.toThrow(PlatformError)
+      expect(mockDb.invite.insertOne).not.toHaveBeenCalled()
+    })
+
+    test('classifies recipient-free invites from older clients as share links', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      await createInvite(mockCtx, mockDb, mockBranding, mockToken, {
+        exp: 24 * 60 * 60 * 1000,
+        emailMask: '',
+        limit: 1,
+        role: AccountRole.User
+      })
+
+      expect(mockDb.invite.insertOne).toHaveBeenCalledWith(expect.objectContaining({ isShareLink: true }))
     })
 
     test('should create invite for authorized maintainer', async () => {
@@ -231,13 +264,31 @@ describe('account operations', () => {
     test('lists only active links for a maintainer', async () => {
       ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
       ;(mockDb.invite.find as jest.Mock).mockResolvedValue([
-        { id: 'active', expiresOn: -1, remainingUses: -1, role: AccountRole.User, createdOn: 100 },
+        { id: 'old', expiresOn: -1, remainingUses: -1, role: AccountRole.User, createdOn: 50 },
+        { id: 'active', expiresOn: 0, remainingUses: 2, role: AccountRole.User, createdOn: 100, navigateUrl: 'nav' },
         { id: 'expired', expiresOn: Date.now() - 1, remainingUses: 1, role: AccountRole.User },
         { id: 'used', expiresOn: -1, remainingUses: 0, role: AccountRole.User }
       ])
 
       await expect(getActiveInviteLinks(mockCtx, mockDb, mockBranding, mockToken)).resolves.toEqual([
-        { id: 'active', expiresOn: -1, remainingUses: -1, role: AccountRole.User, createdBy: undefined, createdOn: 100 }
+        {
+          id: 'active',
+          expiresOn: 0,
+          remainingUses: 2,
+          role: AccountRole.User,
+          createdBy: undefined,
+          createdOn: 100,
+          navigateUrl: 'nav'
+        },
+        {
+          id: 'old',
+          expiresOn: -1,
+          remainingUses: -1,
+          role: AccountRole.User,
+          createdBy: undefined,
+          createdOn: 50,
+          navigateUrl: undefined
+        }
       ])
       expect(mockDb.invite.find).toHaveBeenCalledWith({
         workspaceUuid: mockWorkspace.uuid,
@@ -286,6 +337,19 @@ describe('account operations', () => {
           'user@example.com'
         )
       ).rejects.toThrow(PlatformError)
+    })
+
+    test('does not count uses of unlimited invites', async () => {
+      await utils.useInvite(mockDb, { id: 'unlimited', remainingUses: -1 } as any)
+
+      expect(mockDb.consumeInviteUse).not.toHaveBeenCalled()
+    })
+
+    test('rejects a limited invite when its last use was already taken', async () => {
+      ;(mockDb.consumeInviteUse as jest.Mock).mockResolvedValue(false)
+
+      await expect(utils.useInvite(mockDb, { id: 'single', remainingUses: 1 } as any)).rejects.toThrow(PlatformError)
+      expect(mockDb.consumeInviteUse).toHaveBeenCalledWith('single')
     })
   })
 

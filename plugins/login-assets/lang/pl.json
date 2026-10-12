@@ -107,12 +107,17 @@
     "ActiveInviteLinks": "Active invite links",
     "NoActiveInviteLinks": "No active invite links",
     "UnlimitedUses": "Unlimited uses",
-    "RemainingUses": "Remaining uses:",
+    "RemainingUses": "{count, plural, one {Pozostało # użycie} few {Pozostały # użycia} other {Pozostało # użyć}}",
     "RevokeInviteLink": "Revoke",
-    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteLinkError": "Coś poszło nie tak. Spróbuj ponownie.",
     "InviteRoleGuest": "Guest",
     "InviteRoleUser": "User",
     "InviteRoleMaintainer": "Maintainer",
-    "InviteRoleOwner": "Owner"
+    "InviteRoleOwner": "Owner",
+    "InviteLinksLoadError": "Nie udało się wczytać linków z zaproszeniem.",
+    "RetryInviteLinks": "Spróbuj ponownie",
+    "ManageInviteLinks": "Zarządzaj aktywnymi linkami z zaproszeniem",
+    "RevokeInviteLinkConfirm": "Nikt nie będzie mógł już dołączyć do obszaru roboczego za pomocą tego linku. Tej operacji nie można cofnąć.",
+    "InviteLinkExpires": "Ważny do {date}"
   }
 }

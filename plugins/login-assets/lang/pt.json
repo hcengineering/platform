@@ -107,12 +107,17 @@
     "ActiveInviteLinks": "Active invite links",
     "NoActiveInviteLinks": "No active invite links",
     "UnlimitedUses": "Unlimited uses",
-    "RemainingUses": "Remaining uses:",
+    "RemainingUses": "{count, plural, =1 {Resta # utilização} other {Restam # utilizações}}",
     "RevokeInviteLink": "Revoke",
-    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteLinkError": "Algo correu mal. Tente novamente.",
     "InviteRoleGuest": "Guest",
     "InviteRoleUser": "User",
     "InviteRoleMaintainer": "Maintainer",
-    "InviteRoleOwner": "Owner"
+    "InviteRoleOwner": "Owner",
+    "InviteLinksLoadError": "Não foi possível carregar as ligações de convite.",
+    "RetryInviteLinks": "Tentar novamente",
+    "ManageInviteLinks": "Gerir ligações de convite ativas",
+    "RevokeInviteLinkConfirm": "Já não será possível aderir ao espaço de trabalho com esta ligação. Esta ação não pode ser anulada.",
+    "InviteLinkExpires": "Expira a {date}"
   }
 }

@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AccountRole, getCurrentAccount, type Ref } from '@hcengineering/core'
+  import core, { AccountRole, getCurrentAccount, hasAccountRole, type Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { type InviteSettings, type RoleCapabilitySettings, RoleCapability } from '@hcengineering/setting'
@@ -35,9 +35,11 @@
     Toggle
   } from '@hcengineering/ui'
   import settingRes from '../plugin'
+  import ActiveInviteLinks from './ActiveInviteLinks.svelte'
   import UserRoleSelect from './UserRoleSelect.svelte'
 
   const client = getClient()
+  const canManageInviteLinks = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)
 
   let loading = true
   let expTime: number = 48
@@ -229,6 +231,12 @@
                 </div>
               </div>
             </SettingsCard>
+
+            {#if canManageInviteLinks}
+              <SettingsCard label={login.string.ActiveInviteLinks}>
+                <ActiveInviteLinks />
+              </SettingsCard>
+            {/if}
 
             {#if canManagePermissions}
               <SettingsCard label={settingRes.string.Permissions}>

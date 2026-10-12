@@ -108,12 +108,17 @@
     "ActiveInviteLinks": "Active invite links",
     "NoActiveInviteLinks": "No active invite links",
     "UnlimitedUses": "Unlimited uses",
-    "RemainingUses": "Remaining uses:",
+    "RemainingUses": "{count, plural, one {Zbývá # použití} few {Zbývají # použití} other {Zbývá # použití}}",
     "RevokeInviteLink": "Revoke",
-    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteLinkError": "Něco se pokazilo. Zkuste to znovu.",
     "InviteRoleGuest": "Guest",
     "InviteRoleUser": "User",
     "InviteRoleMaintainer": "Maintainer",
-    "InviteRoleOwner": "Owner"
+    "InviteRoleOwner": "Owner",
+    "InviteLinksLoadError": "Nepodařilo se načíst odkazy s pozvánkou.",
+    "RetryInviteLinks": "Zkusit znovu",
+    "ManageInviteLinks": "Spravovat aktivní odkazy s pozvánkou",
+    "RevokeInviteLinkConfirm": "Přes tento odkaz se již nikdo nebude moci připojit k pracovnímu prostoru. Tuto akci nelze vrátit.",
+    "InviteLinkExpires": "Platí do {date}"
   }
 }

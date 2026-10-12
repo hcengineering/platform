@@ -664,6 +664,8 @@ export async function createWorkspace (
   }
 }
 
+const maxInviteNavigateUrlLength = 2048
+
 export async function createInvite (
   ctx: MeasureContext,
   db: AccountDB,
@@ -677,11 +679,15 @@ export async function createInvite (
     role: AccountRole
     autoJoin?: boolean
     isShareLink?: boolean
+    navigateUrl?: string
   }
 ): Promise<string> {
-  const { exp, emailMask, email, limit, role, autoJoin, isShareLink } = params
+  const { exp, emailMask, email, limit, role, autoJoin, isShareLink, navigateUrl } = params
 
   if (role == null || !assignableRoles.includes(role)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+  if (navigateUrl != null && (typeof navigateUrl !== 'string' || navigateUrl.length > maxInviteNavigateUrlLength)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -705,6 +711,7 @@ export async function createInvite (
   }
 
   ctx.info('Creating invite', { workspace, workspaceName: workspace.name, email, emailMask, limit, autoJoin })
+  const shareLink = isShareLink === true || (email == null && autoJoin !== true)
 
   return await db.invite.insertOne({
     workspaceUuid,
@@ -714,7 +721,7 @@ export async function createInvite (
     remainingUses: limit,
     role,
     autoJoin,
-    ...(isShareLink === true ? { isShareLink: true, createdBy: account, createdOn: Date.now() } : {})
+    ...(shareLink ? { isShareLink: true, createdBy: account, createdOn: Date.now(), navigateUrl } : {})
   })
 }
 
@@ -730,14 +737,15 @@ export async function getActiveInviteLinks (
   const now = Date.now()
 
   return invites
-    .filter((invite) => invite.remainingUses !== 0 && (invite.expiresOn < 0 || invite.expiresOn > now))
-    .map(({ id, expiresOn, remainingUses, role, createdBy, createdOn }) => ({
+    .filter((invite) => invite.remainingUses !== 0 && (invite.expiresOn <= 0 || invite.expiresOn > now))
+    .map(({ id, expiresOn, remainingUses, role, createdBy, createdOn, navigateUrl }) => ({
       id,
       expiresOn,
       remainingUses: remainingUses ?? -1,
       role,
       createdBy,
-      createdOn
+      createdOn,
+      navigateUrl
     }))
     .sort((a, b) => (b.createdOn ?? 0) - (a.createdOn ?? 0))
 }

@@ -108,12 +108,17 @@
     "ActiveInviteLinks": "Active invite links",
     "NoActiveInviteLinks": "No active invite links",
     "UnlimitedUses": "Unlimited uses",
-    "RemainingUses": "Remaining uses:",
+    "RemainingUses": "{count, plural, =1 {Noch # Nutzung} other {Noch # Nutzungen}}",
     "RevokeInviteLink": "Revoke",
-    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteLinkError": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
     "InviteRoleGuest": "Guest",
     "InviteRoleUser": "User",
     "InviteRoleMaintainer": "Maintainer",
-    "InviteRoleOwner": "Owner"
+    "InviteRoleOwner": "Owner",
+    "InviteLinksLoadError": "Einladungslinks konnten nicht geladen werden.",
+    "RetryInviteLinks": "Erneut versuchen",
+    "ManageInviteLinks": "Aktive Einladungslinks verwalten",
+    "RevokeInviteLinkConfirm": "Über diesen Link kann niemand mehr dem Arbeitsbereich beitreten. Dies kann nicht rückgängig gemacht werden.",
+    "InviteLinkExpires": "Gültig bis {date}"
   }
 }

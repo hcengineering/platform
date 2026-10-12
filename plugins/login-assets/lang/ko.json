@@ -106,12 +106,17 @@
         "ActiveInviteLinks": "Active invite links",
         "NoActiveInviteLinks": "No active invite links",
         "UnlimitedUses": "Unlimited uses",
-        "RemainingUses": "Remaining uses:",
+        "RemainingUses": "{count, plural, other {#회 남음}}",
         "RevokeInviteLink": "Revoke",
-        "InviteLinkError": "Could not manage invite links. Please try again.",
+        "InviteLinkError": "문제가 발생했습니다. 다시 시도해 주세요.",
         "InviteRoleGuest": "Guest",
         "InviteRoleUser": "User",
         "InviteRoleMaintainer": "Maintainer",
-        "InviteRoleOwner": "Owner"
+        "InviteRoleOwner": "Owner",
+        "InviteLinksLoadError": "초대 링크를 불러올 수 없습니다.",
+        "RetryInviteLinks": "다시 시도",
+        "ManageInviteLinks": "활성 초대 링크 관리",
+        "RevokeInviteLinkConfirm": "이 링크로 더 이상 워크스페이스에 참여할 수 없습니다. 이 작업은 되돌릴 수 없습니다.",
+        "InviteLinkExpires": "{date}에 만료"
     }
 }

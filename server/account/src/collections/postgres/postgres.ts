@@ -637,6 +637,18 @@ export class PostgresAccountDB implements AccountDB {
     return `${this.ns}.${this.pendingWorkspaceLockName}`
   }
 
+  async consumeInviteUse (inviteId: string): Promise<boolean> {
+    return await this.withRetry(async (rTx) => {
+      const rows = await rTx`
+        UPDATE ${this.client(this.invite.getTableName())}
+        SET remaining_uses = remaining_uses - 1
+        WHERE id = ${inviteId} AND remaining_uses > 0
+        RETURNING id
+      `
+      return rows.length > 0
+    })
+  }
+
   async init (): Promise<void> {
     await this._init()
 

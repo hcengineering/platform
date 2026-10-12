@@ -31,7 +31,6 @@ import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
-  concatLink,
   getCurrentAccount,
   type AccountUuid,
   type Person,
@@ -61,11 +60,14 @@ import {
   setMetadataLocalStorage,
   type Location
 } from '@hcengineering/ui'
+import { getInviteLinkUrl } from '@hcengineering/setting-resources'
 import { logIn, workbenchId } from '@hcengineering/workbench'
 
 import { LoginEvents } from './analytics'
 import { type Pages } from './index'
 import login from './plugin'
+
+export { getInviteLinkUrl }
 
 /**
  * Constructs an account client.
@@ -625,35 +627,16 @@ export async function getInviteLink (
   role: AccountRole,
   navigateUrl?: string
 ): Promise<string> {
-  const inviteId = await getInviteLinkId(expHours, mask, limit ?? -1, role)
+  const inviteId = await getInviteLinkId(expHours, mask, limit ?? -1, role, navigateUrl)
   return getInviteLinkUrl(inviteId, navigateUrl)
-}
-
-export function getInviteLinkUrl (inviteId: string, navigateUrl?: string): string {
-  const loc = getCurrentLocation()
-  loc.path[0] = loginId
-  loc.path[1] = 'join'
-  loc.path.length = 2
-  loc.query = {
-    inviteId
-  }
-  if (navigateUrl !== undefined) {
-    loc.query.navigateUrl = navigateUrl
-  }
-  loc.fragment = undefined
-
-  const url = locationToUrl(loc)
-
-  const frontUrl = getMetadata(presentation.metadata.FrontUrl)
-  const host = frontUrl ?? document.location.origin
-  return concatLink(host, url)
 }
 
 export async function getInviteLinkId (
   expHours: number,
   emailMask: string,
   limit: number,
-  role: AccountRole = AccountRole.User
+  role: AccountRole = AccountRole.User,
+  navigateUrl?: string
 ): Promise<string> {
   const exp = expHours < 0 ? -1 : expHours * 1000 * 60 * 60
   const token = getMetadata(presentation.metadata.Token)
@@ -667,7 +650,7 @@ export async function getInviteLinkId (
     return ''
   }
 
-  const inviteLink = await getAccountClient(token).createInvite(exp, emailMask, limit, role)
+  const inviteLink = await getAccountClient(token).createInvite(exp, emailMask, limit, role, navigateUrl)
 
   Analytics.handleEvent('Get invite link', { invite_id: inviteLink })
 

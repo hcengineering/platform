@@ -110,7 +110,13 @@ export interface AccountClient {
     workspaceUrl: string
   ) => Promise<WorkspaceLoginInfo>
   join: (email: string, password: string, inviteId: string, workspaceUrl: string) => Promise<WorkspaceLoginInfo>
-  createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
+  createInvite: (
+    exp: number,
+    emailMask: string,
+    limit: number,
+    role: AccountRole,
+    navigateUrl?: string
+  ) => Promise<string>
   getActiveInviteLinks: () => Promise<ManagedInviteLink[]>
   revokeInviteLink: (id: string) => Promise<void>
   /**
@@ -605,10 +611,16 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async createInvite (exp: number, emailMask: string, limit: number, role: AccountRole): Promise<string> {
+  async createInvite (
+    exp: number,
+    emailMask: string,
+    limit: number,
+    role: AccountRole,
+    navigateUrl?: string
+  ): Promise<string> {
     const request = {
       method: 'createInvite' as const,
-      params: { exp, emailMask, limit, role, isShareLink: true }
+      params: { exp, emailMask, limit, role, isShareLink: true, navigateUrl }
     }
 
     return await this.rpc(request)

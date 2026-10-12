@@ -87,6 +87,7 @@ export * from './accessPermissions'
 export { hasRoleCapability, getRolesForCapability } from './roleCapability'
 export { hasRoleCapabilityAsync } from './hasRoleCapabilityAsync'
 export * from './inviteSettingsUtils'
+export * from './inviteLinkUrl'
 export {
   ClassAttributes,
   ClassAttributesList,

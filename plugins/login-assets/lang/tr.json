@@ -107,12 +107,17 @@
     "ActiveInviteLinks": "Active invite links",
     "NoActiveInviteLinks": "No active invite links",
     "UnlimitedUses": "Unlimited uses",
-    "RemainingUses": "Remaining uses:",
+    "RemainingUses": "{count, plural, other {# kullanım kaldı}}",
     "RevokeInviteLink": "Revoke",
-    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteLinkError": "Bir şeyler ters gitti. Lütfen tekrar deneyin.",
     "InviteRoleGuest": "Guest",
     "InviteRoleUser": "User",
     "InviteRoleMaintainer": "Maintainer",
-    "InviteRoleOwner": "Owner"
+    "InviteRoleOwner": "Owner",
+    "InviteLinksLoadError": "Davet bağlantıları yüklenemedi.",
+    "RetryInviteLinks": "Tekrar dene",
+    "ManageInviteLinks": "Etkin davet bağlantılarını yönet",
+    "RevokeInviteLinkConfirm": "Bu bağlantıyla artık kimse çalışma alanına katılamayacak. Bu işlem geri alınamaz.",
+    "InviteLinkExpires": "{date} tarihinde sona erer"
   }
 }
