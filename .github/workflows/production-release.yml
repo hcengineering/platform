@@ -115,6 +115,44 @@ jobs:
             git commit -m "chore(release): update changelog"
           fi
 
+      - name: Update release versions
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          VERSION="${RELEASE_TAG#v}"
+          printf '"%s"\n' "$VERSION" > common/scripts/version.txt
+          python3 - "$VERSION" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          version = sys.argv[1]
+          for filename in (
+              'desktop/package.json',
+              'desktop-package/package.json',
+              'qms-desktop-package/package.json',
+          ):
+              path = Path(filename)
+              content = path.read_text()
+              updated, count = re.subn(
+                  r'(?m)^([ \t]*"version": ")[^"]+("[,])',
+                  lambda match: f'{match.group(1)}{version}{match.group(2)}',
+                  content,
+                  count=1,
+              )
+              if count != 1:
+                  raise RuntimeError(f'Could not update version in {filename}')
+              path.write_text(updated)
+          PY
+          git add common/scripts/version.txt desktop/package.json desktop-package/package.json qms-desktop-package/package.json
+          if git diff --cached --quiet; then
+            echo "Release versions are already up to date."
+          else
+            git diff --cached --stat
+            git commit -m "chore(release): update versions to $VERSION"
+          fi
+
       - name: Create production tag
         run: git tag -a "${{ steps.version.outputs.tag }}" -m "Production release ${{ steps.version.outputs.tag }}"
 
