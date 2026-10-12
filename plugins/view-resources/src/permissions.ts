@@ -357,8 +357,34 @@ function buildPermissions (
 }
 
 const accountStore = writable<Account | undefined>(undefined)
+const permissionsDataStore = writable<PermissionsStore | undefined>(undefined)
+
+// The permissions store lives in contact-resources and is loaded lazily. It must not be requested at module
+// evaluation time: this module can be imported statically before the platform registers plugin locations
+// (e.g. by the desktop UI entry point), and getResource then fails with NoLocationForPlugin for good.
+// Load it once the account is known, which happens only after the platform is configured, and retry on failure.
+let permissionsStoreState: 'idle' | 'loading' | 'loaded' = 'idle'
+function loadPermissionsStore (): void {
+  if (permissionsStoreState !== 'idle') return
+  permissionsStoreState = 'loading'
+  getResource(contact.store.Permissions)
+    .then((store) => {
+      permissionsStoreState = 'loaded'
+      store.subscribe((value) => {
+        permissionsDataStore.set(value)
+      })
+    })
+    .catch((err) => {
+      permissionsStoreState = 'idle'
+      // Without the store every store backed permission stays denied, so make the reason visible
+      // instead of leaving the user with a silently crippled UI.
+      console.error('failed to load the permissions store, space permissions will be denied', err)
+    })
+}
+
 onCurrentAccountChanged((account) => {
   accountStore.set(account)
+  loadPermissionsStore()
 })
 
 /**
@@ -367,20 +393,6 @@ onCurrentAccountChanged((account) => {
  * @public
  */
 export const currentAccountStore: Readable<Account | undefined> = accountStore
-
-const permissionsDataStore = writable<PermissionsStore | undefined>(undefined)
-void Promise.resolve()
-  .then(async () => {
-    const store = await getResource(contact.store.Permissions)
-    store.subscribe((value) => {
-      permissionsDataStore.set(value)
-    })
-  })
-  .catch((err) => {
-    // Without the store every store backed permission stays denied, so make the reason visible
-    // instead of leaving the user with a silently crippled UI.
-    console.error('failed to load the permissions store, space permissions will be denied', err)
-  })
 
 const basePermissions: Readable<Permissions> = derived(
   [accountStore, permissionsDataStore, restrictionStore],
