@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -27,6 +28,7 @@
   export let pressed: boolean = false
   export let hasMenu: boolean = false
   export let noPrint: boolean = false
+  export let noFocus: boolean = false
   export let loading: boolean = false
   export let inheritColor: boolean = false
   export let tooltip: LabelAndProps | undefined = undefined
@@ -54,6 +56,7 @@
   {pressed}
   {hasMenu}
   {noPrint}
+  {noFocus}
   {tooltip}
   {focusIndex}
   {id}

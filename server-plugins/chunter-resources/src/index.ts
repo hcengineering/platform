@@ -22,6 +22,7 @@ import chunter, {
   ChunterSpace,
   type DefaultDiscussion,
   type Discussion,
+  getDefaultDiscussionVisibility,
   getDiscussionTitle,
   ThreadMessage
 } from '@hcengineering/chunter'
@@ -48,6 +49,7 @@ import core, {
   TxUpdateDoc,
   UserStatus,
   getClassCollaborators,
+  visibilityToAudience,
   type MeasureContext
 } from '@hcengineering/core'
 import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
@@ -428,6 +430,62 @@ async function OnChatMessageRemoved (txes: TxCUD<ChatMessage>[], control: Trigge
   return res
 }
 
+/**
+ * Creates the default discussions configured for the exact owner class when the owner is created.
+ * Viewing an existing object or adding a default configuration never creates discussions.
+ * @public
+ */
+export async function OnDiscussionOwnerCreated (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const processed = new Set<Ref<Doc>>()
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxCreateDoc) continue
+    const createTx = tx as TxCreateDoc<Doc>
+    if (processed.has(createTx.objectId)) continue
+    processed.add(createTx.objectId)
+
+    // Default discussions belong to the concrete type and are not inherited.
+    const configs = control.modelDb.findAllSync(chunter.class.DefaultDiscussion, { ofClass: createTx.objectClass })
+    if (configs.length === 0) continue
+
+    // Server queries include discussions hidden from individual users.
+    const existing = await control.findAll(control.ctx, chunter.class.Discussion, {
+      attachedTo: createTx.objectId,
+      defaultDiscussion: { $in: configs.map((config) => config._id) }
+    })
+    const linked = new Set(existing.map((discussion) => discussion.defaultDiscussion))
+    const account = await getAccountBySocialId(control, createTx.createdBy ?? createTx.modifiedBy)
+    for (const config of configs) {
+      if (linked.has(config._id)) continue
+      const discussionTx = control.txFactory.createTxCreateDoc(chunter.class.Discussion, createTx.objectSpace, {
+        name: config.name,
+        resolved: false,
+        members: [],
+        defaultDiscussion: config._id,
+        attachedTo: createTx.objectId,
+        attachedToClass: createTx.objectClass,
+        collection: 'discussions',
+        // Derived transactions bypass client security checks, so ownership is set here.
+        [core.mixin.AccessControlled]: {
+          read: visibilityToAudience(getDefaultDiscussionVisibility(config)),
+          owners: account != null ? [account] : []
+        }
+      })
+      res.push(
+        control.txFactory.createTxCollectionCUD(
+          createTx.objectClass,
+          createTx.objectId,
+          createTx.objectSpace,
+          'discussions',
+          discussionTx
+        )
+      )
+      linked.add(config._id)
+    }
+  }
+  return res
+}
+
 // The default discussion configured for the owner class it was created for, if it is still configured.
 function getConfiguredDefaultDiscussion (
   control: TriggerControl,
@@ -674,6 +732,7 @@ export default async () => ({
     OnChatMessageRemoved,
     ChatNotificationsHandler,
     OnUserStatus,
+    OnDiscussionOwnerCreated,
     OnDefaultDiscussionUpdated,
     OnDefaultDiscussionRenamed,
     OnDiscussionOwnerClassChanged

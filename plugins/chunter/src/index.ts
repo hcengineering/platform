@@ -76,7 +76,7 @@ export interface Discussion extends AttachedDoc {
 
 /**
  * A discussion that every object of the class has by default (e.g. "General" for a card type).
- * The discussion itself is created lazily, when a user opens it for the first time.
+ * The discussion itself is created by a server trigger when the owner object is created.
  *
  * @public
  */
@@ -237,6 +237,7 @@ export default plugin(chunterId, {
     Discussions: '' as IntlString,
     NoDiscussionsYet: '' as IntlString,
     Resolved: '' as IntlString,
+    Unresolved: '' as IntlString,
     ViewAllDiscussions: '' as IntlString,
     DefaultDiscussion: '' as IntlString,
     DefaultDiscussions: '' as IntlString,
@@ -300,6 +301,7 @@ export default plugin(chunterId, {
     DMNotification: '' as Ref<NotificationType>,
     ThreadNotification: '' as Ref<NotificationType>,
     ChannelNotification: '' as Ref<NotificationType>,
+    DiscussionNotification: '' as Ref<NotificationType>,
     JoinChannelNotification: '' as Ref<NotificationType>,
     ThreadMessageViewlet: '' as Ref<ChatMessageViewlet>,
     ChatWidget: '' as Ref<Widget>

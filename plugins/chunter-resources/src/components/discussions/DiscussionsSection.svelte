@@ -14,80 +14,64 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type DefaultDiscussion, type Discussion } from '@hcengineering/chunter'
-  import { type Doc, type Ref, SortingOrder } from '@hcengineering/core'
-  import { createQuery, MessageBox } from '@hcengineering/presentation'
-  import ui, { Button, ButtonIcon, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
-  import { permissions } from '@hcengineering/view-resources'
+  import { type Discussion } from '@hcengineering/chunter'
+  import core, { type Doc, type Ref } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
+  import { Button, ButtonIcon, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
+  import view, { type Viewlet, type ViewletPreference, type ViewOptions } from '@hcengineering/view'
+  import { List, ListSelectionProvider, permissions, type SelectDirection } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import chunter from '../../plugin'
-  import { canCreateDiscussion, getOrCreateDefaultDiscussion } from '../../utils'
+  import { canCreateDiscussion } from '../../utils'
   import CreateDiscussion from './CreateDiscussion.svelte'
-  import DefaultDiscussionRow from './DefaultDiscussionRow.svelte'
-  import DiscussionRow from './DiscussionRow.svelte'
 
   export let doc: Doc
   export let readonly: boolean = false
   export let hidden: boolean = false
 
-  const COLLAPSED_LIMIT = 3
-
   const dispatch = createEventDispatcher()
   const discussionsQuery = createQuery()
-  const defaultDiscussionsQuery = createQuery()
-
+  const viewletQuery = createQuery()
+  const preferenceQuery = createQuery()
   let discussions: Discussion[] = []
-  let loadedFor: Ref<Doc> | undefined = undefined
-  let defaultDiscussions: DefaultDiscussion[] = []
-  let creatingDefault: Ref<DefaultDiscussion> | undefined = undefined
-  let expanded = false
+  let viewlet: Viewlet | undefined
+  let preference: ViewletPreference | undefined
+  let viewOptions: ViewOptions | undefined
+  let list: List
+  const listProvider = new ListSelectionProvider(
+    (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection, noScroll?: boolean) => {
+      if (direction === 'vertical') list?.select(offset, of, noScroll)
+    }
+  )
+  const selection = listProvider.selection
 
-  // Default discussions are configured on the owner type, without inheritance.
-  $: defaultDiscussionsQuery.query(chunter.class.DefaultDiscussion, { ofClass: doc._class }, (result) => {
-    defaultDiscussions = result
+  $: viewletQuery.query(view.class.Viewlet, { _id: chunter.viewlet.DiscussionList }, (result) => {
+    viewlet = result[0]
   })
 
-  $: discussionsQuery.query(
-    chunter.class.Discussion,
-    { attachedTo: doc._id },
-    (result) => {
-      discussions = result
-      loadedFor = doc._id
-      dispatch('loaded')
-    },
-    { sort: { modifiedOn: SortingOrder.Descending } }
-  )
+  $: if (viewlet !== undefined) {
+    preferenceQuery.query(
+      view.class.ViewletPreference,
+      { space: core.space.Workspace, attachedTo: viewlet._id },
+      (result) => {
+        preference = result[0]
+      },
+      { limit: 1 }
+    )
+  } else {
+    preferenceQuery.unsubscribe()
+    preference = undefined
+  }
+
+  $: config = preference?.config ?? viewlet?.config ?? []
+
+  $: discussionsQuery.query(chunter.class.Discussion, { attachedTo: doc._id }, (result) => {
+    discussions = result
+    dispatch('loaded')
+  })
 
   $: canCreate = canCreateDiscussion() && $permissions.canComment(doc)
-
-  // Default discussions go first, in the configured order.
-  $: defaultOrder = new Map(defaultDiscussions.map((it, index) => [it._id, index]))
-  $: sortedDiscussions = [...discussions].sort(compareDiscussions)
-
-  // A default discussion is created lazily, so until then it is shown as a placeholder row.
-  $: placeholders =
-    loadedFor === doc._id && !readonly && canCreate
-      ? defaultDiscussions.filter((config) => !discussions.some((it) => it.defaultDiscussion === config._id))
-      : []
-
-  $: collapsedLimit = Math.max(COLLAPSED_LIMIT - placeholders.length, 0)
-  $: visibleDiscussions = expanded ? sortedDiscussions : sortedDiscussions.slice(0, collapsedLimit)
-
-  function getDefaultOrder (discussion: Discussion): number {
-    const config = discussion.defaultDiscussion
-    const order = config !== undefined ? defaultOrder.get(config) : undefined
-    return order ?? Number.MAX_SAFE_INTEGER
-  }
-
-  function compareDiscussions (left: Discussion, right: Discussion): number {
-    const order = getDefaultOrder(left) - getDefaultOrder(right)
-    if (order !== 0) return order
-    if (left.resolved !== right.resolved) {
-      return left.resolved ? 1 : -1
-    }
-    return (right.modifiedOn ?? 0) - (left.modifiedOn ?? 0)
-  }
 
   function createDiscussion (): void {
     showPopup(CreateDiscussion, { object: doc }, 'top', (result?: Ref<Discussion>) => {
@@ -95,24 +79,8 @@
     })
   }
 
-  async function openDefaultDiscussion (config: DefaultDiscussion): Promise<void> {
-    if (creatingDefault !== undefined) return
-    creatingDefault = config._id
-    try {
-      const discussionId = await getOrCreateDefaultDiscussion(doc, config)
-      if (discussionId !== undefined) {
-        openDiscussion(discussionId)
-      } else {
-        // It exists but its visibility was restricted, so the user cannot open it.
-        showPopup(MessageBox, {
-          label: chunter.string.DefaultDiscussion,
-          message: chunter.string.DefaultDiscussionUnavailable,
-          canSubmit: false
-        })
-      }
-    } finally {
-      creatingDefault = undefined
-    }
+  function handleOpenDiscussion (discussion: Discussion): void {
+    openDiscussion(discussion._id)
   }
 
   // The owner panel shows the discussion in its aside, so it closes together with the object.
@@ -141,42 +109,37 @@
       </div>
 
       <svelte:fragment slot="content">
-        {#if discussions.length === 0 && placeholders.length === 0}
+        {#if discussions.length === 0}
           <div class="antiSection-empty flex-col mt-3">
             <span class="text-sm content-dark-color"><Label label={chunter.string.NoDiscussionsYet} /></span>
             {#if !readonly && canCreate}
               <Button kind="link" size="small" label={chunter.string.NewDiscussion} on:click={createDiscussion} />
             {/if}
           </div>
-        {:else}
-          <div class="discussions mt-3">
-            {#each placeholders as config (config._id)}
-              <DefaultDiscussionRow
-                name={config.name}
-                loading={creatingDefault === config._id}
-                on:open={() => void openDefaultDiscussion(config)}
+        {:else if viewlet !== undefined && viewOptions !== undefined}
+          <div class="mt-3">
+            {#key doc._id}
+              <List
+                bind:this={list}
+                _class={chunter.class.Discussion}
+                query={{ attachedTo: doc._id }}
+                {config}
+                {viewOptions}
+                viewOptionsConfig={viewlet.viewOptions?.other}
+                options={viewlet.options}
+                {listProvider}
+                {readonly}
+                configurations={undefined}
+                selectedObjectIds={$selection ?? []}
+                disableHeader
+                flatHeaders
+                singleCategoryLimit={3}
+                props={{ ...viewlet.props, onOpenDiscussion: handleOpenDiscussion }}
+                on:row-focus={(event) => listProvider.updateFocus(event.detail ?? undefined)}
+                on:check={(event) => listProvider.updateSelection(event.detail.docs, event.detail.value)}
+                on:content={(event) => listProvider.update(event.detail)}
               />
-            {/each}
-            {#each visibleDiscussions as discussion (discussion._id)}
-              <DiscussionRow
-                {discussion}
-                on:open={(event) => {
-                  openDiscussion(event.detail._id)
-                }}
-              />
-            {/each}
-
-            {#if discussions.length > collapsedLimit}
-              <div class="footer">
-                <Button
-                  kind="ghost"
-                  width="100%"
-                  label={expanded ? ui.string.ShowLess : chunter.string.ViewAllDiscussions}
-                  labelParams={{ count: discussions.length }}
-                  on:click={() => (expanded = !expanded)}
-                />
-              </div>
-            {/if}
+            {/key}
           </div>
         {/if}
       </svelte:fragment>
@@ -190,18 +153,5 @@
     flex-direction: column;
     width: 100%;
     padding: 0 1rem;
-  }
-
-  .discussions {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.75rem;
-  }
-
-  // The last row above already draws the divider.
-  .footer {
-    padding: 0.25rem;
   }
 </style>

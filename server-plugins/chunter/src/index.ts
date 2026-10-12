@@ -34,6 +34,7 @@ export default plugin(serverChunterId, {
     OnChatMessageRemoved: '' as Resource<TriggerFunc>,
     ChatNotificationsHandler: '' as Resource<TriggerFunc>,
     OnUserStatus: '' as Resource<TriggerFunc>,
+    OnDiscussionOwnerCreated: '' as Resource<TriggerFunc>,
     OnDefaultDiscussionUpdated: '' as Resource<TriggerFunc>,
     OnDefaultDiscussionRenamed: '' as Resource<TriggerFunc>,
     OnDiscussionOwnerClassChanged: '' as Resource<TriggerFunc>

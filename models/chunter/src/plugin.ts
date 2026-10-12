@@ -1,5 +1,6 @@
 //
 // Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -40,6 +41,9 @@ export default mergeIds(chunterId, chunter, {
     EmployeePresenter: '' as AnyComponent
   },
   action: {
+    ResolveDiscussion: '' as Ref<Action>,
+    ReopenDiscussion: '' as Ref<Action>,
+    DeleteDiscussion: '' as Ref<Action>,
     MarkCommentUnread: '' as Ref<Action>,
     MarkUnread: '' as Ref<Action>,
     ArchiveChannel: '' as Ref<Action>,
