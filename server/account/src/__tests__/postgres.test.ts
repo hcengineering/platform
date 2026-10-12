@@ -1,5 +1,6 @@
 //
 // Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -588,13 +589,13 @@ describe('PostgresAccountDB', () => {
     })
 
     describe('getAccountWorkspaces', () => {
-      it('should return workspaces with status and converted keys', async () => {
+      it.each([true, false])('should select and convert allowReadOnlyGuest=%s', async (allowReadOnlyGuest) => {
         const mockWorkspaces = [
           {
             uuid: workspaceId,
             name: 'Test',
             url: 'test',
-            allowReadOnlyGuest: false,
+            allow_read_only_guest: allowReadOnlyGuest,
             password_aging_rule: null,
             created_on: '1234567890000',
             status: {
@@ -611,12 +612,12 @@ describe('PostgresAccountDB', () => {
 
         const res = await accountDb.getAccountWorkspaces(accountId)
 
-        expect(mockClient.unsafe).toHaveBeenCalledWith(expect.any(String), [accountId])
+        expect(mockClient.unsafe).toHaveBeenCalledWith(expect.stringContaining('w.allow_read_only_guest'), [accountId])
         expect(res[0]).toEqual({
           uuid: workspaceId,
           name: 'Test',
           url: 'test',
-          allowReadOnlyGuest: false,
+          allowReadOnlyGuest,
           passwordAgingRule: null,
           createdOn: 1234567890000,
           status: {
