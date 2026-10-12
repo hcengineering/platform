@@ -1,5 +1,6 @@
 //
 // Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -109,6 +110,27 @@ export function defineNotifications (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
+      label: chunter.string.Discussions,
+      generated: false,
+      hidden: false,
+      txClasses: [core.class.TxCreateDoc],
+      objectClass: chunter.class.ChatMessage,
+      attachedToClass: chunter.class.Discussion,
+      defaultEnabled: false,
+      group: chunter.ids.ChunterNotificationGroup,
+      templates: {
+        textTemplate: '{sender} has sent a message in discussion {doc}: {message}',
+        htmlTemplate: '<p><b>{sender}</b> has sent a message in discussion {doc}</p> {message}',
+        subjectTemplate: 'You have new message in discussion {doc}'
+      }
+    },
+    chunter.ids.DiscussionNotification
+  )
+
+  builder.createDoc(
+    notification.class.NotificationType,
+    core.space.Model,
+    {
       label: chunter.string.JoinChannel,
       generated: false,
       hidden: false,
@@ -152,6 +174,7 @@ export function defineNotifications (builder: Builder): void {
     enabledTypes: [
       chunter.ids.DMNotification,
       chunter.ids.ChannelNotification,
+      chunter.ids.DiscussionNotification,
       chunter.ids.ThreadNotification,
       chunter.ids.JoinChannelNotification
     ]
