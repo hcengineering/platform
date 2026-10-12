@@ -47,7 +47,7 @@ export { connect }
 let dbRequest: IDBOpenDBRequest | undefined
 let dbPromise: Promise<IDBDatabase | undefined> = Promise.resolve(undefined)
 
-if (typeof localStorage !== 'undefined') {
+if (typeof indexedDB !== 'undefined') {
   const st = platformNow()
   dbPromise = new Promise<IDBDatabase>((resolve) => {
     dbRequest = indexedDB.open('model.db.persistence', 2)
