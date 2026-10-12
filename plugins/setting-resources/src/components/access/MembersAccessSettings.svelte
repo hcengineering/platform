@@ -23,7 +23,6 @@
     type FilterCategory,
     type FilterOption,
     Label,
-    ListView,
     Loading,
     Scroller,
     SearchInput
@@ -93,8 +92,9 @@
   ).length
 </script>
 
-<div class="usersLayout">
-  <div class="usersList">
+<Scroller align={'center'} padding={'var(--spacing-4)'}>
+  <div class="membersContent">
+    <h2><Label label={setting.string.Members} /></h2>
     <div class="memberToolbar">
       <SearchInput bind:value={search} width={'22rem'} placeholder={setting.string.SearchMembers} />
       <FilterButton
@@ -105,116 +105,119 @@
         on:change={updateMemberFilters}
       />
       {#if search.trim() !== '' || memberFilters.length > 0}
-        <span>{visibleEmployees.length} / {activeEmployeesCount}</span>
+        <span class="memberCount">{visibleEmployees.length} / {activeEmployeesCount}</span>
       {/if}
     </div>
-    <div class="membersScroller">
-      <Scroller padding={'0'} noStretch>
-        {#if membersLoading || employeesLoading}
-          <Loading />
-        {:else if visibleEmployees.length === 0}
-          <div class="emptyState"><Label label={presentation.string.NoResults} /></div>
-        {:else}
-          <div class="memberList">
-            <ListView
-              items={visibleEmployees}
-              count={visibleEmployees.length}
-              selection={-1}
-              getKey={(index) => visibleEmployees[index]._id}
-              updateOnMouse={false}
-              noScroll
-              kind={'full-size'}
-              addClass={'memberListItem'}
-            >
-              <svelte:fragment slot="item" let:item={index}>
-                {@const employee = visibleEmployees[index]}
-                {@const personUuid = employee.personUuid}
-                {@const role =
-                  personUuid !== undefined ? getWorkspaceMemberRole(workspaceMembers, personUuid) : undefined}
-                {#if personUuid !== undefined && role !== undefined}
-                  <div class="memberListRow">
+    {#if membersLoading || employeesLoading}
+      <Loading />
+    {:else if visibleEmployees.length === 0}
+      <div class="emptyState"><Label label={presentation.string.NoResults} /></div>
+    {:else}
+      <div class="membersTable">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col"><Label label={setting.string.Member} /></th>
+              <th scope="col" class="roleColumn"><Label label={setting.string.Role} /></th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each visibleEmployees as employee (employee._id)}
+              {@const personUuid = employee.personUuid}
+              {@const role =
+                personUuid !== undefined ? getWorkspaceMemberRole(workspaceMembers, personUuid) : undefined}
+              {#if personUuid !== undefined && role !== undefined}
+                <tr>
+                  <td>
                     <div class="memberCell">
                       <EmployeePresenter value={employee} avatarSize={'x-small'} />
                     </div>
-                    <div class="roleEditor">
-                      <UserRoleSelect
-                        disabled={!canChangeWorkspaceRole(currentAccount, personUuid, role, workspaceMembers) ||
-                          pendingRoleUpdates.has(personUuid)}
-                        kind={'no-border'}
-                        size={'small'}
-                        minWidth={'7rem'}
-                        roles={getAssignableWorkspaceRoles(currentAccount, role)}
-                        securityFilter={false}
-                        selected={role}
-                        on:selected={(event) => {
-                          changeRole(personUuid, event.detail).catch(handleError)
-                        }}
-                      />
-                    </div>
-                  </div>
-                {/if}
-              </svelte:fragment>
-            </ListView>
-          </div>
-        {/if}
-      </Scroller>
-    </div>
+                  </td>
+                  <td>
+                    <UserRoleSelect
+                      disabled={!canChangeWorkspaceRole(currentAccount, personUuid, role, workspaceMembers) ||
+                        pendingRoleUpdates.has(personUuid)}
+                      kind={'no-border'}
+                      size={'small'}
+                      minWidth={'7rem'}
+                      roles={getAssignableWorkspaceRoles(currentAccount, role)}
+                      securityFilter={false}
+                      selected={role}
+                      on:selected={(event) => {
+                        changeRole(personUuid, event.detail).catch(handleError)
+                      }}
+                    />
+                  </td>
+                </tr>
+              {/if}
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
   </div>
-</div>
+</Scroller>
 
 <style lang="scss">
-  .usersLayout {
-    display: flex;
-    flex: 1;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-    overflow: hidden;
+  .membersContent {
+    width: min(100%, 76rem);
   }
-  .usersList {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    gap: var(--spacing-3);
-    min-width: 24rem;
-    min-height: 0;
-    padding: var(--spacing-3);
-    overflow: hidden;
+  h2 {
+    margin: 0 0 var(--spacing-4);
   }
   .memberToolbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
     color: var(--theme-caption-color);
   }
-  .membersScroller {
-    display: flex;
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 0;
-    overflow: hidden;
+  .memberCount {
+    white-space: nowrap;
+    font-size: 0.75rem;
   }
-  .memberListRow {
-    display: grid;
-    grid-template-columns: minmax(12rem, 20rem) minmax(7rem, 9rem);
-    gap: var(--spacing-4);
-    align-items: center;
-    min-width: 22rem;
-    min-height: 3rem;
+  .membersTable {
+    min-width: 24rem;
+    overflow: hidden;
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--medium-BorderRadius);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  th {
+    height: 2.5rem;
+    padding: var(--spacing-1) var(--spacing-3);
+    color: var(--theme-caption-color);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    text-align: left;
+    text-transform: uppercase;
+    background: var(--theme-comp-header-color);
+    border-bottom: 1px solid var(--theme-divider-color);
+  }
+  .roleColumn {
+    width: 14rem;
+  }
+  td {
+    height: 3.5rem;
     padding: var(--spacing-2) var(--spacing-3);
+    vertical-align: middle;
   }
-  .memberList {
-    min-width: 22rem;
-    overflow: hidden;
+  tbody tr + tr {
+    border-top: 1px solid var(--theme-divider-color);
+  }
+  tbody tr:hover {
+    background: var(--theme-button-hovered);
   }
   .memberCell {
     display: flex;
     align-items: center;
     min-width: 0;
-  }
-  .roleEditor {
-    flex: 0 0 auto;
   }
   .emptyState {
     display: flex;
