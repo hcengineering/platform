@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,6 +19,7 @@
   import { Process } from '@hcengineering/process'
   import { createEventDispatcher } from 'svelte'
   import AttributeCriteria from './AttributeCriteria.svelte'
+  import ClassCriteria from './ClassCriteria.svelte'
 
   export let _class: Ref<Class<Doc>>
   export let readonly: boolean
@@ -41,18 +43,32 @@
 
 <div class="editor-grid">
   {#each keys as key}
-    <AttributeCriteria
-      {_class}
-      {process}
-      {key}
-      {params}
-      {readonly}
-      on:change={(e) => {
-        change(e, key)
-      }}
-      on:delete={() => {
-        dispatch('remove', { key })
-      }}
-    />
+    {#if key === '_class'}
+      <ClassCriteria
+        {_class}
+        {readonly}
+        value={typeof params._class === 'string' ? params._class : undefined}
+        on:change={(e) => {
+          change(e, key)
+        }}
+        on:delete={() => {
+          dispatch('remove', { key })
+        }}
+      />
+    {:else}
+      <AttributeCriteria
+        {_class}
+        {process}
+        {key}
+        {params}
+        {readonly}
+        on:change={(e) => {
+          change(e, key)
+        }}
+        on:delete={() => {
+          dispatch('remove', { key })
+        }}
+      />
+    {/if}
   {/each}
 </div>

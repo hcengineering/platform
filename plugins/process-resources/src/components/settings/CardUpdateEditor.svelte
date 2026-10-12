@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -38,10 +39,10 @@
     dispatch('change', { params })
   }
 
-  function getKeys (_class: Ref<Class<MasterTag>>): AnyAttribute[] {
+  function getKeys (_class: Ref<Class<MasterTag>>): Pick<AnyAttribute, 'name' | 'label'>[] {
     const ignoreKeys = ['_class', 'content', 'parent', 'attachments', 'todos']
     const attributes = hierarchy.getAllAttributes(_class, core.class.Doc)
-    const res: AnyAttribute[] = []
+    const res: Pick<AnyAttribute, 'name' | 'label'>[] = [{ name: '_class', label: core.string.Class }]
     for (const [key, attr] of attributes) {
       if (attr.hidden === true) continue
       if (ignoreKeys.includes(key)) continue
@@ -54,9 +55,7 @@
     return res
   }
 
-  let keys = Object.keys(params).filter((key) => {
-    return key !== '_class'
-  })
+  let keys = Object.keys(params)
 
   const allAttrs = getKeys(process.masterTag)
   $: possibleAttrs = allAttrs.filter((attr) => !keys.includes(attr.name))
