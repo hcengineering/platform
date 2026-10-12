@@ -1,3 +1,18 @@
+//
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { getClient as getAccountClient, type WorkspaceLoginInfo } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import client from '@hcengineering/client'
@@ -105,7 +120,7 @@ export async function connect (title: string): Promise<Client | undefined> {
 
   let connectAttempt = 0
   while (true) {
-    const selectResult = await ctx.with('select-workspace', {}, async () => await selectWorkspace(wsUrl, null))
+    const selectResult = await ctx.with('select-workspace', {}, async () => await selectWorkspace(wsUrl, null, false))
     workspaceLoginInfo = selectResult[1] ?? undefined
     if (!selectResult[2]) {
       // Connection error: exponential backoff capped at 10s to avoid request storm when server is down
@@ -125,7 +140,10 @@ export async function connect (title: string): Promise<Client | undefined> {
       )
       // something went wrong with selecting workspace with the selected token
       await logOut()
-      navigate({ path: [loginId] })
+      navigate({
+        path: [loginId],
+        query: { navigateUrl: encodeURIComponent(JSON.stringify(loc)) }
+      })
       return
     }
     break
