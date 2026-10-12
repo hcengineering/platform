@@ -1,3 +1,18 @@
+//
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { deepEqual } from 'fast-equals'
 import core, {
   type AccountUuid,
@@ -91,52 +106,4 @@ export async function ensureObjectCollaborator (
   await client.addCollection(core.class.Collaborator, object.space, object._id, object._class, 'collaborators', {
     collaborator: account
   })
-}
-
-/**
- * Returns the default discussion of the object, creating it on first access.
- * The notMatch check is done by the server without object access filtering, so a discussion
- * hidden from the user is never duplicated. Returns undefined when it exists but stays hidden.
- * @public
- */
-export async function getOrCreateDefaultDiscussion (
-  client: TxOperations,
-  object: Doc,
-  config: DefaultDiscussion,
-  account: AccountUuid
-): Promise<Ref<Discussion> | undefined> {
-  const query = { attachedTo: object._id, defaultDiscussion: config._id }
-  const existing = await client.findOne(chunter.class.Discussion, query)
-  if (existing !== undefined) return existing._id
-
-  const visibility = getDefaultDiscussionVisibility(config)
-  const operations = client.apply(`chunter.createDefaultDiscussion.${object._id}`, 'chunter.createDefaultDiscussion')
-  operations.notMatch(chunter.class.Discussion, query)
-  // The creator must be a collaborator of the object to keep access.
-  if (visibility === 'participants') {
-    await ensureObjectCollaborator(operations, object, account)
-  }
-  const data: AttachedData<Discussion> = {
-    name: config.name,
-    resolved: false,
-    // Members exist only for a private discussion.
-    members: [],
-    defaultDiscussion: config._id
-  }
-  const discussionId = await operations.addCollection(
-    chunter.class.Discussion,
-    object.space,
-    object._id,
-    object._class,
-    'discussions',
-    withDiscussionVisibility(data, visibility)
-  )
-  const { result } = await operations.commit()
-  if (result) return discussionId
-
-  // It already exists but may be hidden: participants of the object get access by becoming collaborators.
-  const current = await client.findOne(chunter.class.Discussion, query)
-  if (current !== undefined) return current._id
-  await ensureObjectCollaborator(client, object, account)
-  return (await client.findOne(chunter.class.Discussion, query))?._id
 }

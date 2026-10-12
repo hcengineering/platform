@@ -1,5 +1,6 @@
 //
 // Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -20,6 +21,7 @@ import activity from '@hcengineering/activity'
 import workbench from '@hcengineering/model-workbench'
 import core from '@hcengineering/model-core'
 import contact from '@hcengineering/contact'
+import print from '@hcengineering/model-print'
 
 import chunter from './plugin'
 
@@ -58,6 +60,64 @@ export function defineActions (builder: Builder): void {
   })
   defineMessageActions(builder)
   defineChannelActions(builder)
+  defineDiscussionActions(builder)
+}
+
+function defineDiscussionActions (builder: Builder): void {
+  builder.mixin(chunter.class.Discussion, core.class.Class, view.mixin.IgnoreActions, {
+    actions: [view.action.Delete, view.action.AddRelation, print.action.Print, chunter.action.SummarizeMessages]
+  })
+
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.Delete,
+      label: view.string.Delete,
+      icon: view.icon.Delete,
+      input: 'any',
+      keyBinding: ['Meta + Backspace'],
+      category: chunter.category.Chunter,
+      target: chunter.class.Discussion,
+      visibilityTester: chunter.function.CanDeleteDiscussion,
+      override: [view.action.Delete],
+      context: { mode: ['context', 'browser'], group: 'remove' }
+    },
+    chunter.action.DeleteDiscussion
+  )
+
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.SetDiscussionResolved,
+      actionProps: { resolved: true },
+      label: chunter.string.MarkAsResolved,
+      icon: view.icon.CheckCircle,
+      input: 'any',
+      category: chunter.category.Chunter,
+      target: chunter.class.Discussion,
+      query: { resolved: false },
+      visibilityTester: chunter.function.CanManageDiscussion,
+      context: { mode: ['context', 'browser'], group: 'edit' }
+    },
+    chunter.action.ResolveDiscussion
+  )
+
+  createAction(
+    builder,
+    {
+      action: chunter.actionImpl.SetDiscussionResolved,
+      actionProps: { resolved: false },
+      label: chunter.string.ReopenDiscussion,
+      icon: view.icon.Undo,
+      input: 'any',
+      category: chunter.category.Chunter,
+      target: chunter.class.Discussion,
+      query: { resolved: true },
+      visibilityTester: chunter.function.CanManageDiscussion,
+      context: { mode: ['context', 'browser'], group: 'edit' }
+    },
+    chunter.action.ReopenDiscussion
+  )
 }
 
 function defineMessageActions (builder: Builder): void {

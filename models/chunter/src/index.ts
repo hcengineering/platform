@@ -40,7 +40,7 @@ import {
   TDiscussion,
   TThreadMessage
 } from './types'
-import { AccountRole } from '@hcengineering/core'
+import { AccountRole, SortingOrder } from '@hcengineering/core'
 
 export { chunterId } from '@hcengineering/chunter'
 export { chunterOperation } from './migration'
@@ -196,6 +196,10 @@ export function createModel (builder: Builder): void {
     presenter: chunter.component.ChannelPresenter
   })
 
+  builder.mixin(chunter.class.Discussion, core.class.Class, view.mixin.ObjectPresenter, {
+    presenter: chunter.component.DiscussionPresenter
+  })
+
   builder.mixin(chunter.class.DirectMessage, core.class.Class, view.mixin.SpaceHeader, {
     header: chunter.component.DmHeader
   })
@@ -228,6 +232,52 @@ export function createModel (builder: Builder): void {
   builder.mixin(chunter.class.ThreadMessage, core.class.Class, view.mixin.ObjectPresenter, {
     presenter: chunter.component.ThreadMessagePresenter
   })
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: chunter.class.Discussion,
+      descriptor: view.viewlet.List,
+      variant: 'attached',
+      options: {
+        lookup: {
+          _id: { collaborators: core.class.Collaborator }
+        }
+      },
+      configOptions: { strict: true },
+      config: [
+        {
+          key: 'resolved',
+          presenter: chunter.component.DiscussionStatusPresenter,
+          label: core.string.Status,
+          displayProps: { fixed: 'left', key: 'status' }
+        },
+        { key: '' },
+        { key: 'comments', displayProps: { suffix: true, key: 'comments' } },
+        { key: '', displayProps: { grow: true } },
+        {
+          key: '',
+          presenter: chunter.component.DiscussionParticipantsPresenter,
+          label: chunter.string.Members,
+          displayProps: { key: 'participants', dividerBefore: true }
+        },
+        {
+          key: '',
+          presenter: chunter.component.DiscussionVisibilityPresenter,
+          label: chunter.string.Visibility,
+          displayProps: { fixed: 'right', key: 'visibility' }
+        },
+        { key: 'modifiedOn', displayProps: { fixed: 'right', key: 'modifiedOn', dividerBefore: true } }
+      ],
+      viewOptions: {
+        groupBy: [],
+        orderBy: [['modifiedOn', SortingOrder.Descending]],
+        other: []
+      }
+    },
+    chunter.viewlet.DiscussionList
+  )
 
   builder.createDoc(
     view.class.Viewlet,

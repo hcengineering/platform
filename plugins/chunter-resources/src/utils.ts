@@ -25,13 +25,11 @@ import { summarizeMessages as aiSummarizeMessages, translate as aiTranslate } fr
 import {
   type Channel,
   type ChatMessage,
-  type DefaultDiscussion,
   defaultDiscussionVisibilityLevels,
   type DirectMessage,
   type Discussion,
   ensureObjectCollaborator,
   getDiscussionTitle,
-  getOrCreateDefaultDiscussion as getOrCreateObjectDefaultDiscussion,
   type ThreadMessage
 } from '@hcengineering/chunter'
 import contact, { type Employee, getCurrentEmployee, getName, type Person } from '@hcengineering/contact'
@@ -273,14 +271,6 @@ export function canDeleteDiscussion (discussion: Discussion): boolean {
 
 export function canRenameDiscussion (discussion: Discussion): boolean {
   return canManageDiscussion(discussion) && !isConfiguredDefaultDiscussion(discussion)
-}
-
-// Creates the default discussion on first access, see getOrCreateDefaultDiscussion in @hcengineering/chunter.
-export async function getOrCreateDefaultDiscussion (
-  object: Doc,
-  config: DefaultDiscussion
-): Promise<Ref<Discussion> | undefined> {
-  return await getOrCreateObjectDefaultDiscussion(getClient(), object, config, getCurrentAccount().uuid)
 }
 
 export async function deleteDiscussion (discussion: Discussion): Promise<void> {
