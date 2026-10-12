@@ -1,3 +1,18 @@
+//
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { SignUpData } from '../model/common-types'
 import { LoginPage } from '../model/login-page'
 import { SelectWorkspacePage } from '../model/select-workspace-page'
@@ -30,7 +45,7 @@ test.describe('Workspace tests', () => {
     classesPage = new ClassesPage(page)
   })
 
-  test('User the owner is showing inside the owner tab', async ({ page }) => {
+  test('Workspace owner is shown in the Members tab', async ({ page }) => {
     newUser = {
       firstName: faker.person.firstName(),
       lastName: faker.person.lastName(),
