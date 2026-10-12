@@ -664,8 +664,6 @@ export async function createWorkspace (
   }
 }
 
-const maxInviteNavigateUrlLength = 2048
-
 export async function createInvite (
   ctx: MeasureContext,
   db: AccountDB,
@@ -679,15 +677,11 @@ export async function createInvite (
     role: AccountRole
     autoJoin?: boolean
     isShareLink?: boolean
-    navigateUrl?: string
   }
 ): Promise<string> {
-  const { exp, emailMask, email, limit, role, autoJoin, isShareLink, navigateUrl } = params
+  const { exp, emailMask, email, limit, role, autoJoin, isShareLink } = params
 
   if (role == null || !assignableRoles.includes(role)) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
-  }
-  if (navigateUrl != null && (typeof navigateUrl !== 'string' || navigateUrl.length > maxInviteNavigateUrlLength)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -725,7 +719,7 @@ export async function createInvite (
     remainingUses: limit,
     role,
     autoJoin,
-    ...(shareLink ? { isShareLink: true, createdBy: account, createdOn: Date.now(), navigateUrl } : {})
+    ...(shareLink ? { isShareLink: true, createdBy: account, createdOn: Date.now() } : {})
   })
 }
 
@@ -747,14 +741,13 @@ export async function getActiveInviteLinks (
       .filter((invite) => invite.remainingUses !== 0 && (invite.expiresOn <= 0 || invite.expiresOn > now))
       // Never reveal links granting a higher role than the caller has: anyone with the link can join with it
       .filter((invite) => verifyAllowedRole(callerRole, invite.role, extra, false))
-      .map(({ id, expiresOn, remainingUses, role, createdBy, createdOn, navigateUrl }) => ({
+      .map(({ id, expiresOn, remainingUses, role, createdBy, createdOn }) => ({
         id,
         expiresOn,
         remainingUses: remainingUses ?? -1,
         role,
         createdBy,
-        createdOn,
-        navigateUrl
+        createdOn
       }))
       .sort((a, b) => (b.createdOn ?? 0) - (a.createdOn ?? 0))
   )

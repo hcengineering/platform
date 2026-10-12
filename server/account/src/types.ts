@@ -153,7 +153,6 @@ export interface WorkspaceInvite {
   createdBy?: AccountUuid
   createdOn?: Timestamp
   revokedOn?: Timestamp | null
-  navigateUrl?: string
 }
 
 export interface WorkspacePermission {
@@ -537,7 +536,6 @@ export interface ManagedInviteLink {
   role: AccountRole
   createdBy?: AccountUuid
   createdOn?: Timestamp
-  navigateUrl?: string
 }
 
 export interface MailboxOptions {

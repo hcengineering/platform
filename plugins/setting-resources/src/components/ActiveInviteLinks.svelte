@@ -46,7 +46,7 @@
   async function copy (invite: ManagedInviteLink): Promise<void> {
     actionError = false
     try {
-      await copyTextToClipboard(getInviteLinkUrl(invite.id, invite.navigateUrl))
+      await copyTextToClipboard(getInviteLinkUrl(invite.id))
       copiedId = invite.id
       setTimeout(() => {
         if (copiedId === invite.id) copiedId = undefined

@@ -153,7 +153,6 @@ describe('account operations', () => {
 
   describe('createInvite', () => {
     test('creates a share link without expiration and records its owner', async () => {
-      const navigateUrl = encodeURIComponent(JSON.stringify({ path: ['workbench', 'ws', 'tracker'] }))
       ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
       ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
       ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
@@ -164,8 +163,7 @@ describe('account operations', () => {
         emailMask: '',
         limit: -1,
         role: AccountRole.User,
-        isShareLink: true,
-        navigateUrl
+        isShareLink: true
       })
 
       expect(mockDb.invite.insertOne).toHaveBeenCalledWith(
@@ -174,8 +172,7 @@ describe('account operations', () => {
           remainingUses: -1,
           isShareLink: true,
           createdBy: mockAccount.uuid,
-          createdOn: expect.any(Number),
-          navigateUrl
+          createdOn: expect.any(Number)
         })
       )
     })
@@ -193,20 +190,6 @@ describe('account operations', () => {
 
       await createInvite(mockCtx, mockDb, mockBranding, mockToken, { ...params, exp: 60 * 60 * 1000 })
       expect(mockDb.invite.insertOne).toHaveBeenCalledWith(expect.objectContaining({ isShareLink: true }))
-    })
-
-    test('rejects an oversized navigate url', async () => {
-      await expect(
-        createInvite(mockCtx, mockDb, mockBranding, mockToken, {
-          exp: -1,
-          emailMask: '',
-          limit: -1,
-          role: AccountRole.User,
-          isShareLink: true,
-          navigateUrl: 'x'.repeat(2049)
-        })
-      ).rejects.toThrow(PlatformError)
-      expect(mockDb.invite.insertOne).not.toHaveBeenCalled()
     })
 
     test('classifies recipient-free invites from older clients as share links', async () => {
@@ -280,7 +263,7 @@ describe('account operations', () => {
       ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
       ;(mockDb.invite.find as jest.Mock).mockResolvedValue([
         { id: 'old', expiresOn: -1, remainingUses: -1, role: AccountRole.User, createdOn: 50 },
-        { id: 'active', expiresOn: 0, remainingUses: 2, role: AccountRole.User, createdOn: 100, navigateUrl: 'nav' },
+        { id: 'active', expiresOn: 0, remainingUses: 2, role: AccountRole.User, createdOn: 100 },
         { id: 'expired', expiresOn: Date.now() - 1, remainingUses: 1, role: AccountRole.User },
         { id: 'used', expiresOn: -1, remainingUses: 0, role: AccountRole.User }
       ])
@@ -292,8 +275,7 @@ describe('account operations', () => {
           remainingUses: 2,
           role: AccountRole.User,
           createdBy: undefined,
-          createdOn: 100,
-          navigateUrl: 'nav'
+          createdOn: 100
         },
         {
           id: 'old',
@@ -301,8 +283,7 @@ describe('account operations', () => {
           remainingUses: -1,
           role: AccountRole.User,
           createdBy: undefined,
-          createdOn: 50,
-          navigateUrl: undefined
+          createdOn: 50
         }
       ])
       expect(mockDb.invite.find).toHaveBeenCalledWith({

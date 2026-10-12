@@ -67,8 +67,7 @@ export function getMigrations (ns: string): [string, string][] {
     getV31Migration(ns),
     getV32Migration(ns),
     getV33Migration(ns),
-    getV34Migration(ns),
-    getV35Migration(ns)
+    getV34Migration(ns)
   ]
 }
 
@@ -856,16 +855,6 @@ function getV34Migration (ns: string): [string, string] {
     CREATE INDEX IF NOT EXISTS active_share_invite_idx
       ON ${ns}.invite (workspace_uuid, created_on DESC)
       WHERE is_share_link = TRUE AND revoked_on IS NULL;
-    `
-  ]
-}
-
-function getV35Migration (ns: string): [string, string] {
-  return [
-    'account_db_v35_invite_navigate_url',
-    `
-    ALTER TABLE ${ns}.invite
-    ADD COLUMN IF NOT EXISTS navigate_url ${types.string};
     `
   ]
 }

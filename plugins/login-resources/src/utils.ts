@@ -627,7 +627,7 @@ export async function getInviteLink (
   role: AccountRole,
   navigateUrl?: string
 ): Promise<string> {
-  const inviteId = await getInviteLinkId(expHours, mask, limit ?? -1, role, navigateUrl)
+  const inviteId = await getInviteLinkId(expHours, mask, limit ?? -1, role)
   return getInviteLinkUrl(inviteId, navigateUrl)
 }
 
@@ -635,8 +635,7 @@ export async function getInviteLinkId (
   expHours: number,
   emailMask: string,
   limit: number,
-  role: AccountRole = AccountRole.User,
-  navigateUrl?: string
+  role: AccountRole = AccountRole.User
 ): Promise<string> {
   const exp = expHours < 0 ? -1 : expHours * 1000 * 60 * 60
   const token = getMetadata(presentation.metadata.Token)
@@ -650,7 +649,7 @@ export async function getInviteLinkId (
     return ''
   }
 
-  const inviteLink = await getAccountClient(token).createInvite(exp, emailMask, limit, role, navigateUrl)
+  const inviteLink = await getAccountClient(token).createInvite(exp, emailMask, limit, role)
 
   Analytics.handleEvent('Get invite link', { invite_id: inviteLink })
 
