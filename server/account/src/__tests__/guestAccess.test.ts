@@ -142,6 +142,30 @@ describe('guest account RPC access', () => {
     expect(db.person.update).not.toHaveBeenCalled()
   })
 
+  test('allows joining by invite for an account without workspaces and logs denials', async () => {
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: personalGuest, extra: {} })
+    ;(db.getWorkspaceRoles as jest.Mock).mockResolvedValue(new Map())
+
+    for (const method of ['joinByToken', 'checkJoin'] as const) {
+      const result = await call(method, { inviteId: '' })
+      // reaches the handler (BadRequest for empty invite) instead of being rejected by the guest guard
+      expect((result.error as { code: string }).code).toBe(platform.status.BadRequest)
+    }
+
+    for (const [account, extra] of [
+      [readOnlyGuestAccountUuid, { readonly: 'true' }],
+      [docGuestAccountUuid, { guest: 'true' }]
+    ] as const) {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account, extra })
+      const result = await call('joinByToken', { inviteId: 'invite' })
+      expect((result.error as { code: string }).code).toBe(platform.status.Forbidden)
+    }
+    expect(ctx.warn).toHaveBeenCalledWith(
+      'Guest access to account method denied',
+      expect.objectContaining({ policy: 'joinWorkspace' })
+    )
+  })
+
   test('logs failures to determine guest access', async () => {
     setToken(personalGuest, AccountRole.Guest)
     const error = new Error('Role lookup failed')

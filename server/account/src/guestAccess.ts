@@ -19,7 +19,15 @@ import { decodeTokenVerbose } from '@hcengineering/server-token'
 
 import type { AccountDB, AccountMethodHandler } from './types'
 
-export type GuestAccessPolicy = 'bypass' | 'allGuests' | 'readOnlyAndPersonal' | 'personalGuest' | 'deny'
+export type GuestAccessPolicy =
+  | 'bypass'
+  | 'allGuests'
+  | 'readOnlyAndPersonal'
+  | 'personalGuest'
+  // Personal guests plus regular accounts without workspaces yet (e.g. joining a workspace by invite).
+  // Shared anonymous guests and document guests are still rejected.
+  | 'joinWorkspace'
+  | 'deny'
 
 async function getGuestRole (
   db: AccountDB,
@@ -46,6 +54,15 @@ async function getGuestRole (
   return Array.from(roles.values()).every((role) => role === AccountRole.Guest) ? AccountRole.Guest : undefined
 }
 
+function isSharedAnonymous (account: ReturnType<typeof decodeTokenVerbose> | undefined): boolean {
+  return (
+    account === undefined ||
+    account.account === readOnlyGuestAccountUuid ||
+    account.account === docGuestAccountUuid ||
+    account.extra?.readonly === 'true'
+  )
+}
+
 /** Reject account RPCs that are not explicitly available to the caller's guest role. */
 export function guardGuestMethod (
   handler: AccountMethodHandler,
@@ -60,8 +77,10 @@ export function guardGuestMethod (
     }
 
     let guestRole: AccountRole | undefined
+    let decoded: ReturnType<typeof decodeTokenVerbose> | undefined
     try {
-      guestRole = await getGuestRole(db, decodeTokenVerbose(ctx, token))
+      decoded = decodeTokenVerbose(ctx, token)
+      guestRole = await getGuestRole(db, decoded)
     } catch (error) {
       ctx.error('Failed to determine guest access', { error })
       return { id: request.id, error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
@@ -72,9 +91,20 @@ export function guardGuestMethod (
       (guestRole === AccountRole.DocGuest && policy === 'allGuests') ||
       (guestRole === AccountRole.ReadOnlyGuest && (policy === 'allGuests' || policy === 'readOnlyAndPersonal')) ||
       (guestRole === AccountRole.Guest &&
-        (policy === 'allGuests' || policy === 'readOnlyAndPersonal' || policy === 'personalGuest'))
+        (policy === 'allGuests' ||
+          policy === 'readOnlyAndPersonal' ||
+          policy === 'personalGuest' ||
+          policy === 'joinWorkspace')) ||
+      (guestRole === AccountRole.ReadOnlyGuest && policy === 'joinWorkspace' && !isSharedAnonymous(decoded))
 
     if (!allowed) {
+      ctx.warn('Guest access to account method denied', {
+        method: request.method,
+        policy,
+        guestRole,
+        account: decoded?.account,
+        workspace: decoded?.workspace
+      })
       return { id: request.id, error: new Status(Severity.ERROR, platform.status.Forbidden, {}) }
     }
 
