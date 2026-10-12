@@ -298,9 +298,6 @@ services:
       - REKONI_URL=http://tracex.local:4004
       - COLLABORATOR_URL=ws://tracex.local:3078
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - GITHUB_URL=http://tracex.local:3500
-      - GITHUB_NEXT_CLIENTID=Ov23liv6hK0ifBRInXFz
-      - GITHUB_NEXT_URL=http://tracex.local:3510
       - PRINT_URL=http://tracex.local:4005
       - SIGN_URL=http://tracex.local:4006
       #      - ANALYTICS_COLLECTOR_URL=http://tracex.local:4017
@@ -383,6 +380,7 @@ services:
     ports:
       - 4004:4004
     environment:
+      - SECRET=${SECRET}
       - STATS_URL=http://tracex.local:4900
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
   fulltext_pg:
@@ -577,36 +575,7 @@ services:
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - QUEUE_REGION=pg
     restart: unless-stopped
-  github-next:
-    image: tracexapp/github-next-service
-    extra_hosts:
-      - 'tracex.local:host-gateway'
-    depends_on:
-      account:
-        condition: service_started
-      redpanda:
-        condition: service_started
-      transactor_pg:
-        condition: service_started
-    ports:
-      - 3510:3510
-    environment:
-      - SERVICE_ID=github-next-service
-      - SERVER_SECRET=${SECRET}
-      - ACCOUNTS_URL=http://tracex.local:3000
-      - FRONT_URL=http://tracex.local:8087
-      - COLLABORATOR_URL=ws://tracex.local:3078
-      - PORT=3510
-      - PUBLIC_URL=http://tracex.local:3510
-      - CLIENT_ID=Ov23liv6hK0ifBRInXFz
-      - CLIENT_SECRET=e1832f57c6432350126bc97f7ea5c7c87374e0a5
-      - POLL_INTERVAL_MS=30000
-      - OUTBOUND_DEBOUNCE_MS=1000
-      - QUEUE_CONFIG=${QUEUE_CONFIG}
-      - QUEUE_REGION=pg
-      - SYNC_INBOUND=true
-      - SYNC_OUTBOUND=true
-    restart: unless-stopped
+
   time-machine:
     image: tracexapp/worker
     extra_hosts:
@@ -692,29 +661,6 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
     restart: unless-stopped
 
-  rating_pg:
-    image: tracexapp/rating
-    extra_hosts:
-      - 'tracex.local:host-gateway'
-    links:
-      - postgres
-      - minio
-      - account
-      - stats
-    depends_on:
-      redpanda:
-        condition: service_started
-    environment:
-      - QUEUE_CONFIG=${QUEUE_CONFIG}
-      - REGION=pg
-      - SERVER_SECRET=${SECRET}
-      - STATS_URL=http://tracex.local:4900
-      - DB_URL=${DB_URL_PG}
-      - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - ACCOUNTS_URL=http://tracex.local:3000
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
-      - HYLYLAKE_URL=http://tracex.local:8096
-    restart: unless-stopped
   jaeger:
     image: jaegertracing/all-in-one:latest
     extra_hosts:

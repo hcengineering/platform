@@ -1,0 +1,29 @@
+# Dev-overlay to run rating service.
+#
+# Usage from dev/ directory:
+#   docker compose -f docker-compose.yaml -f docker-compose.rating.yaml up -d
+#
+services:
+  rating_pg:
+    image: tracexapp/rating
+    extra_hosts:
+      - 'tracex.local:host-gateway'
+    links:
+      - postgres
+      - minio
+      - account
+      - stats
+    depends_on:
+      redpanda:
+        condition: service_started
+    environment:
+      - QUEUE_CONFIG=${QUEUE_CONFIG}
+      - REGION=pg
+      - SERVER_SECRET=${SECRET}
+      - STATS_URL=http://tracex.local:4900
+      - DB_URL=${DB_URL_PG}
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - ACCOUNTS_URL=http://tracex.local:3000
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - HYLYLAKE_URL=http://tracex.local:8096
+    restart: unless-stopped
