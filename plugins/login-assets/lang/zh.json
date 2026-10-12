@@ -101,6 +101,18 @@
     "SendSetupLink": "发送设置链接",
     "SSOPasswordEmailSent": "请检查您的电子邮件，获取设置密码的链接。",
     "SSONoEmailLinked": "您的账户没有关联的电子邮件地址。请先在账户设置 → 管理身份中添加。",
-    "CreateSampleProjects": "创建示例项目和演示内容"
+    "CreateSampleProjects": "创建示例项目和演示内容",
+    "NoExpiration": "No expiration",
+    "UnlimitedInviteWarning": "Anyone with this link can join until it is revoked.",
+    "ActiveInviteLinks": "Active invite links",
+    "NoActiveInviteLinks": "No active invite links",
+    "UnlimitedUses": "Unlimited uses",
+    "RemainingUses": "Remaining uses:",
+    "RevokeInviteLink": "Revoke",
+    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteRoleGuest": "Guest",
+    "InviteRoleUser": "User",
+    "InviteRoleMaintainer": "Maintainer",
+    "InviteRoleOwner": "Owner"
   }
 }

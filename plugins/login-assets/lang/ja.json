@@ -101,6 +101,18 @@
     "SendSetupLink": "セットアップリンクを送信",
     "SSOPasswordEmailSent": "パスワードを設定するためのリンクが記載されたメールを確認してください。",
     "SSONoEmailLinked": "アカウントにメールアドレスがリンクされていません。まず、アカウント設定 → IDの管理 で追加してください。",
-    "CreateSampleProjects": "サンプルプロジェクトとデモコンテンツを作成"
+    "CreateSampleProjects": "サンプルプロジェクトとデモコンテンツを作成",
+    "NoExpiration": "No expiration",
+    "UnlimitedInviteWarning": "Anyone with this link can join until it is revoked.",
+    "ActiveInviteLinks": "Active invite links",
+    "NoActiveInviteLinks": "No active invite links",
+    "UnlimitedUses": "Unlimited uses",
+    "RemainingUses": "Remaining uses:",
+    "RevokeInviteLink": "Revoke",
+    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteRoleGuest": "Guest",
+    "InviteRoleUser": "User",
+    "InviteRoleMaintainer": "Maintainer",
+    "InviteRoleOwner": "Owner"
   }
 }

@@ -626,6 +626,10 @@ export async function getInviteLink (
   navigateUrl?: string
 ): Promise<string> {
   const inviteId = await getInviteLinkId(expHours, mask, limit ?? -1, role)
+  return getInviteLinkUrl(inviteId, navigateUrl)
+}
+
+export function getInviteLinkUrl (inviteId: string, navigateUrl?: string): string {
   const loc = getCurrentLocation()
   loc.path[0] = loginId
   loc.path[1] = 'join'

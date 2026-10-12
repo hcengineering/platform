@@ -101,6 +101,18 @@
     "EnterTwoFactorCode": "Enter two-factor authentication code",
     "TwoFactorCode": "Two-factor authentication code",
     "Verify": "Verify",
-    "CreateSampleProjects": "Create sample projects and demo content"
+    "CreateSampleProjects": "Create sample projects and demo content",
+    "NoExpiration": "No expiration",
+    "UnlimitedInviteWarning": "Anyone with this link can join until it is revoked.",
+    "ActiveInviteLinks": "Active invite links",
+    "NoActiveInviteLinks": "No active invite links",
+    "UnlimitedUses": "Unlimited uses",
+    "RemainingUses": "Remaining uses:",
+    "RevokeInviteLink": "Revoke",
+    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteRoleGuest": "Guest",
+    "InviteRoleUser": "User",
+    "InviteRoleMaintainer": "Maintainer",
+    "InviteRoleOwner": "Owner"
   }
 }

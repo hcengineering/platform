@@ -1295,6 +1295,10 @@ export async function createWorkspaceRecord (
 }
 
 export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite, email: string): Promise<WorkspaceUuid> {
+  if (invite.revokedOn != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
   if (invite.remainingUses === 0) {
     ctx.warn('Invite limit exceeded', { email, ...invite })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))

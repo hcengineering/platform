@@ -102,6 +102,18 @@
     "SendSetupLink": "Odeslat odkaz na nastavení",
     "SSOPasswordEmailSent": "Zkontrolujte svůj e-mail, zda neobsahuje odkaz pro nastavení hesla.",
     "SSONoEmailLinked": "K vašemu účtu není přidružena žádná e-mailová adresa. Nejprve ji přidejte v Nastavení účtu → Spravovat identity.",
-    "CreateSampleProjects": "Vytvořit ukázkové projekty a demo obsah"
+    "CreateSampleProjects": "Vytvořit ukázkové projekty a demo obsah",
+    "NoExpiration": "No expiration",
+    "UnlimitedInviteWarning": "Anyone with this link can join until it is revoked.",
+    "ActiveInviteLinks": "Active invite links",
+    "NoActiveInviteLinks": "No active invite links",
+    "UnlimitedUses": "Unlimited uses",
+    "RemainingUses": "Remaining uses:",
+    "RevokeInviteLink": "Revoke",
+    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteRoleGuest": "Guest",
+    "InviteRoleUser": "User",
+    "InviteRoleMaintainer": "Maintainer",
+    "InviteRoleOwner": "Owner"
   }
 }

@@ -35,6 +35,8 @@ import * as utils from '../utils'
 import { type AccountDB, type SocialId } from '../types'
 import {
   createInvite,
+  getActiveInviteLinks,
+  revokeInviteLink,
   createInviteLink,
   sendInvite,
   resendInvite,
@@ -113,6 +115,7 @@ describe('account operations', () => {
     },
     invite: {
       insertOne: jest.fn(),
+      find: jest.fn(),
       findOne: jest.fn(),
       update: jest.fn()
     },
@@ -148,6 +151,31 @@ describe('account operations', () => {
   })
 
   describe('createInvite', () => {
+    test('creates a share link without expiration and records its owner', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+      ;(mockDb.invite.insertOne as jest.Mock).mockResolvedValue('new-link')
+
+      await createInvite(mockCtx, mockDb, mockBranding, mockToken, {
+        exp: -1,
+        emailMask: '',
+        limit: -1,
+        role: AccountRole.User,
+        isShareLink: true
+      })
+
+      expect(mockDb.invite.insertOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          expiresOn: -1,
+          remainingUses: -1,
+          isShareLink: true,
+          createdBy: mockAccount.uuid,
+          createdOn: expect.any(Number)
+        })
+      )
+    })
+
     test('should create invite for authorized maintainer', async () => {
       const inviteId = 'new-invite-id'
       const beforeTest = Date.now()
@@ -196,6 +224,68 @@ describe('account operations', () => {
           role: AccountRole.Owner
         })
       ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+    })
+  })
+
+  describe('manage invite links', () => {
+    test('lists only active links for a maintainer', async () => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+      ;(mockDb.invite.find as jest.Mock).mockResolvedValue([
+        { id: 'active', expiresOn: -1, remainingUses: -1, role: AccountRole.User, createdOn: 100 },
+        { id: 'expired', expiresOn: Date.now() - 1, remainingUses: 1, role: AccountRole.User },
+        { id: 'used', expiresOn: -1, remainingUses: 0, role: AccountRole.User }
+      ])
+
+      await expect(getActiveInviteLinks(mockCtx, mockDb, mockBranding, mockToken)).resolves.toEqual([
+        { id: 'active', expiresOn: -1, remainingUses: -1, role: AccountRole.User, createdBy: undefined, createdOn: 100 }
+      ])
+      expect(mockDb.invite.find).toHaveBeenCalledWith({
+        workspaceUuid: mockWorkspace.uuid,
+        isShareLink: true,
+        revokedOn: null
+      })
+    })
+
+    test('rejects listing for an ordinary user', async () => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
+
+      await expect(getActiveInviteLinks(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(PlatformError)
+      expect(mockDb.invite.find).not.toHaveBeenCalled()
+    })
+
+    test('revokes only a share link in the current workspace', async () => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Owner)
+      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue({ id: 'active' })
+
+      await revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id: 'active' })
+
+      expect(mockDb.invite.findOne).toHaveBeenCalledWith({
+        id: 'active',
+        workspaceUuid: mockWorkspace.uuid,
+        isShareLink: true,
+        revokedOn: null
+      })
+      expect(mockDb.invite.update).toHaveBeenCalledWith(
+        { id: 'active', workspaceUuid: mockWorkspace.uuid, revokedOn: null },
+        { revokedOn: expect.any(Number) }
+      )
+    })
+
+    test('rejects a revoked link during join validation', async () => {
+      await expect(
+        utils.checkInvite(
+          mockCtx,
+          {
+            id: 'revoked',
+            workspaceUuid: mockWorkspace.uuid,
+            expiresOn: -1,
+            remainingUses: -1,
+            role: AccountRole.User,
+            revokedOn: Date.now()
+          },
+          'user@example.com'
+        )
+      ).rejects.toThrow(PlatformError)
     })
   })
 

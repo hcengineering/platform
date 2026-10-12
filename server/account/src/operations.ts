@@ -80,7 +80,8 @@ import {
   type Subscription,
   SubscriptionStatus,
   type Query,
-  type InviteInfo
+  type InviteInfo,
+  type ManagedInviteLink
 } from './types'
 import {
   addSocialIdBase,
@@ -675,9 +676,10 @@ export async function createInvite (
     limit: number
     role: AccountRole
     autoJoin?: boolean
+    isShareLink?: boolean
   }
 ): Promise<string> {
-  const { exp, emailMask, email, limit, role, autoJoin } = params
+  const { exp, emailMask, email, limit, role, autoJoin, isShareLink } = params
 
   if (role == null || !assignableRoles.includes(role)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
@@ -711,8 +713,68 @@ export async function createInvite (
     emailPattern: emailMask,
     remainingUses: limit,
     role,
-    autoJoin
+    autoJoin,
+    ...(isShareLink === true ? { isShareLink: true, createdBy: account, createdOn: Date.now() } : {})
   })
+}
+
+/** Lists active share links for workspace maintainers and owners. */
+export async function getActiveInviteLinks (
+  ctx: MeasureContext,
+  db: AccountDB,
+  _branding: Branding | null,
+  token: string
+): Promise<ManagedInviteLink[]> {
+  const workspaceUuid = await getManageableInviteWorkspace(ctx, db, token)
+  const invites = await db.invite.find({ workspaceUuid, isShareLink: true, revokedOn: null })
+  const now = Date.now()
+
+  return invites
+    .filter((invite) => invite.remainingUses !== 0 && (invite.expiresOn < 0 || invite.expiresOn > now))
+    .map(({ id, expiresOn, remainingUses, role, createdBy, createdOn }) => ({
+      id,
+      expiresOn,
+      remainingUses: remainingUses ?? -1,
+      role,
+      createdBy,
+      createdOn
+    }))
+    .sort((a, b) => (b.createdOn ?? 0) - (a.createdOn ?? 0))
+}
+
+/** Revokes a share link immediately for future join attempts. */
+export async function revokeInviteLink (
+  ctx: MeasureContext,
+  db: AccountDB,
+  _branding: Branding | null,
+  token: string,
+  params: { id: string }
+): Promise<void> {
+  if (params.id == null || params.id === '') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const workspaceUuid = await getManageableInviteWorkspace(ctx, db, token)
+  const invite = await db.invite.findOne({ id: params.id, workspaceUuid, isShareLink: true, revokedOn: null })
+  if (invite == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  await db.invite.update({ id: invite.id, workspaceUuid, revokedOn: null }, { revokedOn: Date.now() })
+}
+
+async function getManageableInviteWorkspace (ctx: MeasureContext, db: AccountDB, token: string): Promise<WorkspaceUuid> {
+  const { account, workspace } = decodeTokenVerbose(ctx, token)
+  if (workspace == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
+  }
+
+  const role = await db.getWorkspaceRole(account, workspace)
+  if (role == null || getRolePower(role) < getRolePower(AccountRole.Maintainer)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
+  return workspace
 }
 
 // TODO: Temporary solution to prevent spam using sendInvite
@@ -1085,7 +1147,12 @@ export async function getInviteInfo (
   }
 
   const invite = await getWorkspaceInvite(db, inviteId)
-  if (invite == null) {
+  if (
+    invite == null ||
+    invite.revokedOn != null ||
+    invite.remainingUses === 0 ||
+    (invite.expiresOn > 0 && invite.expiresOn < Date.now())
+  ) {
     ctx.error('Invite not found in getInviteInfo', { inviteId })
     return { workspaceName: null }
   }
@@ -3621,6 +3688,8 @@ export type AccountMethods =
   | 'validateOtp'
   | 'createWorkspace'
   | 'createInvite'
+  | 'getActiveInviteLinks'
+  | 'revokeInviteLink'
   | 'createInviteLink'
   | 'createAccessLink'
   | 'sendInvite'
@@ -3712,6 +3781,8 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     // Workspace creation keeps its existing behavior until the separate access-policy change.
     createWorkspace: wrap(createWorkspace, { guest: 'bypass' }),
     createInvite: wrap(createInvite),
+    getActiveInviteLinks: wrap(getActiveInviteLinks),
+    revokeInviteLink: wrap(revokeInviteLink),
     createInviteLink: wrap(createInviteLink),
     createAccessLink: wrap(createAccessLink),
     sendInvite: wrap(sendInvite),

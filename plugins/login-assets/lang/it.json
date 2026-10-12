@@ -101,6 +101,18 @@
     "SendSetupLink": "Invia link di configurazione",
     "SSOPasswordEmailSent": "Controlla la tua email per trovare un link per impostare la password.",
     "SSONoEmailLinked": "Nessun indirizzo email è collegato al tuo account. Aggiungine uno in Impostazioni account → Gestisci identità prima.",
-    "CreateSampleProjects": "Crea progetti di esempio e contenuto demo"
+    "CreateSampleProjects": "Crea progetti di esempio e contenuto demo",
+    "NoExpiration": "No expiration",
+    "UnlimitedInviteWarning": "Anyone with this link can join until it is revoked.",
+    "ActiveInviteLinks": "Active invite links",
+    "NoActiveInviteLinks": "No active invite links",
+    "UnlimitedUses": "Unlimited uses",
+    "RemainingUses": "Remaining uses:",
+    "RevokeInviteLink": "Revoke",
+    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteRoleGuest": "Guest",
+    "InviteRoleUser": "User",
+    "InviteRoleMaintainer": "Maintainer",
+    "InviteRoleOwner": "Owner"
   }
 }

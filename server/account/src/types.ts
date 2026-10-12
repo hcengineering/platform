@@ -149,6 +149,10 @@ export interface WorkspaceInvite {
   remainingUses?: number
   role: AccountRole
   autoJoin?: boolean
+  isShareLink?: boolean
+  createdBy?: AccountUuid
+  createdOn?: Timestamp
+  revokedOn?: Timestamp | null
 }
 
 export interface WorkspacePermission {
@@ -521,6 +525,15 @@ export interface WorkspaceInviteInfo {
 
 export interface InviteInfo {
   workspaceName: string | null
+}
+
+export interface ManagedInviteLink {
+  id: string
+  expiresOn: Timestamp
+  remainingUses: number
+  role: AccountRole
+  createdBy?: AccountUuid
+  createdOn?: Timestamp
 }
 
 export interface MailboxOptions {

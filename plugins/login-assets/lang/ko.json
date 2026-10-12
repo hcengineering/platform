@@ -100,6 +100,18 @@
         "TwoFactorAuth": "2단계 인증",
         "EnterTwoFactorCode": "2단계 인증 코드 입력",
         "TwoFactorCode": "2단계 인증 코드",
-        "Verify": "인증"
+        "Verify": "인증",
+        "NoExpiration": "No expiration",
+        "UnlimitedInviteWarning": "Anyone with this link can join until it is revoked.",
+        "ActiveInviteLinks": "Active invite links",
+        "NoActiveInviteLinks": "No active invite links",
+        "UnlimitedUses": "Unlimited uses",
+        "RemainingUses": "Remaining uses:",
+        "RevokeInviteLink": "Revoke",
+        "InviteLinkError": "Could not manage invite links. Please try again.",
+        "InviteRoleGuest": "Guest",
+        "InviteRoleUser": "User",
+        "InviteRoleMaintainer": "Maintainer",
+        "InviteRoleOwner": "Owner"
     }
 }

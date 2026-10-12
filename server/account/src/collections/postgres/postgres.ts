@@ -587,7 +587,7 @@ export class PostgresAccountDB implements AccountDB {
     this.invite = new PostgresDbCollection<WorkspaceInvite, 'id'>('invite', client, {
       ns,
       idKey: 'id',
-      timestampFields: ['expiresOn'],
+      timestampFields: ['expiresOn', 'createdOn', 'revokedOn'],
       withRetryClient
     })
     this.mailbox = new PostgresDbCollection<Mailbox, 'mailbox'>('mailbox', client, { ns, withRetryClient })

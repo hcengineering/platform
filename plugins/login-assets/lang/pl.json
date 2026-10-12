@@ -101,6 +101,18 @@
     "EnterTwoFactorCode": "Wprowadź kod uwierzytelnienia dwuskładnikowego",
     "TwoFactorCode": "Kod uwierzytelnienia dwuskładnikowego",
     "Verify": "Zweryfikuj",
-    "CreateSampleProjects": "Utwórz przykładowy projekt i zawartość demonstracyjną"
+    "CreateSampleProjects": "Utwórz przykładowy projekt i zawartość demonstracyjną",
+    "NoExpiration": "No expiration",
+    "UnlimitedInviteWarning": "Anyone with this link can join until it is revoked.",
+    "ActiveInviteLinks": "Active invite links",
+    "NoActiveInviteLinks": "No active invite links",
+    "UnlimitedUses": "Unlimited uses",
+    "RemainingUses": "Remaining uses:",
+    "RevokeInviteLink": "Revoke",
+    "InviteLinkError": "Could not manage invite links. Please try again.",
+    "InviteRoleGuest": "Guest",
+    "InviteRoleUser": "User",
+    "InviteRoleMaintainer": "Maintainer",
+    "InviteRoleOwner": "Owner"
   }
 }
