@@ -50,7 +50,6 @@ export default mergeIds(loginId, login, {
     KnowPassword: '' as IntlString,
     PasswordRecovery: '' as IntlString,
     RecoveryLinkSent: '' as IntlString,
-    UseWorkspaceInviteSettings: '' as IntlString,
     GetLink: '' as IntlString,
     AlreadyJoined: '' as IntlString,
     ConfirmationSent: '' as IntlString,

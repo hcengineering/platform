@@ -15,14 +15,12 @@
 <script lang="ts">
   import type { ManagedInviteLink } from '@hcengineering/account-client'
   import { employeeByAccountStore, PersonPresenter } from '@hcengineering/contact-resources'
-  import { AccountRole } from '@hcengineering/core'
   import login from '@hcengineering/login'
-  import type { IntlString } from '@hcengineering/platform'
   import { copyTextToClipboard, MessageBox } from '@hcengineering/presentation'
   import { Button, ButtonIcon, IconCopy, IconDelete, Label, Loading, showPopup, TimeSince } from '@hcengineering/ui'
   import { onMount } from 'svelte'
 
-  import { getInviteLinkUrl } from '../inviteLinkUrl'
+  import { formatInviteDate, getInviteLinkUrl, getInviteRoleLabel } from '../inviteLinks'
   import { getAccountClient } from '../utils'
 
   const isSecureContext = window.isSecureContext
@@ -76,28 +74,6 @@
     })
   }
 
-  function getRoleLabel (role: AccountRole): IntlString {
-    switch (role) {
-      case AccountRole.Guest:
-        return login.string.InviteRoleGuest
-      case AccountRole.Maintainer:
-        return login.string.InviteRoleMaintainer
-      case AccountRole.Owner:
-        return login.string.InviteRoleOwner
-      default:
-        return login.string.InviteRoleUser
-    }
-  }
-
-  function formatDate (value: number): string {
-    return new Date(value).toLocaleString(undefined, {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
   onMount(() => {
     void load()
   })
@@ -121,10 +97,10 @@
       {@const creator = invite.createdBy !== undefined ? $employeeByAccountStore.get(invite.createdBy) : undefined}
       <div class="link-row">
         <div class="link-info">
-          <span class="role"><Label label={getRoleLabel(invite.role)} /></span>
+          <span class="role"><Label label={getInviteRoleLabel(invite.role)} /></span>
           <span class="meta">
             {#if invite.expiresOn > 0}
-              <Label label={login.string.InviteLinkExpires} params={{ date: formatDate(invite.expiresOn) }} />
+              <Label label={login.string.InviteLinkExpires} params={{ date: formatInviteDate(invite.expiresOn) }} />
             {:else}
               <Label label={login.string.NoExpiration} />
             {/if}

@@ -232,12 +232,6 @@
               </div>
             </SettingsCard>
 
-            {#if canManageInviteLinks}
-              <SettingsCard label={login.string.ActiveInviteLinks}>
-                <ActiveInviteLinks />
-              </SettingsCard>
-            {/if}
-
             {#if canManagePermissions}
               <SettingsCard label={settingRes.string.Permissions}>
                 <div class="flex-between flex-gap-4">
@@ -253,6 +247,12 @@
                     on:selected={handleGeneratorRolesSelected}
                   />
                 </div>
+              </SettingsCard>
+            {/if}
+
+            {#if canManageInviteLinks}
+              <SettingsCard label={login.string.ActiveInviteLinks}>
+                <ActiveInviteLinks />
               </SettingsCard>
             {/if}
           </SettingsCardsLayout>

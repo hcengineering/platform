@@ -13,11 +13,13 @@
 // limitations under the License.
 //
 
-import { concatLink } from '@hcengineering/core'
+import { AccountRole, concatLink } from '@hcengineering/core'
 import { loginId } from '@hcengineering/login'
-import { getMetadata } from '@hcengineering/platform'
+import { getMetadata, type IntlString } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
 import { getCurrentLocation, locationToUrl } from '@hcengineering/ui'
+
+import settingRes from './plugin'
 
 /** Builds the public join URL for an invite link. */
 export function getInviteLinkUrl (inviteId: string, navigateUrl?: string): string {
@@ -38,4 +40,26 @@ export function getInviteLinkUrl (inviteId: string, navigateUrl?: string): strin
   const frontUrl = getMetadata(presentation.metadata.FrontUrl)
   const host = frontUrl ?? document.location.origin
   return concatLink(host, url)
+}
+
+export function getInviteRoleLabel (role: AccountRole): IntlString {
+  switch (role) {
+    case AccountRole.Guest:
+      return settingRes.string.Guest
+    case AccountRole.Maintainer:
+      return settingRes.string.Maintainer
+    case AccountRole.Owner:
+      return settingRes.string.Owner
+    default:
+      return settingRes.string.User
+  }
+}
+
+export function formatInviteDate (value: number): string {
+  return new Date(value).toLocaleString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
