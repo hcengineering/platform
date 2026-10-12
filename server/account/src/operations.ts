@@ -3716,7 +3716,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     createAccessLink: wrap(createAccessLink),
     sendInvite: wrap(sendInvite),
     resendInvite: wrap(resendInvite),
-    selectWorkspace: wrap(selectWorkspace, { allowApiKey: true, guest: 'allGuests' }),
+    selectWorkspace: wrap(selectWorkspace, { allowApiKey: true, guest: 'bypass' }),
     join: wrap(join, { guest: 'bypass' }),
     joinByToken: wrap(joinByToken, { guest: 'personalGuest' }),
     checkJoin: wrap(checkJoin, { guest: 'personalGuest' }),
