@@ -25,8 +25,9 @@
 
   export let endpoint: string
   export let workspace: string
-  export let type: string
+  export let formId: string
   export let disabled = false
+  export let privateForm = false
 
   const dispatch = createEventDispatcher<{ verified: { name: string, token: string }, redirect: void }>()
   let email = ''
@@ -131,7 +132,7 @@
   function google (): void {
     dispatch('redirect')
     const accounts = getMetadata(login.metadata.AccountsUrl) ?? ''
-    const target = JSON.stringify({ path: [formsId, workspace, type] })
+    const target = JSON.stringify({ path: [formsId, workspace, formId] })
     window.location.assign(concatLink(accounts, `auth/google?navigateUrl=${encodeURIComponent(target)}`))
   }
   function enter (event: KeyboardEvent): void {
@@ -143,7 +144,7 @@
 </script>
 
 <section class="identity" on:submit|preventDefault>
-  <p><Label label={forms.string.EmailHint} /></p>
+  <p><Label label={privateForm ? forms.string.PrivateHint : forms.string.EmailHint} /></p>
   {#if stage === 'email'}
     <EditBox
       id="form-author-email"

@@ -17,6 +17,7 @@ import card, { type Card, type CardSpace, type MasterTag } from '@hcengineering/
 import { getClient as getCollaboratorClient } from '@hcengineering/collaborator-client'
 import core, {
   type AnyAttribute,
+  type AccountUuid,
   type ArrOf,
   type Class,
   type Client,
@@ -52,6 +53,7 @@ import forms, {
 } from '@hcengineering/forms'
 import guest, { guestAccount, type PublicLink } from '@hcengineering/guest'
 import { createClient } from '@hcengineering/server-client'
+import platform, { PlatformError } from '@hcengineering/platform'
 import { decodeToken, generateToken } from '@hcengineering/server-token'
 import view from '@hcengineering/view'
 import type { Express, Request, Response } from 'express'
@@ -59,6 +61,7 @@ import { createHash } from 'node:crypto'
 import { validate as isUuid } from 'uuid'
 import { FormError, isRecord, validateFields } from './forms-validation'
 import { ensureFormAuthor } from './forms-author'
+import { compatibleFormSpaces, canCreateFormCard } from './forms-space'
 
 interface FormsConfig {
   accountsUrl: string
@@ -66,6 +69,7 @@ interface FormsConfig {
 }
 
 interface Identity {
+  account: AccountUuid
   socialId: PersonId
   social: SocialId
   person: Person
@@ -104,6 +108,7 @@ function visibleAttributes (hierarchy: Hierarchy, type: Ref<MasterTag>): [string
         /^[a-zA-Z][a-zA-Z0-9_]*$/.test(name) &&
         !RESERVED_FIELDS.has(name) &&
         attr.hidden !== true &&
+        attr.showInForm !== false &&
         attr.readonly !== true &&
         attr.automationOnly !== true &&
         !containsIdentifier(hierarchy, attr.type) &&
@@ -161,17 +166,16 @@ function isMasterTag (type: Class<Doc> | undefined): type is MasterTag {
 async function getConfiguration (
   client: Client,
   _id: string
-): Promise<{ configuration: FormConfiguration, type: MasterTag, space: CardSpace }> {
-  const id = _id as Ref<MasterTag>
+): Promise<{ configuration: FormConfiguration, type: MasterTag }> {
   const hierarchy = client.getHierarchy()
   const configuration = await client.findOne(forms.class.FormConfiguration, {
-    masterTag: id,
+    _id: _id as Ref<FormConfiguration>,
     enabled: true
   })
-  const type = hierarchy.findClass(id)
-  if (configuration?.targetSpace === undefined) {
+  if (configuration === undefined) {
     throw new FormError(404, 'unavailable')
   }
+  const type = hierarchy.findClass(configuration.masterTag)
   if (!isMasterTag(type)) {
     throw new FormError(404, 'unavailable')
   }
@@ -193,21 +197,17 @@ async function getConfiguration (
     }
   }
 
-  const space = await client.findOne(card.class.CardSpace, { _id: configuration.targetSpace, archived: false })
-  if (space === undefined) {
-    throw new FormError(404, 'unavailable')
-  }
-  const acceptsCardType =
-    space.types.length === 0 || space.types.some((parent) => hierarchy.isDerived(type._id, parent))
-  if (!acceptsCardType) {
-    throw new FormError(404, 'unavailable')
-  }
-  return { configuration, type, space }
+  const mode = configuration.mode ?? 'public'
+  const validMode = ['public', 'private-fixed', 'private-auto'].includes(mode)
+  const hasDestination = mode === 'private-auto' || configuration.targetSpace !== undefined
+  if (!validMode || !hasDestination) throw new FormError(404, 'unavailable')
+  return { configuration, type }
 }
 
-function getSchema (client: Client, type: MasterTag): FormSchema {
+function getSchema (client: Client, type: MasterTag, configuration: FormConfiguration): FormSchema {
   return {
-    id: type._id,
+    id: configuration._id,
+    mode: configuration.mode ?? 'public',
     label: type.label,
     description: type.description,
     fields: visibleAttributes(client.getHierarchy(), type._id)
@@ -269,6 +269,7 @@ async function getIdentity (req: Request, accountsUrl: string): Promise<Identity
   if (socialId === undefined) throw new FormError(401, 'unauthorized')
   const person = await accountClient.getPerson()
   return {
+    account: login.account,
     socialId: socialId._id,
     social: socialId,
     person,
@@ -289,6 +290,10 @@ function plainMarkup (text: string): Markup {
 
 async function submit (
   client: Client,
+  writer: Client,
+  configuration: FormConfiguration,
+  type: MasterTag,
+  space: CardSpace,
   req: Request,
   identity: Identity,
   workspace: WorkspaceUuid,
@@ -296,7 +301,6 @@ async function submit (
   workspaceUrl: string,
   collaboratorUrl: string
 ): Promise<FormSubmissionResult> {
-  const { configuration, type, space } = await getConfiguration(client, req.params.type)
   if (
     !isRecord(req.body) ||
     typeof req.body.requestId !== 'string' ||
@@ -304,12 +308,12 @@ async function submit (
   ) {
     throw new FormError(400, 'invalid_field')
   }
-  const schema = getSchema(client, type)
+  const schema = getSchema(client, type, configuration)
   const fields = validateFields(schema.fields, req.body.fields)
   const title = fields.title ?? schema.fields.find((field) => field.name === 'title')?.defaultValue
   if (typeof title !== 'string' || title.trim() === '') throw new FormError(400, 'required')
   const hash = createHash('sha256')
-    .update(JSON.stringify([workspace, type._id, identity.socialId, req.body.requestId, fields]))
+    .update(JSON.stringify([workspace, configuration._id, space._id, identity.socialId, req.body.requestId, fields]))
     .digest('hex')
   const id = `forms-${hash}` as Ref<Card>
   const linkId = `forms-link-${hash}` as Ref<PublicLink>
@@ -349,13 +353,17 @@ async function submit (
       data.parentInfo = [...(parent.parentInfo ?? []), { _id: parent._id, _class: parent._class, title: parent.title }]
     }
     await ensureFormAuthor(client, identity.person, identity.social)
-    const ops = new TxOperations(client, identity.socialId).apply(id)
+    if (writer !== client && !canCreateFormCard(writer, space, type, identity.account, identity.socialId, data)) {
+      throw new FormError(403, 'access_denied')
+    }
+    const ops = new TxOperations(writer, identity.socialId).apply(id)
     ops.notMatch(type._id, { _id: id })
     ops.match(forms.class.FormConfiguration, {
       _id: configuration._id,
       enabled: true,
       masterTag: type._id,
-      targetSpace: space._id
+      mode: configuration.mode ?? { $exists: false },
+      targetSpace: configuration.targetSpace ?? { $exists: false }
     })
     await ops.createDoc(type._id, space._id, data, id)
     const panel =
@@ -398,7 +406,9 @@ export function registerFormsRoutes (app: Express, ctx: MeasureContext, config: 
     return entry.count <= (req.method === 'POST' ? 10 : 60)
   }
   function failure (res: Response, error: unknown): void {
-    if (error instanceof FormError) {
+    if (error instanceof PlatformError && error.status.code === platform.status.Forbidden) {
+      res.status(403).json({ error: 'access_denied' })
+    } else if (error instanceof FormError) {
       res.status(error.status).json({ error: error.code })
     } else {
       ctx.error('Forms request failed', { error })
@@ -421,7 +431,7 @@ export function registerFormsRoutes (app: Express, ctx: MeasureContext, config: 
     }
     void (async () => {
       if (req.params.workspace === '') throw new FormError(404, 'unavailable')
-      const identity = req.method === 'POST' ? await getIdentity(req, config.accountsUrl) : undefined
+      let identity = req.method === 'POST' ? await getIdentity(req, config.accountsUrl) : undefined
       const legacyWorkspace = isUuid(req.params.workspace) ? (req.params.workspace as WorkspaceUuid) : undefined
       const lookupToken = generateToken(systemAccountUuid, legacyWorkspace, { service: 'front' }, undefined, {
         exp: Math.floor(Date.now() / 1000) + 300
@@ -434,20 +444,90 @@ export function registerFormsRoutes (app: Express, ctx: MeasureContext, config: 
       const workspace = login.workspace
       const token = login.token
       const client = await createClient(login.endpoint, token, undefined, 10000)
+      let writer = client
       try {
-        if (identity !== undefined) {
-          res.json(await submit(client, req, identity, workspace, token, login.workspaceUrl, config.collaboratorUrl))
-        } else {
-          const { type } = await getConfiguration(client, req.params.type)
-          res.json(getSchema(client, type))
+        const { configuration, type } = await getConfiguration(client, req.params.form)
+        const privateForm = configuration.mode !== undefined && configuration.mode !== 'public'
+        if (privateForm) {
+          if (identity === undefined) {
+            if (req.header('authorization') === undefined) throw new FormError(401, 'private_required')
+            identity = await getIdentity(req, config.accountsUrl)
+          }
+          const userAccounts = getAccountClient(config.accountsUrl, identity.token)
+          const memberships = await userAccounts.getUserWorkspaces()
+          if (!memberships.some((member) => member.uuid === workspace && member.isDisabled !== true)) {
+            throw new FormError(403, 'access_denied')
+          }
+          const member = await userAccounts.selectWorkspace(login.workspaceUrl, 'internal')
+          if (member.workspace !== workspace) throw new FormError(403, 'access_denied')
+          writer = await createClient(member.endpoint, member.token, undefined, 10000)
         }
+        const candidates = compatibleFormSpaces(
+          writer,
+          type,
+          await writer.findAll(
+            card.class.CardSpace,
+            {
+              archived: false,
+              ...(configuration.mode === 'private-auto' ? {} : { _id: configuration.targetSpace })
+            },
+            { sort: { _id: 1 } }
+          )
+        )
+        const schema = getSchema(client, type, configuration)
+        const values = req.method === 'POST' ? validateFields(schema.fields, req.body?.fields) : undefined
+        const creationData =
+          values === undefined
+            ? undefined
+            : (fillDefaults(
+                writer.getHierarchy(),
+                {
+                  parentInfo: [],
+                  blobs: {},
+                  rank: '',
+                  content: '' as MarkupBlobRef,
+                  ...values,
+                  title: values.title ?? schema.fields.find((field) => field.name === 'title')?.defaultValue ?? ''
+                },
+                type._id
+              ) as Data<Card>)
+        const space = candidates.find(
+          (space) =>
+            !privateForm ||
+            (identity !== undefined &&
+              canCreateFormCard(writer, space, type, identity.account, identity.socialId, creationData))
+        )
+        if (space === undefined) {
+          throw new FormError(privateForm ? 403 : 404, privateForm ? 'access_denied' : 'unavailable')
+        }
+        if (req.method === 'POST' && identity !== undefined) {
+          res.json(
+            await submit(
+              client,
+              writer,
+              configuration,
+              type,
+              space,
+              req,
+              identity,
+              workspace,
+              token,
+              login.workspaceUrl,
+              config.collaboratorUrl
+            )
+          )
+        } else res.json(schema)
       } finally {
-        await client.close()
+        try {
+          if (writer !== client) await writer.close()
+        } finally {
+          await client.close()
+        }
       }
     })().catch((error) => {
       failure(res, error)
     })
   }
-  app.get('/api/forms/:workspace/:type', handler)
-  app.post('/api/forms/:workspace/:type', handler)
+  app.get('/api/forms/:workspace/:form', handler)
+  app.post('/api/forms/:workspace/:form', handler)
 }

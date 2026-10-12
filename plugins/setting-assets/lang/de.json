@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Im öffentlichen Formular anzeigen",
+    "ShowInCreate": "Beim Erstellen einer Karte anzeigen",
     "Setting": "Einstellung",
     "Spaces": "Bereiche",
     "Integrations": "Integrationen",
@@ -262,6 +264,7 @@
     "ShowQRCode": "QR-Code anzeigen",
     "EnterVerificationCode": "Verifizierungscode eingeben",
     "OverrideAttribute": "Überschreibattribut",
+    "OverriddenAttribute": "Überschriebenes Attribut",
     "Required": "Pflichtfeld",
     "RelationFilter": "Filter",
     "AddRelationFilter": "Filter hinzufügen",

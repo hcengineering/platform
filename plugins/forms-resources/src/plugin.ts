@@ -49,6 +49,15 @@ export default mergeIds(formsId, forms, {
     PublicationStatus: '' as IntlString,
     Published: '' as IntlString,
     Unpublished: '' as IntlString,
-    NoConfiguredForms: '' as IntlString
+    NoConfiguredForms: '' as IntlString,
+    AddForm: '' as IntlString,
+    DeleteForm: '' as IntlString,
+    FormMode: '' as IntlString,
+    PublicForm: '' as IntlString,
+    PrivateFixedForm: '' as IntlString,
+    PrivateAutoForm: '' as IntlString,
+    PrivateHint: '' as IntlString,
+    AccessDenied: '' as IntlString,
+    AutoSpace: '' as IntlString
   }
 })

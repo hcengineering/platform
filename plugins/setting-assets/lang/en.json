@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Show in public form",
+    "ShowInCreate": "Show when creating a card",
     "Setting": "Setting",
     "Spaces": "Spaces",
     "Integrations": "Integrations",
@@ -265,6 +267,7 @@
     "ShowQRCode": "Show QR code",
     "EnterVerificationCode": "Enter verification code",
     "OverrideAttribute": "Override attribute",
+    "OverriddenAttribute": "Overridden attribute",
     "Required": "Required",
     "RelationFilter": "Filter",
     "AddRelationFilter": "Add filter",

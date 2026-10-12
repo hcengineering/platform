@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import card from '@hcengineering/card'
   import core, {
     AnyAttribute,
     AttributePermission,
@@ -60,11 +61,14 @@
   let icon: Asset | undefined = attribute.icon
   let automationOnly = attribute.automationOnly ?? false
   let required = attribute.required ?? false
+  let showInForm = attribute.showInForm ?? true
+  let showInCreate = attribute.showInCreate ?? true
   let extra: Record<string, any> = {}
   let is: AnyComponent | undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  $: cardAttribute = isCard || hierarchy.isDerived(attribute.attributeOf, card.class.Card)
 
   translateCB(attribute.label, {}, $themeStore.language, (p) => {
     name = p
@@ -107,6 +111,12 @@
     }
     if (required !== attribute.required) {
       update.required = required
+    }
+    if (showInForm !== (attribute.showInForm ?? true)) {
+      update.showInForm = showInForm
+    }
+    if (showInCreate !== (attribute.showInCreate ?? true)) {
+      update.showInCreate = showInCreate
     }
     for (const [k, v] of Object.entries(extra)) {
       if (attribute[k] === v) continue
@@ -328,6 +338,12 @@
       <Label label={setting.string.Required} />
     </span>
     <Toggle bind:on={required} {disabled} />
+    {#if cardAttribute}
+      <span class="label"><Label label={setting.string.ShowInForm} /></span>
+      <Toggle bind:on={showInForm} {disabled} />
+      <span class="label"><Label label={setting.string.ShowInCreate} /></span>
+      <Toggle bind:on={showInCreate} {disabled} />
+    {/if}
     <span class="label">
       <Label label={setting.string.Restricted} />
     </span>

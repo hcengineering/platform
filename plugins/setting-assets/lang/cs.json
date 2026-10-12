@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Zobrazit ve veřejném formuláři",
+    "ShowInCreate": "Zobrazit při vytváření karty",
     "Setting": "Nastavení",
     "Spaces": "Prostory",
     "Integrations": "Integrace",
@@ -260,6 +262,7 @@
     "ShowQRCode": "Zobrazit QR kód",
     "EnterVerificationCode": "Zadejte ověřovací kód",
     "OverrideAttribute": "Přepsat atribut",
+    "OverriddenAttribute": "Přepsaný atribut",
     "Required": "Požadované",
     "RelationFilter": "Filtr",
     "AddRelationFilter": "Přidat filtr",

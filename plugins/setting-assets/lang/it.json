@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Mostra nel modulo pubblico",
+    "ShowInCreate": "Mostra durante la creazione di una scheda",
     "Setting": "Impostazione",
     "Spaces": "Spazi",
     "Integrations": "Integrazioni",
@@ -262,6 +264,7 @@
     "ShowQRCode": "Mostra codice QR",
     "EnterVerificationCode": "Inserisci codice di verifica",
     "OverrideAttribute": "Sovrascrivi attributo",
+    "OverriddenAttribute": "Attributo sovrascritto",
     "Required": "Richiesto",
     "RelationFilter": "Filtro",
     "AddRelationFilter": "Aggiungi filtro",
