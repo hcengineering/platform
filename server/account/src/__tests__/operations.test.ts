@@ -180,6 +180,21 @@ describe('account operations', () => {
       )
     })
 
+    test('allows links without expiration only for maintainers and above', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
+      const params = { emailMask: '', limit: -1, role: AccountRole.User, isShareLink: true }
+
+      await expect(createInvite(mockCtx, mockDb, mockBranding, mockToken, { ...params, exp: -1 })).rejects.toThrow(
+        PlatformError
+      )
+      expect(mockDb.invite.insertOne).not.toHaveBeenCalled()
+
+      await createInvite(mockCtx, mockDb, mockBranding, mockToken, { ...params, exp: 60 * 60 * 1000 })
+      expect(mockDb.invite.insertOne).toHaveBeenCalledWith(expect.objectContaining({ isShareLink: true }))
+    })
+
     test('rejects an oversized navigate url', async () => {
       await expect(
         createInvite(mockCtx, mockDb, mockBranding, mockToken, {
@@ -297,6 +312,28 @@ describe('account operations', () => {
       })
     })
 
+    test('hides links granting a higher role than the caller has', async () => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+      ;(mockDb.invite.find as jest.Mock).mockResolvedValue([
+        { id: 'owner', expiresOn: -1, remainingUses: -1, role: AccountRole.Owner, createdOn: 200 },
+        { id: 'maintainer', expiresOn: -1, remainingUses: -1, role: AccountRole.Maintainer, createdOn: 100 }
+      ])
+
+      const links = await getActiveInviteLinks(mockCtx, mockDb, mockBranding, mockToken)
+
+      expect(links.map((it) => it.id)).toEqual(['maintainer'])
+    })
+
+    test('rejects revoking a link granting a higher role than the caller has', async () => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue({ id: 'owner', role: AccountRole.Owner })
+
+      await expect(revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id: 'owner' })).rejects.toThrow(
+        PlatformError
+      )
+      expect(mockDb.invite.update).not.toHaveBeenCalled()
+    })
+
     test('rejects listing for an ordinary user', async () => {
       ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
 
@@ -306,7 +343,7 @@ describe('account operations', () => {
 
     test('revokes only a share link in the current workspace', async () => {
       ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Owner)
-      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue({ id: 'active' })
+      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue({ id: 'active', role: AccountRole.User })
 
       await revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id: 'active' })
 

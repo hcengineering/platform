@@ -705,6 +705,10 @@ export async function createInvite (
 
   const callerRole = await db.getWorkspaceRole(account, workspace.uuid)
   verifyAllowedRole(callerRole, role, extra)
+  if (exp < 0) {
+    // Links that never expire are a management decision, not available to ordinary members
+    verifyAllowedRole(callerRole, AccountRole.Maintainer, extra)
+  }
 
   if (autoJoin === true) {
     verifyAllowedServices(['schedule'], extra)
@@ -732,22 +736,28 @@ export async function getActiveInviteLinks (
   _branding: Branding | null,
   token: string
 ): Promise<ManagedInviteLink[]> {
-  const workspaceUuid = await getManageableInviteWorkspace(ctx, db, token)
+  const { workspaceUuid, callerRole, extra } = await getInviteLinkCaller(ctx, db, token)
+  verifyAllowedRole(callerRole, AccountRole.Maintainer, extra)
+
   const invites = await db.invite.find({ workspaceUuid, isShareLink: true, revokedOn: null })
   const now = Date.now()
 
-  return invites
-    .filter((invite) => invite.remainingUses !== 0 && (invite.expiresOn <= 0 || invite.expiresOn > now))
-    .map(({ id, expiresOn, remainingUses, role, createdBy, createdOn, navigateUrl }) => ({
-      id,
-      expiresOn,
-      remainingUses: remainingUses ?? -1,
-      role,
-      createdBy,
-      createdOn,
-      navigateUrl
-    }))
-    .sort((a, b) => (b.createdOn ?? 0) - (a.createdOn ?? 0))
+  return (
+    invites
+      .filter((invite) => invite.remainingUses !== 0 && (invite.expiresOn <= 0 || invite.expiresOn > now))
+      // Never reveal links granting a higher role than the caller has: anyone with the link can join with it
+      .filter((invite) => verifyAllowedRole(callerRole, invite.role, extra, false))
+      .map(({ id, expiresOn, remainingUses, role, createdBy, createdOn, navigateUrl }) => ({
+        id,
+        expiresOn,
+        remainingUses: remainingUses ?? -1,
+        role,
+        createdBy,
+        createdOn,
+        navigateUrl
+      }))
+      .sort((a, b) => (b.createdOn ?? 0) - (a.createdOn ?? 0))
+  )
 }
 
 /** Revokes a share link immediately for future join attempts. */
@@ -762,27 +772,29 @@ export async function revokeInviteLink (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  const workspaceUuid = await getManageableInviteWorkspace(ctx, db, token)
+  const { workspaceUuid, callerRole, extra } = await getInviteLinkCaller(ctx, db, token)
+  verifyAllowedRole(callerRole, AccountRole.Maintainer, extra)
+
   const invite = await db.invite.findOne({ id: params.id, workspaceUuid, isShareLink: true, revokedOn: null })
   if (invite == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
+  verifyAllowedRole(callerRole, invite.role, extra)
 
   await db.invite.update({ id: invite.id, workspaceUuid, revokedOn: null }, { revokedOn: Date.now() })
 }
 
-async function getManageableInviteWorkspace (ctx: MeasureContext, db: AccountDB, token: string): Promise<WorkspaceUuid> {
-  const { account, workspace } = decodeTokenVerbose(ctx, token)
+async function getInviteLinkCaller (
+  ctx: MeasureContext,
+  db: AccountDB,
+  token: string
+): Promise<{ workspaceUuid: WorkspaceUuid, callerRole: AccountRole | null, extra: any }> {
+  const { account, workspace, extra } = decodeTokenVerbose(ctx, token)
   if (workspace == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid: workspace }))
   }
 
-  const role = await db.getWorkspaceRole(account, workspace)
-  if (role == null || getRolePower(role) < getRolePower(AccountRole.Maintainer)) {
-    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-  }
-
-  return workspace
+  return { workspaceUuid: workspace, callerRole: await db.getWorkspaceRole(account, workspace), extra }
 }
 
 // TODO: Temporary solution to prevent spam using sendInvite
