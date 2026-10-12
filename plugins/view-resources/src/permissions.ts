@@ -359,10 +359,7 @@ function buildPermissions (
 const accountStore = writable<Account | undefined>(undefined)
 const permissionsDataStore = writable<PermissionsStore | undefined>(undefined)
 
-// The permissions store lives in contact-resources and is loaded lazily. It must not be requested at module
-// evaluation time: this module can be imported statically before the platform registers plugin locations
-// (e.g. by the desktop UI entry point), and getResource then fails with NoLocationForPlugin for good.
-// Load it once the account is known, which happens only after the platform is configured, and retry on failure.
+// Loaded on login, not at import: desktop imports this module before plugin locations are registered.
 let permissionsStoreState: 'idle' | 'loading' | 'loaded' = 'idle'
 function loadPermissionsStore (): void {
   if (permissionsStoreState !== 'idle') return
@@ -376,8 +373,6 @@ function loadPermissionsStore (): void {
     })
     .catch((err) => {
       permissionsStoreState = 'idle'
-      // Without the store every store backed permission stays denied, so make the reason visible
-      // instead of leaving the user with a silently crippled UI.
       console.error('failed to load the permissions store, space permissions will be denied', err)
     })
 }
