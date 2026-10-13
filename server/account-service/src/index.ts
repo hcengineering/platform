@@ -148,6 +148,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   const app = new Koa()
   const router = new Router()
+  const authProviderShutdownController = new AbortController()
 
   app.use(
     cors({
@@ -169,7 +170,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     serverSecret,
     frontURL,
     brandings,
-    !hasSignUp
+    !hasSignUp,
+    authProviderShutdownController.signal
   )
 
   void accountsDb.then((res) => {
@@ -452,6 +454,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   })
 
   const close = (): void => {
+    authProviderShutdownController.abort()
     onClose?.()
     void accountsDb.then(([, closeAccountsDb]) => {
       closeAccountsDb()
