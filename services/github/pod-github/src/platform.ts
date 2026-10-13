@@ -44,6 +44,11 @@ import { type StorageAdapter } from '@hcengineering/server-core'
 import { join } from 'path'
 import { createPlatformClient } from './client'
 import config from './config'
+import {
+  createGithubCredentialSafeError,
+  githubLogErrorCategory,
+  reportGithubCredentialError
+} from './logContext'
 import { GithubWorkerWorkspaceState, getGithubWorkerState } from './workspaceUtils'
 import { registerLoaders } from './loaders'
 import { createNotification } from './notifications'
@@ -403,7 +408,7 @@ export class PlatformWorker {
         .catch((err) => {
           if (err.status !== 404) {
             // Already deleted.
-            ctx.error('error from github api', { error: err })
+            ctx.error('error from github api', { error: githubLogErrorCategory.installationRemoval })
           }
         })
 
@@ -511,9 +516,19 @@ export class PlatformWorker {
           false
         )
       }
-    } catch (err: any) {
-      Analytics.handleError(err)
-      await this.updateAccountAuthRecord(ctx, payload, { error: errorToObj(err) }, undefined, false)
+    } catch {
+      reportGithubCredentialError(
+        ctx,
+        'failed to exchange github oauth token',
+        githubLogErrorCategory.oauthExchange
+      )
+      await this.updateAccountAuthRecord(
+        ctx,
+        payload,
+        { error: githubLogErrorCategory.oauthExchange },
+        undefined,
+        false
+      )
     }
   }
 
@@ -740,48 +755,52 @@ export class PlatformWorker {
   async checkRefreshToken (ctx: MeasureContext, auth: GithubUserRecord, force: boolean = false): Promise<boolean> {
     const expired = auth.expiresIn != null && auth.expiresIn < Date.now() / 1000
     if (auth.refreshToken != null && (force || expired)) {
-      const uri =
-        'https://github.com/login/oauth/access_token?' +
-        makeQuery({
-          client_id: config.ClientID,
-          client_secret: config.ClientSecret,
-          grant_type: 'refresh_token',
-          refresh_token: auth.refreshToken
+      try {
+        const uri =
+          'https://github.com/login/oauth/access_token?' +
+          makeQuery({
+            client_id: config.ClientID,
+            client_secret: config.ClientSecret,
+            grant_type: 'refresh_token',
+            refresh_token: auth.refreshToken
+          })
+
+        const result = await fetch(uri, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json'
+          }
         })
+        const resultJson = await result.json()
 
-      const result = await fetch(uri, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json'
+        if (resultJson.error !== undefined) {
+          // We need to clear github integration info.
+          await this.revokeUserAuth(ctx, auth)
+          return false
+        } else {
+          // Update okit
+          const nowTime = Date.now() / 1000
+          const dta: GithubUserRecord = {
+            ...auth,
+            token: resultJson.access_token,
+            code: null,
+            expiresIn: nowTime + (resultJson.expires_in as number),
+            refreshToken: resultJson.refresh_token,
+            refreshTokenExpiresIn: nowTime + (resultJson.refresh_token_expires_in as number),
+            scope: resultJson.scope
+          }
+          auth.token = resultJson.access_token
+          auth.code = null
+          auth.expiresIn = dta.expiresIn
+          auth.refreshToken = dta.refreshToken
+          auth.refreshTokenExpiresIn = dta.refreshTokenExpiresIn
+          auth.scope = dta.scope
+
+          await this.userManager.updateUser(dta)
+          return true
         }
-      })
-      const resultJson = await result.json()
-
-      if (resultJson.error !== undefined) {
-        // We need to clear github integration info.
-        await this.revokeUserAuth(ctx, auth)
-        return false
-      } else {
-        // Update okit
-        const nowTime = Date.now() / 1000
-        const dta: GithubUserRecord = {
-          ...auth,
-          token: resultJson.access_token,
-          code: null,
-          expiresIn: nowTime + (resultJson.expires_in as number),
-          refreshToken: resultJson.refresh_token,
-          refreshTokenExpiresIn: nowTime + (resultJson.refresh_token_expires_in as number),
-          scope: resultJson.scope
-        }
-        auth.token = resultJson.access_token
-        auth.code = null
-        auth.expiresIn = dta.expiresIn
-        auth.refreshToken = dta.refreshToken
-        auth.refreshTokenExpiresIn = dta.refreshTokenExpiresIn
-        auth.scope = dta.scope
-
-        await this.userManager.updateUser(dta)
-        return true
+      } catch {
+        throw createGithubCredentialSafeError(githubLogErrorCategory.oauthTokenRefresh)
       }
     }
     return true
