@@ -162,6 +162,8 @@
   .hulyTableAttr-content.task > .row {
     padding-top: 0.25rem;
     padding-bottom: 0.25rem;
+    // Same height with and without the trailing buttons (e.g. while a new discussion is being added).
+    min-height: calc(var(--global-small-Size) + 0.5rem);
   }
 
   .name {
