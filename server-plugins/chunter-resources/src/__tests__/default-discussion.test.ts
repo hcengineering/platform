@@ -53,12 +53,7 @@ function matches (doc: Record<string, any>, query: Record<string, any>): boolean
   })
 }
 
-function config (
-  _id: string,
-  ofClass: Ref<Class<Doc>>,
-  name: string,
-  overrides?: Ref<DefaultDiscussion>
-): DefaultDiscussion {
+function config (_id: string, ofClass: Ref<Class<Doc>>, name: string): DefaultDiscussion {
   return {
     _id: _id as Ref<DefaultDiscussion>,
     _class: chunter.class.DefaultDiscussion,
@@ -67,8 +62,7 @@ function config (
     modifiedOn: 0,
     ofClass,
     name,
-    visibility: 'participants',
-    ...(overrides !== undefined ? { overrides } : {})
+    visibility: 'participants'
   }
 }
 
@@ -186,32 +180,16 @@ describe('OnDiscussionOwnerCreated', () => {
     ])
   })
 
-  it('replaces an inherited configuration by its id without duplicating the discussion', async () => {
-    const result = await OnDiscussionOwnerCreated(
-      [createOwner()],
-      createControl(
-        [],
-        [config('base', Base, 'General'), config('task', Task, 'Task discussion', 'base' as Ref<DefaultDiscussion>)]
-      )
-    )
-    expect(createdDiscussions(result)).toEqual([
-      expect.objectContaining({ defaultDiscussion: 'task', name: 'Task discussion' })
-    ])
-  })
-
-  it('inherits an override and additional discussions through multiple subtype levels', async () => {
+  it('inherits discussions through multiple subtype levels', async () => {
     const result = await OnDiscussionOwnerCreated(
       [createOwner('subtask', Subtask)],
       createControl(
         [],
-        [
-          config('base', Base, 'General'),
-          config('task', Task, 'Task discussion', 'base' as Ref<DefaultDiscussion>),
-          config('subtask', Subtask, 'Notes')
-        ]
+        [config('base', Base, 'General'), config('task', Task, 'Task discussion'), config('subtask', Subtask, 'Notes')]
       )
     )
     expect(createdDiscussions(result)).toEqual([
+      expect.objectContaining({ attachedTo: 'subtask', defaultDiscussion: 'base' }),
       expect.objectContaining({ attachedTo: 'subtask', defaultDiscussion: 'task' }),
       expect.objectContaining({ attachedTo: 'subtask', defaultDiscussion: 'subtask' })
     ])
@@ -332,16 +310,6 @@ describe('OnDiscussionOwnerClassChanged', () => {
     const control = createControl([discussion('d1', 'General', Task, 'base')], [config('base', Base, 'General')])
     expect(updates(await OnDiscussionOwnerClassChanged([changeType()], control))).toEqual([
       { objectId: 'd1', operations: { attachedToClass: Bug } }
-    ])
-  })
-
-  it('relinks a discussion to the configuration that overrides its source in the new type', async () => {
-    const control = createControl(
-      [discussion('d1', 'General', Task, 'base')],
-      [config('base', Base, 'General'), config('bug', Bug, 'Bug discussion', 'base' as Ref<DefaultDiscussion>)]
-    )
-    expect(updates(await OnDiscussionOwnerClassChanged([changeType()], control))).toEqual([
-      { objectId: 'd1', operations: { attachedToClass: Bug, defaultDiscussion: 'bug', name: 'Bug discussion' } }
     ])
   })
 

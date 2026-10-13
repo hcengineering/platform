@@ -87,24 +87,14 @@ export function withDiscussionVisibility (
 export const defaultDiscussionVisibilityLevels: ObjectVisibility[] = ['public', 'participants']
 
 /**
- * Resolves default discussions along a class chain ordered from the concrete class to its ancestors.
- * A child configuration replaces only the active configuration referenced by its overrides field.
+ * Default discussions of a class chain, ordered from the topmost ancestor to the concrete class.
  * @public
  */
 export function getEffectiveDefaultDiscussions (
   configs: DefaultDiscussion[],
   ancestors: Ref<Classifier>[]
 ): DefaultDiscussion[] {
-  const result: DefaultDiscussion[] = []
-  for (const ofClass of [...ancestors].reverse()) {
-    for (const config of configs) {
-      if (config.ofClass !== ofClass) continue
-      const replaced = result.findIndex((item) => item._id === config.overrides)
-      if (replaced !== -1) result.splice(replaced, 1)
-      result.push(config)
-    }
-  }
-  return result
+  return [...ancestors].reverse().flatMap((ofClass) => configs.filter((config) => config.ofClass === ofClass))
 }
 
 /**

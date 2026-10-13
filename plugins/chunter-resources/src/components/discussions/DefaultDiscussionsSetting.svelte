@@ -21,7 +21,7 @@
   } from '@hcengineering/chunter'
   import core, { type Class, type Doc, type ObjectVisibility, type Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ButtonIcon, EditBox, Icon, IconAdd, IconCopy, IconDelete, Label } from '@hcengineering/ui'
+  import { ButtonIcon, EditBox, Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
 
   import chunter from '../../plugin'
   import DiscussionVisibilityMenu from './DiscussionVisibilityMenu.svelte'
@@ -78,29 +78,6 @@
     if (visibility !== item.visibility) await client.update(item, { visibility })
   }
 
-  let overriding = new Set<Ref<DefaultDiscussion>>()
-
-  async function override (item: DefaultDiscussion): Promise<void> {
-    // Guard against repeated clicks creating several overrides of the same configuration.
-    if (overriding.has(item._id) || items.some((it) => it.overrides === item._id)) return
-    overriding = new Set(overriding).add(item._id)
-    try {
-      await createOverride(item)
-    } finally {
-      overriding.delete(item._id)
-      overriding = overriding
-    }
-  }
-
-  async function createOverride (item: DefaultDiscussion): Promise<void> {
-    await client.createDoc(chunter.class.DefaultDiscussion, core.space.Model, {
-      ofClass: masterTag._id,
-      name: item.name,
-      visibility: item.visibility,
-      overrides: item._id
-    })
-  }
-
   // Already created discussions stay as regular ones.
   async function remove (item: DefaultDiscussion): Promise<void> {
     await client.remove(item)
@@ -138,14 +115,6 @@
           ><Label label={chunter.string.InheritedDefaultDiscussion} />
           <Label label={hierarchy.getClass(item.ofClass).label} /></span
         >
-        <ButtonIcon
-          icon={IconCopy}
-          kind="tertiary"
-          size="small"
-          disabled={overriding.has(item._id)}
-          tooltip={{ label: chunter.string.OverrideDefaultDiscussion }}
-          on:click={() => void override(item)}
-        />
       </div>
     {/each}
     {#key resetKey}

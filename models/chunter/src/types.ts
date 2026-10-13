@@ -131,9 +131,6 @@ export class TDefaultDiscussion extends TDoc implements DefaultDiscussion {
 
   @Prop(TypeString(), chunter.string.Visibility)
     visibility!: ObjectVisibility
-
-  @Prop(TypeRef(chunter.class.DefaultDiscussion), chunter.string.OverrideDefaultDiscussion)
-    overrides?: Ref<DefaultDiscussion>
 }
 
 @Model(chunter.class.DirectMessage, chunter.class.ChunterSpace)
