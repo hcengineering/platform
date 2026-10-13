@@ -332,8 +332,8 @@
     void refresh()
   }
 
-  function onSortChange (e: CustomEvent<typeof sort>): void {
-    sort = e.detail
+  function onSortChange (e: CustomEvent<{ field: string, direction: 'asc' | 'desc' } | undefined>): void {
+    sort = e.detail as typeof sort
     void refresh()
   }
 

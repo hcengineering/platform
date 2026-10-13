@@ -81,9 +81,9 @@
 <div class="popup" data-drawer-keep-open>
   <h3>Create user</h3>
   <div class="grid">
-    <label>First name<EditBox bind:value={firstName} placeholder={'Jane'} /></label>
-    <label>Last name<EditBox bind:value={lastName} placeholder={'Doe'} /></label>
-    <label class="full">Email<EditBox bind:value={email} placeholder={'jane@example.com'} /></label>
+    <label>First name<EditBox bind:value={firstName} placeholder={getEmbeddedLabel('Jane')} /></label>
+    <label>Last name<EditBox bind:value={lastName} placeholder={getEmbeddedLabel('Doe')} /></label>
+    <label class="full">Email<EditBox bind:value={email} placeholder={getEmbeddedLabel('jane@example.com')} /></label>
     <fieldset class="full">
       <legend>Password setup</legend>
       <label><input type="radio" bind:group={passwordMode} value="invite" /> Send invite email</label>

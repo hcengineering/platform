@@ -6,7 +6,7 @@
   import { Button, DropdownLabelsIntl, Loading, Scroller, showPopup, type DropdownIntlItem } from '@hcengineering/ui'
   import { MessageBox } from '@hcengineering/presentation'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { AccountRole } from '@hcengineering/core'
+  import { AccountRole, type AccountUuid } from '@hcengineering/core'
   import { getAccountClient } from '../../utils'
   import type { WorkspaceMembersAdminResponse, AuditEntry } from '@hcengineering/account-client'
   import type { WorkspaceUuid } from '@hcengineering/core'
@@ -88,11 +88,7 @@
 
   async function onChangeRole (accountUuid: string, role: AccountRole): Promise<void> {
     try {
-      await client.setWorkspaceMemberRole({
-        accountUuid: accountUuid as any,
-        workspaceUuid: workspaceUuid as any,
-        newRole: role
-      })
+      await client.setWorkspaceMemberRole(accountUuid as AccountUuid, workspaceUuid as WorkspaceUuid, role)
       await load()
     } catch (e: any) {
       err = e?.message ?? String(e)
@@ -110,10 +106,7 @@
       okLabel: getEmbeddedLabel('Remove'),
       dangerous: true,
       action: async () => {
-        await client.removeWorkspaceMember({
-          accountUuid: accountUuid as any,
-          workspaceUuid: workspaceUuid as any
-        })
+        await client.removeWorkspaceMember(accountUuid as AccountUuid, workspaceUuid as WorkspaceUuid)
         await load()
       }
     })

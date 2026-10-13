@@ -273,12 +273,13 @@
   }
 
   function onCopyEmail (): void {
-    if (details?.primaryEmail == null || details.primaryEmail === '') {
+    const email = details?.socialIds.find((s) => s.type === 'email')?.value
+    if (email == null || email === '') {
       notify('No email', 'This user has no primary email.', true)
       return
     }
-    void copyTextToClipboard(details.primaryEmail)
-    notify('Copied', `Email ${details.primaryEmail} copied.`)
+    void copyTextToClipboard(email)
+    notify('Copied', `Email ${email} copied.`)
   }
 
   function tryClose (): void {
@@ -407,14 +408,14 @@
                 kind={'tertiary'}
                 size={'small'}
                 on:click={onCopyUuid}
-                showTooltip={{ label: getEmbeddedLabel('Copy UUID') }}
+                tooltip={{ label: getEmbeddedLabel('Copy UUID') }}
               />
               <ButtonIcon
                 icon={IconCopy}
                 kind={'tertiary'}
                 size={'small'}
                 on:click={onCopyEmail}
-                showTooltip={{ label: getEmbeddedLabel('Copy email') }}
+                tooltip={{ label: getEmbeddedLabel('Copy email') }}
               />
             </div>
           </div>
