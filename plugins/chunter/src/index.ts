@@ -223,6 +223,7 @@ export default plugin(chunterId, {
     NotAttached: '' as IntlString,
     MarkAsResolved: '' as IntlString,
     ReopenDiscussion: '' as IntlString,
+    HideResolvedDiscussions: '' as IntlString,
     ParticipantsCount: '' as IntlString,
     ConvertToPrivate: '' as IntlString,
     DirectNotificationTitle: '' as IntlString,

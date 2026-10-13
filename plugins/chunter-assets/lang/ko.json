@@ -165,6 +165,7 @@
     "NotAttached": "연결 안 됨",
     "MarkAsResolved": "해결됨으로 표시",
     "ReopenDiscussion": "토론 다시 열기",
+    "HideResolvedDiscussions": "해결됨 숨기기",
     "ParticipantsCount": "{count, plural, other {참여자 #명}}",
     "AddAllCollaborators": "카드 협업자 모두 추가 ({count})",
     "Discussion": "토론",

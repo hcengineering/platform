@@ -100,7 +100,12 @@ import {
   summarizeMessages,
   canSummarizeMessages
 } from './utils'
-import { canDeleteDiscussionAction, canManageDiscussionAction, setDiscussionResolvedAction } from './discussion-actions'
+import {
+  canDeleteDiscussionAction,
+  canManageDiscussionAction,
+  hideResolvedDiscussions,
+  setDiscussionResolvedAction
+} from './discussion-actions'
 
 export { default as ChannelEmbeddedContent } from './components/ChannelEmbeddedContent.svelte'
 export { default as ChatMessageInput } from './components/chat-message/ChatMessageInput.svelte'
@@ -218,6 +223,7 @@ export default async (): Promise<Resources> => ({
     MembersChangedMessage
   },
   function: {
+    HideResolvedDiscussions: hideResolvedDiscussions,
     CanDeleteDiscussion: canDeleteDiscussionAction,
     CanManageDiscussion: canManageDiscussionAction,
     GetChunterNotificationStore: getChunterNotificationStore,

@@ -164,6 +164,7 @@
     "NotAttached": "未关联",
     "MarkAsResolved": "标记为已解决",
     "ReopenDiscussion": "重新打开讨论",
+    "HideResolvedDiscussions": "隐藏已解决",
     "ParticipantsCount": "{count, plural, other {# 位参与者}}",
     "AddAllCollaborators": "添加卡片的所有协作者（{count}）",
     "Discussion": "讨论",

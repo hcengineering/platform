@@ -52,10 +52,17 @@
 
   $: config = preference?.config ?? viewlet?.config ?? []
 
-  $: discussionsQuery.query(chunter.class.Discussion, { attachedTo: doc._id }, (result) => {
-    discussions = result
-    dispatch('loaded')
-  })
+  // Keeps the counter and the empty state in line with the "hide resolved" viewlet option.
+  $: hideResolved = viewOptions?.hideResolved === true
+
+  $: discussionsQuery.query(
+    chunter.class.Discussion,
+    hideResolved ? { attachedTo: doc._id, resolved: false } : { attachedTo: doc._id },
+    (result) => {
+      discussions = result
+      dispatch('loaded')
+    }
+  )
 
   $: canCreate = canCreateDiscussion() && $permissions.canComment(doc)
 

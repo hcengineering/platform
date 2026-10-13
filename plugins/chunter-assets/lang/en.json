@@ -61,6 +61,7 @@
     "NotAttached": "Not attached",
     "MarkAsResolved": "Mark as resolved",
     "ReopenDiscussion": "Reopen discussion",
+    "HideResolvedDiscussions": "Hide resolved",
     "ParticipantsCount": "{count, plural, =1 {# participant} other {# participants}}",
     "AddToSaved": "Add to saved",
     "RemoveFromSaved": "Remove from saved",

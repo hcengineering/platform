@@ -165,6 +165,7 @@
     "NotAttached": "Bağlı değil",
     "MarkAsResolved": "Çözüldü olarak işaretle",
     "ReopenDiscussion": "Tartışmayı yeniden aç",
+    "HideResolvedDiscussions": "Çözülenleri gizle",
     "ParticipantsCount": "{count, plural, one {# katılımcı} other {# katılımcı}}",
     "AddAllCollaborators": "Kartın tüm ortak çalışanlarını ekle ({count})",
     "Discussion": "Tartışma",

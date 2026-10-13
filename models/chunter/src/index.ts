@@ -273,7 +273,16 @@ export function createModel (builder: Builder): void {
       viewOptions: {
         groupBy: [],
         orderBy: [['modifiedOn', SortingOrder.Descending]],
-        other: []
+        other: [
+          {
+            key: 'hideResolved',
+            type: 'toggle',
+            defaultValue: false,
+            actionTarget: 'query',
+            action: chunter.function.HideResolvedDiscussions,
+            label: chunter.string.HideResolvedDiscussions
+          }
+        ]
       }
     },
     chunter.viewlet.DiscussionList

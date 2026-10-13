@@ -164,6 +164,7 @@
     "NotAttached": "Sem vínculo",
     "MarkAsResolved": "Marcar como resolvido",
     "ReopenDiscussion": "Reabrir discussão",
+    "HideResolvedDiscussions": "Ocultar resolvidos",
     "ParticipantsCount": "{count, plural, one {# participante} other {# participantes}}",
     "AddAllCollaborators": "Adicionar todos os colaboradores do cartão ({count})",
     "Discussion": "Discussão",

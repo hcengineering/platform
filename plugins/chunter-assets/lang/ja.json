@@ -165,6 +165,7 @@
     "NotAttached": "関連付けなし",
     "MarkAsResolved": "解決済みにする",
     "ReopenDiscussion": "ディスカッションを再開",
+    "HideResolvedDiscussions": "解決済みを非表示",
     "ParticipantsCount": "{count, plural, other {#人の参加者}}",
     "AddAllCollaborators": "カードの共同作業者をすべて追加（{count}）",
     "Discussion": "ディスカッション",
