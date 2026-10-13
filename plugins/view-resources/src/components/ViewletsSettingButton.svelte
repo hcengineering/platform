@@ -19,7 +19,7 @@
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import { getViewOptions, viewOptionStore } from '../viewOptions'
+  import { getViewletDefaultOptions, getViewOptions, viewOptionStore } from '../viewOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
   import { restrictionStore } from '../utils'
@@ -47,7 +47,7 @@
     })
   }
 
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore, getViewletDefaultOptions(viewlet))
 
   const query = createQuery()
 

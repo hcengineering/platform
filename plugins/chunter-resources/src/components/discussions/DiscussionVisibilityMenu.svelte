@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact from '@hcengineering/contact'
   import { type Class, type Doc, type ObjectVisibility, type Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
@@ -48,13 +47,13 @@
   $: allItems = [
     {
       id: 'public',
-      icon: chunter.icon.Hashtag,
+      icon: chunter.icon.Globe,
       label: chunter.string.VisibilitySpace,
       description: chunter.string.VisibilitySpaceDescription
     },
     {
       id: 'participants',
-      icon: contact.icon.ComponentMembers,
+      icon: chunter.icon.Collaborators,
       // The class label is translated asynchronously.
       label: parentLabel !== '' ? chunter.string.VisibilityParticipants : notification.string.Collaborators,
       params: { label: parentLabel },

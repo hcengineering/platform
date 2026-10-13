@@ -158,6 +158,8 @@ export default plugin(chunterId, {
     Hashtag: '' as Asset,
     Thread: '' as Asset,
     Lock: '' as Asset,
+    Collaborators: '' as Asset,
+    Globe: '' as Asset,
     ChannelBrowser: '' as Asset,
     ChunterBrowser: '' as Asset,
     Copy: '' as Asset,

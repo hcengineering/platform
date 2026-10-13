@@ -15,7 +15,6 @@
 -->
 <script lang="ts">
   import { type Discussion, getDiscussionTitle } from '@hcengineering/chunter'
-  import contact from '@hcengineering/contact'
   import { Icon, IconCheckCircle, Label } from '@hcengineering/ui'
   import { type ObjectPresenterType } from '@hcengineering/view'
   import { DocNavLink } from '@hcengineering/view-resources'
@@ -64,10 +63,7 @@
           {#if shouldShowAvatar}
             <Icon icon={value.resolved ? IconCheckCircle : chunter.icon.Thread} size="small" />
             {#if visibility !== 'public'}
-              <Icon
-                icon={visibility === 'private' ? chunter.icon.Lock : contact.icon.ComponentMembers}
-                size="x-small"
-              />
+              <Icon icon={visibility === 'private' ? chunter.icon.Lock : chunter.icon.Collaborators} size="x-small" />
             {/if}
           {/if}
         {/if}

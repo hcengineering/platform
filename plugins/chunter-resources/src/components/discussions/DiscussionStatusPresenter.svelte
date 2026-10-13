@@ -14,31 +14,47 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import chunter from '@hcengineering/chunter'
-  import { Icon, IconCheckCircle, Label, tooltip } from '@hcengineering/ui'
-  import view from '@hcengineering/view'
+  import { type Discussion } from '@hcengineering/chunter'
+  import { Icon, IconCheckCircle, tooltip } from '@hcengineering/ui'
 
-  export let value: boolean = false
+  import chunter from '../../plugin'
+  import { getDiscussionVisibility } from '../../utils'
 
-  $: label = value ? chunter.string.Resolved : chunter.string.Unresolved
+  export let value: Discussion | undefined = undefined
+
+  $: resolved = value?.resolved === true
+  $: visibility = value !== undefined ? getDiscussionVisibility(value) : 'public'
+
+  // A resolved discussion shows the resolved mark, an active one shows its visibility level.
+  $: icon = resolved
+    ? IconCheckCircle
+    : visibility === 'private'
+      ? chunter.icon.Lock
+      : visibility === 'participants'
+        ? chunter.icon.Collaborators
+        : chunter.icon.Globe
+  $: label = resolved
+    ? chunter.string.Resolved
+    : visibility === 'private'
+      ? chunter.string.VisibilityMembersDescription
+      : visibility === 'participants'
+        ? chunter.string.VisibilityParticipantsDescription
+        : chunter.string.VisibilitySpaceDescription
 </script>
 
-<span class="flex-center caption-color" class:resolved={value} use:tooltip={{ label }}>
-  <Icon icon={value ? IconCheckCircle : view.icon.Circle} size="small" />
-  <span class="status-label"><Label {label} /></span>
+<span class="status flex-center caption-color" class:resolved>
+  <span class="flex-center" use:tooltip={{ label }}>
+    <Icon {icon} size="small" />
+  </span>
 </span>
 
 <style lang="scss">
-  .resolved {
-    color: var(--positive-button-default);
+  .status {
+    width: 1rem;
+    height: 1rem;
   }
 
-  .status-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+  .resolved {
+    color: var(--positive-button-default);
   }
 </style>

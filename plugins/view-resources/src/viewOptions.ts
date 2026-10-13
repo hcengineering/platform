@@ -84,6 +84,23 @@ function _getViewOptions (viewlet: Viewlet, viewOptionStore: Map<string, ViewOpt
   return res
 }
 
+/**
+ * Default options of the viewlet: the first group and order from its model and the default value of every other option.
+ * @public
+ */
+export function getViewletDefaultOptions (viewlet: Viewlet | undefined): ViewOptions {
+  const model = viewlet?.viewOptions
+  if (model == null) return { ...defaultOptions }
+  const res: ViewOptions = {
+    groupBy: [model.groupBy?.[0] ?? defaultOptions.groupBy[0]],
+    orderBy: model.orderBy?.[0] ?? defaultOptions.orderBy
+  }
+  for (const opt of model.other ?? []) {
+    res[opt.key] = opt.defaultValue
+  }
+  return res
+}
+
 export function getViewOptions (
   viewlet: Viewlet | undefined,
   viewOptionStore: Map<string, ViewOptions>,
