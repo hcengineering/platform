@@ -14,7 +14,8 @@
 -->
 
 <script lang="ts">
-  import core from '@hcengineering/core'
+  import type { MasterTag } from '@hcengineering/card'
+  import core, { ClassifierKind } from '@hcengineering/core'
   import type { Class, Doc, Ref } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import { Button, DropdownLabelsIntl, IconClose, Label } from '@hcengineering/ui'
@@ -32,12 +33,10 @@
   }
 
   $: items = hierarchy
-    .getDescendants(_class)
-    .filter((id) => !hierarchy.isMixin(id))
-    .map((id) => {
-      const clazz = hierarchy.getClass(id)
-      return { id, label: clazz.label }
-    })
+    .getDescendants(hierarchy.getBaseClass(_class))
+    .map((id) => hierarchy.getClass(id) as MasterTag)
+    .filter((clazz) => clazz.kind === ClassifierKind.CLASS && clazz.removed !== true)
+    .map((clazz) => ({ id: clazz._id, label: clazz.label }))
 </script>
 
 <div class="labelOnPanel">
