@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import type { WorkspaceLoginInfo } from '@hcengineering/account'
 import {
   type Account,
   type Class,
@@ -54,13 +55,29 @@ export class WorkspaceRestClient {
     workspaceUrl: string
   ): Promise<WorkspaceRestClient> {
     const info = await new ApiEndpoint(request).getWorkspaceLoginInfo(email, password, workspaceUrl)
+    return await WorkspaceRestClient.connectWithLoginInfo(request, info, email)
+  }
+
+  /**
+   * Connects as the shared anonymous guest account, the same way the "Continue as a guest" link does.
+   */
+  static async connectAnonymous (request: APIRequestContext, workspaceUrl: string): Promise<WorkspaceRestClient> {
+    const info = await new ApiEndpoint(request).getAnonymousWorkspaceLoginInfo(workspaceUrl)
+    return await WorkspaceRestClient.connectWithLoginInfo(request, info, 'anonymous guest')
+  }
+
+  private static async connectWithLoginInfo (
+    request: APIRequestContext,
+    info: WorkspaceLoginInfo & { token: string },
+    who: string
+  ): Promise<WorkspaceRestClient> {
     // Same conversion as the platform REST client: ws://host -> http://host, wss://host -> https://host.
     const endpoint = info.endpoint.replace(/^ws/, 'http').replace(/\/$/, '')
     const response = await request.get(`${endpoint}/api/v1/account/${info.workspace}`, {
       headers: WorkspaceRestClient.headers(info.token)
     })
     if (!response.ok()) {
-      throw new Error(`Failed to get account of ${email}: ${response.status()} ${await response.text()}`)
+      throw new Error(`Failed to get account of ${who}: ${response.status()} ${await response.text()}`)
     }
     const account: Account = await response.json()
     return new WorkspaceRestClient(

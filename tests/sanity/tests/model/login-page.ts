@@ -10,6 +10,7 @@ export class LoginPage {
 
   inputEmail = (): Locator => this.page.locator('input[name=email]')
   inputPassword = (): Locator => this.page.locator('input[name=current-password]')
+  linkContinueAsGuest = (): Locator => this.page.locator('a.guest-link', { hasText: 'Continue as a guest' })
   buttonLogin = (): Locator => this.page.locator('button', { hasText: 'Log In' })
   loginWithPassword = (): Locator => this.page.locator('a', { hasText: 'Login with password' })
   linkSignUp = (): Locator => this.page.locator('a.title', { hasText: 'Sign Up' })
