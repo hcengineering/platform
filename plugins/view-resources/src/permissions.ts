@@ -357,8 +357,29 @@ function buildPermissions (
 }
 
 const accountStore = writable<Account | undefined>(undefined)
+const permissionsDataStore = writable<PermissionsStore | undefined>(undefined)
+
+// Loaded on login, not at import: desktop imports this module before plugin locations are registered.
+let permissionsStoreState: 'idle' | 'loading' | 'loaded' = 'idle'
+function loadPermissionsStore (): void {
+  if (permissionsStoreState !== 'idle') return
+  permissionsStoreState = 'loading'
+  getResource(contact.store.Permissions)
+    .then((store) => {
+      permissionsStoreState = 'loaded'
+      store.subscribe((value) => {
+        permissionsDataStore.set(value)
+      })
+    })
+    .catch((err) => {
+      permissionsStoreState = 'idle'
+      console.error('failed to load the permissions store, space permissions will be denied', err)
+    })
+}
+
 onCurrentAccountChanged((account) => {
   accountStore.set(account)
+  loadPermissionsStore()
 })
 
 /**
@@ -367,20 +388,6 @@ onCurrentAccountChanged((account) => {
  * @public
  */
 export const currentAccountStore: Readable<Account | undefined> = accountStore
-
-const permissionsDataStore = writable<PermissionsStore | undefined>(undefined)
-void Promise.resolve()
-  .then(async () => {
-    const store = await getResource(contact.store.Permissions)
-    store.subscribe((value) => {
-      permissionsDataStore.set(value)
-    })
-  })
-  .catch((err) => {
-    // Without the store every store backed permission stays denied, so make the reason visible
-    // instead of leaving the user with a silently crippled UI.
-    console.error('failed to load the permissions store, space permissions will be denied', err)
-  })
 
 const basePermissions: Readable<Permissions> = derived(
   [accountStore, permissionsDataStore, restrictionStore],
