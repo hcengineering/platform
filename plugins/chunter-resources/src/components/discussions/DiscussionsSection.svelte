@@ -35,6 +35,7 @@
   export let doc: Doc
   export let readonly: boolean = false
   export let hidden: boolean = false
+  export let viewOptions: ViewOptions | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const discussionsQuery = createQuery()
@@ -71,11 +72,13 @@
 
   $: config = preference?.config ?? viewlet?.config ?? []
 
-  // The list is embedded, so it uses the options defined by the viewlet and ignores per-user overrides.
-  $: viewOptions = {
-    groupBy: [noCategory],
-    orderBy: viewlet?.viewOptions?.orderBy?.[0] ?? ['modifiedOn', SortingOrder.Descending]
-  } as ViewOptions
+  // Options passed by the parent win, otherwise the defaults of the viewlet are used.
+  $: effectiveViewOptions =
+    viewOptions ??
+    ({
+      groupBy: [noCategory],
+      orderBy: viewlet?.viewOptions?.orderBy?.[0] ?? ['modifiedOn', SortingOrder.Descending]
+    } as ViewOptions)
 
   $: discussionsQuery.query(chunter.class.Discussion, { attachedTo: doc._id }, (result) => {
     discussions = result
@@ -135,7 +138,7 @@
                 _class={chunter.class.Discussion}
                 query={{ attachedTo: doc._id }}
                 {config}
-                {viewOptions}
+                viewOptions={effectiveViewOptions}
                 viewOptionsConfig={viewlet.viewOptions?.other}
                 options={viewlet.options}
                 {listProvider}
