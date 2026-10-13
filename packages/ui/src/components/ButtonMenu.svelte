@@ -31,6 +31,7 @@
   export let disabled: boolean = false
   export let loading: boolean = false
   export let inheritColor: boolean = false
+  export let inheritFont: boolean = false
   export let noSelection: boolean = false
   export let noPrint: boolean = false
   export let autoSelectionIfOne: boolean = false
@@ -94,6 +95,7 @@
   {noPrint}
   {loading}
   {inheritColor}
+  {inheritFont}
   pressed={opened}
   {focusIndex}
   {id}

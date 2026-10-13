@@ -85,6 +85,7 @@
   tooltip={{ label: current.description ?? current.label }}
   {kind}
   {size}
+  inheritFont
   {disabled}
   dataId="discussionVisibility"
   on:selected={handleSelected}

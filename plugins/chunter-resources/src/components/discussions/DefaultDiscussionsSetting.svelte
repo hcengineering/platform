@@ -127,119 +127,82 @@
     on:click={addDraft}
   />
 </div>
-<div class="content">
-  <span class="description"><Label label={chunter.string.DefaultDiscussionsDescription} /></span>
-  {#if inherited.length > 0 || owned.length > 0 || draftName !== undefined}
-    <div class="list">
-      {#each inherited as item (item._id)}
-        <div class="row">
-          <div class="name inherited">
-            <span>{item.name}</span>
-            <span class="source"
-              ><Label label={chunter.string.InheritedDefaultDiscussion} />
-              <Label label={hierarchy.getClass(item.ofClass).label} /></span
-            >
-          </div>
-          <ButtonIcon
-            icon={IconCopy}
-            kind="tertiary"
-            size="small"
-            disabled={overriding.has(item._id)}
-            tooltip={{ label: chunter.string.OverrideDefaultDiscussion }}
-            on:click={() => void override(item)}
-          />
+{#if inherited.length > 0 || owned.length > 0 || draftName !== undefined}
+  <div class="hulyTableAttr-content task">
+    {#each inherited as item (item._id)}
+      <div class="hulyTableAttr-content__row row justify-start">
+        <div class="hulyTableAttr-content__row-label font-medium-14 name">
+          <span>{item.name}</span>
         </div>
-      {/each}
-      {#key resetKey}
-        {#each owned as item (item._id)}
-          <div class="row">
-            <div class="name">
-              <EditBox
-                value={item.name}
-                placeholder={chunter.string.Topic}
-                fullSize
-                on:keydown={blurOnEnter}
-                on:blur={(event) => void rename(item, event.detail ?? '')}
-              />
-            </div>
-            <DiscussionVisibilityMenu
-              value={item.visibility}
-              parentClass={masterTag._id}
-              levels={defaultDiscussionVisibilityLevels}
-              kind="tertiary"
-              size="small"
-              on:change={(event) => void changeVisibility(item, event.detail)}
-            />
-            <ButtonIcon icon={IconDelete} kind="tertiary" size="small" on:click={() => void remove(item)} />
-          </div>
-        {/each}
-      {/key}
-      {#if draftName !== undefined}
-        <div class="row">
-          <div class="name">
+        <span class="source"
+          ><Label label={chunter.string.InheritedDefaultDiscussion} />
+          <Label label={hierarchy.getClass(item.ofClass).label} /></span
+        >
+        <ButtonIcon
+          icon={IconCopy}
+          kind="tertiary"
+          size="small"
+          disabled={overriding.has(item._id)}
+          tooltip={{ label: chunter.string.OverrideDefaultDiscussion }}
+          on:click={() => void override(item)}
+        />
+      </div>
+    {/each}
+    {#key resetKey}
+      {#each owned as item (item._id)}
+        <div class="hulyTableAttr-content__row row justify-start">
+          <div class="hulyTableAttr-content__row-label font-medium-14 name">
             <EditBox
-              bind:value={draftName}
+              value={item.name}
               placeholder={chunter.string.Topic}
               fullSize
-              autoFocus
               on:keydown={blurOnEnter}
-              on:blur={() => void saveDraft()}
+              on:blur={(event) => void rename(item, event.detail ?? '')}
             />
           </div>
+          <DiscussionVisibilityMenu
+            value={item.visibility}
+            parentClass={masterTag._id}
+            levels={defaultDiscussionVisibilityLevels}
+            kind="tertiary"
+            size="small"
+            on:change={(event) => void changeVisibility(item, event.detail)}
+          />
+          <ButtonIcon icon={IconDelete} kind="tertiary" size="small" on:click={() => void remove(item)} />
         </div>
-      {/if}
-    </div>
-  {/if}
-</div>
+      {/each}
+    {/key}
+    {#if draftName !== undefined}
+      <div class="hulyTableAttr-content__row row justify-start">
+        <div class="hulyTableAttr-content__row-label font-medium-14 name">
+          <EditBox
+            bind:value={draftName}
+            placeholder={chunter.string.Topic}
+            fullSize
+            autoFocus
+            on:keydown={blurOnEnter}
+            on:blur={() => void saveDraft()}
+          />
+        </div>
+      </div>
+    {/if}
+  </div>
+{/if}
 
 <style lang="scss">
-  .content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-1);
-    padding: var(--spacing-1) var(--spacing-2) var(--spacing-2);
-  }
-
-  .description {
-    color: var(--global-secondary-TextColor);
-    font-size: 0.75rem;
-    line-height: 1.125rem;
-  }
-
-  .list {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.75rem;
-  }
-
-  .row {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-1);
-    min-height: 2.5rem;
-    padding: 0.25rem 0.5rem 0.25rem 0.875rem;
-    border-bottom: 1px solid var(--theme-divider-color);
-
-    &:last-child {
-      border-bottom: none;
-    }
+  .hulyTableAttr-content.task > .row {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
   }
 
   .name {
-    display: flex;
     flex: 1;
     min-width: 0;
-    font-size: 0.875rem;
-  }
-
-  .inherited {
-    align-items: center;
-    gap: var(--spacing-1);
   }
 
   .source {
+    flex-shrink: 0;
+    white-space: nowrap;
     color: var(--global-secondary-TextColor);
     font-size: 0.75rem;
   }
