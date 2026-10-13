@@ -348,7 +348,7 @@
    *
    * PNPM documentation: https://pnpm.io/package_json#pnpmpatcheddependencies
    */
-  "globalPatchedDependencies": {},
+  "globalPatchedDependencies": {"kafkajs@2.2.4":"patches/kafkajs@2.2.4.patch"},
 
   /**
    * (USE AT YOUR OWN RISK)  This is a free-form property bag that will be copied into

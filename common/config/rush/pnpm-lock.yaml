@@ -6,6 +6,11 @@ settings:
 
 pnpmfileChecksum: sha256-E1T7OJ3DLTjpDqf4RdJzK9VDtAxgm4gDEQCLYdHD8nI=
 
+patchedDependencies:
+  kafkajs@2.2.4:
+    hash: ef78ad6d6db935ce3d58bf155f56479e5b832e7166a088b2eaa7a376b3f6911d
+    path: patches/kafkajs@2.2.4.patch
+
 importers:
 
   .: {}
@@ -4479,7 +4484,7 @@ importers:
         version: link:../../../core/packages/storage
       kafkajs:
         specifier: ^2.2.4
-        version: 2.2.4
+        version: 2.2.4(patch_hash=ef78ad6d6db935ce3d58bf155f56479e5b832e7166a088b2eaa7a376b3f6911d)
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.21
@@ -30548,7 +30553,7 @@ importers:
         version: 16.6.1
       kafkajs:
         specifier: ^2.2.4
-        version: 2.2.4
+        version: 2.2.4(patch_hash=ef78ad6d6db935ce3d58bf155f56479e5b832e7166a088b2eaa7a376b3f6911d)
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.21
@@ -38669,7 +38674,7 @@ importers:
         version: 2.0.4
       kafkajs:
         specifier: ^2.2.4
-        version: 2.2.4
+        version: 2.2.4(patch_hash=ef78ad6d6db935ce3d58bf155f56479e5b832e7166a088b2eaa7a376b3f6911d)
       markdown-it:
         specifier: ^14.0.0
         version: 14.3.2
@@ -58889,7 +58894,7 @@ snapshots:
 
   jwt-simple@0.5.6: {}
 
-  kafkajs@2.2.4: {}
+  kafkajs@2.2.4(patch_hash=ef78ad6d6db935ce3d58bf155f56479e5b832e7166a088b2eaa7a376b3f6911d): {}
 
   katex@0.16.47:
     dependencies:
@@ -59418,6 +59423,14 @@ snapshots:
     optionalDependencies:
       postcss: 8.5.28
 
+  minimizer-webpack-plugin@5.10.1(webpack@5.111.0):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.31
+      jest-worker: 27.5.1
+      schema-utils: 4.5.0
+      terser: 5.51.2
+      webpack: 5.111.0
+
   minio@8.0.7:
     dependencies:
       async: 3.2.6
@@ -59591,7 +59604,7 @@ snapshots:
   node-loader@2.0.0(webpack@5.111.0):
     dependencies:
       loader-utils: 2.0.4
-      webpack: 5.111.0(esbuild@0.25.12)(postcss@8.5.28)(webpack-cli@5.1.4)
+      webpack: 5.111.0
 
   node-localstorage@2.2.1:
     dependencies:
@@ -62145,6 +62158,43 @@ snapshots:
       wildcard: 2.0.1
 
   webpack-sources@3.5.1: {}
+
+  webpack@5.111.0:
+    dependencies:
+      '@types/estree': 1.0.9
+      '@types/json-schema': 7.0.15
+      '@webassemblyjs/ast': 1.14.1
+      '@webassemblyjs/wasm-edit': 1.14.1
+      '@webassemblyjs/wasm-parser': 1.14.1
+      browserslist: 4.28.9
+      chrome-trace-event: 1.0.4
+      enhanced-resolve: 5.25.1
+      es-module-lexer: 2.3.2
+      events: 3.3.0
+      graceful-fs: 4.2.11
+      mime-db: 1.54.0
+      minimizer-webpack-plugin: 5.10.1(webpack@5.111.0)
+      schema-utils: 4.5.0
+      tapable: 2.3.3
+      watchpack: 2.5.2
+      webpack-sources: 3.5.1
+    transitivePeerDependencies:
+      - '@minify-html/node'
+      - '@napi-rs/image'
+      - '@swc/core'
+      - '@swc/css'
+      - '@swc/html'
+      - clean-css
+      - cssnano
+      - csso
+      - esbuild
+      - html-minifier-terser
+      - imagemin
+      - lightningcss
+      - postcss
+      - sharp
+      - svgo
+      - uglify-js
 
   webpack@5.111.0(esbuild@0.25.12)(postcss@8.5.28)(webpack-cli@5.1.4):
     dependencies:
