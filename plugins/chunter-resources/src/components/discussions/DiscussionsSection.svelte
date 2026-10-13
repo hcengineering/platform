@@ -15,16 +15,16 @@
 -->
 <script lang="ts">
   import { type Discussion } from '@hcengineering/chunter'
-  import core, { type Doc, type Ref, SortingOrder } from '@hcengineering/core'
+  import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonIcon, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
-  import view, { type Viewlet, type ViewletPreference, type ViewOptions } from '@hcengineering/view'
+  import { type Viewlet, type ViewletPreference, type ViewOptions } from '@hcengineering/view'
   import {
     List,
     ListSelectionProvider,
-    noCategory,
     permissions,
-    type SelectDirection
+    type SelectDirection,
+    ViewletsSettingButton
   } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
@@ -35,15 +35,13 @@
   export let doc: Doc
   export let readonly: boolean = false
   export let hidden: boolean = false
-  export let viewOptions: ViewOptions | undefined = undefined
 
   const dispatch = createEventDispatcher()
   const discussionsQuery = createQuery()
-  const viewletQuery = createQuery()
-  const preferenceQuery = createQuery()
   let discussions: Discussion[] = []
-  let viewlet: Viewlet | undefined
+  let viewlet: WithLookup<Viewlet> | undefined
   let preference: ViewletPreference | undefined
+  let viewOptions: ViewOptions | undefined
   let list: List
   const listProvider = new ListSelectionProvider(
     (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection, noScroll?: boolean) => {
@@ -52,33 +50,7 @@
   )
   const selection = listProvider.selection
 
-  $: viewletQuery.query(view.class.Viewlet, { _id: chunter.viewlet.DiscussionList }, (result) => {
-    viewlet = result[0]
-  })
-
-  $: if (viewlet !== undefined) {
-    preferenceQuery.query(
-      view.class.ViewletPreference,
-      { space: core.space.Workspace, attachedTo: viewlet._id },
-      (result) => {
-        preference = result[0]
-      },
-      { limit: 1 }
-    )
-  } else {
-    preferenceQuery.unsubscribe()
-    preference = undefined
-  }
-
   $: config = preference?.config ?? viewlet?.config ?? []
-
-  // Options passed by the parent win, otherwise the defaults of the viewlet are used.
-  $: effectiveViewOptions =
-    viewOptions ??
-    ({
-      groupBy: [noCategory],
-      orderBy: viewlet?.viewOptions?.orderBy?.[0] ?? ['modifiedOn', SortingOrder.Descending]
-    } as ViewOptions)
 
   $: discussionsQuery.query(chunter.class.Discussion, { attachedTo: doc._id }, (result) => {
     discussions = result
@@ -111,6 +83,13 @@
   <div class="discussions-section">
     <Section label={chunter.string.Discussions} icon={chunter.icon.Thread} counter={discussions.length}>
       <div slot="header" class="buttons-group small-gap">
+        <ViewletsSettingButton
+          bind:viewOptions
+          bind:viewlet
+          bind:preference
+          viewletQuery={{ _id: chunter.viewlet.DiscussionList }}
+          kind="tertiary"
+        />
         {#if !readonly && canCreate}
           <ButtonIcon
             icon={IconAdd}
@@ -130,7 +109,7 @@
               <Button kind="link" size="small" label={chunter.string.NewDiscussion} on:click={createDiscussion} />
             {/if}
           </div>
-        {:else if viewlet !== undefined}
+        {:else if viewlet !== undefined && viewOptions !== undefined}
           <div class="mt-3">
             {#key doc._id}
               <List
@@ -138,7 +117,7 @@
                 _class={chunter.class.Discussion}
                 query={{ attachedTo: doc._id }}
                 {config}
-                viewOptions={effectiveViewOptions}
+                {viewOptions}
                 viewOptionsConfig={viewlet.viewOptions?.other}
                 options={viewlet.options}
                 {listProvider}
