@@ -15,11 +15,17 @@
 -->
 <script lang="ts">
   import { type Discussion } from '@hcengineering/chunter'
-  import core, { type Doc, type Ref } from '@hcengineering/core'
+  import core, { type Doc, type Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonIcon, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
   import view, { type Viewlet, type ViewletPreference, type ViewOptions } from '@hcengineering/view'
-  import { List, ListSelectionProvider, permissions, type SelectDirection } from '@hcengineering/view-resources'
+  import {
+    List,
+    ListSelectionProvider,
+    noCategory,
+    permissions,
+    type SelectDirection
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import chunter from '../../plugin'
@@ -37,7 +43,6 @@
   let discussions: Discussion[] = []
   let viewlet: Viewlet | undefined
   let preference: ViewletPreference | undefined
-  let viewOptions: ViewOptions | undefined
   let list: List
   const listProvider = new ListSelectionProvider(
     (offset: 1 | -1 | 0, of?: Doc, direction?: SelectDirection, noScroll?: boolean) => {
@@ -65,6 +70,12 @@
   }
 
   $: config = preference?.config ?? viewlet?.config ?? []
+
+  // The list is embedded, so it uses the options defined by the viewlet and ignores per-user overrides.
+  $: viewOptions = {
+    groupBy: [noCategory],
+    orderBy: viewlet?.viewOptions?.orderBy?.[0] ?? ['modifiedOn', SortingOrder.Descending]
+  } as ViewOptions
 
   $: discussionsQuery.query(chunter.class.Discussion, { attachedTo: doc._id }, (result) => {
     discussions = result
@@ -116,7 +127,7 @@
               <Button kind="link" size="small" label={chunter.string.NewDiscussion} on:click={createDiscussion} />
             {/if}
           </div>
-        {:else if viewlet !== undefined && viewOptions !== undefined}
+        {:else if viewlet !== undefined}
           <div class="mt-3">
             {#key doc._id}
               <List
