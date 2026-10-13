@@ -151,6 +151,8 @@
     "DefaultDiscussion": "Domyślna dyskusja",
     "DefaultDiscussions": "Domyślne dyskusje",
     "DefaultDiscussionsDescription": "Te dyskusje są tworzone automatycznie podczas tworzenia nowej karty tego typu. Zmiana nazwy dotyczy także już utworzonych dyskusji, widoczność tylko nowych.",
+    "InheritedDefaultDiscussion": "Odziedziczone z",
+    "OverrideDefaultDiscussion": "Zastąp dyskusję",
     "DefaultDiscussionUnavailable": "Ta dyskusja jest dla Ciebie niedostępna. Poproś uczestnika karty o dostęp.",
     "AddDefaultDiscussion": "Dodaj domyślną dyskusję",
     "DeleteDiscussion": "Usuń dyskusję",

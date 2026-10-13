@@ -23,6 +23,7 @@ import chunter, {
   type DefaultDiscussion,
   type Discussion,
   getDefaultDiscussionVisibility,
+  getEffectiveDefaultDiscussions,
   getDiscussionTitle,
   ThreadMessage
 } from '@hcengineering/chunter'
@@ -431,7 +432,7 @@ async function OnChatMessageRemoved (txes: TxCUD<ChatMessage>[], control: Trigge
 }
 
 /**
- * Creates the default discussions configured for the exact owner class when the owner is created.
+ * Creates the default discussions configured for the owner class and its ancestors when the owner is created.
  * Viewing an existing object or adding a default configuration never creates discussions.
  * @public
  */
@@ -444,8 +445,7 @@ export async function OnDiscussionOwnerCreated (txes: Tx[], control: TriggerCont
     if (processed.has(createTx.objectId)) continue
     processed.add(createTx.objectId)
 
-    // Default discussions belong to the concrete type and are not inherited.
-    const configs = control.modelDb.findAllSync(chunter.class.DefaultDiscussion, { ofClass: createTx.objectClass })
+    const configs = getDefaultDiscussionConfigs(control, createTx.objectClass)
     if (configs.length === 0) continue
 
     // Server queries include discussions hidden from individual users.
@@ -486,14 +486,46 @@ export async function OnDiscussionOwnerCreated (txes: Tx[], control: TriggerCont
   return res
 }
 
-// The default discussion configured for the owner class it was created for, if it is still configured.
+// All configurations of the class and its ancestors, including the ones replaced by overrides.
+function getAllDefaultDiscussionConfigs (control: TriggerControl, ownerClass: Ref<Class<Doc>>): DefaultDiscussion[] {
+  const ancestors = control.hierarchy.getAncestors(ownerClass)
+  return control.modelDb.findAllSync(chunter.class.DefaultDiscussion, { ofClass: { $in: ancestors } })
+}
+
+function getDefaultDiscussionConfigs (control: TriggerControl, ownerClass: Ref<Class<Doc>>): DefaultDiscussion[] {
+  return getEffectiveDefaultDiscussions(
+    getAllDefaultDiscussionConfigs(control, ownerClass),
+    control.hierarchy.getAncestors(ownerClass)
+  )
+}
+
+// The effective configuration that replaces the given one through a chain of overrides, if any.
+function findOverridingConfig (
+  all: DefaultDiscussion[],
+  effective: DefaultDiscussion[],
+  id: Ref<DefaultDiscussion>
+): DefaultDiscussion | undefined {
+  let current = id
+  for (let i = 0; i < all.length; i++) {
+    const next = all.find((config) => config.overrides === current)
+    if (next === undefined) return undefined
+    if (effective.some((config) => config._id === next._id)) return next
+    current = next._id
+  }
+  return undefined
+}
+
+// The default discussion configured for the owner class or an ancestor, if it is still configured.
+// A discussion created before an override was added stays linked to the overridden configuration.
 function getConfiguredDefaultDiscussion (
   control: TriggerControl,
   discussion: Discussion
 ): DefaultDiscussion | undefined {
   if (discussion.defaultDiscussion === undefined) return undefined
   const config = control.modelDb.findAllSync(chunter.class.DefaultDiscussion, { _id: discussion.defaultDiscussion })[0]
-  return config?.ofClass === discussion.attachedToClass ? config : undefined
+  return config !== undefined && control.hierarchy.getAncestors(discussion.attachedToClass).includes(config.ofClass)
+    ? config
+    : undefined
 }
 
 /**
@@ -549,8 +581,8 @@ export async function OnDefaultDiscussionRenamed (txes: Tx[], control: TriggerCo
 
 /**
  * Keeps discussions consistent when the owner object changes its class (e.g. the card type is changed).
- * Default discussions are not inherited: one of the old type is linked to the entry of the new type with
- * the same name, if any, and becomes a regular discussion otherwise.
+ * A discussion keeps its source configuration if that configuration is still effective for the new class.
+ * Otherwise it is linked to an effective configuration with the same name, if any, or becomes regular.
  * @public
  */
 export async function OnDiscussionOwnerClassChanged (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -563,7 +595,8 @@ export async function OnDiscussionOwnerClassChanged (txes: Tx[], control: Trigge
 
     const discussions = await control.findAll(control.ctx, chunter.class.Discussion, { attachedTo: updateTx.objectId })
     if (discussions.length === 0) continue
-    const newConfigs = control.modelDb.findAllSync(chunter.class.DefaultDiscussion, { ofClass: newClass })
+    const allConfigs = getAllDefaultDiscussionConfigs(control, newClass)
+    const newConfigs = getEffectiveDefaultDiscussions(allConfigs, control.hierarchy.getAncestors(newClass))
     // Entries of the new type already used by a discussion of the object.
     const linked = new Set(
       discussions.map((it) => it.defaultDiscussion).filter((it) => newConfigs.some((config) => config._id === it))
@@ -575,7 +608,12 @@ export async function OnDiscussionOwnerClassChanged (txes: Tx[], control: Trigge
       const current = discussion.defaultDiscussion
       if (current !== undefined && !newConfigs.some((config) => config._id === current)) {
         const name = discussion.name?.trim()
-        const match = newConfigs.find((config) => !linked.has(config._id) && config.name.trim() === name)
+        // A configuration replaced by an override in the new class is relinked to its replacement first.
+        const replacement = findOverridingConfig(allConfigs, newConfigs, current)
+        const match =
+          replacement !== undefined && !linked.has(replacement._id)
+            ? replacement
+            : newConfigs.find((config) => !linked.has(config._id) && config.name.trim() === name)
         if (match !== undefined) {
           linked.add(match._id)
           operations.defaultDiscussion = match._id

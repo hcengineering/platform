@@ -150,6 +150,8 @@
     "DefaultDiscussion": "默认讨论",
     "DefaultDiscussions": "默认讨论",
     "DefaultDiscussionsDescription": "这些讨论会在创建此类型的新卡片时自动创建。重命名也会应用到已创建的讨论，可见性只应用到新讨论。",
+    "InheritedDefaultDiscussion": "继承自",
+    "OverrideDefaultDiscussion": "覆盖讨论",
     "DefaultDiscussionUnavailable": "您无法访问此讨论。请让卡片的参与者为您开放访问权限。",
     "AddDefaultDiscussion": "添加默认讨论",
     "DeleteDiscussion": "删除讨论",

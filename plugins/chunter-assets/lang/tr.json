@@ -151,6 +151,8 @@
     "DefaultDiscussion": "Varsayılan tartışma",
     "DefaultDiscussions": "Varsayılan tartışmalar",
     "DefaultDiscussionsDescription": "Bu tartışmalar, bu türde yeni bir kart oluşturulduğunda otomatik olarak oluşturulur. Yeniden adlandırma oluşturulmuş tartışmalara da uygulanır, görünürlük yalnızca yenilere.",
+    "InheritedDefaultDiscussion": "Devralındığı tür",
+    "OverrideDefaultDiscussion": "Tartışmayı geçersiz kıl",
     "DefaultDiscussionUnavailable": "Bu tartışmaya erişiminiz yok. Kartın bir katılımcısından erişim isteyin.",
     "AddDefaultDiscussion": "Varsayılan tartışma ekle",
     "DeleteDiscussion": "Tartışmayı sil",

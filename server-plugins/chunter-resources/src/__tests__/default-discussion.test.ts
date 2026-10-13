@@ -38,6 +38,8 @@ import {
 
 const Task = 'card:class:Task' as Ref<Class<Doc>>
 const Bug = 'card:class:Bug' as Ref<Class<Doc>>
+const Base = 'card:class:Base' as Ref<Class<Doc>>
+const Subtask = 'card:class:Subtask' as Ref<Class<Doc>>
 const factory = new TxFactory(core.account.System)
 const ownerIdentity = 'owner:identity' as PersonId
 const ownerAccount = 'owner-account' as AccountUuid
@@ -51,7 +53,12 @@ function matches (doc: Record<string, any>, query: Record<string, any>): boolean
   })
 }
 
-function config (_id: string, ofClass: Ref<Class<Doc>>, name: string): DefaultDiscussion {
+function config (
+  _id: string,
+  ofClass: Ref<Class<Doc>>,
+  name: string,
+  overrides?: Ref<DefaultDiscussion>
+): DefaultDiscussion {
   return {
     _id: _id as Ref<DefaultDiscussion>,
     _class: chunter.class.DefaultDiscussion,
@@ -60,7 +67,8 @@ function config (_id: string, ofClass: Ref<Class<Doc>>, name: string): DefaultDi
     modifiedOn: 0,
     ofClass,
     name,
-    visibility: 'participants'
+    visibility: 'participants',
+    ...(overrides !== undefined ? { overrides } : {})
   }
 }
 
@@ -100,6 +108,14 @@ function createControl (discussions: Discussion[], configs: DefaultDiscussion[])
     modelDb: {
       findAllSync: (_class: Ref<Class<Doc>>, query: Record<string, any>) =>
         _class === chunter.class.DefaultDiscussion ? configs.filter((it) => matches(it, query)) : []
+    },
+    hierarchy: {
+      getAncestors: (_class: Ref<Class<Doc>>) => {
+        if (_class === Subtask) return [Subtask, Task, Base, core.class.Doc]
+        if (_class === Task || _class === Bug) return [_class, Base, core.class.Doc]
+        if (_class === Base) return [Base, core.class.Doc]
+        return [_class]
+      }
     }
   } as unknown as TriggerControl
 }
@@ -156,6 +172,48 @@ describe('OnDiscussionOwnerCreated', () => {
     expect(createdDiscussions(result)).toEqual([
       expect.objectContaining({ attachedTo: 'card', defaultDiscussion: 'task-config' }),
       expect.objectContaining({ attachedTo: 'bug', defaultDiscussion: 'bug-config' })
+    ])
+  })
+
+  it('creates discussions configured on parent types for child cards', async () => {
+    const result = await OnDiscussionOwnerCreated(
+      [createOwner()],
+      createControl([], [config('base', Base, 'General'), config('task', Task, 'Review')])
+    )
+    expect(createdDiscussions(result)).toEqual([
+      expect.objectContaining({ defaultDiscussion: 'base', name: 'General', attachedToClass: Task }),
+      expect.objectContaining({ defaultDiscussion: 'task', name: 'Review', attachedToClass: Task })
+    ])
+  })
+
+  it('replaces an inherited configuration by its id without duplicating the discussion', async () => {
+    const result = await OnDiscussionOwnerCreated(
+      [createOwner()],
+      createControl(
+        [],
+        [config('base', Base, 'General'), config('task', Task, 'Task discussion', 'base' as Ref<DefaultDiscussion>)]
+      )
+    )
+    expect(createdDiscussions(result)).toEqual([
+      expect.objectContaining({ defaultDiscussion: 'task', name: 'Task discussion' })
+    ])
+  })
+
+  it('inherits an override and additional discussions through multiple subtype levels', async () => {
+    const result = await OnDiscussionOwnerCreated(
+      [createOwner('subtask', Subtask)],
+      createControl(
+        [],
+        [
+          config('base', Base, 'General'),
+          config('task', Task, 'Task discussion', 'base' as Ref<DefaultDiscussion>),
+          config('subtask', Subtask, 'Notes')
+        ]
+      )
+    )
+    expect(createdDiscussions(result)).toEqual([
+      expect.objectContaining({ attachedTo: 'subtask', defaultDiscussion: 'task' }),
+      expect.objectContaining({ attachedTo: 'subtask', defaultDiscussion: 'subtask' })
     ])
   })
 
@@ -231,6 +289,13 @@ describe('OnDefaultDiscussionRenamed', () => {
     ])
   })
 
+  it('restores the name of a discussion inherited from a parent type', async () => {
+    const control = createControl([discussion('d1', 'Renamed', Task, 'c1')], [config('c1', Base, 'General')])
+    expect(updates(await OnDefaultDiscussionRenamed([rename('d1')], control))).toEqual([
+      { objectId: 'd1', operations: { name: 'General' } }
+    ])
+  })
+
   it('keeps the name of a regular discussion or of a removed or foreign entry', async () => {
     const control = createControl(
       [
@@ -260,6 +325,23 @@ describe('OnDiscussionOwnerClassChanged', () => {
     expect(updates(await OnDiscussionOwnerClassChanged([changeType()], control))).toEqual([
       { objectId: 'd1', operations: { attachedToClass: Bug, defaultDiscussion: 'c2' } },
       { objectId: 'd2', operations: { attachedToClass: Bug } }
+    ])
+  })
+
+  it('keeps a parent configuration linked when changing between its child types', async () => {
+    const control = createControl([discussion('d1', 'General', Task, 'base')], [config('base', Base, 'General')])
+    expect(updates(await OnDiscussionOwnerClassChanged([changeType()], control))).toEqual([
+      { objectId: 'd1', operations: { attachedToClass: Bug } }
+    ])
+  })
+
+  it('relinks a discussion to the configuration that overrides its source in the new type', async () => {
+    const control = createControl(
+      [discussion('d1', 'General', Task, 'base')],
+      [config('base', Base, 'General'), config('bug', Bug, 'Bug discussion', 'base' as Ref<DefaultDiscussion>)]
+    )
+    expect(updates(await OnDiscussionOwnerClassChanged([changeType()], control))).toEqual([
+      { objectId: 'd1', operations: { attachedToClass: Bug, defaultDiscussion: 'bug', name: 'Bug discussion' } }
     ])
   })
 

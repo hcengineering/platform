@@ -17,6 +17,7 @@ import { deepEqual } from 'fast-equals'
 import core, {
   type AccountUuid,
   type AttachedData,
+  type Classifier,
   type Doc,
   type ObjectVisibility,
   type Ref,
@@ -84,6 +85,27 @@ export function withDiscussionVisibility (
  * @public
  */
 export const defaultDiscussionVisibilityLevels: ObjectVisibility[] = ['public', 'participants']
+
+/**
+ * Resolves default discussions along a class chain ordered from the concrete class to its ancestors.
+ * A child configuration replaces only the active configuration referenced by its overrides field.
+ * @public
+ */
+export function getEffectiveDefaultDiscussions (
+  configs: DefaultDiscussion[],
+  ancestors: Ref<Classifier>[]
+): DefaultDiscussion[] {
+  const result: DefaultDiscussion[] = []
+  for (const ofClass of [...ancestors].reverse()) {
+    for (const config of configs) {
+      if (config.ofClass !== ofClass) continue
+      const replaced = result.findIndex((item) => item._id === config.overrides)
+      if (replaced !== -1) result.splice(replaced, 1)
+      result.push(config)
+    }
+  }
+  return result
+}
 
 /**
  * The visibility a default discussion is created with. Private is not allowed for default discussions.

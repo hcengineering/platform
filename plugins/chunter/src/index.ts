@@ -85,6 +85,8 @@ export interface DefaultDiscussion extends Doc {
   name: string
   // The visibility the discussion is created with.
   visibility: ObjectVisibility
+  // A configuration from an ancestor class replaced for this class and its descendants.
+  overrides?: Ref<DefaultDiscussion>
 }
 
 /**
@@ -245,6 +247,8 @@ export default plugin(chunterId, {
     DefaultDiscussion: '' as IntlString,
     DefaultDiscussions: '' as IntlString,
     DefaultDiscussionsDescription: '' as IntlString,
+    InheritedDefaultDiscussion: '' as IntlString,
+    OverrideDefaultDiscussion: '' as IntlString,
     DefaultDiscussionUnavailable: '' as IntlString,
     AddDefaultDiscussion: '' as IntlString,
     ThreadMessage: '' as IntlString,

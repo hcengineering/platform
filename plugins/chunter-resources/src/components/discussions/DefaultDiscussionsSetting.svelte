@@ -14,10 +14,14 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type DefaultDiscussion, defaultDiscussionVisibilityLevels } from '@hcengineering/chunter'
-  import core, { type Class, type Doc, type ObjectVisibility } from '@hcengineering/core'
+  import {
+    type DefaultDiscussion,
+    defaultDiscussionVisibilityLevels,
+    getEffectiveDefaultDiscussions
+  } from '@hcengineering/chunter'
+  import core, { type Class, type Doc, type ObjectVisibility, type Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
-  import { ButtonIcon, EditBox, Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
+  import { ButtonIcon, EditBox, Icon, IconAdd, IconCopy, IconDelete, Label } from '@hcengineering/ui'
 
   import chunter from '../../plugin'
   import DiscussionVisibilityMenu from './DiscussionVisibilityMenu.svelte'
@@ -29,12 +33,16 @@
   const DEFAULT_VISIBILITY: ObjectVisibility = 'participants'
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const query = createQuery()
 
   let items: DefaultDiscussion[] = []
-  $: query.query(chunter.class.DefaultDiscussion, { ofClass: masterTag._id }, (result) => {
+  $: ancestors = hierarchy.getAncestors(masterTag._id)
+  $: query.query(chunter.class.DefaultDiscussion, { ofClass: { $in: ancestors as Ref<Class<Doc>>[] } }, (result) => {
     items = result
   })
+  $: inherited = getEffectiveDefaultDiscussions(items, ancestors).filter((item) => item.ofClass !== masterTag._id)
+  $: owned = items.filter((item) => item.ofClass === masterTag._id)
 
   // A new default discussion is stored once it gets a name.
   let draftName: string | undefined = undefined
@@ -70,6 +78,29 @@
     if (visibility !== item.visibility) await client.update(item, { visibility })
   }
 
+  let overriding = new Set<Ref<DefaultDiscussion>>()
+
+  async function override (item: DefaultDiscussion): Promise<void> {
+    // Guard against repeated clicks creating several overrides of the same configuration.
+    if (overriding.has(item._id) || items.some((it) => it.overrides === item._id)) return
+    overriding = new Set(overriding).add(item._id)
+    try {
+      await createOverride(item)
+    } finally {
+      overriding.delete(item._id)
+      overriding = overriding
+    }
+  }
+
+  async function createOverride (item: DefaultDiscussion): Promise<void> {
+    await client.createDoc(chunter.class.DefaultDiscussion, core.space.Model, {
+      ofClass: masterTag._id,
+      name: item.name,
+      visibility: item.visibility,
+      overrides: item._id
+    })
+  }
+
   // Already created discussions stay as regular ones.
   async function remove (item: DefaultDiscussion): Promise<void> {
     await client.remove(item)
@@ -98,10 +129,29 @@
 </div>
 <div class="content">
   <span class="description"><Label label={chunter.string.DefaultDiscussionsDescription} /></span>
-  {#if items.length > 0 || draftName !== undefined}
+  {#if inherited.length > 0 || owned.length > 0 || draftName !== undefined}
     <div class="list">
+      {#each inherited as item (item._id)}
+        <div class="row">
+          <div class="name inherited">
+            <span>{item.name}</span>
+            <span class="source"
+              ><Label label={chunter.string.InheritedDefaultDiscussion} />
+              <Label label={hierarchy.getClass(item.ofClass).label} /></span
+            >
+          </div>
+          <ButtonIcon
+            icon={IconCopy}
+            kind="tertiary"
+            size="small"
+            disabled={overriding.has(item._id)}
+            tooltip={{ label: chunter.string.OverrideDefaultDiscussion }}
+            on:click={() => void override(item)}
+          />
+        </div>
+      {/each}
       {#key resetKey}
-        {#each items as item (item._id)}
+        {#each owned as item (item._id)}
           <div class="row">
             <div class="name">
               <EditBox
@@ -182,5 +232,15 @@
     flex: 1;
     min-width: 0;
     font-size: 0.875rem;
+  }
+
+  .inherited {
+    align-items: center;
+    gap: var(--spacing-1);
+  }
+
+  .source {
+    color: var(--global-secondary-TextColor);
+    font-size: 0.75rem;
   }
 </style>
