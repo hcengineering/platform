@@ -7,9 +7,7 @@ function createCtx (): MeasureContext {
   return { with: async (_name: string, _params: any, op: any) => await op() } as unknown as MeasureContext
 }
 
-/**
- * Mimics postgres.js behaviour: DDL statements (CREATE TABLE/INDEX) resolve with `count === null`.
- */
+// Like postgres.js, DDL resolves with count === null.
 function createMockClient (existingTables: string[] = []): { client: postgres.Sql, queries: string[] } {
   const queries: string[] = []
   const unsafe = jest.fn(async (query: string) => {
@@ -31,7 +29,7 @@ const indexQueries = (queries: string[]): string[] =>
   queries.filter((q) => q.includes('CREATE INDEX')).map((q) => q.replace(/\s+/g, ' ').trim())
 
 describe('createTables - index creation', () => {
-  // Module-level caches (loadedTables/loadedDomains) are keyed by url + domain, so each test uses unique ones.
+  // Module-level caches are keyed by url + domain, so each test needs its own.
   let seq = 0
   const uniq = (): { url: string, domain: string } => {
     seq++

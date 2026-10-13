@@ -167,11 +167,8 @@ async function createTable (client: postgres.Sql, domain: string): Promise<void>
       data JSONB NOT NULL,
       PRIMARY KEY("workspaceId", _id)
     )`)
-  // NOTE: postgres.js returns `count = null` for DDL statements, so it can't be used to detect
-  // whether the table was actually created. createTable is only called for tables missing from
-  // information_schema, and IF NOT EXISTS makes index creation safe against concurrent creators.
-  // The `_idx` suffix keeps index names out of the table namespace: indexes and tables share it in
-  // Postgres, so e.g. index notification(user) would otherwise clash with table notification_user.
+  // postgres.js reports count = null for DDL, so it can't tell whether the table was created.
+  // `_idx` suffix: indexes and tables share a namespace (index notification(user) vs table notification_user).
   for (const key in schema) {
     const val = schema[key]
     if (val.index) {
