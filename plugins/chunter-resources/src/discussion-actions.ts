@@ -14,7 +14,7 @@
 //
 
 import chunter, { type Discussion } from '@hcengineering/chunter'
-import { type Doc } from '@hcengineering/core'
+import { type Doc, type DocumentQuery } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
 import { canDeleteObject } from '@hcengineering/view-resources'
 
@@ -64,4 +64,12 @@ export async function setDiscussionResolvedAction (
   const resolved = props?.resolved
   if (typeof resolved !== 'boolean' || !(await canManageDiscussionAction(doc))) return
   await Promise.all(getDiscussionActionTargets(doc).map((discussion) => setDiscussionResolved(discussion, resolved)))
+}
+
+/**
+ * Viewlet option: hides resolved discussions from the list.
+ * @public
+ */
+export function hideResolvedDiscussions (value: boolean, query: DocumentQuery<Doc>): DocumentQuery<Doc> {
+  return value ? { ...query, resolved: false } : query
 }

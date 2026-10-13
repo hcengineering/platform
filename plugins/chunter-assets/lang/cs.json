@@ -164,6 +164,7 @@
     "NotAttached": "Nepřipojeno",
     "MarkAsResolved": "Označit jako vyřešené",
     "ReopenDiscussion": "Znovu otevřít diskuzi",
+    "HideResolvedDiscussions": "Skrýt vyřešené",
     "ParticipantsCount": "{count, plural, one {# účastník} few {# účastníci} other {# účastníků}}",
     "AddAllCollaborators": "Přidat všechny spolupracovníky karty ({count})",
     "Discussion": "Diskuze",

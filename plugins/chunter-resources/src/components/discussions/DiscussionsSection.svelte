@@ -15,11 +15,17 @@
 -->
 <script lang="ts">
   import { type Discussion } from '@hcengineering/chunter'
-  import core, { type Doc, type Ref } from '@hcengineering/core'
+  import { type Doc, type Ref, type WithLookup } from '@hcengineering/core'
   import { createQuery } from '@hcengineering/presentation'
   import { Button, ButtonIcon, IconAdd, Label, Section, showPopup } from '@hcengineering/ui'
-  import view, { type Viewlet, type ViewletPreference, type ViewOptions } from '@hcengineering/view'
-  import { List, ListSelectionProvider, permissions, type SelectDirection } from '@hcengineering/view-resources'
+  import { type Viewlet, type ViewletPreference, type ViewOptions } from '@hcengineering/view'
+  import {
+    List,
+    ListSelectionProvider,
+    permissions,
+    type SelectDirection,
+    ViewletsSettingButton
+  } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
 
   import chunter from '../../plugin'
@@ -32,10 +38,8 @@
 
   const dispatch = createEventDispatcher()
   const discussionsQuery = createQuery()
-  const viewletQuery = createQuery()
-  const preferenceQuery = createQuery()
   let discussions: Discussion[] = []
-  let viewlet: Viewlet | undefined
+  let viewlet: WithLookup<Viewlet> | undefined
   let preference: ViewletPreference | undefined
   let viewOptions: ViewOptions | undefined
   let list: List
@@ -46,30 +50,19 @@
   )
   const selection = listProvider.selection
 
-  $: viewletQuery.query(view.class.Viewlet, { _id: chunter.viewlet.DiscussionList }, (result) => {
-    viewlet = result[0]
-  })
-
-  $: if (viewlet !== undefined) {
-    preferenceQuery.query(
-      view.class.ViewletPreference,
-      { space: core.space.Workspace, attachedTo: viewlet._id },
-      (result) => {
-        preference = result[0]
-      },
-      { limit: 1 }
-    )
-  } else {
-    preferenceQuery.unsubscribe()
-    preference = undefined
-  }
-
   $: config = preference?.config ?? viewlet?.config ?? []
 
-  $: discussionsQuery.query(chunter.class.Discussion, { attachedTo: doc._id }, (result) => {
-    discussions = result
-    dispatch('loaded')
-  })
+  // Keeps the counter and the empty state in line with the "hide resolved" viewlet option.
+  $: hideResolved = viewOptions?.hideResolved === true
+
+  $: discussionsQuery.query(
+    chunter.class.Discussion,
+    hideResolved ? { attachedTo: doc._id, resolved: false } : { attachedTo: doc._id },
+    (result) => {
+      discussions = result
+      dispatch('loaded')
+    }
+  )
 
   $: canCreate = canCreateDiscussion() && $permissions.canComment(doc)
 
@@ -97,6 +90,13 @@
   <div class="discussions-section">
     <Section label={chunter.string.Discussions} icon={chunter.icon.Thread} counter={discussions.length}>
       <div slot="header" class="buttons-group small-gap">
+        <ViewletsSettingButton
+          bind:viewOptions
+          bind:viewlet
+          bind:preference
+          viewletQuery={{ _id: chunter.viewlet.DiscussionList }}
+          kind="tertiary"
+        />
         {#if !readonly && canCreate}
           <ButtonIcon
             icon={IconAdd}

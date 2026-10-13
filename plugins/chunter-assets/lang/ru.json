@@ -166,6 +166,7 @@
     "NotAttached": "Без привязки",
     "MarkAsResolved": "Отметить как решённое",
     "ReopenDiscussion": "Открыть заново",
+    "HideResolvedDiscussions": "Скрыть решённые",
     "ParticipantsCount": "{count, plural, one {# участник} few {# участника} other {# участников}}",
     "Discussion": "Обсуждение",
     "Discussions": "Обсуждения",
