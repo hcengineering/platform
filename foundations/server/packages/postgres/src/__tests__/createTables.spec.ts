@@ -3,14 +3,14 @@ import type postgres from 'postgres'
 import { addSchema, domainSchemas, translateDomain, type Schema } from '../schemas'
 import { createTables } from '../utils'
 
-function createCtx(): MeasureContext {
+function createCtx (): MeasureContext {
   return { with: async (_name: string, _params: any, op: any) => await op() } as unknown as MeasureContext
 }
 
 /**
  * Mimics postgres.js behaviour: DDL statements (CREATE TABLE/INDEX) resolve with `count === null`.
  */
-function createMockClient(existingTables: string[] = []): { client: postgres.Sql; queries: string[] } {
+function createMockClient (existingTables: string[] = []): { client: postgres.Sql, queries: string[] } {
   const queries: string[] = []
   const unsafe = jest.fn(async (query: string) => {
     queries.push(query)
@@ -33,7 +33,7 @@ const indexQueries = (queries: string[]): string[] =>
 describe('createTables - index creation', () => {
   // Module-level caches (loadedTables/loadedDomains) are keyed by url + domain, so each test uses unique ones.
   let seq = 0
-  const uniq = (): { url: string; domain: string } => {
+  const uniq = (): { url: string, domain: string } => {
     seq++
     return { url: `postgresql://test/${seq}`, domain: `idx_test_${seq}` }
   }

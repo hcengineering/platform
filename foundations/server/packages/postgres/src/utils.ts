@@ -59,7 +59,7 @@ export const NumericTypes = [
   core.class.Collection
 ]
 
-export async function createTables(
+export async function createTables (
   ctx: MeasureContext,
   client: postgres.Sql,
   url: string,
@@ -113,7 +113,7 @@ export async function createTables(
   }
 }
 
-async function getTableSchema(client: postgres.Sql, domains: string[]): Promise<void> {
+async function getTableSchema (client: postgres.Sql, domains: string[]): Promise<void> {
   const res = await client.unsafe(`SELECT column_name::name, data_type::text, is_nullable::text, table_name::name
             FROM information_schema.columns
             WHERE table_name IN (${domains.map((it) => `'${it}'`).join(', ')}) and table_schema = 'public'::name  
@@ -139,7 +139,7 @@ async function getTableSchema(client: postgres.Sql, domains: string[]): Promise<
   }
 }
 
-function parseDataType(type: string): DataType {
+function parseDataType (type: string): DataType {
   switch (type) {
     case 'text':
       return 'text'
@@ -153,7 +153,7 @@ function parseDataType(type: string): DataType {
   return 'text'
 }
 
-async function createTable(client: postgres.Sql, domain: string): Promise<void> {
+async function createTable (client: postgres.Sql, domain: string): Promise<void> {
   const schema = getSchema(domain)
   const fields: string[] = []
   for (const key in schema) {
@@ -182,7 +182,7 @@ async function createTable(client: postgres.Sql, domain: string): Promise<void> 
   }
 }
 
-export function convertDoc<T extends Doc>(
+export function convertDoc<T extends Doc> (
   domain: string,
   doc: T,
   workspaceId: WorkspaceUuid,
@@ -247,7 +247,7 @@ export function convertDoc<T extends Doc>(
   return res
 }
 
-export function inferType(val: any): string {
+export function inferType (val: any): string {
   if (typeof val === 'string') {
     return '::text'
   }
@@ -272,7 +272,7 @@ export function inferType(val: any): string {
   return ''
 }
 
-export function parseUpdate<T extends Doc>(
+export function parseUpdate<T extends Doc> (
   ops: DocumentUpdate<T> | MixinUpdate<Doc, T>,
   schemaFields: SchemaAndFields
 ): {
@@ -307,48 +307,48 @@ export function parseUpdate<T extends Doc>(
   }
 }
 
-export function escapeBackticks(str: string): string {
+export function escapeBackticks (str: string): string {
   if (typeof str !== 'string') return str
   return str.replaceAll("'", "''")
 }
 
-export function isOwner(account: Account): boolean {
+export function isOwner (account: Account): boolean {
   return account.role === AccountRole.Owner || account.uuid === systemAccountUuid
 }
 
 export class DBCollectionHelper implements DomainHelperOperations {
-  constructor(
+  constructor (
     protected readonly client: DBClient,
     protected readonly workspaceId: WorkspaceUuid
   ) {}
 
-  async dropIndex(domain: Domain, name: string): Promise<void> {}
+  async dropIndex (domain: Domain, name: string): Promise<void> {}
 
   domains = new Set<Domain>()
-  async create(domain: Domain): Promise<void> {}
+  async create (domain: Domain): Promise<void> {}
 
-  async exists(domain: Domain): Promise<boolean> {
+  async exists (domain: Domain): Promise<boolean> {
     // Always exists. We don't need to check for index existence
     return true
   }
 
-  async listDomains(): Promise<Set<Domain>> {
+  async listDomains (): Promise<Set<Domain>> {
     return this.domains
   }
 
-  async createIndex(domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }): Promise<void> {}
+  async createIndex (domain: Domain, value: string | FieldIndexConfig<Doc>, options?: { name: string }): Promise<void> {}
 
-  async listIndexes(domain: Domain): Promise<{ name: string }[]> {
+  async listIndexes (domain: Domain): Promise<{ name: string }[]> {
     return []
   }
 
-  async estimatedCount(domain: Domain): Promise<number> {
+  async estimatedCount (domain: Domain): Promise<number> {
     // We should always return 0, since no controlled index stuff is required for postgres driver
     return 0
   }
 }
 
-export function decodeArray(value: string): string[] {
+export function decodeArray (value: string): string[] {
   if (value === 'NULL') return []
   // Remove first and last character (the array brackets)
   const inner = value.substring(1, value.length - 1)
@@ -376,7 +376,7 @@ export function decodeArray(value: string): string[] {
   })
 }
 
-export function convertArrayParams(parameters?: ParameterOrJSON<any>[]): any[] | undefined {
+export function convertArrayParams (parameters?: ParameterOrJSON<any>[]): any[] | undefined {
   if (parameters === undefined) return undefined
   return parameters.map((param) => {
     if (Array.isArray(param)) {
@@ -392,7 +392,7 @@ export function convertArrayParams(parameters?: ParameterOrJSON<any>[]): any[] |
   })
 }
 
-export function filterProjection<T extends Doc>(data: any, projection: Projection<T> | undefined): any {
+export function filterProjection<T extends Doc> (data: any, projection: Projection<T> | undefined): any {
   if (projection === undefined) {
     return data
   }
@@ -444,7 +444,7 @@ export function filterProjection<T extends Doc>(data: any, projection: Projectio
   return data
 }
 
-export function parseDocWithProjection<T extends Doc>(
+export function parseDocWithProjection<T extends Doc> (
   doc: DBDoc,
   domain: string,
   projection?: Projection<T> | undefined
@@ -477,7 +477,7 @@ export function parseDocWithProjection<T extends Doc>(
   return res
 }
 
-export function toWithLookup<T extends Doc>(doc: T): WithLookup<T> {
+export function toWithLookup<T extends Doc> (doc: T): WithLookup<T> {
   const res = doc as WithLookup<T>
   if (res.$associations === undefined) {
     res.$associations = {}
@@ -488,7 +488,7 @@ export function toWithLookup<T extends Doc>(doc: T): WithLookup<T> {
   return res
 }
 
-export function parseDoc<T extends Doc>(doc: DBDoc, schema: Schema): T {
+export function parseDoc<T extends Doc> (doc: DBDoc, schema: Schema): T {
   const { workspaceId, data, ...rest } = doc
   for (const key in rest) {
     if ((rest as any)[key] === 'NULL' || (rest as any)[key] === null) {
@@ -518,7 +518,7 @@ export interface DBDoc extends Doc {
   [key: string]: any
 }
 
-export function isDataField(domain: string, field: string): boolean {
+export function isDataField (domain: string, field: string): boolean {
   return !getDocFieldsByDomains(domain).includes(field)
 }
 
@@ -534,7 +534,7 @@ export interface JoinProps {
   classes?: Ref<Class<Doc>>[] // filter by classes
 }
 
-export function escape<T>(str: T): T {
+export function escape<T> (str: T): T {
   if (typeof str === 'string') {
     // Remove all characters except a-z, A-Z, 0-9 and _ .
     // Add cyrillic for support old custom attributes
@@ -544,7 +544,7 @@ export function escape<T>(str: T): T {
   return str
 }
 
-export function simpleEscape<T>(str: T): T {
+export function simpleEscape<T> (str: T): T {
   if (typeof str === 'string') {
     return str.replace(/'/g, "''") as T
   }
