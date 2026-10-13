@@ -662,7 +662,7 @@ services:
     restart: unless-stopped
 
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/jaeger:latest
     extra_hosts:
       - 'tracex.local:host-gateway'
     ports:
