@@ -1463,7 +1463,8 @@ async function createExecution (
   const rollback: Tx[] = []
   const initTransition = control.client.getModel().findAllSync(process.class.Transition, {
     process: proc,
-    from: null
+    from: null,
+    trigger: process.trigger.OnExecutionStart
   })[0]
   if (initTransition === undefined) return [res, rollback]
   const execId = generateId()
