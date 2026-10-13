@@ -196,14 +196,59 @@ describe('computeCriticalPath — working-days mode', () => {
     expect(res.violatedRelations.has(r1._id)).toBe(true)
   })
 
-  it('holiday between predecessor and successor produces a violation when succ is pinned tight', () => {
-    // Tue is a holiday; FS lag=0 should require succ to start Wed, but succ is pinned to Tue.
+  it.each([
+    [
+      'SS',
+      'start-to-start',
+      issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22)),
+      issue('B', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22))
+    ],
+    [
+      'FF',
+      'finish-to-finish',
+      issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22)),
+      issue('B', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22))
+    ],
+    [
+      'SF',
+      'start-to-finish',
+      issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 22)),
+      issue('B', Date.UTC(2026, 4, 12), Date.UTC(2026, 4, 18))
+    ]
+  ] as const)('%s relation remains binding in working-days mode', (_name, kind, A, B) => {
+    const r1 = rel('A', 'B', kind)
+    const res = computeCriticalPath([A, B], [r1], cfgMonFri)
+    expect(res.critical.has('A' as Ref<Issue>)).toBe(true)
+    expect(res.critical.has('B' as Ref<Issue>)).toBe(true)
+    expect(res.criticalRelations.has(r1._id)).toBe(true)
+  })
+
+  it('a holiday is skipped by a tight FS relation in both CPM passes', () => {
     const cfgWithHoliday = { weekdayMask: 0b0011111, holidays: [Date.UTC(2026, 4, 19)] }
     const A = issue('A', Date.UTC(2026, 4, 18), Date.UTC(2026, 4, 18)) // Mon only
-    const B = issue('B', Date.UTC(2026, 4, 19), Date.UTC(2026, 4, 19)) // Tue (holiday)
+    const B = issue('B', Date.UTC(2026, 4, 20), Date.UTC(2026, 4, 20)) // Wed
     const r1 = rel('A', 'B', 'finish-to-start', 0)
     const res = computeCriticalPath([A, B], [r1], cfgWithHoliday)
-    expect(res.violatedRelations.has(r1._id)).toBe(true)
+    expect(res.critical).toEqual(new Set(['A', 'B']))
+    expect(res.criticalRelations.has(r1._id)).toBe(true)
+    expect(res.violatedRelations.size).toBe(0)
+  })
+
+  it('keeps a non-working project finish instead of normalising it', () => {
+    const weekend = issue('weekend', Date.UTC(2026, 4, 23), Date.UTC(2026, 4, 24))
+    const res = computeCriticalPath([weekend], [], cfgMonFri)
+    // The sink LF is its stored Sunday finish; its one-working-day span then
+    // yields Sunday LS, so slack stays in calendar milliseconds.
+    expect(res.slack.get('weekend' as Ref<Issue>)).toBe(86_400_000)
+    expect(res.critical.has('weekend' as Ref<Issue>)).toBe(false)
+  })
+
+  it('uses startForSpan when FF gives a predecessor a non-working LF', () => {
+    const A = issue('A', Date.UTC(2026, 4, 22), Date.UTC(2026, 4, 25)) // Fri..Mon: 2 wd
+    const B = issue('B', Date.UTC(2026, 4, 23), Date.UTC(2026, 4, 24)) // Sat..Sun
+    const res = computeCriticalPath([A, B], [rel('A', 'B', 'finish-to-finish')], cfgMonFri)
+    // FF's reverse anchor keeps B's Sunday LF. startForSpan(Sun, 2) = Fri.
+    expect(res.slack.get('A' as Ref<Issue>)).toBe(0)
   })
 
   it('latest start of a predecessor across a weekend is measured in working days', () => {

@@ -23,11 +23,14 @@ import {
   ffAnchor,
   ffReverseAnchor,
   sfAnchor,
-  sfReverseAnchor
+  sfReverseAnchor,
+  MAX_WORKING_SPAN_DAYS
 } from '@hcengineering/gantt'
 import type { Issue, IssueRelation } from '@hcengineering/tracker'
 import type { Ref } from '@hcengineering/core'
 import type { DragState, DragTarget, PrimaryEdit } from '../types'
+
+const DAY_MS = 86_400_000
 
 function issue (id: string, start?: number, due?: number): Issue {
   return {
@@ -887,6 +890,27 @@ describe('simulateCascade — working-days mode: shifted issues keep their worki
     const B = issue('B', may(16), may(17))
     const byId = run([A, B], [rel('A', 'B')], [{ issue: A, newStart: may(18), newDue: may(18) }])
     expect(byId.get('B')).toMatchObject({ newStart: may(19), newDue: may(19), reason: 'push-successor' })
+  })
+
+  it('an inverted bar becomes at least a one-day bar when pushed', () => {
+    const A = issue('A', may(18), may(18))
+    const B = issue('B', may(19), may(18))
+    const byId = run([A, B], [rel('A', 'B')], [{ issue: A, newStart: may(19), newDue: may(19) }])
+    expect(byId.get('B')).toMatchObject({ newStart: may(20), newDue: may(20), reason: 'push-successor' })
+  })
+
+  it('a bar beyond the working-span cap keeps its calendar-day length when pushed', () => {
+    const A = issue('A', may(18), may(18))
+    const bStart = may(19)
+    const bDue = bStart + MAX_WORKING_SPAN_DAYS * DAY_MS
+    const B = issue('B', bStart, bDue)
+    const byId = run([A, B], [rel('A', 'B')], [{ issue: A, newStart: may(21), newDue: may(21) }])
+    expect(byId.get('B')).toMatchObject({
+      newStart: may(22),
+      newDue: bDue + 3 * DAY_MS,
+      reason: 'push-successor'
+    })
+    expect((byId.get('B')?.newDue as number) - (byId.get('B')?.newStart as number)).toBe(bDue - bStart)
   })
 
   it('SS push across a weekend keeps the successor span', () => {

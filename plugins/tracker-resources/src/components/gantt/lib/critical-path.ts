@@ -17,10 +17,13 @@ import {
   ssReverseAnchor,
   ffReverseAnchor,
   sfReverseAnchor,
+  MAX_WORKING_SPAN_DAYS,
   workingDaySpan,
   dueForSpan,
   startForSpan
 } from '@hcengineering/gantt'
+
+const DAY_MS = 86_400_000
 
 const EMPTY_RESULT: CriticalPathResult = {
   critical: new Set(),
@@ -124,6 +127,36 @@ function topoSort (issues: ScheduledIssue[], relations: IssueRelation[]): Schedu
   return order
 }
 
+/** Due date of a bar that starts at `start` and keeps `i`'s length (ms in legacy mode, working days with a calendar). */
+function endFor (i: ScheduledIssue, start: number, cfg: WorkingCalendar | undefined): number {
+  if (!isFinite(start)) return start
+  if (cfg === undefined) return start + (i.dueDate - i.startDate)
+  // The bounded helpers cannot express a bar beyond this range. Preserve its
+  // calendar length instead of silently truncating it during the CPM pass.
+  if (
+    Number.isFinite(i.startDate) &&
+    Number.isFinite(i.dueDate) &&
+    i.dueDate - i.startDate > (MAX_WORKING_SPAN_DAYS - 1) * DAY_MS
+  ) {
+    return start + (i.dueDate - i.startDate)
+  }
+  return dueForSpan(start, workingDaySpan(i.startDate, i.dueDate, cfg), cfg)
+}
+
+/** Start date of a bar that ends at `due` and keeps `i`'s length. */
+function startFor (i: ScheduledIssue, due: number, cfg: WorkingCalendar | undefined): number {
+  if (!isFinite(due)) return due
+  if (cfg === undefined) return due - (i.dueDate - i.startDate)
+  if (
+    Number.isFinite(i.startDate) &&
+    Number.isFinite(i.dueDate) &&
+    i.dueDate - i.startDate > (MAX_WORKING_SPAN_DAYS - 1) * DAY_MS
+  ) {
+    return due - (i.dueDate - i.startDate)
+  }
+  return startForSpan(due, workingDaySpan(i.startDate, i.dueDate, cfg), cfg)
+}
+
 /**
  * Compute the critical path for the given issue + relation graph.
  *
@@ -140,19 +173,6 @@ function topoSort (issues: ScheduledIssue[], relations: IssueRelation[]): Schedu
  * side-effects. Callers memoize the result via 200ms debounce in GanttView's
  * reactive recompute.
  */
-/** Due date of a bar that starts at `start` and keeps `i`'s length (ms in legacy mode, working days with a calendar). */
-function endFor (i: ScheduledIssue, start: number, cfg: WorkingCalendar | undefined): number {
-  if (!isFinite(start)) return start
-  if (cfg === undefined) return start + (i.dueDate - i.startDate)
-  return dueForSpan(start, workingDaySpan(i.startDate, i.dueDate, cfg), cfg)
-}
-
-/** Start date of a bar that ends at `due` and keeps `i`'s length. */
-function startFor (i: ScheduledIssue, due: number, cfg: WorkingCalendar | undefined): number {
-  if (!isFinite(due)) return due
-  if (cfg === undefined) return due - (i.dueDate - i.startDate)
-  return startForSpan(due, workingDaySpan(i.startDate, i.dueDate, cfg), cfg)
-}
 
 export function computeCriticalPath (
   issues: Issue[],
@@ -304,6 +324,7 @@ export function computeCriticalPath (
   const slack = new Map<Ref<Issue>, number>()
   const critical = new Set<Ref<Issue>>()
   for (const i of scheduled) {
+    // Slack deliberately remains calendar milliseconds, including weekends.
     const s = (ls.get(i._id) ?? i.startDate) - (es.get(i._id) ?? i.startDate)
     slack.set(i._id, s)
     if (s <= 0) critical.add(i._id)
