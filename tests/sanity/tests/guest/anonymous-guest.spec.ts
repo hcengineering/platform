@@ -32,10 +32,15 @@ import { connectOwnerRest, FORBIDDEN, openAsOwner, OWNER_PASSWORD, withRequest, 
 const ISSUE = 'tracker:class:Issue' as Ref<Class<IssueDoc>>
 const PROJECT = 'tracker:class:Project' as Ref<Class<Space>>
 const PERSON = 'contact:class:Person' as Ref<Class<PersonDoc>>
+const PROJECT_PREFERENCE = 'tracker:class:ProjectTargetPreference' as Ref<Class<ProjectPreferenceDoc>>
 const EMPLOYEE_MIXIN = 'contact:mixin:Employee'
 
 interface IssueDoc extends Doc {
   title: string
+}
+
+interface ProjectPreferenceDoc extends Doc {
+  attachedTo: Ref<Space>
 }
 
 interface PersonDoc extends Doc {
@@ -136,6 +141,21 @@ test.describe('Anonymous guest', () => {
     // Normally done by the last test through the UI; keeps sanity-ws closed for anonymous guests if it failed.
     await withRequest(playwright, async (request) => {
       await new ApiEndpoint(request).setAllowReadOnlyGuests(PlatformUser, OWNER_PASSWORD, PlatformWs, false)
+    })
+
+    // The projects are created through the UI, so the "New issue" popup remembers the last of them as the default
+    // project (ProjectTargetPreference). Left behind, they redirect issues created by the other tracker specs,
+    // which do not pick a project, away from "Default". Remove them together with that preference.
+    await withRequest(playwright, async (request) => {
+      const owner = await connectOwnerRest(request)
+      for (const name of [sharedProject, hiddenProject]) {
+        const project = await owner.findOne(PROJECT, { name })
+        if (project === undefined) continue
+        for (const pref of await owner.findAll(PROJECT_PREFERENCE, { attachedTo: project._id })) {
+          await owner.tx(owner.factory.createTxRemoveDoc(PROJECT_PREFERENCE, pref.space, pref._id))
+        }
+        await owner.tx(owner.factory.createTxRemoveDoc(PROJECT, core.space.Space, project._id))
+      }
     })
   })
 
