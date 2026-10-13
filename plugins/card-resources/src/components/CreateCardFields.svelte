@@ -30,6 +30,7 @@
   import { MarkupEditor } from '@hcengineering/view-resources'
 
   export let type: Ref<MasterTag>
+  export let valid = false
   export let data: Partial<Data<Card>>
 
   const client = getClient()
@@ -45,7 +46,7 @@
   function getFields (type: Ref<MasterTag>): KeyedAttribute[] {
     return getFiltredKeys(hierarchy, type, ['title', 'space', 'content', 'parent'], card.class.Card)
       .filter(
-        (key) => !isCollectionAttr(hierarchy, key) && key.attr.showInCreate !== false && key.attr.readonly !== true
+        (key) => !isCollectionAttr(hierarchy, key) && key.attr.showInCreate === true && key.attr.readonly !== true
       )
       .sort((a, b) => {
         const rankA = a.attr.rank ?? toRank(a.attr._id) ?? ''
@@ -60,6 +61,21 @@
     const value = getAttribute(client, data, key)
     return value === undefined ? structuredClone(key.attr.defaultValue) : value
   }
+
+  function isRequiredFieldFilled (key: KeyedAttribute, data: Partial<Data<Card>>): boolean {
+    if (key.attr.required !== true) return true
+    const value = getValue(key, data)
+    if (value == null) return false
+    if (hierarchy.isDerived(key.attr.type._class, core.class.TypeMarkup)) {
+      return typeof value === 'string' && !isEmptyMarkup(value)
+    }
+    if (typeof value === 'string') return value.trim().length > 0
+    if (typeof value === 'number') return Number.isFinite(value)
+    if (Array.isArray(value)) return value.length > 0
+    return true
+  }
+
+  $: valid = fields.every((key) => isRequiredFieldFilled(key, data))
 
   function updateField (key: KeyedAttribute): (value: unknown) => void {
     return (value) => {

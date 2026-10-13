@@ -90,10 +90,11 @@
     selectedSpace = undefined
   }
 
+  let fieldsValid = false
   let creating = false
 
   async function okAction (): Promise<void> {
-    if (_space === undefined || type == null) return
+    if (_space === undefined || type == null || !fieldsValid) return
 
     try {
       creating = true
@@ -188,7 +189,7 @@
   okLabel={presentation.string.Create}
   {okAction}
   okLoading={creating}
-  canSave={data.title != null && data.title.trim().length > 0 && _space != null && allowed}
+  canSave={data.title != null && data.title.trim().length > 0 && _space != null && allowed && fieldsValid}
   onCancel={handleCancel}
   maxWidth="90vw"
   on:close
@@ -260,7 +261,7 @@
       <Component is={extension.component} props={{ collaborators, data, space: _space }} on:change={handleChange} />
     {/if}
     {#if type != null}
-      <CreateCardFields {type} bind:data />
+      <CreateCardFields {type} bind:data bind:valid={fieldsValid} />
     {/if}
   </div>
 

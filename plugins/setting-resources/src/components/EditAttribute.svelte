@@ -61,8 +61,8 @@
   let icon: Asset | undefined = attribute.icon
   let automationOnly = attribute.automationOnly ?? false
   let required = attribute.required ?? false
-  let showInForm = attribute.showInForm ?? true
-  let showInCreate = attribute.showInCreate ?? true
+  let showInForm = attribute.showInForm ?? false
+  let showInCreate = attribute.showInCreate ?? false
   let extra: Record<string, any> = {}
   let is: AnyComponent | undefined
 
@@ -112,10 +112,10 @@
     if (required !== attribute.required) {
       update.required = required
     }
-    if (showInForm !== (attribute.showInForm ?? true)) {
+    if (showInForm !== (attribute.showInForm ?? false)) {
       update.showInForm = showInForm
     }
-    if (showInCreate !== (attribute.showInCreate ?? true)) {
+    if (showInCreate !== (attribute.showInCreate ?? false)) {
       update.showInCreate = showInCreate
     }
     for (const [k, v] of Object.entries(extra)) {

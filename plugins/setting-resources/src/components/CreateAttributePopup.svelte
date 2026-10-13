@@ -57,8 +57,8 @@
   let defaultValue: any | undefined
   let is: AnyComponent | undefined
   let readonly: boolean = false
-  let showInForm = true
-  let showInCreate = true
+  let showInForm = false
+  let showInCreate = false
   let extra: Record<string, any> = {}
   const client = getClient()
   const hierarchy = client.getHierarchy()

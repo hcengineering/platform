@@ -61,8 +61,8 @@
   let is: AnyComponent | undefined
   let readonly: boolean = false
   let required: boolean = false
-  let showInForm = true
-  let showInCreate = true
+  let showInForm = false
+  let showInCreate = false
   const client = getClient()
   const hierarchy = client.getHierarchy()
   $: cardAttribute = isCard || hierarchy.isDerived(_class, card.class.Card)

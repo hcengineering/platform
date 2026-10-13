@@ -95,7 +95,13 @@ function setup (
     isMixin: () => false,
     isDerived: (child: string, parent: string) =>
       child === parent || (child === type._id && parent === card.class.Card),
-    getAllAttributes: () => new Map([['title', title]]),
+    getAllAttributes: () =>
+      new Map<string, typeof title & { showInForm?: boolean }>([
+        ['title', title],
+        ['enabledField', { ...title, _id: 'enabledField', name: 'enabledField', showInForm: true }],
+        ['disabledField', { ...title, _id: 'disabledField', name: 'disabledField', showInForm: false }],
+        ['defaultField', { ...title, _id: 'defaultField', name: 'defaultField' }]
+      ]),
     findDomain: () => 'card',
     classHierarchyMixin: () => undefined
   }
@@ -190,6 +196,14 @@ function setup (
 }
 
 describe('form instance access', () => {
+  it('includes only explicitly enabled attributes alongside the card title', async () => {
+    const { get } = setup()
+    expect(await get(configuration._id)).toMatchObject({
+      status: 200,
+      body: { fields: [expect.objectContaining({ name: 'title' }), expect.objectContaining({ name: 'enabledField' })] }
+    })
+  })
+
   it('resolves public schemas by form ID rather than card type ID', async () => {
     const { get } = setup()
     expect(await get(configuration._id)).toMatchObject({ status: 200, body: { id: configuration._id, mode: 'public' } })
