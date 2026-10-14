@@ -149,7 +149,7 @@
     "ViewAllDiscussions": "Mostra tutte le discussioni ({count})",
     "DefaultDiscussion": "Discussione predefinita",
     "DefaultDiscussions": "Discussioni predefinite",
-    "DefaultDiscussionsDescription": "Queste discussioni vengono create automaticamente quando viene creata una nuova scheda di questo tipo. La modifica del nome si applica anche alle discussioni già create, la visibilità solo a quelle nuove.",
+    "InheritedDefaultDiscussion": "Ereditato da",
     "DefaultDiscussionUnavailable": "Questa discussione non è disponibile per te. Chiedi l’accesso a un partecipante della scheda.",
     "AddDefaultDiscussion": "Aggiungi discussione predefinita",
     "DeleteDiscussion": "Elimina discussione",

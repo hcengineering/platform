@@ -150,7 +150,7 @@
     "ViewAllDiscussions": "Alle Diskussionen anzeigen ({count})",
     "DefaultDiscussion": "Standarddiskussion",
     "DefaultDiscussions": "Standarddiskussionen",
-    "DefaultDiscussionsDescription": "Diese Diskussionen werden automatisch beim Erstellen einer neuen Karte dieses Typs angelegt. Eine Umbenennung gilt auch für bereits erstellte Diskussionen, die Sichtbarkeit nur für neue.",
+    "InheritedDefaultDiscussion": "Geerbt von",
     "DefaultDiscussionUnavailable": "Diese Diskussion ist für Sie nicht verfügbar. Bitten Sie einen Teilnehmer der Karte, Ihnen Zugriff zu geben.",
     "AddDefaultDiscussion": "Standarddiskussion hinzufügen",
     "DeleteDiscussion": "Diskussion löschen",

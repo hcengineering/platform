@@ -14,8 +14,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { type DefaultDiscussion, defaultDiscussionVisibilityLevels } from '@hcengineering/chunter'
-  import core, { type Class, type Doc, type ObjectVisibility } from '@hcengineering/core'
+  import {
+    type DefaultDiscussion,
+    defaultDiscussionVisibilityLevels,
+    getEffectiveDefaultDiscussions
+  } from '@hcengineering/chunter'
+  import core, { type Class, type Doc, type ObjectVisibility, type Ref } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import { ButtonIcon, EditBox, Icon, IconAdd, IconDelete, Label } from '@hcengineering/ui'
 
@@ -29,12 +33,16 @@
   const DEFAULT_VISIBILITY: ObjectVisibility = 'participants'
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
   const query = createQuery()
 
   let items: DefaultDiscussion[] = []
-  $: query.query(chunter.class.DefaultDiscussion, { ofClass: masterTag._id }, (result) => {
+  $: ancestors = hierarchy.getAncestors(masterTag._id)
+  $: query.query(chunter.class.DefaultDiscussion, { ofClass: { $in: ancestors as Ref<Class<Doc>>[] } }, (result) => {
     items = result
   })
+  $: inherited = getEffectiveDefaultDiscussions(items, ancestors).filter((item) => item.ofClass !== masterTag._id)
+  $: owned = items.filter((item) => item.ofClass === masterTag._id)
 
   // A new default discussion is stored once it gets a name.
   let draftName: string | undefined = undefined
@@ -96,91 +104,77 @@
     on:click={addDraft}
   />
 </div>
-<div class="content">
-  <span class="description"><Label label={chunter.string.DefaultDiscussionsDescription} /></span>
-  {#if items.length > 0 || draftName !== undefined}
-    <div class="list">
-      {#key resetKey}
-        {#each items as item (item._id)}
-          <div class="row">
-            <div class="name">
-              <EditBox
-                value={item.name}
-                placeholder={chunter.string.Topic}
-                fullSize
-                on:keydown={blurOnEnter}
-                on:blur={(event) => void rename(item, event.detail ?? '')}
-              />
-            </div>
-            <DiscussionVisibilityMenu
-              value={item.visibility}
-              parentClass={masterTag._id}
-              levels={defaultDiscussionVisibilityLevels}
-              kind="tertiary"
-              size="small"
-              on:change={(event) => void changeVisibility(item, event.detail)}
-            />
-            <ButtonIcon icon={IconDelete} kind="tertiary" size="small" on:click={() => void remove(item)} />
-          </div>
-        {/each}
-      {/key}
-      {#if draftName !== undefined}
-        <div class="row">
-          <div class="name">
+{#if inherited.length > 0 || owned.length > 0 || draftName !== undefined}
+  <div class="hulyTableAttr-content task">
+    {#each inherited as item (item._id)}
+      <div class="hulyTableAttr-content__row row justify-start">
+        <div class="hulyTableAttr-content__row-label font-medium-14 name">
+          <span>{item.name}</span>
+        </div>
+        <span class="source"
+          ><Label label={chunter.string.InheritedDefaultDiscussion} />
+          <Label label={hierarchy.getClass(item.ofClass).label} /></span
+        >
+      </div>
+    {/each}
+    {#key resetKey}
+      {#each owned as item (item._id)}
+        <div class="hulyTableAttr-content__row row justify-start">
+          <div class="hulyTableAttr-content__row-label font-medium-14 name">
             <EditBox
-              bind:value={draftName}
+              value={item.name}
               placeholder={chunter.string.Topic}
               fullSize
-              autoFocus
               on:keydown={blurOnEnter}
-              on:blur={() => void saveDraft()}
+              on:blur={(event) => void rename(item, event.detail ?? '')}
             />
           </div>
+          <DiscussionVisibilityMenu
+            value={item.visibility}
+            parentClass={masterTag._id}
+            levels={defaultDiscussionVisibilityLevels}
+            kind="tertiary"
+            size="small"
+            on:change={(event) => void changeVisibility(item, event.detail)}
+          />
+          <ButtonIcon icon={IconDelete} kind="tertiary" size="small" on:click={() => void remove(item)} />
         </div>
-      {/if}
-    </div>
-  {/if}
-</div>
+      {/each}
+    {/key}
+    {#if draftName !== undefined}
+      <div class="hulyTableAttr-content__row row justify-start">
+        <div class="hulyTableAttr-content__row-label font-medium-14 name">
+          <EditBox
+            bind:value={draftName}
+            placeholder={chunter.string.Topic}
+            fullSize
+            autoFocus
+            on:keydown={blurOnEnter}
+            on:blur={() => void saveDraft()}
+          />
+        </div>
+      </div>
+    {/if}
+  </div>
+{/if}
 
 <style lang="scss">
-  .content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-1);
-    padding: var(--spacing-1) var(--spacing-2) var(--spacing-2);
-  }
-
-  .description {
-    color: var(--global-secondary-TextColor);
-    font-size: 0.75rem;
-    line-height: 1.125rem;
-  }
-
-  .list {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border: 1px solid var(--theme-divider-color);
-    border-radius: 0.75rem;
-  }
-
-  .row {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-1);
-    min-height: 2.5rem;
-    padding: 0.25rem 0.5rem 0.25rem 0.875rem;
-    border-bottom: 1px solid var(--theme-divider-color);
-
-    &:last-child {
-      border-bottom: none;
-    }
+  .hulyTableAttr-content.task > .row {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    // Same height with and without the trailing buttons (e.g. while a new discussion is being added).
+    min-height: calc(var(--global-small-Size) + 0.5rem);
   }
 
   .name {
-    display: flex;
     flex: 1;
     min-width: 0;
-    font-size: 0.875rem;
+  }
+
+  .source {
+    flex-shrink: 0;
+    white-space: nowrap;
+    color: var(--global-secondary-TextColor);
+    font-size: 0.75rem;
   }
 </style>

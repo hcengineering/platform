@@ -150,7 +150,7 @@
     "ViewAllDiscussions": "Все обсуждения ({count})",
     "DefaultDiscussion": "Обсуждение по умолчанию",
     "DefaultDiscussions": "Обсуждения по умолчанию",
-    "DefaultDiscussionsDescription": "Эти обсуждения создаются автоматически при создании новой карточки этого типа. Новое название применяется и к уже созданным обсуждениям, видимость — только к новым.",
+    "InheritedDefaultDiscussion": "Унаследовано от",
     "DefaultDiscussionUnavailable": "Это обсуждение вам недоступно. Попросите участника карточки открыть вам доступ.",
     "AddDefaultDiscussion": "Добавить обсуждение по умолчанию",
     "AddAllCollaborators": "Добавить всех участников карточки ({count})",
