@@ -216,6 +216,20 @@ describe('PostgresDbCollection', () => {
     })
   })
 
+  describe('deleteMany count', () => {
+    it('should return deleted rows count reported by the driver', async () => {
+      ;(mockClient.unsafe as jest.Mock).mockResolvedValueOnce(Object.assign([], { count: 3 }))
+
+      expect(await collection.deleteMany({ mode: 'deleted' as const })).toBe(3)
+    })
+
+    it('should return 0 when nothing was deleted', async () => {
+      ;(mockClient.unsafe as jest.Mock).mockResolvedValueOnce(Object.assign([], { count: 0 }))
+
+      expect(await collection.deleteMany({ mode: 'deleted' as const })).toBe(0)
+    })
+  })
+
   describe('timestamp field handling', () => {
     beforeEach(() => {
       // Create collection with timestamp fields specified

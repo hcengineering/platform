@@ -270,7 +270,7 @@ export class PostgresDbCollection<
     return res as T
   }
 
-  async unsafe (sql: string, values: any[], client?: ISql): Promise<any[]> {
+  async unsafe (sql: string, values: any[], client?: ISql): Promise<any[] & { count?: number }> {
     if (client !== undefined) {
       return await client.unsafe(sql, values)
     } else if (this.options.withRetryClient !== undefined) {
@@ -419,7 +419,7 @@ export class PostgresDbCollection<
     await this.unsafe(finalSql, [...updateValues, ...whereValues], client)
   }
 
-  async deleteMany (query: Query<T>, client?: ISql): Promise<void> {
+  async deleteMany (query: Query<T>, client?: ISql): Promise<number> {
     const sqlChunks: string[] = [`DELETE FROM ${this.getTableName()}`]
     const [whereClause, whereValues] = this.buildWhereClause(query)
 
@@ -428,7 +428,9 @@ export class PostgresDbCollection<
     }
 
     const finalSql = sqlChunks.join(' ')
-    await this.unsafe(finalSql, whereValues, client)
+    const result = await this.unsafe(finalSql, whereValues, client)
+    // Number of rows actually deleted by this statement (reported by the driver, no RETURNING needed)
+    return result.count ?? 0
   }
 }
 
@@ -508,7 +510,7 @@ export class AccountPostgresDbCollection
     await super.update(query, ops, client)
   }
 
-  async deleteMany (query: Query<Account>, client?: ISql): Promise<void> {
+  async deleteMany (query: Query<Account>, client?: ISql): Promise<number> {
     if (Object.keys(query).some((k) => this.passwordKeys.includes(k))) {
       throw new Error('Passwords are not allowed in delete query')
     }
@@ -523,7 +525,7 @@ export class AccountPostgresDbCollection
       )`
     await this.unsafe(passwordsSql, whereValues, client)
 
-    await super.deleteMany(query, client)
+    return await super.deleteMany(query, client)
   }
 }
 

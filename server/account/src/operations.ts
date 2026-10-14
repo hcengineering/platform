@@ -463,6 +463,13 @@ export async function validateOtp (
       }
     }
 
+    // Consume the code atomically: only the request that actually deletes it may proceed,
+    // so concurrent requests with the same valid code cannot both succeed.
+    const consumed = await db.otp.deleteMany({ socialId: emailSocialId._id, code })
+    if (consumed === 0) {
+      ctx.warn('OTP already used', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
+    }
     await db.otp.deleteMany({ socialId: emailSocialId._id })
 
     const targetAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
