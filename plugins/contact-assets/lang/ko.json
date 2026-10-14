@@ -157,8 +157,6 @@
         "AnonymousGuestAccessWorkspaceOffNote": "이 워크스페이스에서는 익명 게스트 액세스가 꺼져 있습니다",
         "AnonymousGuestAccessOwnerOnlyNote": "소유자만 이 설정을 변경할 수 있습니다",
         "PublicBadge": "공개",
-        "SpaceMembershipGroup": "멤버십",
-        "StatusOnline": "온라인",
-        "StatusOffline": "오프라인"
+        "SpaceMembershipGroup": "멤버십"
     }
 }

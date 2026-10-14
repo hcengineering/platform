@@ -158,8 +158,6 @@
     "AnonymousGuestAccessWorkspaceOffNote": "このワークスペースでは匿名ゲストアクセスがオフです",
     "AnonymousGuestAccessOwnerOnlyNote": "この設定を変更できるのはオーナーのみです",
     "PublicBadge": "公開",
-    "SpaceMembershipGroup": "メンバーシップ",
-    "StatusOnline": "オンライン",
-    "StatusOffline": "オフライン"
+    "SpaceMembershipGroup": "メンバーシップ"
   }
 }

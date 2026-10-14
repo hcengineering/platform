@@ -158,8 +158,6 @@
     "AnonymousGuestAccessWorkspaceOffNote": "此工作区已关闭匿名访客访问",
     "AnonymousGuestAccessOwnerOnlyNote": "只有所有者可以更改此设置",
     "PublicBadge": "公开",
-    "SpaceMembershipGroup": "成员资格",
-    "StatusOnline": "在线",
-    "StatusOffline": "离线"
+    "SpaceMembershipGroup": "成员资格"
   }
 }

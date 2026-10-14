@@ -283,33 +283,26 @@
   .ava-text { font-size: inherit; }
 }
 
-/* Avatar status marker
- * Spec: dev/prod/AVATAR_STATUS_MARKER.md (offline = solid grey dot at every size).
- * The wrapper carries data-status-size; the marker and the cut-out in the avatar read the same variables.
- * The cut-out is a mask on the avatar (not a painted border), so it matches any background:
- * white card, list row, hover/selected state, dark theme.
- */
+/* Avatar status marker */
 .hulyAvatar-statusWrap {
   --status-online: var(--global-online-color);
   --status-offline: #8e8e93;
-  --status-size: 10px; // marker box incl. cut-out border
-  --status-border: 2px; // cut-out thickness
+  --status-size: 10px;
+  --status-border: 2px;
 
-  // size names follow the avatar sizes; comments give the matching row of the spec scale
   &[data-status-size='xx-small'],
   &[data-status-size='inline']   { --status-size: 6px;  --status-border: 1px; }
   &[data-status-size='tiny']     { --status-size: 7px;  --status-border: 1px; }
-  &[data-status-size='card']     { --status-size: 8px;  --status-border: 1.5px; } // XS 20
+  &[data-status-size='card']     { --status-size: 8px;  --status-border: 1.5px; }
   &[data-status-size='x-small'],
-  &[data-status-size='smaller']  { --status-size: 10px; --status-border: 2px; }   // S 24-28
-  &[data-status-size='small']    { --status-size: 12px; --status-border: 2px; }   // M 32
-  &[data-status-size='medium']   { --status-size: 14px; --status-border: 2px; }   // L 40
-  &[data-status-size='large']    { --status-size: 18px; --status-border: 3px; }   // XL 64-72
-  &[data-status-size='x-large']  { --status-size: 32px; --status-border: 4px; }   // 3XL 120
-  &[data-status-size='2x-large'] { --status-size: 40px; --status-border: 5px; }   // 160
+  &[data-status-size='smaller']  { --status-size: 10px; --status-border: 2px; }
+  &[data-status-size='small']    { --status-size: 12px; --status-border: 2px; }
+  &[data-status-size='medium']   { --status-size: 14px; --status-border: 2px; }
+  &[data-status-size='large']    { --status-size: 18px; --status-border: 3px; }
+  &[data-status-size='x-large']  { --status-size: 32px; --status-border: 4px; }
+  &[data-status-size='2x-large'] { --status-size: 40px; --status-border: 5px; }
   &[data-status-size='full']     { --status-size: clamp(14px, 18%, 40px); --status-border: 4px; }
 
-  // Cut a hole for the marker out of the avatar: centre sits on the marker's centre
   .hulyAvatar-container.withStatus {
     $hole: calc(var(--status-size) / 2);
     $center: calc(100% - var(--status-size) / 2 + var(--status-border));
@@ -333,7 +326,7 @@
   width: var(--status-size);
   aspect-ratio: 1;
   border-radius: 50%;
-  border: var(--status-border) solid transparent; // the hole in the avatar shows through
+  border: var(--status-border) solid transparent;
   background-clip: padding-box;
   box-sizing: border-box;
   z-index: 2;
@@ -346,7 +339,6 @@
     background-color: var(--status-online);
   }
 
-  // Offline: same size and cut-out as online, grey fill
   &.offline {
     background-color: var(--status-offline);
   }
