@@ -130,8 +130,6 @@
     "CreatedChannelOn": "{date}にこのチャンネルを作成しました",
     "ChannelMessages": "チャンネルメッセージ",
     "JoinChannel": "チャンネルに参加",
-    "ChannelPrivacyChanged": "チャンネルのプライバシーが変更されました",
-    "ChannelArchiveChanged": "チャンネルがアーカイブまたは復元されました",
     "YouJoinedChannel": "チャンネルに参加しました",
     "AndMore": "他{count}件",
     "IsTyping": "{count, plural, =1 {が入力中...} other {が入力中...}}",

@@ -152,48 +152,6 @@ export function defineNotifications (builder: Builder): void {
     notification.class.NotificationType,
     core.space.Model,
     {
-      label: chunter.string.ChannelPrivacyChanged,
-      generated: false,
-      hidden: false,
-      txClasses: [core.class.TxUpdateDoc],
-      objectClass: chunter.class.Channel,
-      defaultEnabled: false,
-      field: 'private',
-      group: chunter.ids.ChunterNotificationGroup,
-      templates: {
-        textTemplate: 'Privacy of #{doc} has been changed',
-        htmlTemplate: '<p>Privacy of <b>#{doc}</b> has been changed</p>',
-        subjectTemplate: 'Privacy of #{doc} has been changed'
-      }
-    },
-    chunter.ids.ChannelPrivacyNotification
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
-      label: chunter.string.ChannelArchiveChanged,
-      generated: false,
-      hidden: false,
-      txClasses: [core.class.TxUpdateDoc],
-      objectClass: chunter.class.Channel,
-      defaultEnabled: false,
-      field: 'archived',
-      group: chunter.ids.ChunterNotificationGroup,
-      templates: {
-        textTemplate: '#{doc} has been archived or restored',
-        htmlTemplate: '<p><b>#{doc}</b> has been archived or restored</p>',
-        subjectTemplate: '#{doc} has been archived or restored'
-      }
-    },
-    chunter.ids.ChannelArchiveNotification
-  )
-
-  builder.createDoc(
-    notification.class.NotificationType,
-    core.space.Model,
-    {
       label: chunter.string.ThreadMessage,
       generated: false,
       hidden: false,
@@ -218,9 +176,7 @@ export function defineNotifications (builder: Builder): void {
       chunter.ids.ChannelNotification,
       chunter.ids.DiscussionNotification,
       chunter.ids.ThreadNotification,
-      chunter.ids.JoinChannelNotification,
-      chunter.ids.ChannelPrivacyNotification,
-      chunter.ids.ChannelArchiveNotification
+      chunter.ids.JoinChannelNotification
     ]
   })
 

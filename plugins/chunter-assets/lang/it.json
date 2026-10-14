@@ -130,8 +130,6 @@
     "CreatedChannelOn": "Canale creato il {date}",
     "ChannelMessages": "Messaggi del canale",
     "JoinChannel": "Unisciti al canale",
-    "ChannelPrivacyChanged": "Privacy del canale modificata",
-    "ChannelArchiveChanged": "Canale archiviato o ripristinato",
     "YouJoinedChannel": "Sei stato aggiunto al canale",
     "AndMore": "e altri {count}",
     "IsTyping": "{count, plural, =1 {sta} other {stanno}} scrivendo...",

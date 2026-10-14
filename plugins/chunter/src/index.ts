@@ -306,8 +306,6 @@ export default plugin(chunterId, {
     ChannelNotification: '' as Ref<NotificationType>,
     DiscussionNotification: '' as Ref<NotificationType>,
     JoinChannelNotification: '' as Ref<NotificationType>,
-    ChannelPrivacyNotification: '' as Ref<NotificationType>,
-    ChannelArchiveNotification: '' as Ref<NotificationType>,
     ThreadMessageViewlet: '' as Ref<ChatMessageViewlet>,
     ChatWidget: '' as Ref<Widget>
   },

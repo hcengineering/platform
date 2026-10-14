@@ -756,8 +756,7 @@ export async function getNotificationTxes (
   return res
 }
 
-// Attribute changes of chat spaces that are worth lighting up the unread marker for.
-// Everything else (members, name, topic, description, ...) stays in the activity feed without a marker.
+// Chat space attribute changes that mark the chat as unread; other updates (members, name, ...) don't
 const CHAT_UNREAD_ATTRIBUTES = ['private', 'archived']
 
 function shouldMarkUnread (control: TriggerControl, message: ActivityMessage): boolean {
@@ -868,7 +867,7 @@ export async function createCollabDocInfo (
     notifyContexts = await control.findAll(ctx, notification.class.DocNotifyContext, { objectId: object._id })
   }
 
-  // Service updates (someone joined/left, rename, ...) are shown in the activity feed, but must not light up the unread marker
+  // Service updates (join/leave, rename, ...) must not mark the chat as unread
   if (notifyContexts.length > 0 && docMessages.some((message) => shouldMarkUnread(control, message))) {
     await updateContextsTimestamp(ctx, notifyContexts, tx.modifiedOn, control, tx.modifiedBy)
   }

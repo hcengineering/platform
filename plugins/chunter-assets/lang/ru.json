@@ -130,8 +130,6 @@
     "CreatedChannelOn": "Создал этот канал {date}",
     "ChannelMessages": "Сообщения каналов",
     "JoinChannel": "Присоединение к каналу",
-    "ChannelPrivacyChanged": "Изменение приватности канала",
-    "ChannelArchiveChanged": "Архивация или восстановление канала",
     "YouJoinedChannel": "Вы присоединились к каналу",
     "AndMore": "и еще {count}",
     "IsTyping": "{count, plural, =1 {печатает} other {печатают}}...",
