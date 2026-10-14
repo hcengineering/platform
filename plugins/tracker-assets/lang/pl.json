@@ -304,7 +304,15 @@
     "GanttMissingStartDates": "{count} zadań nie ma daty rozpoczęcia.",
     "GanttSetDatesHint": "Ustaw datę rozpoczęcia i termin zakończenia zadania, aby wyświetlić je na osi czasu.",
     "GanttHelpCalendarDaysDrag": "Przytrzymaj podczas przeciągania, aby ignorować dni robocze (dni kalendarzowe)",
-    "GanttDragCalendarDays": "Dni kalendarzowe"
+    "GanttDragCalendarDays": "Dni kalendarzowe",
+    "CommentOnIssuePermission": "Komentowanie zadania",
+    "CommentOnIssuePermissionDescription": "Pozwala komentować pojedyncze zadanie",
+    "EditIssuePermission": "Edycja zadania",
+    "EditIssuePermissionDescription": "Pozwala edytować pojedyncze zadanie",
+    "TransitionIssuePermission": "Zmiana statusu zadania",
+    "TransitionIssuePermissionDescription": "Pozwala zmieniać status pojedynczego zadania",
+    "DeleteIssuePermission": "Usuwanie zadania",
+    "DeleteIssuePermissionDescription": "Pozwala usuwać pojedyncze zadanie"
   },
   "status": {}
 }

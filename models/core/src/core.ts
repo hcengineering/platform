@@ -48,6 +48,7 @@ import {
   type MigrationState,
   type Mixin,
   type Obj,
+  type ObjectRole,
   type PersonId,
   type PluginConfiguration,
   type Ref,
@@ -443,6 +444,9 @@ export class TClassCollaborators extends TDoc implements ClassCollaborators<Doc>
 @Model(core.class.Collaborator, core.class.Doc, DOMAIN_COLLABORATOR)
 export class TCollaborator extends TAttachedDoc implements Collaborator {
   collaborator!: AccountUuid
+
+  @Prop(TypeRef(core.class.ObjectRole), core.string.Role)
+    role?: Ref<ObjectRole>
 }
 
 @MMixin(core.mixin.VersionableClass, core.class.Class)
