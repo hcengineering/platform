@@ -1778,14 +1778,13 @@ describe('account operations', () => {
         update: jest.fn()
       },
       otp: {
-        deleteMany: jest.fn(),
-        deleteAndCount: jest.fn()
+        deleteMany: jest.fn()
       }
     } as unknown as AccountDB
 
     beforeEach(() => {
       jest.clearAllMocks()
-      ;(mockDb.otp.deleteAndCount as jest.Mock).mockResolvedValue(1)
+      ;(mockDb.otp.deleteMany as jest.Mock).mockResolvedValue(1)
     })
 
     describe('signUp', () => {
@@ -2423,13 +2422,18 @@ describe('account operations', () => {
 
         jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
         jest.spyOn(utils, 'verifyOtpAttempt').mockResolvedValue('valid')
-        ;(mockDb.otp.deleteAndCount as jest.Mock).mockResolvedValue(0)
+        ;(mockDb.otp.deleteMany as jest.Mock).mockResolvedValue(0)
 
         await expect(
           validateOtp(mockCtx, mockDb, mockBranding, mockToken, { email: mockEmail, code: '123456' })
         ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {})))
-        expect(mockDb.otp.deleteAndCount).toHaveBeenCalledWith({ socialId: mockSocialId._id, code: '123456' })
-        expect(mockDb.otp.deleteMany).not.toHaveBeenCalled()
+        expect(mockDb.otp.deleteMany).toHaveBeenCalledWith(
+          { socialId: mockSocialId._id, code: '123456' },
+          undefined,
+          true
+        )
+        // only the atomic consume call happened; the cleanup deleteMany must not run
+        expect(mockDb.otp.deleteMany).toHaveBeenCalledTimes(1)
       })
 
       test('should fail if email not found', async () => {

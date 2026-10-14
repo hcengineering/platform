@@ -419,29 +419,23 @@ export class PostgresDbCollection<
     await this.unsafe(finalSql, [...updateValues, ...whereValues], client)
   }
 
-  async deleteMany (query: Query<T>, client?: ISql): Promise<void> {
+  async deleteMany (query: Query<T>, client?: ISql): Promise<void>
+  async deleteMany (query: Query<T>, client: ISql | undefined, count: true): Promise<number>
+  async deleteMany (query: Query<T>, client?: ISql, count?: boolean): Promise<number | void> {
     const sqlChunks: string[] = [`DELETE FROM ${this.getTableName()}`]
     const [whereClause, whereValues] = this.buildWhereClause(query)
 
     if (whereClause !== '') {
       sqlChunks.push(whereClause)
     }
-
-    const finalSql = sqlChunks.join(' ')
-    await this.unsafe(finalSql, whereValues, client)
-  }
-
-  async deleteAndCount (query: Query<T>, client?: ISql): Promise<number> {
-    const sqlChunks: string[] = [`DELETE FROM ${this.getTableName()}`]
-    const [whereClause, whereValues] = this.buildWhereClause(query)
-
-    if (whereClause !== '') {
-      sqlChunks.push(whereClause)
+    if (count === true) {
+      sqlChunks.push('RETURNING 1')
     }
-    sqlChunks.push('RETURNING 1')
 
     const result = await this.unsafe(sqlChunks.join(' '), whereValues, client)
-    return result.length
+    if (count === true) {
+      return result.length
+    }
   }
 }
 
@@ -521,7 +515,9 @@ export class AccountPostgresDbCollection
     await super.update(query, ops, client)
   }
 
-  async deleteMany (query: Query<Account>, client?: ISql): Promise<void> {
+  async deleteMany (query: Query<Account>, client?: ISql): Promise<void>
+  async deleteMany (query: Query<Account>, client: ISql | undefined, count: true): Promise<number>
+  async deleteMany (query: Query<Account>, client?: ISql, count?: boolean): Promise<number | void> {
     if (Object.keys(query).some((k) => this.passwordKeys.includes(k))) {
       throw new Error('Passwords are not allowed in delete query')
     }
@@ -536,6 +532,9 @@ export class AccountPostgresDbCollection
       )`
     await this.unsafe(passwordsSql, whereValues, client)
 
+    if (count === true) {
+      return await super.deleteMany(query, client, true)
+    }
     await super.deleteMany(query, client)
   }
 }

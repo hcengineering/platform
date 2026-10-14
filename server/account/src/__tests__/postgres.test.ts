@@ -216,11 +216,11 @@ describe('PostgresDbCollection', () => {
     })
   })
 
-  describe('deleteAndCount', () => {
+  describe('deleteMany with count', () => {
     it('should generate delete query with RETURNING and return deleted rows count', async () => {
       ;(mockClient.unsafe as jest.Mock).mockResolvedValueOnce([{ '?column?': 1 }])
 
-      const count = await collection.deleteAndCount({ mode: 'deleted' as const })
+      const count = await collection.deleteMany({ mode: 'deleted' as const }, undefined, true)
 
       expect(mockClient.unsafe).toHaveBeenCalledWith(
         'DELETE FROM global_account.workspace WHERE "mode" = $1 RETURNING 1',
@@ -232,7 +232,7 @@ describe('PostgresDbCollection', () => {
     it('should return 0 when nothing was deleted', async () => {
       ;(mockClient.unsafe as jest.Mock).mockResolvedValueOnce([])
 
-      expect(await collection.deleteAndCount({ mode: 'deleted' as const })).toBe(0)
+      expect(await collection.deleteMany({ mode: 'deleted' as const }, undefined, true)).toBe(0)
     })
   })
 

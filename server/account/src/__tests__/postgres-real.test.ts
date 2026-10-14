@@ -174,11 +174,11 @@ describe('real-account', () => {
       return socialId._id
     }
 
-    it('deleteAndCount lets exactly one of many concurrent consumers delete the code', async () => {
+    it('deleteMany with count lets exactly one of many concurrent consumers delete the code', async () => {
       const socialId = await createOtp()
 
       const results = await Promise.all(
-        Array.from({ length: 20 }, async () => await pgAccount.otp.deleteAndCount({ socialId, code }))
+        Array.from({ length: 20 }, async () => await pgAccount.otp.deleteMany({ socialId, code }, undefined, true))
       )
 
       expect(results.reduce((sum, it) => sum + it, 0)).toBe(1)
@@ -193,7 +193,7 @@ describe('real-account', () => {
       const results = await Promise.all(
         Array.from({ length: 4 }, async () => {
           if ((await verifyOtpAttempt(pgAccount, socialId, code)) !== 'valid') return false
-          return (await pgAccount.otp.deleteAndCount({ socialId, code })) > 0
+          return (await pgAccount.otp.deleteMany({ socialId, code }, undefined, true)) > 0
         })
       )
 
