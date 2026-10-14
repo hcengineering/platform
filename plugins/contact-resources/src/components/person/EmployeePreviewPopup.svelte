@@ -100,7 +100,6 @@
           name={employee?.name}
           {disabled}
           showStatus={isEmployee}
-          statusSize="medium"
           style="modern"
           clickable
           on:click={viewProfile}

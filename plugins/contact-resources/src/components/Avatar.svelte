@@ -125,7 +125,11 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="flex-presenter" class:no-pointer={!clickable} use:tooltip={getPreviewPopup(person, showPreview)} on:click>
   {#if showStatus && person}
-    <div class="relative" style="display: flex; width: 100%; height: 100%; position: relative; z-index: 0;">
+    <div
+      class="relative hulyAvatar-statusWrap"
+      data-status-size={statusSize ?? size}
+      style="display: flex; width: 100%; height: 100%; position: relative; z-index: 0;"
+    >
       <AvatarInstance
         bind:this={avatarInst}
         {url}
@@ -144,11 +148,7 @@
         withStatus
         {clipPath}
       />
-      <div
-        class="hulyAvatar-statusMarker {statusSize ?? size} {style}"
-        class:online={isOnline}
-        class:offline={!isOnline}
-      />
+      <div class="hulyAvatar-statusMarker" class:online={isOnline} class:offline={!isOnline} />
     </div>
   {:else}
     <AvatarInstance
