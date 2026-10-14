@@ -1,5 +1,6 @@
 //
 // Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -153,6 +154,14 @@ class InMemoryAdapter extends DummyDbAdapter implements DbAdapter {
 
   load (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<Doc[]> {
     return this.modeldb.findAll(core.class.Doc, { _id: { $in: docs } })
+  }
+
+  async clean (ctx: MeasureContext, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
+    for (const id of docs) {
+      if (this.modeldb.findObject(id) !== undefined) {
+        this.modeldb.delDoc(id)
+      }
+    }
   }
 
   tx (ctx: MeasureContext, ...tx: Tx[]): Promise<TxResult[]> {
