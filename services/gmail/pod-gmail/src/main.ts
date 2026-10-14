@@ -2,6 +2,7 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -23,8 +24,7 @@ import { setMetadata } from '@hcengineering/platform'
 import serverClient, { getAccountClient } from '@hcengineering/server-client'
 import { initStatisticsContext, type StorageConfiguration } from '@hcengineering/server-core'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverToken, { decodeToken } from '@hcengineering/server-token'
-import { type IncomingHttpHeaders } from 'http'
+import serverToken, { decodeToken, readToken } from '@hcengineering/server-token'
 import { join } from 'path'
 
 import { decode64 } from './base64'
@@ -32,14 +32,6 @@ import config from './config'
 import { GmailController } from './gmailController'
 import { createServer, listen } from './server'
 import { IntegrationVersion, type Endpoint, type State } from './types'
-
-const extractToken = (header: IncomingHttpHeaders): any => {
-  try {
-    return header.authorization?.slice(7) ?? ''
-  } catch {
-    return undefined
-  }
-}
 
 export const main = async (): Promise<void> => {
   const ctx = initStatisticsContext('gmail', {
@@ -77,7 +69,7 @@ export const main = async (): Promise<void> => {
       handler: async (req, res) => {
         try {
           ctx.info('Signin request received')
-          const token = extractToken(req.headers)
+          const token = readToken(req.headers)
 
           if (token === undefined) {
             res.status(401).send()
@@ -135,7 +127,7 @@ export const main = async (): Promise<void> => {
       handler: async (req, res) => {
         ctx.info('Signout request received')
         try {
-          const token = extractToken(req.headers)
+          const token = readToken(req.headers)
 
           if (token === undefined) {
             res.status(401).send()
@@ -176,7 +168,7 @@ export const main = async (): Promise<void> => {
       type: 'get',
       handler: async (req, res) => {
         try {
-          const token = extractToken(req.headers)
+          const token = readToken(req.headers)
 
           if (token === undefined) {
             res.status(401).send()
@@ -206,7 +198,7 @@ export const main = async (): Promise<void> => {
       type: 'post',
       handler: async (req, res) => {
         try {
-          const token = extractToken(req.headers)
+          const token = readToken(req.headers)
 
           if (token === undefined) {
             res.status(401).send()

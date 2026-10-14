@@ -1,9 +1,46 @@
+//
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { MeasureContext, type WorkspaceIds } from '@hcengineering/core'
 import { StorageAdapter } from '@hcengineering/server-core'
 import { createReadStream, createWriteStream, existsSync, statSync } from 'fs'
 import { mkdir, readdir, readFile, rm, writeFile } from 'fs/promises'
-import { dirname, join } from 'path'
+import { dirname, join, posix } from 'path'
 import { PassThrough, Readable, Writable } from 'stream'
+
+export class InvalidBackupFileNameError extends Error {
+  constructor (path: string) {
+    super('Invalid backup file name: ' + path)
+    this.name = 'InvalidBackupFileNameError'
+  }
+}
+
+function normalizePath (root: string, path: string): string {
+  if (posix.isAbsolute(path)) {
+    throw new InvalidBackupFileNameError(path)
+  }
+
+  const key = posix.normalize(posix.join(root, path))
+  const prefix = root.endsWith('/') ? root : root + '/'
+
+  if (!key.startsWith(prefix)) {
+    throw new InvalidBackupFileNameError(path)
+  }
+
+  return key
+}
 
 export interface FileInfo {
   size: number
@@ -97,32 +134,42 @@ class AdapterStorage implements BackupStorage {
     readonly ctx: MeasureContext
   ) {}
 
+  private getFileKey (name: string): string {
+    const root = posix.normalize(this.root)
+    return normalizePath(root, name)
+  }
+
   async loadFile (name: string): Promise<Buffer> {
-    const data = await this.client.read(this.ctx, this.wsIds, join(this.root, name))
+    const data = await this.client.read(this.ctx, this.wsIds, this.getFileKey(name))
     return Buffer.concat(data)
   }
 
   async write (name: string): Promise<Writable> {
+    const key = this.getFileKey(name)
     const wr = new PassThrough()
-    void this.client.put(this.ctx, this.wsIds, join(this.root, name), wr, 'application/octet-stream')
+    void this.client.put(this.ctx, this.wsIds, key, wr, 'application/octet-stream').catch((err) => {
+      wr.destroy(err instanceof Error ? err : new Error(String(err)))
+    })
     return wr
   }
 
   async load (name: string): Promise<Readable> {
-    return await this.client.get(this.ctx, this.wsIds, join(this.root, name))
+    return await this.client.get(this.ctx, this.wsIds, this.getFileKey(name))
   }
 
   async exists (name: string): Promise<boolean> {
+    const key = this.getFileKey(name)
     try {
-      return (await this.client.stat(this.ctx, this.wsIds, join(this.root, name))) !== undefined
+      return (await this.client.stat(this.ctx, this.wsIds, key)) !== undefined
     } catch (err: any) {
       return false
     }
   }
 
   async stat (name: string): Promise<number> {
+    const key = this.getFileKey(name)
     try {
-      const st = await this.client.stat(this.ctx, this.wsIds, join(this.root, name))
+      const st = await this.client.stat(this.ctx, this.wsIds, key)
       return st?.size ?? 0
     } catch (err: any) {
       return 0
@@ -130,8 +177,9 @@ class AdapterStorage implements BackupStorage {
   }
 
   async statInfo (name: string): Promise<FileInfo> {
+    const key = this.getFileKey(name)
     try {
-      const st = await this.client.stat(this.ctx, this.wsIds, join(this.root, name))
+      const st = await this.client.stat(this.ctx, this.wsIds, key)
       return {
         size: st?.size ?? 0,
         etag: st?.etag ?? '',
@@ -144,7 +192,7 @@ class AdapterStorage implements BackupStorage {
   }
 
   async delete (name: string): Promise<void> {
-    await this.client.remove(this.ctx, this.wsIds, [join(this.root, name)])
+    await this.client.remove(this.ctx, this.wsIds, [this.getFileKey(name)])
   }
 
   async deleteRecursive (name: string): Promise<void> {
@@ -153,7 +201,7 @@ class AdapterStorage implements BackupStorage {
 
   async writeFile (name: string, data: string | Buffer | Readable): Promise<void> {
     // TODO: add mime type detection here.
-    await this.client.put(this.ctx, this.wsIds, join(this.root, name), data, 'application/octet-stream')
+    await this.client.put(this.ctx, this.wsIds, this.getFileKey(name), data, 'application/octet-stream')
   }
 }
 

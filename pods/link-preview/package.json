@@ -59,7 +59,6 @@
     "@hcengineering/server-core": "workspace:^0.7.19",
     "@hcengineering/analytics-service": "workspace:^0.7.19",
     "@hcengineering/analytics": "workspace:^0.7.19",
-    "@hcengineering/server-client": "workspace:^0.7.16",
     "@hcengineering/server-token": "workspace:^0.7.18",
     "dotenv": "^16.4.5",
     "express": "^4.21.2",

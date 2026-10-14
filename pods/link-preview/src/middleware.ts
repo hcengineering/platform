@@ -15,8 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext } from '@hcengineering/core'
-import { extractToken } from '@hcengineering/server-client'
-import { Token } from '@hcengineering/server-token'
+import { Token, extractToken } from '@hcengineering/server-token'
 import { type Response, type Request, type NextFunction, type RequestHandler, type ErrorRequestHandler } from 'express'
 import { HttpError } from './error'
 

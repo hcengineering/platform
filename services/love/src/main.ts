@@ -1,5 +1,6 @@
 //
 // Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -35,7 +36,7 @@ import serverClient from '@hcengineering/server-client'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { initStatisticsContext, QueueTopic, StorageConfig, StorageConfiguration } from '@hcengineering/server-core'
 import { storageConfigFromEnv } from '@hcengineering/server-storage'
-import serverToken, { generateToken } from '@hcengineering/server-token'
+import serverToken, { generateToken, readToken } from '@hcengineering/server-token'
 import cors from 'cors'
 import express, { type Request } from 'express'
 import {
@@ -53,7 +54,7 @@ import { RecordingProcessor } from './recordings'
 import { WebhookProcessor } from './webhook'
 import { WorkspaceClient } from './workspaceClient'
 import { GuestManager } from './guests'
-import { createToken, decodeMeetingToken, extractToken, getRoomName, parseMetadata } from './utils'
+import { createToken, decodeMeetingToken, getRoomName, parseMetadata } from './utils'
 /**
  * Recursively converts all BigInt values in an object to strings.
  * This is needed because JSON.stringify cannot handle BigInt values.
@@ -324,7 +325,7 @@ export const main = async (): Promise<void> => {
     const roomName = getRoomName(workspaceId, meetingId)
 
     try {
-      const token = extractToken(req.headers)
+      const token = readToken(req.headers)
       const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
       if (!isWorkspaceLoginInfo(wsLoginInfo)) {
         console.error('No workspace found for the token')

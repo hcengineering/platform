@@ -1,28 +1,14 @@
 import { Ref, WorkspaceUuid } from '@hcengineering/core'
 import { MeetingMinutes, ParticipantMetadata, RoomMetadata } from '@hcengineering/love'
-import { decodeToken, Token } from '@hcengineering/server-token'
+import { extractToken, Token } from '@hcengineering/server-token'
 import { Request, Response } from 'express'
-import { IncomingHttpHeaders } from 'http'
 import { AccessToken } from 'livekit-server-sdk'
 import config from './config'
 
-export function extractToken (header: IncomingHttpHeaders): string | undefined {
-  try {
-    return header.authorization?.slice(7) ?? ''
-  } catch {
-    return undefined
-  }
-}
-
 export function getWorkspaceId (req: Request): WorkspaceUuid | undefined {
-  const token = extractToken(req.headers)
-  if (token === undefined) {
-    return undefined
-  }
-
   let decodedToken: Token | undefined
   try {
-    decodedToken = decodeToken(token)
+    decodedToken = extractToken(req.headers)
   } catch (e) {
     return undefined
   }
