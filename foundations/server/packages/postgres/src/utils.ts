@@ -161,21 +161,20 @@ async function createTable (client: postgres.Sql, domain: string): Promise<void>
     fields.push(`"${key}" ${val.type} ${val.notNull ? 'NOT NULL' : ''}`)
   }
   const colums = fields.join(', ')
-  const res = await client.unsafe(`CREATE TABLE IF NOT EXISTS ${domain} (
+  await client.unsafe(`CREATE TABLE IF NOT EXISTS ${domain} (
       "workspaceId" uuid NOT NULL,
       ${colums}, 
       data JSONB NOT NULL,
       PRIMARY KEY("workspaceId", _id)
     )`)
-  if (res.count > 0) {
-    for (const key in schema) {
-      const val = schema[key]
-      if (val.index) {
-        await client.unsafe(`
-          CREATE INDEX ${domain}_${key} ON ${domain} ${getIndex(val)} ("${key}")
-        `)
-      }
-      fields.push(`"${key}" ${val.type} ${val.notNull ? 'NOT NULL' : ''}`)
+  // postgres.js reports count = null for DDL, so it can't tell whether the table was created.
+  // `_idx` suffix: indexes and tables share a namespace (index notification(user) vs table notification_user).
+  for (const key in schema) {
+    const val = schema[key]
+    if (val.index) {
+      await client.unsafe(`
+        CREATE INDEX IF NOT EXISTS ${domain}_${key}_idx ON ${domain} ${getIndex(val)} ("${key}")
+      `)
     }
   }
 }
