@@ -130,6 +130,8 @@
     "CreatedChannelOn": "Tento kanál byl vytvořen dne {date}",
     "ChannelMessages": "Zprávy kanálu",
     "JoinChannel": "Připojit se k kanálu",
+    "ChannelPrivacyChanged": "Změna soukromí kanálu",
+    "ChannelArchiveChanged": "Archivace nebo obnovení kanálu",
     "YouJoinedChannel": "Byli jste přidáni do kanálu",
     "AndMore": "a {count} dalších",
     "IsTyping": "{count, plural, =1 {píše} other {píší}}...",

@@ -130,6 +130,8 @@
     "CreatedChannelOn": "Bu kanal {date} tarihinde oluşturuldu",
     "ChannelMessages": "Kanal mesajları",
     "JoinChannel": "Kanala katıl",
+    "ChannelPrivacyChanged": "Kanal gizliliği değişti",
+    "ChannelArchiveChanged": "Kanal arşivlendi veya geri yüklendi",
     "YouJoinedChannel": "Kanala katıldınız",
     "AndMore": "ve {count} daha",
     "IsTyping": "{count, plural, =1 {yazıyor} other {yazıyorlar}}...",

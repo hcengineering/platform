@@ -130,6 +130,8 @@
     "CreatedChannelOn": "Utworzył ten kanał dnia {date}",
     "ChannelMessages": "Wiadomości na kanale",
     "JoinChannel": "Dołącz do kanału",
+    "ChannelPrivacyChanged": "Zmiana prywatności kanału",
+    "ChannelArchiveChanged": "Kanał zarchiwizowany lub przywrócony",
     "YouJoinedChannel": "Dołączono Cię do kanału",
     "AndMore": "i {count} więcej",
     "IsTyping": "{count, plural, =1 {pisze} other {piszą}}...",

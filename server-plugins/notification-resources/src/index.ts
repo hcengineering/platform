@@ -747,13 +747,32 @@ export async function getNotificationTxes (
           object.space,
           receiver,
           sender.socialId,
-          params.shouldUpdateTimestamp ? tx.modifiedOn : undefined,
+          params.shouldUpdateTimestamp && shouldMarkUnread(control, message) ? tx.modifiedOn : undefined,
           tx
         )
       }
     }
   }
   return res
+}
+
+// Attribute changes of chat spaces that are worth lighting up the unread marker for.
+// Everything else (members, name, topic, description, ...) stays in the activity feed without a marker.
+const CHAT_UNREAD_ATTRIBUTES = ['private', 'archived']
+
+function shouldMarkUnread (control: TriggerControl, message: ActivityMessage): boolean {
+  if (message._class !== activity.class.DocUpdateMessage) return true
+  const docMessage = message as DocUpdateMessage
+  if (docMessage.action !== 'update') return true
+
+  const { hierarchy } = control
+  const isChat =
+    hierarchy.isDerived(docMessage.attachedToClass, chunter.class.Channel) ||
+    hierarchy.isDerived(docMessage.attachedToClass, chunter.class.DirectMessage)
+  if (!isChat) return true
+
+  const attrKey = docMessage.attributeUpdates?.attrKey
+  return attrKey !== undefined && CHAT_UNREAD_ATTRIBUTES.includes(attrKey)
 }
 
 async function updateContextsTimestamp (
@@ -849,7 +868,8 @@ export async function createCollabDocInfo (
     notifyContexts = await control.findAll(ctx, notification.class.DocNotifyContext, { objectId: object._id })
   }
 
-  if (notifyContexts.length > 0) {
+  // Service updates (someone joined/left, rename, ...) are shown in the activity feed, but must not light up the unread marker
+  if (notifyContexts.length > 0 && docMessages.some((message) => shouldMarkUnread(control, message))) {
     await updateContextsTimestamp(ctx, notifyContexts, tx.modifiedOn, control, tx.modifiedBy)
   }
   if (notifyContexts.length > 0 && unsubscribe.length > 0) {

@@ -130,6 +130,8 @@
         "CreatedChannelOn": "{date}에 이 채널을 만들었습니다",
         "ChannelMessages": "채널 메시지",
         "JoinChannel": "채널 참여",
+        "ChannelPrivacyChanged": "채널 공개 설정 변경",
+        "ChannelArchiveChanged": "채널 보관 또는 복원",
         "YouJoinedChannel": "채널에 참여했습니다",
         "AndMore": "외 {count}건",
         "IsTyping": "{count, plural, =1 {입력 중...} other {여러 명이 입력 중...}}",
