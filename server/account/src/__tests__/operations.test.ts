@@ -1778,12 +1778,14 @@ describe('account operations', () => {
         update: jest.fn()
       },
       otp: {
-        deleteMany: jest.fn()
+        deleteMany: jest.fn(),
+        deleteAndCount: jest.fn()
       }
     } as unknown as AccountDB
 
     beforeEach(() => {
       jest.clearAllMocks()
+      ;(mockDb.otp.deleteAndCount as jest.Mock).mockResolvedValue(1)
     })
 
     describe('signUp', () => {
@@ -2407,6 +2409,26 @@ describe('account operations', () => {
             code: '123456'
           })
         ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.OtpLocked, {})))
+        expect(mockDb.otp.deleteMany).not.toHaveBeenCalled()
+      })
+
+      test('should reject when the code was already consumed by a concurrent request', async () => {
+        const mockSocialId = {
+          _id: 'social-1' as PersonId,
+          personUuid: 'account-1' as PersonUuid,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+
+        jest.spyOn(utils, 'getEmailSocialId').mockResolvedValue(mockSocialId)
+        jest.spyOn(utils, 'verifyOtpAttempt').mockResolvedValue('valid')
+        ;(mockDb.otp.deleteAndCount as jest.Mock).mockResolvedValue(0)
+
+        await expect(
+          validateOtp(mockCtx, mockDb, mockBranding, mockToken, { email: mockEmail, code: '123456' })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {})))
+        expect(mockDb.otp.deleteAndCount).toHaveBeenCalledWith({ socialId: mockSocialId._id, code: '123456' })
         expect(mockDb.otp.deleteMany).not.toHaveBeenCalled()
       })
 

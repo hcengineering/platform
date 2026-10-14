@@ -403,6 +403,8 @@ export interface DbCollection<T> {
   insertMany: (data: Partial<T>[]) => Promise<any>
   update: (query: Query<T>, ops: Operations<T>) => Promise<void>
   deleteMany: (query: Query<T>) => Promise<void>
+  // Atomically deletes matching rows and returns how many were actually deleted by this call
+  deleteAndCount: (query: Query<T>) => Promise<number>
 }
 
 export type Sort<T> = {

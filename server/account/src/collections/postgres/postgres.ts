@@ -430,6 +430,19 @@ export class PostgresDbCollection<
     const finalSql = sqlChunks.join(' ')
     await this.unsafe(finalSql, whereValues, client)
   }
+
+  async deleteAndCount (query: Query<T>, client?: ISql): Promise<number> {
+    const sqlChunks: string[] = [`DELETE FROM ${this.getTableName()}`]
+    const [whereClause, whereValues] = this.buildWhereClause(query)
+
+    if (whereClause !== '') {
+      sqlChunks.push(whereClause)
+    }
+    sqlChunks.push('RETURNING 1')
+
+    const result = await this.unsafe(sqlChunks.join(' '), whereValues, client)
+    return result.length
+  }
 }
 
 export class AccountPostgresDbCollection
