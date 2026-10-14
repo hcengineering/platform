@@ -227,15 +227,17 @@ export class HulypulseClient implements Disposable {
       if (this.ws?.readyState === WebSocket.OPEN) {
         this.ws.send('ping')
       }
+      // Keep the deadline of the oldest unanswered ping. Resetting it on every
+      // tick would push it back forever, because the interval is shorter than the timeout.
       if (this.pingTimeout !== undefined) {
-        clearTimeout(this.pingTimeout)
+        return
       }
       this.pingTimeout = setTimeout(() => {
-        if (this.ws?.readyState !== WebSocket.OPEN) {
-          console.warn('WS-server not responding to ping, closing connection')
-          clearInterval(this.pingInterval)
-          this.ws?.close(WS_CLOSE_NORMAL)
-        }
+        this.pingTimeout = undefined
+        console.warn('WS-server not responding to ping, closing connection')
+        clearInterval(this.pingInterval)
+        this.pingInterval = undefined
+        this.ws?.close(WS_CLOSE_NORMAL)
       }, this.PING_TIMEOUT_MS)
     }, this.PING_INTERVAL_MS)
   }
