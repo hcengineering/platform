@@ -44,7 +44,6 @@
 
   async function createMailbox (): Promise<void> {
     const { mailbox, socialId } = await getAccountClient().createMailbox(name, (domain ?? domains[0])._id)
-    console.log('Mailbox created', mailbox, socialId)
     const currentUser = getCurrentEmployee()
     const client = getClient()
     await client.addCollection(
