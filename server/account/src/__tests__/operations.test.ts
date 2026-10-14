@@ -2427,11 +2427,7 @@ describe('account operations', () => {
         await expect(
           validateOtp(mockCtx, mockDb, mockBranding, mockToken, { email: mockEmail, code: '123456' })
         ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {})))
-        expect(mockDb.otp.deleteMany).toHaveBeenCalledWith(
-          { socialId: mockSocialId._id, code: '123456' },
-          undefined,
-          true
-        )
+        expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({ socialId: mockSocialId._id, code: '123456' })
         // only the atomic consume call happened; the cleanup deleteMany must not run
         expect(mockDb.otp.deleteMany).toHaveBeenCalledTimes(1)
       })

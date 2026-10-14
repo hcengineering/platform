@@ -216,23 +216,17 @@ describe('PostgresDbCollection', () => {
     })
   })
 
-  describe('deleteMany with count', () => {
-    it('should generate delete query with RETURNING and return deleted rows count', async () => {
-      ;(mockClient.unsafe as jest.Mock).mockResolvedValueOnce([{ '?column?': 1 }])
+  describe('deleteMany count', () => {
+    it('should return deleted rows count reported by the driver', async () => {
+      ;(mockClient.unsafe as jest.Mock).mockResolvedValueOnce(Object.assign([], { count: 3 }))
 
-      const count = await collection.deleteMany({ mode: 'deleted' as const }, undefined, true)
-
-      expect(mockClient.unsafe).toHaveBeenCalledWith(
-        'DELETE FROM global_account.workspace WHERE "mode" = $1 RETURNING 1',
-        ['deleted']
-      )
-      expect(count).toBe(1)
+      expect(await collection.deleteMany({ mode: 'deleted' as const })).toBe(3)
     })
 
     it('should return 0 when nothing was deleted', async () => {
-      ;(mockClient.unsafe as jest.Mock).mockResolvedValueOnce([])
+      ;(mockClient.unsafe as jest.Mock).mockResolvedValueOnce(Object.assign([], { count: 0 }))
 
-      expect(await collection.deleteMany({ mode: 'deleted' as const }, undefined, true)).toBe(0)
+      expect(await collection.deleteMany({ mode: 'deleted' as const })).toBe(0)
     })
   })
 
