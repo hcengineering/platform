@@ -70,6 +70,18 @@ export interface RawFindIterator {
  * @public
  */
 export interface DbAdapter extends LowLevelStorage {
+  // Backend capability flag. When true, this adapter enforces collaborator-grant
+  // read security at the storage layer (e.g. the Postgres addSecurity collab
+  // OR-branch that joins the Collaborator domain into the visibility check).
+  //
+  // The space-security middleware only drops the space filter for collab-read
+  // bypasses (Guests reading docs they collaborate on, Collaborator self-reads,
+  // collab-only space listing) when the adapter serving the domain sets this to
+  // true. Absent/false is treated as fail-closed: the middleware keeps the normal
+  // space filter, so a backend without an equivalent clause (e.g. Mongo, which has
+  // no adapter-side space security) cannot leak docs across spaces.
+  supportsCollaboratorSecurity?: boolean
+
   init?: (
     ctx: MeasureContext,
     contextVars: Record<string, any>,
