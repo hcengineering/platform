@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, platformNow, platformNowDiff, Ref, toIdMap } from '@hcengineering/core'
+  import { Class, Doc, Ref, toIdMap } from '@hcengineering/core'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card, getClient } from '@hcengineering/presentation'
   import tags, { TagCategory, TagElement, TagReference } from '@hcengineering/tags'
@@ -459,8 +459,6 @@
     const updateClasses = new Set<Ref<Class<Doc>>>()
     const client = getClient()
     for (const item of searchPlanElements) {
-      console.log('Apply', item.original.title)
-      const st = platformNow()
       const ops = client.apply(undefined, 'optimize-skill')
       let allRefs: TagReference[] = await client.findAll(tags.class.TagReference, { tag: item.original._id })
 
@@ -540,13 +538,11 @@
           })
         }
       }
-      console.log('Apply:commit', item.original.title, platformNowDiff(st))
       await ops.commit(false)
       processed++
     }
     const ops = client.apply('optimize:done')
     await ops.commit(true, Array.from(updateClasses))
-    console.log('Apply:done')
     processed = 0
   }
   function toColor (el: TagUpdatePlan['elements'][0]): string | undefined {

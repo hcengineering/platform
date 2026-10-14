@@ -186,7 +186,6 @@ class RowHandler {
       // drag row
       const tableHeightPx = getTableHeightPx(table, editor)
       const rows = getTableRows(table, editor)
-      console.log(rows)
 
       let dropIndex = row
       const startTop = rows[row].topPx ?? 0

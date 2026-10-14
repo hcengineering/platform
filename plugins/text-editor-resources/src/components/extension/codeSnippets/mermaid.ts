@@ -619,7 +619,7 @@ function buildState (
             pendingFragments.delete(textContent)
           },
           (reject) => {
-            console.log(reject)
+            console.error('Failed to render mermaid diagram', reject)
             pendingFragments.delete(textContent)
           }
         )

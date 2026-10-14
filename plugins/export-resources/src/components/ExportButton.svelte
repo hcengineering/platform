@@ -70,8 +70,6 @@
 
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-
-      console.log('Export downloaded successfully')
     } catch (err) {
       showPopup(MessageBox, {
         label: plugin.string.ExportRequestFailed,

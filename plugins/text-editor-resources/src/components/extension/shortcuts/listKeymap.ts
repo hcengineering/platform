@@ -66,7 +66,7 @@ export const ListKeymapExtension = ListKeymap.extend<ListKeymapOptions>({
       try {
         return handleBackspace(editor)
       } catch (e) {
-        console.log(e)
+        console.error('List backspace handler failed', e)
         return false
       }
     }
@@ -75,7 +75,7 @@ export const ListKeymapExtension = ListKeymap.extend<ListKeymapOptions>({
       try {
         return handleDelete(editor)
       } catch (e) {
-        console.log(e)
+        console.error('List delete handler failed', e)
         return false
       }
     }

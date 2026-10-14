@@ -140,7 +140,6 @@
         socialIds: socialIds.map((si) => si._id)
       })
       if (onAdded != null) {
-        console.log('Callback onAdded')
         void onAdded(newSocialId)
       }
       dispatch('close')
