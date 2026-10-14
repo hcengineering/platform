@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { Doc, Ref, SortingOrder, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import core, { Class, Doc, Ref, SortingOrder, Space, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import preference, { SpacePreference } from '@hcengineering/preference'
   import { createQuery, getClient, isAdminUser } from '@hcengineering/presentation'
@@ -35,34 +35,92 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const query = createQuery()
+  // Collab-spaces: spaces that host docs the current account is a Collaborator on,
+  // even when the account is not in the space's `members`. Powers nav-tree visibility
+  // for collab-only Guests on classes that opted into ClassCollaborators.provideSecurity.
+  const collabSpaceLookupQuery = createQuery()
+  const collabSpaceQuery = createQuery()
 
-  let spaces: Space[] = []
+  let memberSpaces: Space[] = []
+  let collabSpaces: Space[] = []
+  let collabSpaceIds: Set<Ref<Space>> = new Set<Ref<Space>>()
   let starred: Space[] = []
   let shownSpaces: Space[] = []
 
   const adminUser = isAdminUser()
 
-  $: if (model) {
-    const classes = Array.from(new Set(getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c)))).filter(
-      (it) => !hierarchy.isMixin(it)
-    )
-    if (classes.length > 0) {
-      query.query<Space>(
-        classes.length === 1 ? classes[0] : core.class.Space,
-        !adminUser
-          ? {
-              ...(classes.length === 1 ? {} : { _class: { $in: classes } }),
-              members: getCurrentAccount().uuid
-            }
-          : { ...(classes.length === 1 ? {} : { _class: { $in: classes } }) },
-        (result) => {
-          spaces = result
-        },
-        { sort: { name: SortingOrder.Ascending } }
+  $: activeClasses = (
+    model
+      ? Array.from(new Set(getSpecialSpaceClass(model).flatMap((c) => hierarchy.getDescendants(c)))).filter(
+        (it) => !hierarchy.isMixin(it)
       )
-    } else {
-      query.unsubscribe()
-    }
+      : []
+  ) as Ref<Class<Space>>[]
+
+  $: spaces =
+    adminUser || collabSpaces.length === 0
+      ? memberSpaces
+      : (() => {
+          const seen = new Set(memberSpaces.map((s) => s._id))
+          return [...memberSpaces, ...collabSpaces.filter((s) => !seen.has(s._id))]
+        })()
+
+  $: if (model && activeClasses.length > 0) {
+    const classes = activeClasses
+    query.query<Space>(
+      classes.length === 1 ? classes[0] : core.class.Space,
+      !adminUser
+        ? {
+            ...(classes.length === 1 ? {} : { _class: { $in: classes } }),
+            members: getCurrentAccount().uuid
+          }
+        : { ...(classes.length === 1 ? {} : { _class: { $in: classes } }) },
+      (result) => {
+        memberSpaces = result
+      },
+      { sort: { name: SortingOrder.Ascending } }
+    )
+  } else if (model) {
+    query.unsubscribe()
+    memberSpaces = []
+  }
+
+  // Track every Space that hosts a Collaborator record naming the current account.
+  // We track unconditionally (cheap query, scoped to self by A6) and let the second
+  // query narrow by the navigator's class set.
+  $: if (!adminUser) {
+    collabSpaceLookupQuery.query(
+      core.class.Collaborator,
+      { collaborator: getCurrentAccount().uuid },
+      (collabs) => {
+        const next = new Set<Ref<Space>>(collabs.map((c) => c.space))
+        if (next.size !== collabSpaceIds.size || !Array.from(next).every((id) => collabSpaceIds.has(id))) {
+          collabSpaceIds = next
+        }
+      },
+      { projection: { space: 1 } }
+    )
+  } else {
+    collabSpaceLookupQuery.unsubscribe()
+    collabSpaceIds = new Set<Ref<Space>>()
+  }
+
+  $: if (!adminUser && collabSpaceIds.size > 0 && activeClasses.length > 0) {
+    const classes = activeClasses
+    collabSpaceQuery.query<Space>(
+      classes.length === 1 ? classes[0] : core.class.Space,
+      {
+        _id: { $in: Array.from(collabSpaceIds) },
+        ...(classes.length === 1 ? {} : { _class: { $in: classes } })
+      },
+      (result) => {
+        collabSpaces = result
+      },
+      { sort: { name: SortingOrder.Ascending } }
+    )
+  } else {
+    collabSpaceQuery.unsubscribe()
+    collabSpaces = []
   }
 
   let specials: SpecialNavModel[] = []

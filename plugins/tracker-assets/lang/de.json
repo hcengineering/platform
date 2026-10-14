@@ -344,6 +344,7 @@
     "DependencyShiftedSubject": "Abhängigkeits-Verschiebung",
     "Color": "Farbe",
     "AllowCreatingIssues": "Erstellen von Aufgaben erlauben",
+    "SharedWithYouTooltip": "Du hast nur Zugriff auf einzelne Issues; du bist kein Mitglied dieses Projekts",
     "Day": "Tag",
     "Week": "Woche",
     "Month": "Monat",
