@@ -71,6 +71,8 @@ export default mergeIds(contactId, contact, {
     ResendInviteDescr: '' as IntlString,
     CreateEmployee: '' as IntlString,
     Inactive: '' as IntlString,
+    StatusOnline: '' as IntlString,
+    StatusOffline: '' as IntlString,
     Active: '' as IntlString,
     Role: '' as IntlString,
     NotSpecified: '' as IntlString,

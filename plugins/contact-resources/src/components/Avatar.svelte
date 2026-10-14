@@ -23,7 +23,7 @@
     getAvatarProviderId,
     Person
   } from '@hcengineering/contact'
-  import { Asset, getResource } from '@hcengineering/platform'
+  import { Asset, getResource, translateCB } from '@hcengineering/platform'
   import { getBlobURL, getClient, reduceCalls, sizeToWidth } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
@@ -38,6 +38,7 @@
   import { onMount } from 'svelte'
   import { AccountUuid, type Data, PersonUuid, Ref, type WithLookup } from '@hcengineering/core'
 
+  import contact from '../plugin'
   import { loadUsersStatus, statusByUserStore } from '../utils'
   import AvatarInstance from './AvatarInstance.svelte'
   import { getPreviewPopup } from './person/utils'
@@ -119,13 +120,23 @@
 
   $: isOnline =
     person?.personUuid !== undefined && $statusByUserStore.get(person.personUuid as AccountUuid)?.online === true
+
+  let statusLabel = ''
+  $: statusLabelId = isOnline ? contact.string.StatusOnline : contact.string.StatusOffline
+  $: translateCB(statusLabelId, {}, $themeStore.language, (res) => {
+    statusLabel = res
+  })
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div class="flex-presenter" class:no-pointer={!clickable} use:tooltip={getPreviewPopup(person, showPreview)} on:click>
   {#if showStatus && person}
-    <div class="relative" style="display: flex; width: 100%; height: 100%; position: relative; z-index: 0;">
+    <div
+      class="relative hulyAvatar-statusWrap"
+      data-status-size={statusSize ?? size}
+      style="display: flex; width: 100%; height: 100%; position: relative; z-index: 0;"
+    >
       <AvatarInstance
         bind:this={avatarInst}
         {url}
@@ -145,9 +156,11 @@
         {clipPath}
       />
       <div
-        class="hulyAvatar-statusMarker {statusSize ?? size} {style}"
+        class="hulyAvatar-statusMarker"
         class:online={isOnline}
         class:offline={!isOnline}
+        role="img"
+        aria-label={statusLabel}
       />
     </div>
   {:else}

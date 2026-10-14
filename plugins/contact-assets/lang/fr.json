@@ -158,6 +158,8 @@
     "AnonymousGuestAccessWorkspaceOffNote": "L'accès invité anonyme est désactivé pour cet espace de travail",
     "AnonymousGuestAccessOwnerOnlyNote": "Seuls les propriétaires peuvent modifier ce paramètre",
     "PublicBadge": "Public",
-    "SpaceMembershipGroup": "Adhésion"
+    "SpaceMembershipGroup": "Adhésion",
+    "StatusOnline": "En ligne",
+    "StatusOffline": "Hors ligne"
   }
 }
