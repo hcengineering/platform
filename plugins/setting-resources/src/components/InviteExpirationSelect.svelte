@@ -20,11 +20,11 @@
 
   import {
     HOURS_IN_DAY,
-    INVITE_DEFAULT_CUSTOM_HOURS,
     INVITE_EXPIRATION_PRESET_HOURS,
     isValidInviteRestriction,
     isWholeDays
   } from '../inviteDuration'
+  import { INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS } from '../inviteSettingsUtils'
   import settingRes from '../plugin'
 
   /** Expiration in hours. A negative value means the link never expires. */
@@ -47,7 +47,7 @@
   ]
 
   let preset = 'custom'
-  let amount: number | undefined = INVITE_DEFAULT_CUSTOM_HOURS / HOURS_IN_DAY
+  let amount: number | undefined = INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS / HOURS_IN_DAY
   let unit: Unit = 'days'
   // The value the local state was last derived from or emitted for
   let lastValue = value
@@ -110,7 +110,7 @@
     if (e.detail === preset) return
     if (e.detail === 'custom') {
       // Start from what is currently selected so that switching to custom changes nothing by itself
-      setAmount(value > 0 ? value : INVITE_DEFAULT_CUSTOM_HOURS)
+      setAmount(value > 0 ? value : INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS)
     }
     preset = e.detail
   }
@@ -162,7 +162,7 @@
       </div>
     </div>
     {#if !valid}
-      <span class="error"><Label label={settingRes.string.InvitePositiveNumber} /></span>
+      <span class="error-color text-sm"><Label label={settingRes.string.InvitePositiveNumber} /></span>
     {/if}
   {/if}
 </div>
@@ -186,10 +186,5 @@
   .unit {
     flex: 1 1 0;
     min-width: 0;
-  }
-
-  .error {
-    font-size: 0.8125rem;
-    color: var(--theme-error-color);
   }
 </style>

@@ -120,7 +120,7 @@
     "UsesLimit": "{count, plural, other {En fazla # kullanım}}",
     "CustomizeInviteLink": "Özelleştir",
     "LinkSettings": "Bağlantı ayarları",
-    "ResetToWorkspaceDefaults": "Varsayılan ayarlara dön",
+    "RestoreDefaults": "Varsayılanlara sıfırla",
     "ExpiresAfterDays": "{count, plural, other {# gün sonra sona erer}}"
   }
 }

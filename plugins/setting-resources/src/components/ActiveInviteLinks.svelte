@@ -20,8 +20,9 @@
   import { Button, ButtonIcon, IconCopy, IconDelete, Label, Loading, showPopup, TimeSince } from '@hcengineering/ui'
   import { onMount } from 'svelte'
 
-  import { formatInviteDate, getInviteLinkUrl, getInviteRoleLabel } from '../inviteLinks'
+  import { formatInviteDate, getInviteLinkUrl, getInviteRoleLabel, type InviteLinkSummaryItem } from '../inviteLinks'
   import { getAccountClient } from '../utils'
+  import InviteLinkSummary from './InviteLinkSummary.svelte'
 
   const isSecureContext = window.isSecureContext
 
@@ -41,6 +42,17 @@
     } finally {
       loading = false
     }
+  }
+
+  function summarize (invite: ManagedInviteLink): InviteLinkSummaryItem[] {
+    return [
+      invite.expiresOn > 0
+        ? { label: login.string.InviteLinkExpires, params: { date: formatInviteDate(invite.expiresOn) } }
+        : { label: login.string.NoExpiration },
+      invite.remainingUses < 0
+        ? { label: login.string.UnlimitedUses }
+        : { label: login.string.RemainingUses, params: { count: invite.remainingUses } }
+    ]
   }
 
   async function copy (invite: ManagedInviteLink): Promise<void> {
@@ -83,14 +95,14 @@
   <Loading />
 {:else if listError}
   <div class="flex-row-center flex-gap-2">
-    <span class="error"><Label label={login.string.InviteLinksLoadError} /></span>
+    <span class="error-color"><Label label={login.string.InviteLinksLoadError} /></span>
     <Button label={login.string.RetryInviteLinks} size={'small'} on:click={() => void load()} />
   </div>
 {:else if inviteLinks.length === 0}
   <span class="secondary"><Label label={login.string.NoActiveInviteLinks} /></span>
 {:else}
   {#if actionError}
-    <div class="error mb-2"><Label label={login.string.InviteLinkError} /></div>
+    <div class="error-color mb-2"><Label label={login.string.InviteLinkError} /></div>
   {/if}
   <div class="links">
     {#each inviteLinks as invite (invite.id)}
@@ -98,27 +110,16 @@
       <div class="link-row">
         <div class="link-info">
           <span class="role"><Label label={getInviteRoleLabel(invite.role)} /></span>
-          <span class="meta">
-            {#if invite.expiresOn > 0}
-              <Label label={login.string.InviteLinkExpires} params={{ date: formatInviteDate(invite.expiresOn) }} />
-            {:else}
-              <Label label={login.string.NoExpiration} />
-            {/if}
-            <span class="dot">·</span>
-            {#if invite.remainingUses < 0}
-              <Label label={login.string.UnlimitedUses} />
-            {:else}
-              <Label label={login.string.RemainingUses} params={{ count: invite.remainingUses }} />
-            {/if}
+          <InviteLinkSummary muted items={summarize(invite)}>
             {#if creator !== undefined}
-              <span class="dot">·</span>
-              <PersonPresenter value={creator} shouldShowAvatar={false} colorInherit noUnderline />
+              <span class="invite-summary-part">
+                <PersonPresenter value={creator} shouldShowAvatar={false} colorInherit noUnderline />
+              </span>
             {/if}
             {#if invite.createdOn !== undefined}
-              <span class="dot">·</span>
-              <TimeSince value={invite.createdOn} />
+              <span class="invite-summary-part"><TimeSince value={invite.createdOn} /></span>
             {/if}
-          </span>
+          </InviteLinkSummary>
         </div>
         <div class="link-actions">
           {#if isSecureContext}
@@ -175,19 +176,6 @@
     color: var(--theme-caption-color);
   }
 
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    column-gap: 0.375rem;
-    font-size: 0.8125rem;
-    color: var(--theme-dark-color);
-  }
-
-  .dot {
-    opacity: 0.6;
-  }
-
   .link-actions {
     display: flex;
     flex-shrink: 0;
@@ -196,9 +184,5 @@
 
   .secondary {
     color: var(--theme-dark-color);
-  }
-
-  .error {
-    color: var(--theme-error-color);
   }
 </style>

@@ -121,7 +121,7 @@
     "UsesLimit": "{count, plural, =1 {Bis zu # Nutzung} other {Bis zu # Nutzungen}}",
     "CustomizeInviteLink": "Anpassen",
     "LinkSettings": "Link-Einstellungen",
-    "ResetToWorkspaceDefaults": "Auf Arbeitsbereich-Standard zurücksetzen",
+    "RestoreDefaults": "Standardeinstellungen wiederherstellen",
     "ExpiresAfterDays": "{count, plural, one {Läuft nach # Tag ab} other {Läuft nach # Tagen ab}}"
   }
 }

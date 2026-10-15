@@ -120,7 +120,7 @@
     "UsesLimit": "{count, plural, =1 {Up to # use} other {Up to # uses}}",
     "CustomizeInviteLink": "Customize",
     "LinkSettings": "Link settings",
-    "ResetToWorkspaceDefaults": "Reset to workspace defaults",
+    "RestoreDefaults": "Restore defaults",
     "ExpiresAfterDays": "{count, plural, one {Expires after # day} other {Expires after # days}}"
   }
 }

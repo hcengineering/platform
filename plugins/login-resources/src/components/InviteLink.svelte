@@ -18,7 +18,14 @@
   import { getResource } from '@hcengineering/platform'
   import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
   import setting, { RoleCapability, settingId } from '@hcengineering/setting'
-  import { getDefaultInviteRole, getInviteRoleLabel, resolveInviteSettings } from '@hcengineering/setting-resources'
+  import {
+    getDefaultInviteRole,
+    getInviteRoleLabel,
+    INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS,
+    InviteLinkSummary,
+    resolveInviteSettings,
+    summarizeInviteLink
+  } from '@hcengineering/setting-resources'
   import {
     type AnySvelteComponent,
     Button,
@@ -32,12 +39,7 @@
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
-  import {
-    DEFAULT_INVITE_EXP_HOURS,
-    type InviteLinkParams,
-    LIMITED_ROLE_INVITE_EXP_HOURS,
-    summarizeInviteLink
-  } from '../inviteLinkParams'
+  import { type InviteLinkParams, LIMITED_ROLE_INVITE_EXP_HOURS } from '../inviteLinkParams'
   import login from '../plugin'
   import { getInviteLink } from '../utils'
   import InviteLinkSettings from './InviteLinkSettings.svelte'
@@ -56,7 +58,7 @@
   // Only maintainers manage links, and there is no point in linking to the page that is already open
   const inviteSettingsUrl = isOwnerOrMaintainer && !isInviteSettingsOpen() ? getInviteSettingsUrl() : undefined
 
-  let defaults: InviteLinkParams = { expHours: DEFAULT_INVITE_EXP_HOURS, limit: -1 }
+  let defaults: InviteLinkParams = { expHours: INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS, limit: -1 }
   let params: InviteLinkParams = defaults
   let valid = true
   let emailMask = ''
@@ -189,13 +191,11 @@
           />
         {/if}
       </div>
-      <div class="summary">
-        <span class="role"><Label label={getInviteRoleLabel(created.role)} /></span>
-        {#each summarizeInviteLink(created, created.createdOn) as item}
-          <span class="dot">·</span>
-          <Label label={item.label} params={item.params} />
-        {/each}
-      </div>
+      <InviteLinkSummary
+        muted
+        role={getInviteRoleLabel(created.role)}
+        items={summarizeInviteLink(created, created.createdOn)}
+      />
     {/if}
     {#if linkError}
       <Notice kind={'error'} label={login.string.InviteLinkError} />
@@ -235,24 +235,6 @@
   .hint {
     font-size: 0.8125rem;
     color: var(--theme-dark-color);
-  }
-
-  .summary {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    column-gap: 0.375rem;
-    font-size: 0.8125rem;
-    color: var(--theme-dark-color);
-  }
-
-  .dot {
-    opacity: 0.6;
-  }
-
-  .role {
-    font-weight: 500;
-    color: var(--theme-caption-color);
   }
 
   .link-field {

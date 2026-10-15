@@ -120,7 +120,7 @@
     "UsesLimit": "{count, plural, other {最多 # 次}}",
     "CustomizeInviteLink": "自定义",
     "LinkSettings": "链接设置",
-    "ResetToWorkspaceDefaults": "恢复为工作区默认设置",
+    "RestoreDefaults": "恢复默认",
     "ExpiresAfterDays": "{count, plural, other {#天后过期}}"
   }
 }

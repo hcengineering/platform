@@ -120,7 +120,7 @@
     "UsesLimit": "{count, plural, other {最大#回}}",
     "CustomizeInviteLink": "カスタマイズ",
     "LinkSettings": "リンクの設定",
-    "ResetToWorkspaceDefaults": "ワークスペースの既定に戻す",
+    "RestoreDefaults": "デフォルトに戻す",
     "ExpiresAfterDays": "{count, plural, other {#日後に期限切れ}}"
   }
 }

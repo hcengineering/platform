@@ -96,7 +96,7 @@ export default plugin(loginId, {
     UsesLimit: '' as IntlString<{ count: number }>,
     CustomizeInviteLink: '' as IntlString,
     LinkSettings: '' as IntlString,
-    ResetToWorkspaceDefaults: '' as IntlString,
+    RestoreDefaults: '' as IntlString,
     PasswordMinLength: '' as IntlString<{ count: number }>,
     PasswordMinSpecialChars: '' as IntlString<{ count: number }>,
     PasswordMinDigits: '' as IntlString<{ count: number }>,

@@ -121,7 +121,7 @@
     "UsesLimit": "{count, plural, other {Až # použití}}",
     "CustomizeInviteLink": "Přizpůsobit",
     "LinkSettings": "Nastavení odkazu",
-    "ResetToWorkspaceDefaults": "Obnovit výchozí nastavení",
+    "RestoreDefaults": "Obnovit výchozí nastavení",
     "ExpiresAfterDays": "{count, plural, one {Vyprší za # den} few {Vyprší za # dny} other {Vyprší za # dní}}"
   }
 }

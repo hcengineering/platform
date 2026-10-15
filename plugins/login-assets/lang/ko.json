@@ -119,7 +119,7 @@
         "UsesLimit": "{count, plural, other {최대 #회}}",
         "CustomizeInviteLink": "사용자 지정",
         "LinkSettings": "링크 설정",
-        "ResetToWorkspaceDefaults": "워크스페이스 기본값으로 재설정",
+        "RestoreDefaults": "기본값 복원",
         "ExpiresAfterDays": "{count, plural, other {#일 후 만료}}"
     }
 }

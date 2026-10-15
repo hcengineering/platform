@@ -38,6 +38,7 @@ import ClassAttributesList from './components/ClassAttributesList.svelte'
 import Configure from './components/Configure.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
 import InviteExpirationSelect from './components/InviteExpirationSelect.svelte'
+import InviteLinkSummary from './components/InviteLinkSummary.svelte'
 import InviteUsesSelect from './components/InviteUsesSelect.svelte'
 import UserRoleSelect from './components/UserRoleSelect.svelte'
 import PermissionPresenter from './components/presenters/PermissionPresenter.svelte'
@@ -103,6 +104,7 @@ export {
   BaseIntegrationState,
   IntegrationStateRow,
   InviteExpirationSelect,
+  InviteLinkSummary,
   InviteUsesSelect
 }
 

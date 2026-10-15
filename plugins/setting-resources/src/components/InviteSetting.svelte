@@ -21,7 +21,12 @@
   import setting, { type InviteSettings, type RoleCapabilitySettings, RoleCapability } from '@hcengineering/setting'
   import { hasRoleCapability } from '../roleCapability'
   import { isValidInviteRestriction } from '../inviteDuration'
-  import { getDefaultInviterRoles, getDefaultInviteRole, resolveInviteSettings } from '../inviteSettingsUtils'
+  import {
+    getDefaultInviterRoles,
+    getDefaultInviteRole,
+    INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS,
+    resolveInviteSettings
+  } from '../inviteSettingsUtils'
   import { translate } from '@hcengineering/platform'
   import {
     Breadcrumb,
@@ -46,7 +51,7 @@
   const canManageInviteLinks = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)
 
   let loading = true
-  let expTime: number = 48
+  let expTime: number = INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS
   let mask: string = ''
   let limit: number = -1
   let saveFailed = false

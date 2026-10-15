@@ -38,7 +38,6 @@ import {
   type WorkspaceInfoWithStatus,
   type WorkspaceUserOperation
 } from '@hcengineering/core'
-import { loginId } from '@hcengineering/login'
 import platform, {
   OK,
   PlatformError,

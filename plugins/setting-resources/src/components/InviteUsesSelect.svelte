@@ -112,7 +112,7 @@
       <span class="unit"><Label label={settingRes.string.InviteUsesUnit} params={{ count: amount ?? 0 }} /></span>
     </div>
     {#if !valid}
-      <span class="error"><Label label={settingRes.string.InvitePositiveNumber} /></span>
+      <span class="error-color text-sm"><Label label={settingRes.string.InvitePositiveNumber} /></span>
     {/if}
   {/if}
 </div>
@@ -141,10 +141,5 @@
     flex-shrink: 0;
     font-size: 0.8125rem;
     color: var(--theme-dark-color);
-  }
-
-  .error {
-    font-size: 0.8125rem;
-    color: var(--theme-error-color);
   }
 </style>

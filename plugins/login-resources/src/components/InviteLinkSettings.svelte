@@ -14,10 +14,15 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { InviteExpirationSelect, InviteUsesSelect } from '@hcengineering/setting-resources'
-  import { Button, IconEdit, IconUndo, Label, Notice } from '@hcengineering/ui'
+  import {
+    InviteExpirationSelect,
+    InviteLinkSummary,
+    InviteUsesSelect,
+    summarizeInviteLink
+  } from '@hcengineering/setting-resources'
+  import { Button, IconEdit, IconReset, Label, Notice } from '@hcengineering/ui'
 
-  import { type InviteLinkParams, isValidInviteLinkParams, summarizeInviteLink } from '../inviteLinkParams'
+  import { type InviteLinkParams, isValidInviteLinkParams } from '../inviteLinkParams'
   import login from '../plugin'
 
   /** Workspace defaults, used until the user customizes the link. */
@@ -48,12 +53,7 @@
 {#if !customized}
   <div class="defaults">
     <div class="defaults-info">
-      <div class="summary">
-        {#each summarizeInviteLink(defaults) as item, i}
-          {#if i > 0}<span class="dot">·</span>{/if}
-          <Label label={item.label} params={item.params} />
-        {/each}
-      </div>
+      <InviteLinkSummary items={summarizeInviteLink(defaults)} />
       {#if settingsUrl !== undefined}
         <a class="caption link" href={settingsUrl} target="_blank" rel="noopener noreferrer">
           <Label label={login.string.WorkspaceDefaults} />
@@ -71,8 +71,9 @@
     <div class="custom-header">
       <span class="title"><Label label={login.string.LinkSettings} /></span>
       <Button
-        icon={IconUndo}
-        label={login.string.ResetToWorkspaceDefaults}
+        icon={IconReset}
+        iconProps={{ size: 'x-small' }}
+        label={login.string.RestoreDefaults}
         kind={'ghost'}
         size={'small'}
         on:click={() => (customized = false)}
@@ -111,18 +112,6 @@
     flex-direction: column;
     gap: var(--spacing-0_25);
     min-width: 0;
-  }
-
-  .summary {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    column-gap: 0.375rem;
-    color: var(--theme-caption-color);
-  }
-
-  .dot {
-    opacity: 0.6;
   }
 
   .caption {

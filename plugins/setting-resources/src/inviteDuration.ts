@@ -25,9 +25,6 @@ export const INVITE_EXPIRATION_PRESET_HOURS: readonly number[] = [24, 48, 168, 7
 /** Number of uses offered as the "one use" preset. */
 export const INVITE_SINGLE_USE = 1
 
-/** Duration used when the user switches from a preset to a custom value without having one. */
-export const INVITE_DEFAULT_CUSTOM_HOURS = 48
-
 /** Number of uses suggested when switching to a custom limit. */
 export const INVITE_DEFAULT_CUSTOM_USES = 10
 
