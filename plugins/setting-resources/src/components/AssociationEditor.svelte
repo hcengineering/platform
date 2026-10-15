@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import core, { Association, Class, Data, Doc, Ref } from '@hcengineering/core'
-  import { getEmbeddedLabel, IntlString, translateCB } from '@hcengineering/platform'
+  import { getEmbeddedLabel, translateCB } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import {
     Button,
@@ -103,6 +103,7 @@
   let classBRef: Ref<Class<Doc>> | undefined = undefined
   let nameA = association.nameA
   let nameB = association.nameB
+  let mode: Association['type'] = association.type
   let description = ''
   let automationOnly = association.automationOnly ?? false
   let filterA = association.filterA
@@ -112,7 +113,7 @@
   $: classB = isEmptyClass(classBRef) ? undefined : hierarchy.getClass(classBRef as Ref<Class<Doc>>)
 
   function isEmptyClass (ref: Ref<Class<Doc>> | undefined): boolean {
-    return ref === undefined || ref !== ''
+    return ref === undefined || ref === ''
   }
 
   $: editable = !isAssociation(association)
@@ -124,6 +125,7 @@
     classARef = !isEmptyClass(association.classA) ? association.classA : undefined
     nameA = association.nameA
     nameB = association.nameB
+    mode = association.type
 
     translateCB(association.description ?? getEmbeddedLabel(''), {}, $themeStore.language, (p) => {
       description = p
@@ -195,6 +197,7 @@
       await client.diffUpdate(association, {
         nameA,
         nameB,
+        type: mode,
         description: description.trim().length > 0 ? getEmbeddedLabel(description.trim()) : undefined,
         automationOnly,
         filterA,
@@ -231,10 +234,6 @@
       label: getEmbeddedLabel('N:N')
     }
   ]
-
-  let mode: '1:1' | '1:N' | 'N:N' = (items.find((item) => item.id === association?.type)?.id ?? '1:1') as
-    '1:1' | '1:N' | 'N:N'
-  const label = items.find((item) => item.id === association?.type)?.label ?? ('' as IntlString)
 </script>
 
 <div class="flex-between p-4 w-full items-stretch">
@@ -295,19 +294,15 @@
           <Label label={setting.string.Type} />
         </div>
         <div>
-          {#if editable}
-            <DropdownLabelsIntl
-              selected={mode}
-              {items}
-              {kind}
-              {size}
-              on:selected={(res) => {
-                mode = res.detail
-              }}
-            />
-          {:else}
-            <Label {label} />
-          {/if}
+          <DropdownLabelsIntl
+            selected={mode}
+            {items}
+            {kind}
+            {size}
+            on:selected={(res) => {
+              mode = res.detail
+            }}
+          />
         </div>
         <div />
       </div>

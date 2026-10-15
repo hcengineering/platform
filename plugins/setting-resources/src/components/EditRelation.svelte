@@ -15,11 +15,12 @@
 -->
 <script lang="ts">
   import core, { Association } from '@hcengineering/core'
-  import { getEmbeddedLabel, IntlString, translateCB } from '@hcengineering/platform'
+  import { getEmbeddedLabel, translateCB } from '@hcengineering/platform'
   import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
   import {
     Button,
     DropdownIntlItem,
+    DropdownLabelsIntl,
     EditBox,
     IconDelete,
     Label,
@@ -41,6 +42,7 @@
   const classB = hierarchy.getClass(association.classB)
   let nameA = association.nameA
   let nameB = association.nameB
+  let mode: Association['type'] = association.type
   let description = ''
   let automationOnly = association.automationOnly ?? false
 
@@ -52,6 +54,7 @@
     await client.diffUpdate(association, {
       nameA,
       nameB,
+      type: mode,
       description: description.trim().length > 0 ? getEmbeddedLabel(description.trim()) : undefined,
       automationOnly
     })
@@ -72,8 +75,6 @@
       label: getEmbeddedLabel('N:N')
     }
   ]
-
-  const label = items.find((item) => item.id === association?.type)?.label ?? ('' as IntlString)
 
   async function remove (): Promise<void> {
     showPopup(MessageBox, {
@@ -117,7 +118,13 @@
           <Label label={setting.string.Type} />
         </div>
         <div>
-          <Label {label} />
+          <DropdownLabelsIntl
+            selected={mode}
+            {items}
+            on:selected={(res) => {
+              mode = res.detail
+            }}
+          />
         </div>
         <div />
       </div>
