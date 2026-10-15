@@ -34,7 +34,6 @@
   export let okLabel: IntlString = ui.string.Ok
   export let padding: string | undefined = undefined
   export let bottomPadding: string | undefined = undefined
-  /** Overrides the default footer padding, e.g. to align the footer with custom content padding. */
   export let footerPadding: string | undefined = undefined
   export let hidden: boolean = false
   export let noTopIndent: boolean = false
