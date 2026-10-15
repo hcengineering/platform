@@ -281,7 +281,6 @@
     "InviteSingleUse": "Eine Nutzung",
     "InviteDaysUnit": "{count, plural, one {Tag} other {Tage}}",
     "InviteHoursUnit": "{count, plural, one {Stunde} other {Stunden}}",
-    "InviteUsesUnit": "{count, plural, one {Nutzung} other {Nutzungen}}",
     "InvitePositiveNumber": "Geben Sie eine ganze Zahl größer als null ein.",
     "InviteSettingsSaveFailed": "Die Einladungseinstellungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut."
   }

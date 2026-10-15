@@ -284,7 +284,6 @@
     "InviteSingleUse": "Одно использование",
     "InviteDaysUnit": "{count, plural, one {день} few {дня} other {дней}}",
     "InviteHoursUnit": "{count, plural, one {час} few {часа} other {часов}}",
-    "InviteUsesUnit": "{count, plural, one {использование} few {использования} other {использований}}",
     "InvitePositiveNumber": "Введите целое число больше нуля.",
     "InviteSettingsSaveFailed": "Не удалось сохранить настройки приглашений. Попробуйте ещё раз."
   }

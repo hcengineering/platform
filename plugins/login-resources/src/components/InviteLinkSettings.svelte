@@ -51,15 +51,20 @@
 </script>
 
 {#if !customized}
-  <div class="defaults">
-    <div class="defaults-info">
+  <div class="defaults flex-between flex-gap-4">
+    <div class="flex-col flex-gap-0-5 clear-mins">
       <InviteLinkSummary items={summarizeInviteLink(defaults)} />
       {#if settingsUrl !== undefined}
-        <a class="caption link" href={settingsUrl} target="_blank" rel="noopener noreferrer">
+        <a
+          class="link self-start noBold text-md content-dark-color"
+          href={settingsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <Label label={login.string.WorkspaceDefaults} />
         </a>
       {:else}
-        <span class="caption"><Label label={login.string.WorkspaceDefaults} /></span>
+        <span class="self-start text-md content-dark-color"><Label label={login.string.WorkspaceDefaults} /></span>
       {/if}
     </div>
     {#if canCustomize}
@@ -67,9 +72,9 @@
     {/if}
   </div>
 {:else}
-  <div class="custom">
-    <div class="custom-header">
-      <span class="title"><Label label={login.string.LinkSettings} /></span>
+  <div class="flex-col flex-gap-2">
+    <div class="flex-between flex-gap-4">
+      <span class="font-medium caption-color"><Label label={login.string.LinkSettings} /></span>
       <Button
         icon={IconReset}
         iconProps={{ size: 'x-small' }}
@@ -79,7 +84,7 @@
         on:click={() => (customized = false)}
       />
     </div>
-    <div class="settings">
+    <div class="flex-col border-divider-color settings">
       <div class="setting">
         <span class="name"><Label label={login.string.LinkExpires} /></span>
         <div class="control"><InviteExpirationSelect bind:value={expHours} /></div>
@@ -98,56 +103,16 @@
 
 <style lang="scss">
   .defaults {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-2);
     padding: var(--spacing-1_5) var(--spacing-2);
     background-color: var(--theme-list-row-color);
     border-radius: var(--medium-BorderRadius);
   }
 
-  .defaults-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-0_25);
-    min-width: 0;
-  }
-
-  .caption {
-    align-self: flex-start;
-    font-size: 0.8125rem;
-    font-weight: 400;
-    color: var(--theme-dark-color);
-
-    &.link:hover {
-      color: var(--theme-link-color);
-      text-decoration: underline;
-    }
-  }
-
-  .custom {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-1);
-  }
-
-  .custom-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-2);
-  }
-
-  .title {
-    font-weight: 500;
-    color: var(--theme-caption-color);
+  .link:hover {
+    color: var(--theme-link-color);
   }
 
   .settings {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--theme-divider-color);
     border-radius: var(--medium-BorderRadius);
   }
 
@@ -163,6 +128,7 @@
     }
   }
 
+  /* Aligns the name with the text of the input next to it */
   .name {
     padding-top: 0.375rem;
   }

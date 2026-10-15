@@ -86,7 +86,7 @@
   }
 </script>
 
-<div class="select">
+<div class="flex-col flex-gap-2 clear-mins">
   <DropdownLabelsIntl
     {items}
     selected={preset}
@@ -97,49 +97,17 @@
     on:selected={onPreset}
   />
   {#if preset === 'custom'}
-    <div class="custom">
-      <div class="amount">
-        <EditBox
-          bind:value={amount}
-          format={'number'}
-          kind={'default'}
-          minValue={1}
-          maxDigitsAfterPoint={0}
-          {disabled}
-          focusable
-        />
-      </div>
-      <span class="unit"><Label label={settingRes.string.InviteUsesUnit} params={{ count: amount ?? 0 }} /></span>
-    </div>
+    <EditBox
+      bind:value={amount}
+      format={'number'}
+      kind={'default'}
+      minValue={1}
+      maxDigitsAfterPoint={0}
+      {disabled}
+      focusable
+    />
     {#if !valid}
       <span class="error-color text-sm"><Label label={settingRes.string.InvitePositiveNumber} /></span>
     {/if}
   {/if}
 </div>
-
-<style lang="scss">
-  .select {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-1);
-    min-width: 0;
-  }
-
-  .custom {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-1);
-  }
-
-  /* The amount fills the row so it lines up with the preset dropdown above */
-  .amount {
-    flex: 1 1 0;
-    min-width: 0;
-  }
-
-  .unit {
-    flex-shrink: 0;
-    font-size: 0.8125rem;
-    color: var(--theme-dark-color);
-  }
-</style>

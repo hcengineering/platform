@@ -155,12 +155,12 @@
   showCancelButton={created === undefined}
   onCancel={close}
 >
-  <div class="invite-dialog">
+  <div class="flex-col flex-gap-4">
     {#if created === undefined}
-      <span class="hint"><Label label={login.string.InviteDescription} /></span>
+      <span class="text-md content-dark-color"><Label label={login.string.InviteDescription} /></span>
 
-      <div class="row">
-        <span class="label"><Label label={login.string.JoinAs} /></span>
+      <div class="flex-between flex-gap-4">
+        <span class="font-medium caption-color"><Label label={login.string.JoinAs} /></span>
         {#if userRoleSelect}
           <svelte:component
             this={userRoleSelect}
@@ -179,8 +179,13 @@
         bind:valid
       />
     {:else}
-      <div class="link-field">
-        <span class="link" data-id="invite-link" class:selectable={!isSecureContext}>{created.url}</span>
+      <div class="flex-row-center flex-gap-2">
+        <span
+          class="link flex-grow clear-mins text-md"
+          data-id="invite-link"
+          class:overflow-label={isSecureContext}
+          class:selectable={!isSecureContext}>{created.url}</span
+        >
         {#if isSecureContext}
           <Button
             icon={IconCopy}
@@ -203,10 +208,26 @@
 
   <svelte:fragment slot="footer">
     {#if inviteSettingsUrl !== undefined}
-      <div class="manage-links">
-        <a class="manage-link" href={inviteSettingsUrl} target="_blank" rel="noopener noreferrer">
+      <div class="flex-grow flex-row-center">
+        <a
+          class="manage-link noBold text-md flex-row-center flex-gap-1"
+          href={inviteSettingsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <Label label={login.string.ManageInviteLinks} />
-          <svg class="arrow" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <svg
+            class="flex-no-shrink"
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.25"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4" />
           </svg>
         </a>
@@ -216,79 +237,20 @@
 </Modal>
 
 <style lang="scss">
-  .invite-dialog {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-2);
-  }
-
-  .row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-2);
-  }
-
-  .label {
-    font-weight: 500;
-    color: var(--theme-caption-color);
-  }
-
-  .hint {
-    font-size: 0.8125rem;
-    color: var(--theme-dark-color);
-  }
-
-  .link-field {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-1);
-  }
-
   .link {
-    flex: 1;
-    min-width: 0;
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--theme-divider-color);
     border-radius: var(--small-BorderRadius);
     font-family: var(--mono-font);
-    font-size: 0.8125rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 
     &.selectable {
-      white-space: normal;
       overflow-wrap: anywhere;
       user-select: all;
     }
   }
 
-  .manage-links {
-    margin-right: auto;
-    align-self: center;
-  }
-
-  .manage-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.8125rem;
-    font-weight: 400;
+  .manage-link,
+  .manage-link:hover {
     color: var(--theme-link-color);
-
-    &:hover {
-      text-decoration: underline;
-    }
-
-    .arrow {
-      flex-shrink: 0;
-      width: 0.75rem;
-      height: 0.75rem;
-      stroke: currentColor;
-      stroke-width: 1.25;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
   }
 </style>

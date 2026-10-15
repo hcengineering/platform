@@ -28,9 +28,9 @@
   export let muted: boolean = false
 </script>
 
-<div class="invite-summary" class:muted>
+<div class="flex-row-center flex-wrap flex-gap-1-5 {muted ? 'text-md content-dark-color' : 'caption-color'}">
   {#if role !== undefined}
-    <span class="invite-summary-part role"><Label label={role} /></span>
+    <span class="invite-summary-part font-medium caption-color"><Label label={role} /></span>
   {/if}
   {#each items as item}
     <span class="invite-summary-part"><Label label={item.label} params={item.params} /></span>
@@ -39,25 +39,13 @@
 </div>
 
 <style lang="scss">
-  .invite-summary {
-    display: flex;
-    flex-wrap: wrap;
+  /* Keeps parts with block-level content (such as a person presenter) on the same line */
+  div :global(.invite-summary-part) {
+    display: inline-flex;
     align-items: center;
-    column-gap: 0.375rem;
-    color: var(--theme-caption-color);
-
-    &.muted {
-      font-size: 0.8125rem;
-      color: var(--theme-dark-color);
-    }
   }
 
-  .role {
-    font-weight: 500;
-    color: var(--theme-caption-color);
-  }
-
-  .invite-summary :global(.invite-summary-part + .invite-summary-part::before) {
+  div :global(.invite-summary-part + .invite-summary-part::before) {
     content: '·';
     margin-right: 0.375rem;
     opacity: 0.6;

@@ -284,7 +284,6 @@
     "InviteSingleUse": "One use",
     "InviteDaysUnit": "{count, plural, one {day} other {days}}",
     "InviteHoursUnit": "{count, plural, one {hour} other {hours}}",
-    "InviteUsesUnit": "{count, plural, one {use} other {uses}}",
     "InvitePositiveNumber": "Enter a whole number greater than zero.",
     "InviteSettingsSaveFailed": "Failed to save invitation settings. Please try again."
   }

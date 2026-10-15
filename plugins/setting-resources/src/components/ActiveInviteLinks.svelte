@@ -99,17 +99,17 @@
     <Button label={login.string.RetryInviteLinks} size={'small'} on:click={() => void load()} />
   </div>
 {:else if inviteLinks.length === 0}
-  <span class="secondary"><Label label={login.string.NoActiveInviteLinks} /></span>
+  <span class="content-dark-color"><Label label={login.string.NoActiveInviteLinks} /></span>
 {:else}
   {#if actionError}
     <div class="error-color mb-2"><Label label={login.string.InviteLinkError} /></div>
   {/if}
-  <div class="links">
+  <div class="flex-col">
     {#each inviteLinks as invite (invite.id)}
       {@const creator = invite.createdBy !== undefined ? $employeeByAccountStore.get(invite.createdBy) : undefined}
-      <div class="link-row">
-        <div class="link-info">
-          <span class="role"><Label label={getInviteRoleLabel(invite.role)} /></span>
+      <div class="link-row flex-between flex-gap-4">
+        <div class="flex-col flex-gap-0-5 clear-mins">
+          <span class="font-medium caption-color"><Label label={getInviteRoleLabel(invite.role)} /></span>
           <InviteLinkSummary muted items={summarize(invite)}>
             {#if creator !== undefined}
               <span class="invite-summary-part">
@@ -121,7 +121,7 @@
             {/if}
           </InviteLinkSummary>
         </div>
-        <div class="link-actions">
+        <div class="flex-row-center flex-no-shrink flex-gap-1">
           {#if isSecureContext}
             <ButtonIcon
               icon={IconCopy}
@@ -147,42 +147,11 @@
 {/if}
 
 <style lang="scss">
-  .links {
-    display: flex;
-    flex-direction: column;
-  }
-
   .link-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
     padding: 0.625rem 0;
 
     & + .link-row {
       border-top: 1px solid var(--theme-divider-color);
     }
-  }
-
-  .link-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    min-width: 0;
-  }
-
-  .role {
-    font-weight: 500;
-    color: var(--theme-caption-color);
-  }
-
-  .link-actions {
-    display: flex;
-    flex-shrink: 0;
-    gap: 0.25rem;
-  }
-
-  .secondary {
-    color: var(--theme-dark-color);
   }
 </style>

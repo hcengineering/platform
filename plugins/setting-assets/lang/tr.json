@@ -281,7 +281,6 @@
     "InviteSingleUse": "Tek kullanım",
     "InviteDaysUnit": "{count, plural, other {gün}}",
     "InviteHoursUnit": "{count, plural, other {saat}}",
-    "InviteUsesUnit": "{count, plural, other {kullanım}}",
     "InvitePositiveNumber": "Sıfırdan büyük bir tam sayı girin.",
     "InviteSettingsSaveFailed": "Davet ayarları kaydedilemedi. Lütfen tekrar deneyin."
   }

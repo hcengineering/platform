@@ -126,7 +126,7 @@
   }
 </script>
 
-<div class="select">
+<div class="flex-col flex-gap-2 clear-mins">
   <DropdownLabelsIntl
     {items}
     selected={preset}
@@ -137,8 +137,8 @@
     on:selected={onPreset}
   />
   {#if preset === 'custom'}
-    <div class="custom">
-      <div class="amount">
+    <div class="flex-row-center flex-gap-2">
+      <div class="fill">
         <EditBox
           bind:value={amount}
           format={'number'}
@@ -149,7 +149,7 @@
           focusable
         />
       </div>
-      <div class="unit">
+      <div class="fill">
         <DropdownLabelsIntl
           items={unitItems}
           selected={unit}
@@ -168,22 +168,8 @@
 </div>
 
 <style lang="scss">
-  .select {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-1);
-    min-width: 0;
-  }
-
-  .custom {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-1);
-  }
-
   /* The amount and the unit together span the same width as the preset dropdown above */
-  .amount,
-  .unit {
+  .fill {
     flex: 1 1 0;
     min-width: 0;
   }

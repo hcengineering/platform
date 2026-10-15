@@ -281,7 +281,6 @@
         "InviteSingleUse": "1회 사용",
         "InviteDaysUnit": "{count, plural, other {일}}",
         "InviteHoursUnit": "{count, plural, other {시간}}",
-        "InviteUsesUnit": "{count, plural, other {회}}",
         "InvitePositiveNumber": "0보다 큰 정수를 입력하세요.",
         "InviteSettingsSaveFailed": "초대 설정을 저장하지 못했습니다. 다시 시도해 주세요."
     }

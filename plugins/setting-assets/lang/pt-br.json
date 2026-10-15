@@ -272,7 +272,6 @@
     "InviteSingleUse": "Um uso",
     "InviteDaysUnit": "{count, plural, one {dia} other {dias}}",
     "InviteHoursUnit": "{count, plural, one {hora} other {horas}}",
-    "InviteUsesUnit": "{count, plural, one {uso} other {usos}}",
     "InvitePositiveNumber": "Insira um número inteiro maior que zero.",
     "InviteSettingsSaveFailed": "Não foi possível salvar as configurações de convite. Tente novamente."
   }
