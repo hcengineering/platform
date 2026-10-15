@@ -1,5 +1,6 @@
 //
 // Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -18,7 +19,7 @@ import type { Client, Doc, Ref, Space } from '@hcengineering/core'
 import type { IntlString, Resource } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
 import type { AnyComponent } from '@hcengineering/ui/src/types'
-import { type ViewAction } from '@hcengineering/view'
+import { type ViewAction, type ViewQueryAction, type Viewlet } from '@hcengineering/view'
 import { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 
 export default mergeIds(chunterId, chunter, {
@@ -36,9 +37,19 @@ export default mergeIds(chunterId, chunter, {
     SavedMessages: '' as AnyComponent,
     Threads: '' as AnyComponent,
     ChunterBrowser: '' as AnyComponent,
-    ChannelIcon: '' as AnyComponent
+    ChannelIcon: '' as AnyComponent,
+    DiscussionPresenter: '' as AnyComponent,
+    DiscussionStatusPresenter: '' as AnyComponent,
+    DiscussionParticipantsPresenter: '' as AnyComponent,
+    DiscussionVisibilityPresenter: '' as AnyComponent
+  },
+  viewlet: {
+    DiscussionList: '' as Ref<Viewlet>
   },
   function: {
+    HideResolvedDiscussions: '' as ViewQueryAction,
+    CanManageDiscussion: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
+    CanDeleteDiscussion: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
     GetDmName: '' as Resource<(client: Client, space: Space) => Promise<string>>,
     DirectTitleProvider: '' as Resource<(client: Client, id: Ref<Doc>) => Promise<string>>,
     ChannelTitleProvider: '' as Resource<(client: Client, id: Ref<Doc>) => Promise<string>>,
@@ -48,6 +59,7 @@ export default mergeIds(chunterId, chunter, {
     >
   },
   actionImpl: {
+    SetDiscussionResolved: '' as ViewAction,
     SubscribeMessage: '' as ViewAction,
     UnsubscribeMessage: '' as ViewAction,
     SubscribeComment: '' as ViewAction,
@@ -56,6 +68,8 @@ export default mergeIds(chunterId, chunter, {
     RemoveChannel: '' as ViewAction
   },
   string: {
+    NewestFirst: '' as IntlString,
+    OldestFirst: '' as IntlString,
     Channel: '' as IntlString,
     DirectMessage: '' as IntlString,
     DirectMessages: '' as IntlString,

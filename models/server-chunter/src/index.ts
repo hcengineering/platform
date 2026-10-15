@@ -107,6 +107,14 @@ export function createModel (builder: Builder): void {
     isAsync: true
   })
 
+  // Default discussions are created with their owner, never when it is viewed.
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverChunter.trigger.OnDiscussionOwnerCreated,
+    txMatch: {
+      _class: core.class.TxCreateDoc
+    }
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverChunter.trigger.OnDefaultDiscussionUpdated,
     txMatch: {

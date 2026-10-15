@@ -1,12 +1,27 @@
+//
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { MeasureContext, readOnlyGuestAccountUuid, Ref } from '@hcengineering/core'
 import love, { MeetingMinutes, MeetingStatus, ParticipantMetadata, Room, RoomAccess } from '@hcengineering/love'
 import { RoomServiceClient } from 'livekit-server-sdk'
 import { WorkspaceClient } from './workspaceClient'
 import { isWorkspaceLoginInfo, WorkspaceLoginInfo } from '@hcengineering/account-client'
-import { decodeToken, generateToken, Token } from '@hcengineering/server-token'
+import { decodeToken, generateToken, readToken, Token } from '@hcengineering/server-token'
 import config from './config'
 import { Request, Response } from 'express'
-import { createToken, decodeMeetingToken, extractToken, getRoomName } from './utils'
+import { createToken, decodeMeetingToken, getRoomName } from './utils'
 import { getAccountClient } from '@hcengineering/server-client'
 import { combineName } from '@hcengineering/contact'
 
@@ -24,7 +39,7 @@ export class GuestManager {
 
     try {
       // We also need workspace info to generate guest token with proper workspace claims, so validate token and workspace access first
-      const token = extractToken(req.headers)
+      const token = readToken(req.headers)
       const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
       if (!isWorkspaceLoginInfo(wsLoginInfo)) {
         res.status(401).send()

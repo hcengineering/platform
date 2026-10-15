@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -29,6 +30,7 @@
   export let forbidValue: boolean = false
   export let allowArray: boolean = false
   export let objectKey: string | undefined = undefined
+  export let attributeOverride: AnyAttribute | undefined = undefined
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -76,7 +78,7 @@
       label: core.string.Object
     }
   }
-  $: attribute = getAttr(_class, key, slot)
+  $: attribute = attributeOverride ?? getAttr(_class, key, slot)
   $: presenterClass = attribute && getAttributePresenterClass(hierarchy, attribute.type)
   $: context =
     attribute &&
@@ -85,13 +87,17 @@
 
   let editor: AnySvelteComponent | undefined
 
-  function getBaseEditor (_class: Ref<Class<Doc>>, key: string): void {
-    void getAttributeEditor(client, _class, key).then((p) => {
-      editor = p
-    })
+  function getBaseEditor (_class: Ref<Class<Doc>>, key: string, attributeOverride: AnyAttribute | undefined): void {
+    void getAttributeEditor(client, _class, attributeOverride === undefined ? key : { key, attr: attributeOverride })
+      .then((p) => {
+        editor = p
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to load process attribute editor', { _class, key, error })
+      })
   }
 
-  $: getBaseEditor(_class, key)
+  $: getBaseEditor(_class, key, attributeOverride)
 </script>
 
 {#if attribute && presenterClass && context}

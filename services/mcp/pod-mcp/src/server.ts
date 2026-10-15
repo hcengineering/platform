@@ -9,8 +9,7 @@
 import { type PlatformContext } from '@hcengineering/ai-core'
 import { tools } from '@hcengineering/ai-tools'
 import { type MeasureContext } from '@hcengineering/core'
-import { readToken } from '@hcengineering/server-client'
-import { decodeToken, type Token } from '@hcengineering/server-token'
+import { decodeToken, readToken, type Token } from '@hcengineering/server-token'
 
 import { createMcpExpressApp } from '@modelcontextprotocol/express'
 import { toNodeHandler } from '@modelcontextprotocol/node'

@@ -1,5 +1,7 @@
 {
   "string": {
+    "ShowInForm": "Показывать в публичной форме",
+    "ShowInCreate": "Показывать при создании карточки",
     "Setting": "Настройки",
     "Spaces": "Пространства",
     "Integrations": "Интеграции",
@@ -265,6 +267,7 @@
     "ShowQRCode": "Показать QR-код",
     "EnterVerificationCode": "Введите код подтверждения",
     "OverrideAttribute": "Переопределить атрибут",
+    "OverriddenAttribute": "Переопределённый атрибут",
     "Required": "Обязательный",
     "RelationFilter": "Фильтр",
     "AddRelationFilter": "Добавить фильтр",

@@ -16,9 +16,9 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import core, { AccountUuid, Ref, Role, RolesAssignment, SpaceType, TypedSpace, WithLookup } from '@hcengineering/core'
-  import { createQuery, getClient } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import { AccountArrayEditor } from '@hcengineering/contact-resources'
-  import { Breadcrumb, Header, Label, Scroller } from '@hcengineering/ui'
+  import { Breadcrumb, Header, Label, Scroller, SettingsCard, SettingsCardsLayout } from '@hcengineering/ui'
 
   import setting from '../plugin'
 
@@ -92,25 +92,28 @@
   {/if}
   <div class="hulyComponent-content__column content">
     <Scroller align={'center'} padding={'var(--spacing-4)'}>
-      <div class="rolesContent">
-        <h2><Label label={setting.string.SpaceRoles} /></h2>
-        {#each roles as role}
-          <div class="antiGrid-row">
-            <div class="antiGrid-row__header">
-              {role.name}
+      <SettingsCardsLayout columns={1}>
+        <SettingsCard label={setting.string.SpaceRoles}>
+          {#each roles as role (role._id)}
+            <div class="antiGrid-row">
+              <div class="antiGrid-row__header">
+                {role.name}
+              </div>
+              <AccountArrayEditor
+                value={rolesAssignment?.[role._id] ?? []}
+                label={core.string.Members}
+                onChange={(refs) => {
+                  handleRoleAssignmentChanged(role._id, refs).catch(handleRoleAssignmentError)
+                }}
+                kind="regular"
+                size="large"
+              />
             </div>
-            <AccountArrayEditor
-              value={rolesAssignment?.[role._id] ?? []}
-              label={core.string.Members}
-              onChange={(refs) => {
-                handleRoleAssignmentChanged(role._id, refs).catch(handleRoleAssignmentError)
-              }}
-              kind="regular"
-              size="large"
-            />
-          </div>
-        {/each}
-      </div>
+          {:else}
+            <div class="emptyState"><Label label={presentation.string.NoResults} /></div>
+          {/each}
+        </SettingsCard>
+      </SettingsCardsLayout>
     </Scroller>
   </div>
 </div>
@@ -119,11 +122,8 @@
   .content {
     min-height: 0;
   }
-  .rolesContent {
-    width: min(100%, 48rem);
-  }
-  h2 {
-    margin: 0 0 var(--spacing-4);
+  .emptyState {
+    color: var(--theme-caption-color);
   }
   .antiGrid-row + .antiGrid-row {
     margin-top: var(--spacing-3);

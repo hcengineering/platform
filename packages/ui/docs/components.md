@@ -230,7 +230,7 @@ Icons are Svelte components and use the `Icon` export prefix. Choose an icon by 
 | Navigation and direction | `IconBack`, `IconForward`, `IconLeft`, `IconRight`, `IconUp`, `IconDown`, `IconUpOutline`, `IconDownOutline`, `IconArrowLeft`, `IconArrowRight`, `IconNavPrev`, `IconNavNext`, `IconChevronLeft`, `IconChevronRight`, `IconChevronDown`, `IconDropdown`, `IconDropdownDown`, `IconDropdownRight`, `IconOpenedArrow`, `IconCollapseArrow`, `IconToDetails` |
 | Files and organization | `IconFile`, `IconFolder`, `IconFolderCollapsed`, `IconFolderExpanded`, `IconArchive`, `IconAttachment`, `IconThread`, `IconTableOfContents`, `IconDescription` |
 | Actions and state | `IconStart`, `IconStop`, `IconClose`, `IconOpen`, `IconExpand`, `IconMaximize`, `IconMinimize`, `IconMinWidth`, `IconMaxWidth`, `IconScale`, `IconScaleFull`, `IconCheck`, `IconCheckAll`, `IconCheckCircle`, `IconCheckmark`, `IconBlueCheck`, `IconError`, `IconInfo`, `IconLike`, `IconActivity`, `IconHistory` |
-| Search, filtering, and options | `IconSearch`, `IconFilter`, `IconOptions`, `IconMoreH`, `IconMoreV`, `IconMoreV2`, `IconSettings` |
+| Search, filtering, and options | `IconSearch`, `IconFilter`, `IconOptions`, `IconOptionsAsc`, `IconOptionDsc`, `IconMoreH`, `IconMoreV`, `IconMoreV2`, `IconSettings` |
 | Communication and sharing | `IconSend`, `IconShare`, `IconLink` |
 | Calendar | `IconCalendar`, `IconDPCalendar`, `IconDPCalendarOver` |
 | Window and layout | `IconDetails`, `IconDetailsFilled`, `IconSquareExpand`, `IconMenuOpen`, `IconMenuClose`, `IconCircles`, `IconMixin`, `IconColStar` |

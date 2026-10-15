@@ -23,7 +23,7 @@ import {
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { getCPUInfo, getMemoryInfo } from '@hcengineering/server-core'
-import { decodeToken, decodeTokenVerbose, TokenError } from '@hcengineering/server-token'
+import { decodeToken, readToken, Token, TokenError } from '@hcengineering/server-token'
 
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type RequestHandler, type Response } from 'express'
@@ -150,35 +150,25 @@ export async function createServer (ctx: MeasureContext, config: Config): Promis
     const headers = request.headers
     const workspace = request.params.workspace ?? ''
     const file: string | undefined = request.params.file
-    const authHeader = headers.authorization ?? ''
 
-    let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined
-
-    if (token == null) {
-      const cookies = (headers.cookie ?? '').split(';').map((it) => it.trim().split('='))
-      token = cookies.find((it) => it[0] === 'presentation-metadata-Token')?.[1]
-    }
-
-    if (token === undefined || typeof token !== 'string' || token === '') {
-      res.status(401).end('Unauthorized')
-      return
-    }
-
-    let workspaceId: WorkspaceUuid | undefined
-    let isAdmin: boolean = false
+    let token: string | undefined
+    let decodedToken: Token | undefined
 
     try {
-      const decoded = decodeTokenVerbose(ctx, token)
-      if (decoded === undefined) {
-        res.status(401).end('Unauthorized')
-        return
+      token = readToken(headers)
+      if (token !== undefined) {
+        decodedToken = decodeToken(token)
       }
-      workspaceId = decoded.workspace
-      isAdmin = decoded.extra?.admin === 'true'
-    } catch (err: any) {
+    } catch {}
+
+    if (decodedToken === undefined) {
       res.status(401).end('Unauthorized')
       return
     }
+
+    const workspaceId = decodedToken.workspace
+    const isAdmin = decodedToken.extra?.admin === 'true'
+
     let wsInfo: WorkspaceIds | undefined = wsInfoCache.get(workspaceId)
     const accountClient = getClient(config.AccountsUrl, token)
 

@@ -130,7 +130,6 @@
     try {
       const res = await createMessage(event, _id, `chunter.create.${_class} ${object._class}`)
 
-      console.log(`create.${_class} measure`, res.serverTime, res.time)
       const objectId = await getObjectId(object, client.getHierarchy())
       Analytics.handleEvent(ChunterEvents.MessageCreated, { ok: res.result, objectId, objectClass: object._class })
     } catch (err: any) {

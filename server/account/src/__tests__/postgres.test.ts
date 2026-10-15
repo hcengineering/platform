@@ -216,6 +216,20 @@ describe('PostgresDbCollection', () => {
     })
   })
 
+  describe('deleteMany count', () => {
+    it('should return deleted rows count reported by the driver', async () => {
+      ;(mockClient.unsafe as jest.Mock).mockResolvedValueOnce(Object.assign([], { count: 3 }))
+
+      expect(await collection.deleteMany({ mode: 'deleted' as const })).toBe(3)
+    })
+
+    it('should return 0 when nothing was deleted', async () => {
+      ;(mockClient.unsafe as jest.Mock).mockResolvedValueOnce(Object.assign([], { count: 0 }))
+
+      expect(await collection.deleteMany({ mode: 'deleted' as const })).toBe(0)
+    })
+  })
+
   describe('timestamp field handling', () => {
     beforeEach(() => {
       // Create collection with timestamp fields specified
@@ -602,13 +616,13 @@ describe('PostgresAccountDB', () => {
     })
 
     describe('getAccountWorkspaces', () => {
-      it('should return workspaces with status and converted keys', async () => {
+      it.each([true, false])('should select and convert allowReadOnlyGuest=%s', async (allowReadOnlyGuest) => {
         const mockWorkspaces = [
           {
             uuid: workspaceId,
             name: 'Test',
             url: 'test',
-            allowReadOnlyGuest: false,
+            allow_read_only_guest: allowReadOnlyGuest,
             password_aging_rule: null,
             created_on: '1234567890000',
             status: {
@@ -625,12 +639,12 @@ describe('PostgresAccountDB', () => {
 
         const res = await accountDb.getAccountWorkspaces(accountId)
 
-        expect(mockClient.unsafe).toHaveBeenCalledWith(expect.any(String), [accountId])
+        expect(mockClient.unsafe).toHaveBeenCalledWith(expect.stringContaining('w.allow_read_only_guest'), [accountId])
         expect(res[0]).toEqual({
           uuid: workspaceId,
           name: 'Test',
           url: 'test',
-          allowReadOnlyGuest: false,
+          allowReadOnlyGuest,
           passwordAgingRule: null,
           createdOn: 1234567890000,
           status: {

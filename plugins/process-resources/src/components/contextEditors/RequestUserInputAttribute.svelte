@@ -124,6 +124,7 @@
         space,
         docQuery: docQuery ?? (selectionSpace !== undefined ? { space: selectionSpace } : undefined),
         onChange,
+        onInput: onChange,
         focus
       }}
     />

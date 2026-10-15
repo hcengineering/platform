@@ -1,26 +1,22 @@
 name: Create production release
 
 # Manually triggered workflow: promotes staging-new into main, tags the
-# result as the next vX.Y.Z production version, and feeds the existing
+# result with the specified vX.Y.Z production version, and feeds the existing
 # release pipeline in main.yml. It does not deploy anything by itself.
 
 on:
   workflow_dispatch:
     inputs:
-      bump:
-        description: 'Which part of v<major>.<minor>.<patch> to increment'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
-        default: patch
+      version:
+        description: 'Production version to release (e.g. v0.7.427)'
+        type: string
+        required: true
       update_changelog:
         description: 'Generate changelog.md with git-cliff before tagging'
         type: boolean
         default: false
       dry_run:
-        description: 'Compute the next tag and merge locally, but do not push anything'
+        description: 'Validate the version and merge locally, but do not push anything'
         type: boolean
         default: false
 
@@ -65,36 +61,29 @@ jobs:
             exit 1
           fi
 
-      - name: Compute next production tag
+      - name: Validate production tag
         id: version
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
+
+          if [[ ! "$RELEASE_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Production version must have the format vMAJOR.MINOR.PATCH (e.g. v0.7.427)."
+            exit 1
+          fi
 
           # Only consider well-formed vMAJOR.MINOR.PATCH tags.
           LATEST=$(git tag -l | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1 || true)
 
-          if [ -z "$LATEST" ]; then
-            MAJOR=0; MINOR=0; PATCH=0
-          else
-            VERSION=${LATEST#v}
-            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-          fi
-
-          case "${{ inputs.bump }}" in
-            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
-            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
-            *)     PATCH=$((PATCH + 1)) ;;
-          esac
-
-          NEXT="v${MAJOR}.${MINOR}.${PATCH}"
-          if git rev-parse -q --verify "refs/tags/$NEXT" >/dev/null; then
-            echo "::error::Tag $NEXT already exists."
+          if git rev-parse -q --verify "refs/tags/$RELEASE_VERSION" >/dev/null; then
+            echo "::error::Tag $RELEASE_VERSION already exists."
             exit 1
           fi
 
           echo "Previous tag: ${LATEST:-none}"
-          echo "Next tag:     $NEXT"
-          echo "tag=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "Release tag: $RELEASE_VERSION"
+          echo "tag=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
           echo "previous=${LATEST:-none}" >> "$GITHUB_OUTPUT"
 
       - name: Install git-cliff
@@ -113,6 +102,44 @@ jobs:
             echo "Changelog is already up to date."
           else
             git commit -m "chore(release): update changelog"
+          fi
+
+      - name: Update release versions
+        env:
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          VERSION="${RELEASE_TAG#v}"
+          printf '"%s"\n' "$VERSION" > common/scripts/version.txt
+          python3 - "$VERSION" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          version = sys.argv[1]
+          for filename in (
+              'desktop/package.json',
+              'desktop-package/package.json',
+              'qms-desktop-package/package.json',
+          ):
+              path = Path(filename)
+              content = path.read_text()
+              updated, count = re.subn(
+                  r'(?m)^([ \t]*"version": ")[^"]+("[,])',
+                  lambda match: f'{match.group(1)}{version}{match.group(2)}',
+                  content,
+                  count=1,
+              )
+              if count != 1:
+                  raise RuntimeError(f'Could not update version in {filename}')
+              path.write_text(updated)
+          PY
+          git add common/scripts/version.txt desktop/package.json desktop-package/package.json qms-desktop-package/package.json
+          if git diff --cached --quiet; then
+            echo "Release versions are already up to date."
+          else
+            git diff --cached --stat
+            git commit -m "chore(release): update versions to $VERSION"
           fi
 
       - name: Create production tag

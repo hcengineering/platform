@@ -1,0 +1,33 @@
+diff --git a/src/network/requestQueue/index.js b/src/network/requestQueue/index.js
+--- a/src/network/requestQueue/index.js
++++ b/src/network/requestQueue/index.js
+@@ -309,15 +309,20 @@
+     // will be fine, and potentially fix up a new timeout if needed at that time.
+     // Note that if we're merely "overloaded" by having too many inflight requests
+     // we will anyways check the queue when one of them gets fulfilled.
+-    let scheduleAt = this.throttledUntil - Date.now()
+-    if (!this.throttleCheckTimeoutId) {
+-      if (this.pending.length > 0) {
+-        scheduleAt = scheduleAt > 0 ? scheduleAt : CHECK_PENDING_REQUESTS_INTERVAL
+-      }
+-      this.throttleCheckTimeoutId = setTimeout(() => {
+-        this.throttleCheckTimeoutId = null
+-        this.checkPendingRequests()
+-      }, scheduleAt)
++    if (this.throttleCheckTimeoutId) {
++      return
+     }
++
++    const throttleFor = this.throttledUntil - Date.now()
++
++    // Nothing to check: unpatched this schedules a negative timeout, clamped to 1ms, forever.
++    if (this.pending.length === 0 && throttleFor <= 0) {
++      return
++    }
++
++    this.throttleCheckTimeoutId = setTimeout(() => {
++      this.throttleCheckTimeoutId = null
++      this.checkPendingRequests()
++    }, throttleFor > 0 ? throttleFor : CHECK_PENDING_REQUESTS_INTERVAL)
+   }
+ }

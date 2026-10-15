@@ -67,10 +67,11 @@
     selectedSpace = undefined
   }
 
+  let fieldsValid = false
   let creating = false
 
   async function okAction (): Promise<void> {
-    if (_space === undefined || type == null) return
+    if (_space === undefined || type == null || !fieldsValid) return
 
     try {
       creating = true
@@ -129,7 +130,7 @@
 <Card
   label={getEmbeddedLabel(label)}
   {okAction}
-  canSave={data.title != null && data.title.trim().length > 0 && _space != null && allowed}
+  canSave={data.title != null && data.title.trim().length > 0 && _space != null && allowed && fieldsValid}
   okLabel={presentation.string.Create}
   on:close={() => dispatch('close')}
   onCancel={handleCancel}
@@ -163,7 +164,7 @@
   />
   <svelte:fragment slot="pool">
     {#if type != null}
-      <CreateCardFields {type} bind:data />
+      <CreateCardFields {type} bind:data bind:valid={fieldsValid} />
     {/if}
     <div slot="afterContent" class="p-4 flex-row-reverse">
       {#if !allowed}

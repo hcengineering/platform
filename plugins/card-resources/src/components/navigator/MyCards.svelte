@@ -45,12 +45,9 @@
 
   const todoQuery = createQuery()
   $: todoQuery.query(time.class.ToDo, { user, doneOn: null }, (todos: ToDo[]) => {
-    console.log('todos', todos)
     const cardIds = todos
       .filter((todo) => hierarchy.isDerived(todo.attachedToClass, card.class.Card))
       .map((todo) => todo.attachedTo as Ref<Card>)
-
-    console.log('cardIds', cardIds)
 
     const uniqueIds = [...new Set(cardIds)]
     const curIds: Ref<Card>[] = (assigned._id as QuerySelector<Ref<Card>>)?.$in ?? []

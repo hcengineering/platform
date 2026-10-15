@@ -239,6 +239,10 @@ export interface Attribute<T extends PropertyType> extends Doc, UXObject {
   automationOnly?: boolean
   rank?: Rank
   required?: boolean
+  /** Included in forms only when explicitly enabled. */
+  showInForm?: boolean
+  /** Included in the card creation popup only when explicitly enabled. */
+  showInCreate?: boolean
 
   // Extra customization properties
   [key: string]: any

@@ -276,12 +276,16 @@ export function MatchCardCheck (
   if (process === undefined) return false
 
   const h = control.client.getHierarchy()
+  if (params._class !== undefined) {
+    if (typeof params._class !== 'string' || !h.isDerived(card._class, params._class as Ref<Class<Doc>>)) return false
+  }
   if (h.isMixin(process.masterTag)) {
     card = h.as(card, process.masterTag)
   }
 
   const resolvedParams: Record<string, any> = {}
   for (const key in params) {
+    if (key === '_class') continue
     resolvedParams[resolveAttributeId(process, key)] = params[key]
   }
   const markup = getMarkupParams(process, resolvedParams, control)
@@ -1459,7 +1463,8 @@ async function createExecution (
   const rollback: Tx[] = []
   const initTransition = control.client.getModel().findAllSync(process.class.Transition, {
     process: proc,
-    from: null
+    from: null,
+    trigger: process.trigger.OnExecutionStart
   })[0]
   if (initTransition === undefined) return [res, rollback]
   const execId = generateId()

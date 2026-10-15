@@ -82,7 +82,6 @@
     "sharp": "~0.35.3",
     "morgan": "^1.11.0",
     "@hcengineering/server-core": "workspace:^0.7.19",
-    "@hcengineering/server-client": "workspace:^0.7.16",
     "@hcengineering/server-token": "workspace:^0.7.18",
     "@hcengineering/platform": "workspace:^0.7.20",
     "@hcengineering/analytics-service": "workspace:^0.7.19",

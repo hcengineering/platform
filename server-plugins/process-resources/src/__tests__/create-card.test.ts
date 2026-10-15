@@ -18,12 +18,46 @@ import type { Card } from '@hcengineering/card'
 import core, { TxFactory, TxProcessor } from '@hcengineering/core'
 import type { Ref, Space, TxCreateDoc, TxCUD } from '@hcengineering/core'
 import process from '@hcengineering/process'
-import type { Execution, MethodParams, Process } from '@hcengineering/process'
+import type { Execution, MethodParams, Process, Transition, Trigger } from '@hcengineering/process'
 import type { ProcessControl } from '@hcengineering/server-process'
 import { CreateCard } from '../functions'
 
 const parentSpace = 'parent-space' as Ref<Space>
 const selectedSpace = 'selected-space' as Ref<Space>
+
+function createControl (trigger: Ref<Trigger> = process.trigger.OnExecutionStart): ProcessControl {
+  const hierarchy = {
+    getAllAttributes: () => new Map(),
+    getAncestors: () => [cardPlugin.class.Card],
+    isDerived: (_class: string, base: string) => base === cardPlugin.class.Card
+  }
+  const childProcess = 'child-process' as Ref<Process>
+  const initialTransition = {
+    _id: 'initial-transition' as Ref<Transition>,
+    process: childProcess,
+    from: null,
+    trigger
+  }
+  const model = {
+    findObject: () => ({ bindings: { spaceSlot: 'space' } }),
+    findAllSync: (_class: string, query: Partial<Transition>) =>
+      _class === process.class.Process
+        ? [{ _id: childProcess }]
+        : [initialTransition].filter(
+            (transition) =>
+              transition.process === query.process &&
+              transition.from === query.from &&
+              (query.trigger === undefined || transition.trigger === query.trigger)
+          )
+  }
+  return {
+    client: {
+      getModel: () => model,
+      getHierarchy: () => hierarchy,
+      txFactory: new TxFactory(core.account.System)
+    }
+  } as unknown as ProcessControl
+}
 
 describe('CreateCard space', () => {
   it.each([
@@ -37,23 +71,7 @@ describe('CreateCard space', () => {
       process: 'parent-process' as Ref<Process>,
       space: parentSpace
     }
-    const hierarchy = {
-      getAllAttributes: () => new Map(),
-      getAncestors: () => [cardPlugin.class.Card],
-      isDerived: (_class: string, base: string) => base === cardPlugin.class.Card
-    }
-    const model = {
-      findObject: () => ({ bindings: { spaceSlot: 'space' } }),
-      findAllSync: (_class: string) =>
-        _class === process.class.Process ? [{ _id: 'child-process' }] : [{ _id: 'initial-transition' }]
-    }
-    const control = {
-      client: {
-        getModel: () => model,
-        getHierarchy: () => hierarchy,
-        txFactory: new TxFactory(core.account.System)
-      }
-    } as unknown as ProcessControl
+    const control = createControl()
 
     const cardParams: MethodParams<Card> = { _class: cardPlugin.class.Card, title: 'New card', ...params }
     const result = await CreateCard(cardParams, execution as Execution, control)
@@ -73,5 +91,34 @@ describe('CreateCard space', () => {
     expect(childTx.attributes.card).toBe(cardTx.objectId)
     expect(result.context).toEqual([{ _id: cardTx.objectId, value: TxProcessor.createDoc2Doc(cardTx) }])
     expect(execution.space).toBe(parentSpace)
+  })
+})
+
+describe('CreateCard auto-start', () => {
+  it.each([
+    { name: 'execution start', trigger: process.trigger.OnExecutionStart, starts: true },
+    { name: 'new version', trigger: process.trigger.OnNewVersion, starts: false },
+    { name: 'effective version', trigger: process.trigger.OnVersionEffective, starts: false },
+    { name: 'ineffective version', trigger: process.trigger.OnVersionIneffective, starts: false }
+  ])('handles the $name trigger when a process creates a card', async ({ trigger, starts }) => {
+    const execution: Partial<Execution> = {
+      _id: 'execution' as Ref<Execution>,
+      process: 'parent-process' as Ref<Process>,
+      space: parentSpace
+    }
+    const control = createControl(trigger)
+    const result = await CreateCard(
+      { _class: cardPlugin.class.Card, title: 'New card' },
+      execution as Execution,
+      control
+    )
+
+    if (!('txes' in result) || result.rollback === undefined) {
+      throw new Error('Expected card creation to succeed with rollback transactions')
+    }
+    const childTxes = result.txes.filter((tx) => (tx as TxCreateDoc<Execution>).objectClass === process.class.Execution)
+    expect(childTxes).toHaveLength(starts ? 1 : 0)
+    expect(result.txes).toHaveLength(starts ? 2 : 1)
+    expect(result.rollback).toHaveLength(starts ? 2 : 1)
   })
 })

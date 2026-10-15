@@ -1,5 +1,7 @@
 {
     "string": {
+    "ShowInForm": "공개 양식에 표시",
+    "ShowInCreate": "카드 생성 시 표시",
         "Setting": "설정",
         "Spaces": "스페이스",
         "Integrations": "연동",
@@ -262,6 +264,7 @@
         "ShowQRCode": "QR 코드 표시",
         "EnterVerificationCode": "인증 코드 입력",
         "OverrideAttribute": "속성 재정의",
+        "OverriddenAttribute": "재정의된 속성",
         "Required": "필수",
         "RelationFilter": "필터",
         "AddRelationFilter": "필터 추가",

@@ -25,9 +25,12 @@
     isCollectionAttr
   } from '@hcengineering/presentation'
   import type { KeyedAttribute } from '@hcengineering/presentation'
-  import { Component, Icon, Label } from '@hcengineering/ui'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { Component, Label } from '@hcengineering/ui'
+  import { MarkupEditor } from '@hcengineering/view-resources'
 
   export let type: Ref<MasterTag>
+  export let valid = false
   export let data: Partial<Data<Card>>
 
   const client = getClient()
@@ -43,10 +46,7 @@
   function getFields (type: Ref<MasterTag>): KeyedAttribute[] {
     return getFiltredKeys(hierarchy, type, ['title', 'space', 'content', 'parent'], card.class.Card)
       .filter(
-        (key) =>
-          !isCollectionAttr(hierarchy, key) &&
-          key.attr.type._class !== core.class.TypeMarkup &&
-          key.attr.readonly !== true
+        (key) => !isCollectionAttr(hierarchy, key) && key.attr.showInCreate === true && key.attr.readonly !== true
       )
       .sort((a, b) => {
         const rankA = a.attr.rank ?? toRank(a.attr._id) ?? ''
@@ -62,6 +62,21 @@
     return value === undefined ? structuredClone(key.attr.defaultValue) : value
   }
 
+  function isRequiredFieldFilled (key: KeyedAttribute, data: Partial<Data<Card>>): boolean {
+    if (key.attr.required !== true) return true
+    const value = getValue(key, data)
+    if (value == null) return false
+    if (hierarchy.isDerived(key.attr.type._class, core.class.TypeMarkup)) {
+      return typeof value === 'string' && !isEmptyMarkup(value)
+    }
+    if (typeof value === 'string') return value.trim().length > 0
+    if (typeof value === 'number') return Number.isFinite(value)
+    if (Array.isArray(value)) return value.length > 0
+    return true
+  }
+
+  $: valid = fields.every((key) => isRequiredFieldFilled(key, data))
+
   function updateField (key: KeyedAttribute): (value: unknown) => void {
     return (value) => {
       data = { ...data, [key.key]: value }
@@ -70,12 +85,22 @@
 </script>
 
 {#key type}
-  <!-- <div class="flex-col gap-4 w-full"> -->
   {#each fields as key (key.attr._id)}
     {@const editor = findAttributeEditor(client, type, key)}
     {@const readonly = key.attr.readonly === true || key.attr.automationOnly === true}
     {@const value = getValue(key, data)}
-    {#if editor}
+    {#if hierarchy.isDerived(key.attr.type._class, core.class.TypeMarkup)}
+      {@const markup = typeof value === 'string' ? value : EmptyMarkup}
+      <div class="markup-field">
+        <span class:required-empty={key.attr.required === true && isEmptyMarkup(markup)}>
+          <Label label={key.attr.label} />
+          {#if key.attr.required}
+            <span class="required-asterisk">*</span>
+          {/if}
+        </span>
+        <MarkupEditor value={markup} {readonly} width="100%" isScrollable={false} onChange={updateField(key)} />
+      </div>
+    {:else if editor}
       <div class="flex flex-grow min-w-0">
         <Component
           is={editor}
@@ -100,10 +125,17 @@
       </div>
     {/if}
   {/each}
-  <!-- </div> -->
 {/key}
 
 <style lang="scss">
+  .markup-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
   .required-empty,
   .required-asterisk {
     color: var(--theme-error-color, #eb5757);

@@ -15,8 +15,7 @@
 
 import { Analytics } from '@hcengineering/analytics'
 import { MeasureContext } from '@hcengineering/core'
-import { extractToken, readToken } from '@hcengineering/server-client'
-import { Token } from '@hcengineering/server-token'
+import { Token, extractToken, readToken } from '@hcengineering/server-token'
 import { type Response, type Request, type NextFunction, type RequestHandler, type ErrorRequestHandler } from 'express'
 
 export interface KeepAliveOptions {

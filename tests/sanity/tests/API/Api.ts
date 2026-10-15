@@ -137,6 +137,55 @@ export class ApiEndpoint {
     return { ...info, token }
   }
 
+  /**
+   * Logs in as the shared anonymous guest account (the "Continue as a guest" link) and selects the workspace.
+   * Fails when the workspace does not allow anonymous guests.
+   */
+  async getAnonymousWorkspaceLoginInfo (workspaceUrl: string): Promise<WorkspaceLoginInfo & { token: string }> {
+    const loginResponse = await this.request.post(this.baseUrl, {
+      data: { method: 'loginAsGuest', params: {} },
+      headers: this.getDefaultHeaders()
+    })
+    const guestToken: string | undefined = (await loginResponse.json()).result?.token
+    if (guestToken === undefined) {
+      throw new Error('Failed to log in as an anonymous guest')
+    }
+    const response = await this.request.post(this.baseUrl, {
+      data: { method: 'selectWorkspace', params: { workspaceUrl } },
+      headers: this.getDefaultHeaders(guestToken)
+    })
+    const body = await response.json()
+    const info: WorkspaceLoginInfo | undefined = body.result
+    const token = info?.token
+    if (info === undefined || token === undefined) {
+      throw new Error(
+        `Anonymous guest failed to select workspace ${workspaceUrl}: ${JSON.stringify(body.error ?? body)}`
+      )
+    }
+    return { ...info, token }
+  }
+
+  /**
+   * Turns anonymous (read-only) guest access to the workspace on or off. Needs the workspace Owner.
+   * Note: turning it on through the API does not create the Employee of the anonymous guest, the settings UI does.
+   */
+  async setAllowReadOnlyGuests (
+    email: string,
+    password: string,
+    workspaceUrl: string,
+    readOnlyGuestsAllowed: boolean
+  ): Promise<void> {
+    const wsToken = await this.getWorkspaceToken(email, password, workspaceUrl)
+    const response = await this.request.post(this.baseUrl, {
+      data: { method: 'updateAllowReadOnlyGuests', params: { readOnlyGuestsAllowed } },
+      headers: this.getDefaultHeaders(wsToken)
+    })
+    const body = await response.json()
+    if (body.error !== undefined) {
+      throw new Error(`Failed to update anonymous guest access: ${JSON.stringify(body.error)}`)
+    }
+  }
+
   private async getWorkspaceToken (email: string, password: string, workspaceUrl: string): Promise<string> {
     return (await this.getWorkspaceLoginInfo(email, password, workspaceUrl)).token
   }

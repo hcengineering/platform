@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import card from '@hcengineering/card'
   import core, {
     AnyAttribute,
     Class,
@@ -60,8 +61,11 @@
   let is: AnyComponent | undefined
   let readonly: boolean = false
   let required: boolean = false
+  let showInForm = false
+  let showInCreate = false
   const client = getClient()
   const hierarchy = client.getHierarchy()
+  $: cardAttribute = isCard || hierarchy.isDerived(_class, card.class.Card)
 
   async function save (): Promise<void> {
     if (type === undefined) return
@@ -77,7 +81,9 @@
       defaultValue,
       readonly,
       automationOnly: readonly,
-      required
+      required,
+      showInForm,
+      showInCreate
     }
     if (index !== undefined) {
       data.index = index
@@ -206,6 +212,12 @@
       <Label label={setting.string.Required} />
     </span>
     <Toggle bind:on={required} />
+    {#if cardAttribute}
+      <span class="label"><Label label={setting.string.ShowInForm} /></span>
+      <Toggle bind:on={showInForm} />
+      <span class="label"><Label label={setting.string.ShowInCreate} /></span>
+      <Toggle bind:on={showInCreate} />
+    {/if}
   </div>
 </Modal>
 

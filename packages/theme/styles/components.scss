@@ -1,5 +1,6 @@
 //
 // Copyright © 2021 Anticrm Platform Contributors.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -283,14 +284,50 @@
 }
 
 /* Avatar status marker */
+.hulyAvatar-statusWrap {
+  --status-online: var(--global-online-color);
+  --status-offline: #8e8e93;
+  --status-size: 10px;
+  --status-border: 2px;
+
+  &[data-status-size='xx-small'],
+  &[data-status-size='inline']   { --status-size: 6px;  --status-border: 1px; }
+  &[data-status-size='tiny']     { --status-size: 7px;  --status-border: 1px; }
+  &[data-status-size='card']     { --status-size: 8px;  --status-border: 1.5px; }
+  &[data-status-size='x-small'],
+  &[data-status-size='smaller']  { --status-size: 10px; --status-border: 2px; }
+  &[data-status-size='small']    { --status-size: 12px; --status-border: 2px; }
+  &[data-status-size='medium']   { --status-size: 14px; --status-border: 2px; }
+  &[data-status-size='large']    { --status-size: 18px; --status-border: 3px; }
+  &[data-status-size='x-large']  { --status-size: 32px; --status-border: 4px; }
+  &[data-status-size='2x-large'] { --status-size: 40px; --status-border: 5px; }
+  &[data-status-size='full']     { --status-size: clamp(14px, 18%, 40px); --status-border: 4px; }
+
+  .hulyAvatar-container.withStatus {
+    $hole: calc(var(--status-size) / 2);
+    $center: calc(100% - var(--status-size) / 2 + var(--status-border));
+    -webkit-mask-image: radial-gradient(
+      ellipse $hole $hole at $center $center,
+      transparent calc(100% - 0.5px),
+      #000 100%
+    );
+    mask-image: radial-gradient(
+      ellipse $hole $hole at $center $center,
+      transparent calc(100% - 0.5px),
+      #000 100%
+    );
+  }
+}
+
 .hulyAvatar-statusMarker {
   position: absolute;
-  right: -2px;
-  bottom: -2px;
-  width: 10px;
-  height: 10px;
+  right: calc(var(--status-border) * -1);
+  bottom: calc(var(--status-border) * -1);
+  width: var(--status-size);
+  aspect-ratio: 1;
   border-radius: 50%;
-  border: 2px solid white;
+  border: var(--status-border) solid transparent;
+  background-clip: padding-box;
   box-sizing: border-box;
   z-index: 2;
 
@@ -299,19 +336,11 @@
   }
 
   &.online {
-    background-color: var(--global-online-color);
+    background-color: var(--status-online);
   }
 
   &.offline {
-    background-color: white;
-    border-color: rgba(128, 128, 128, 0.5);
-  }
-
-  &.large {
-    right: 2px;
-    bottom: 2px;
-    width: 12px;
-    height: 12px;
+    background-color: var(--status-offline);
   }
 }
 

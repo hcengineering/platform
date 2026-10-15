@@ -60,6 +60,10 @@ import InlineCommentThread from './components/inline-comment/InlineCommentThread
 import DiscussionsSection from './components/discussions/DiscussionsSection.svelte'
 import DiscussionAside from './components/discussions/DiscussionAside.svelte'
 import DiscussionPanel from './components/discussions/DiscussionPanel.svelte'
+import DiscussionPresenter from './components/discussions/DiscussionPresenter.svelte'
+import DiscussionStatusPresenter from './components/discussions/DiscussionStatusPresenter.svelte'
+import DiscussionParticipantsPresenter from './components/discussions/DiscussionParticipantsPresenter.svelte'
+import DiscussionVisibilityPresenter from './components/discussions/DiscussionVisibilityPresenter.svelte'
 import DefaultDiscussionsSetting from './components/discussions/DefaultDiscussionsSetting.svelte'
 
 import {
@@ -96,6 +100,12 @@ import {
   summarizeMessages,
   canSummarizeMessages
 } from './utils'
+import {
+  canDeleteDiscussionAction,
+  canManageDiscussionAction,
+  hideResolvedDiscussions,
+  setDiscussionResolvedAction
+} from './discussion-actions'
 
 export { default as ChannelEmbeddedContent } from './components/ChannelEmbeddedContent.svelte'
 export { default as ChatMessageInput } from './components/chat-message/ChatMessageInput.svelte'
@@ -202,6 +212,10 @@ export default async (): Promise<Resources> => ({
     DiscussionsSection,
     DiscussionAside,
     DiscussionPanel,
+    DiscussionPresenter,
+    DiscussionStatusPresenter,
+    DiscussionParticipantsPresenter,
+    DiscussionVisibilityPresenter,
     DefaultDiscussionsSetting
   },
   activity: {
@@ -209,6 +223,9 @@ export default async (): Promise<Resources> => ({
     MembersChangedMessage
   },
   function: {
+    HideResolvedDiscussions: hideResolvedDiscussions,
+    CanDeleteDiscussion: canDeleteDiscussionAction,
+    CanManageDiscussion: canManageDiscussionAction,
     GetChunterNotificationStore: getChunterNotificationStore,
     GetDmName: getDmName,
     ChunterBrowserVisible: chunterBrowserVisible,
@@ -235,6 +252,7 @@ export default async (): Promise<Resources> => ({
     LocationDataResolver: locationDataResolver
   },
   actionImpl: {
+    SetDiscussionResolved: setDiscussionResolvedAction,
     ArchiveChannel,
     UnarchiveChannel,
     ConvertDmToPrivateChannel,

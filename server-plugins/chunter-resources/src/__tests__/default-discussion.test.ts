@@ -14,14 +14,36 @@
 //
 
 import chunter, { type DefaultDiscussion, type Discussion } from '@hcengineering/chunter'
-import core, { type Class, type Doc, type Ref, type Tx, TxFactory, type TxUpdateDoc } from '@hcengineering/core'
+import core, {
+  type AccountUuid,
+  type Class,
+  type Doc,
+  type PersonId,
+  type Ref,
+  type Space,
+  type Tx,
+  type TxCreateDoc,
+  TxFactory,
+  TxProcessor,
+  type TxUpdateDoc
+} from '@hcengineering/core'
 import { type TriggerControl } from '@hcengineering/server-core'
 
-import { OnDefaultDiscussionRenamed, OnDefaultDiscussionUpdated, OnDiscussionOwnerClassChanged } from '../index'
+import {
+  OnDefaultDiscussionRenamed,
+  OnDefaultDiscussionUpdated,
+  OnDiscussionOwnerClassChanged,
+  OnDiscussionOwnerCreated
+} from '../index'
 
 const Task = 'card:class:Task' as Ref<Class<Doc>>
 const Bug = 'card:class:Bug' as Ref<Class<Doc>>
+const Base = 'card:class:Base' as Ref<Class<Doc>>
+const Subtask = 'card:class:Subtask' as Ref<Class<Doc>>
 const factory = new TxFactory(core.account.System)
+const ownerIdentity = 'owner:identity' as PersonId
+const ownerAccount = 'owner-account' as AccountUuid
+const ownerFactory = new TxFactory(ownerIdentity)
 
 function matches (doc: Record<string, any>, query: Record<string, any>): boolean {
   return Object.entries(query).every(([key, value]) => {
@@ -68,13 +90,26 @@ function discussion (
 
 function createControl (discussions: Discussion[], configs: DefaultDiscussion[]): TriggerControl {
   return {
-    ctx: {} as any,
-    txFactory: new TxFactory(core.account.System, true),
+    ctx: {
+      contextData: {
+        socialStringsToUsers: new Map([[ownerIdentity, { accontUuid: ownerAccount }]]),
+        account: { uuid: ownerAccount, socialIds: [ownerIdentity] }
+      }
+    },
+    txFactory: new TxFactory(ownerIdentity, true),
     findAll: async (_ctx: any, _class: Ref<Class<Doc>>, query: Record<string, any>) =>
       _class === chunter.class.Discussion ? discussions.filter((it) => matches(it, query)) : [],
     modelDb: {
       findAllSync: (_class: Ref<Class<Doc>>, query: Record<string, any>) =>
         _class === chunter.class.DefaultDiscussion ? configs.filter((it) => matches(it, query)) : []
+    },
+    hierarchy: {
+      getAncestors: (_class: Ref<Class<Doc>>) => {
+        if (_class === Subtask) return [Subtask, Task, Base, core.class.Doc]
+        if (_class === Task || _class === Bug) return [_class, Base, core.class.Doc]
+        if (_class === Base) return [Base, core.class.Doc]
+        return [_class]
+      }
     }
   } as unknown as TriggerControl
 }
@@ -85,6 +120,115 @@ function updates (txes: Tx[]): Array<{ objectId: string, operations: Record<stri
     return { objectId: update.objectId, operations: update.operations }
   })
 }
+
+describe('OnDiscussionOwnerCreated', () => {
+  const createOwner = (id: string = 'card', _class: Ref<Class<Doc>> = Task): TxCreateDoc<Doc> =>
+    ownerFactory.createTxCreateDoc(_class, 'space' as Ref<Space>, {}, id as Ref<Doc>)
+
+  const createdDiscussions = (txes: Tx[]): Discussion[] =>
+    txes.map((tx) => TxProcessor.createDoc2Doc(tx as TxCreateDoc<Discussion>))
+
+  it('creates configured discussions with the owner and its access policy', async () => {
+    const publicConfig = { ...config('public', Task, 'General'), visibility: 'public' as const }
+    const result = await OnDiscussionOwnerCreated(
+      [createOwner()],
+      createControl([], [publicConfig, config('participants', Task, 'Review')])
+    )
+    expect(result).toHaveLength(2)
+    expect(result.every((tx) => tx.space === core.space.DerivedTx)).toBe(true)
+    expect(createdDiscussions(result)).toEqual([
+      expect.objectContaining({
+        _class: chunter.class.Discussion,
+        space: 'space',
+        attachedTo: 'card',
+        attachedToClass: Task,
+        collection: 'discussions',
+        name: 'General',
+        resolved: false,
+        members: [],
+        defaultDiscussion: 'public',
+        createdBy: ownerIdentity,
+        [core.mixin.AccessControlled]: { read: { kind: 'space' }, owners: [ownerAccount] }
+      }),
+      expect.objectContaining({
+        name: 'Review',
+        defaultDiscussion: 'participants',
+        [core.mixin.AccessControlled]: { read: { kind: 'parentParticipants' }, owners: [ownerAccount] }
+      })
+    ])
+  })
+
+  it('uses only configurations of the exact class for every owner in the batch', async () => {
+    const result = await OnDiscussionOwnerCreated(
+      [createOwner(), createOwner('bug', Bug), createOwner('other', core.class.Doc)],
+      createControl([], [config('task-config', Task, 'General'), config('bug-config', Bug, 'Review')])
+    )
+    expect(createdDiscussions(result)).toEqual([
+      expect.objectContaining({ attachedTo: 'card', defaultDiscussion: 'task-config' }),
+      expect.objectContaining({ attachedTo: 'bug', defaultDiscussion: 'bug-config' })
+    ])
+  })
+
+  it('creates discussions configured on parent types for child cards', async () => {
+    const result = await OnDiscussionOwnerCreated(
+      [createOwner()],
+      createControl([], [config('base', Base, 'General'), config('task', Task, 'Review')])
+    )
+    expect(createdDiscussions(result)).toEqual([
+      expect.objectContaining({ defaultDiscussion: 'base', name: 'General', attachedToClass: Task }),
+      expect.objectContaining({ defaultDiscussion: 'task', name: 'Review', attachedToClass: Task })
+    ])
+  })
+
+  it('inherits discussions through multiple subtype levels', async () => {
+    const result = await OnDiscussionOwnerCreated(
+      [createOwner('subtask', Subtask)],
+      createControl(
+        [],
+        [config('base', Base, 'General'), config('task', Task, 'Task discussion'), config('subtask', Subtask, 'Notes')]
+      )
+    )
+    expect(createdDiscussions(result)).toEqual([
+      expect.objectContaining({ attachedTo: 'subtask', defaultDiscussion: 'base' }),
+      expect.objectContaining({ attachedTo: 'subtask', defaultDiscussion: 'task' }),
+      expect.objectContaining({ attachedTo: 'subtask', defaultDiscussion: 'subtask' })
+    ])
+  })
+
+  it('does not duplicate existing discussions or repeated owner transactions', async () => {
+    const tx = createOwner()
+    const result = await OnDiscussionOwnerCreated(
+      [tx, tx],
+      createControl(
+        [discussion('existing', 'General', Task, 'general')],
+        [config('general', Task, 'General'), config('review', Task, 'Review')]
+      )
+    )
+    expect(createdDiscussions(result)).toEqual([expect.objectContaining({ defaultDiscussion: 'review' })])
+  })
+
+  it('does not create discussions for updates or when a configuration is added', async () => {
+    const update = ownerFactory.createTxUpdateDoc(Task, 'space' as Ref<Space>, 'card' as Ref<Doc>, {})
+    const addConfig = ownerFactory.createTxCreateDoc(chunter.class.DefaultDiscussion, core.space.Model, {
+      ofClass: Task,
+      name: 'General',
+      visibility: 'participants'
+    })
+    expect(
+      await OnDiscussionOwnerCreated([update, addConfig], createControl([], [config('general', Task, 'General')]))
+    ).toEqual([])
+  })
+
+  it('treats a legacy private configuration as participants without adding collaborators', async () => {
+    const legacy = { ...config('general', Task, 'General'), visibility: 'private' as const }
+    const result = await OnDiscussionOwnerCreated([createOwner()], createControl([], [legacy]))
+    expect(result).toHaveLength(1)
+    expect(createdDiscussions(result)[0]).toMatchObject({
+      members: [],
+      [core.mixin.AccessControlled]: { read: { kind: 'parentParticipants' }, owners: [ownerAccount] }
+    })
+  })
+})
 
 describe('OnDefaultDiscussionUpdated', () => {
   const discussions = [
@@ -123,6 +267,13 @@ describe('OnDefaultDiscussionRenamed', () => {
     ])
   })
 
+  it('restores the name of a discussion inherited from a parent type', async () => {
+    const control = createControl([discussion('d1', 'Renamed', Task, 'c1')], [config('c1', Base, 'General')])
+    expect(updates(await OnDefaultDiscussionRenamed([rename('d1')], control))).toEqual([
+      { objectId: 'd1', operations: { name: 'General' } }
+    ])
+  })
+
   it('keeps the name of a regular discussion or of a removed or foreign entry', async () => {
     const control = createControl(
       [
@@ -152,6 +303,13 @@ describe('OnDiscussionOwnerClassChanged', () => {
     expect(updates(await OnDiscussionOwnerClassChanged([changeType()], control))).toEqual([
       { objectId: 'd1', operations: { attachedToClass: Bug, defaultDiscussion: 'c2' } },
       { objectId: 'd2', operations: { attachedToClass: Bug } }
+    ])
+  })
+
+  it('keeps a parent configuration linked when changing between its child types', async () => {
+    const control = createControl([discussion('d1', 'General', Task, 'base')], [config('base', Base, 'General')])
+    expect(updates(await OnDiscussionOwnerClassChanged([changeType()], control))).toEqual([
+      { objectId: 'd1', operations: { attachedToClass: Bug } }
     ])
   })
 

@@ -6,6 +6,11 @@ settings:
 
 pnpmfileChecksum: sha256-E1T7OJ3DLTjpDqf4RdJzK9VDtAxgm4gDEQCLYdHD8nI=
 
+patchedDependencies:
+  kafkajs@2.2.4:
+    hash: ef78ad6d6db935ce3d58bf155f56479e5b832e7166a088b2eaa7a376b3f6911d
+    path: patches/kafkajs@2.2.4.patch
+
 importers:
 
   .: {}
@@ -4479,7 +4484,7 @@ importers:
         version: link:../../../core/packages/storage
       kafkajs:
         specifier: ^2.2.4
-        version: 2.2.4
+        version: 2.2.4(patch_hash=ef78ad6d6db935ce3d58bf155f56479e5b832e7166a088b2eaa7a376b3f6911d)
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.21
@@ -6386,6 +6391,9 @@ importers:
       '@hcengineering/model-presentation':
         specifier: workspace:^0.7.0
         version: link:../presentation
+      '@hcengineering/model-print':
+        specifier: workspace:^0.7.0
+        version: link:../print
       '@hcengineering/model-view':
         specifier: workspace:^0.7.0
         version: link:../view
@@ -30407,9 +30415,6 @@ importers:
       '@hcengineering/platform':
         specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/platform
-      '@hcengineering/server-client':
-        specifier: workspace:^0.7.16
-        version: link:../../foundations/server/packages/client
       '@hcengineering/server-core':
         specifier: workspace:^0.7.19
         version: link:../../foundations/server/packages/core
@@ -30545,7 +30550,7 @@ importers:
         version: 16.6.1
       kafkajs:
         specifier: ^2.2.4
-        version: 2.2.4
+        version: 2.2.4(patch_hash=ef78ad6d6db935ce3d58bf155f56479e5b832e7166a088b2eaa7a376b3f6911d)
     devDependencies:
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.21
@@ -30613,9 +30618,6 @@ importers:
       '@hcengineering/platform':
         specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/platform
-      '@hcengineering/server-client':
-        specifier: workspace:^0.7.16
-        version: link:../../foundations/server/packages/client
       '@hcengineering/server-core':
         specifier: workspace:^0.7.19
         version: link:../../foundations/server/packages/core
@@ -37900,9 +37902,6 @@ importers:
       '@hcengineering/platform':
         specifier: workspace:^0.7.20
         version: link:../../../foundations/core/packages/platform
-      '@hcengineering/server-client':
-        specifier: workspace:^0.7.16
-        version: link:../../../foundations/server/packages/client
       '@hcengineering/server-core':
         specifier: workspace:^0.7.19
         version: link:../../../foundations/server/packages/core
@@ -38666,7 +38665,7 @@ importers:
         version: 2.0.4
       kafkajs:
         specifier: ^2.2.4
-        version: 2.2.4
+        version: 2.2.4(patch_hash=ef78ad6d6db935ce3d58bf155f56479e5b832e7166a088b2eaa7a376b3f6911d)
       markdown-it:
         specifier: ^14.0.0
         version: 14.3.2
@@ -39805,9 +39804,6 @@ importers:
       '@hcengineering/platform':
         specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/platform
-      '@hcengineering/server-client':
-        specifier: workspace:^0.7.16
-        version: link:../../foundations/server/packages/client
       '@hcengineering/server-core':
         specifier: workspace:^0.7.19
         version: link:../../foundations/server/packages/core
@@ -43242,12 +43238,6 @@ packages:
   '@sinonjs/fake-timers@15.4.0':
     resolution: {integrity: sha512-DsG+8/LscQIQg68J6Ef3dv10u6nVyetYn923s3/sus5eaGfTo1of5WMZSLf0UJc9KDuKPilPH0UDJCjvNbDNCA==}
 
-  '@sinonjs/text-encoding@0.7.3':
-    resolution: {integrity: sha512-DE427ROAphMQzU4ENbliGYrBSYPXF+TtLg9S8vzeA+OF4ZKzoDdzfL8sxuMUGS/lgRhM6j1URSk9ghf7Xo1tyA==}
-    deprecated: |-
-      Deprecated: no longer maintained and no longer used by Sinon packages. See
-        https://github.com/sinonjs/nise/issues/243 for replacement details.
-
   '@smithy/core@3.34.1':
     resolution: {integrity: sha512-dLcOUxz8YCv1RZUMKq6GbyUf95pLbrqh34bPvpCZ1+CByFF31BEAFewZjsGCnVsZTKdThNENfGyAgk2TJqVwSw==}
     engines: {node: '>=18.0.0'}
@@ -45817,9 +45807,6 @@ packages:
   emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
     engines: {node: '>=12'}
-
-  eml-parse-js@1.2.0-beta.1:
-    resolution: {integrity: sha512-sFlcUwNmIjPD7yR0/OK4XEN9V+/Np3S6SE348LNgwgAlgA1jswba+cTNxN/Rbkz+CHPyBSfh3Ccamp6lLWz0Lw==}
 
   emoji-regex@10.6.0:
     resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
@@ -53565,8 +53552,6 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@sinonjs/text-encoding@0.7.3': {}
-
   '@smithy/core@3.34.1':
     dependencies:
       '@smithy/types': 4.18.0
@@ -56486,11 +56471,6 @@ snapshots:
 
   emittery@0.13.1: {}
 
-  eml-parse-js@1.2.0-beta.1:
-    dependencies:
-      '@sinonjs/text-encoding': 0.7.3
-      js-base64: 3.9.3
-
   emoji-regex@10.6.0: {}
 
   emoji-regex@8.0.0: {}
@@ -58902,7 +58882,7 @@ snapshots:
 
   jwt-simple@0.5.6: {}
 
-  kafkajs@2.2.4: {}
+  kafkajs@2.2.4(patch_hash=ef78ad6d6db935ce3d58bf155f56479e5b832e7166a088b2eaa7a376b3f6911d): {}
 
   katex@0.16.47:
     dependencies:

@@ -22,6 +22,8 @@ import chunter, {
   ChunterSpace,
   type DefaultDiscussion,
   type Discussion,
+  getDefaultDiscussionVisibility,
+  getEffectiveDefaultDiscussions,
   getDiscussionTitle,
   ThreadMessage
 } from '@hcengineering/chunter'
@@ -48,6 +50,7 @@ import core, {
   TxUpdateDoc,
   UserStatus,
   getClassCollaborators,
+  visibilityToAudience,
   type MeasureContext
 } from '@hcengineering/core'
 import notification, { DocNotifyContext, NotificationContent } from '@hcengineering/notification'
@@ -428,14 +431,79 @@ async function OnChatMessageRemoved (txes: TxCUD<ChatMessage>[], control: Trigge
   return res
 }
 
-// The default discussion configured for the owner class it was created for, if it is still configured.
+/**
+ * Creates the default discussions configured for the owner class and its ancestors when the owner is created.
+ * Viewing an existing object or adding a default configuration never creates discussions.
+ * @public
+ */
+export async function OnDiscussionOwnerCreated (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
+  const res: Tx[] = []
+  const processed = new Set<Ref<Doc>>()
+  for (const tx of txes) {
+    if (tx._class !== core.class.TxCreateDoc) continue
+    const createTx = tx as TxCreateDoc<Doc>
+    if (processed.has(createTx.objectId)) continue
+    processed.add(createTx.objectId)
+
+    const configs = getDefaultDiscussionConfigs(control, createTx.objectClass)
+    if (configs.length === 0) continue
+
+    // Server queries include discussions hidden from individual users.
+    const existing = await control.findAll(control.ctx, chunter.class.Discussion, {
+      attachedTo: createTx.objectId,
+      defaultDiscussion: { $in: configs.map((config) => config._id) }
+    })
+    const linked = new Set(existing.map((discussion) => discussion.defaultDiscussion))
+    const account = await getAccountBySocialId(control, createTx.createdBy ?? createTx.modifiedBy)
+    for (const config of configs) {
+      if (linked.has(config._id)) continue
+      const discussionTx = control.txFactory.createTxCreateDoc(chunter.class.Discussion, createTx.objectSpace, {
+        name: config.name,
+        resolved: false,
+        members: [],
+        defaultDiscussion: config._id,
+        attachedTo: createTx.objectId,
+        attachedToClass: createTx.objectClass,
+        collection: 'discussions',
+        // Derived transactions bypass client security checks, so ownership is set here.
+        [core.mixin.AccessControlled]: {
+          read: visibilityToAudience(getDefaultDiscussionVisibility(config)),
+          owners: account != null ? [account] : []
+        }
+      })
+      res.push(
+        control.txFactory.createTxCollectionCUD(
+          createTx.objectClass,
+          createTx.objectId,
+          createTx.objectSpace,
+          'discussions',
+          discussionTx
+        )
+      )
+      linked.add(config._id)
+    }
+  }
+  return res
+}
+
+function getDefaultDiscussionConfigs (control: TriggerControl, ownerClass: Ref<Class<Doc>>): DefaultDiscussion[] {
+  const ancestors = control.hierarchy.getAncestors(ownerClass)
+  return getEffectiveDefaultDiscussions(
+    control.modelDb.findAllSync(chunter.class.DefaultDiscussion, { ofClass: { $in: ancestors } }),
+    ancestors
+  )
+}
+
+// The default discussion configured for the owner class or an ancestor, if it is still configured.
 function getConfiguredDefaultDiscussion (
   control: TriggerControl,
   discussion: Discussion
 ): DefaultDiscussion | undefined {
   if (discussion.defaultDiscussion === undefined) return undefined
   const config = control.modelDb.findAllSync(chunter.class.DefaultDiscussion, { _id: discussion.defaultDiscussion })[0]
-  return config?.ofClass === discussion.attachedToClass ? config : undefined
+  return config !== undefined && control.hierarchy.getAncestors(discussion.attachedToClass).includes(config.ofClass)
+    ? config
+    : undefined
 }
 
 /**
@@ -491,8 +559,8 @@ export async function OnDefaultDiscussionRenamed (txes: Tx[], control: TriggerCo
 
 /**
  * Keeps discussions consistent when the owner object changes its class (e.g. the card type is changed).
- * Default discussions are not inherited: one of the old type is linked to the entry of the new type with
- * the same name, if any, and becomes a regular discussion otherwise.
+ * A discussion keeps its source configuration if that configuration is still effective for the new class.
+ * Otherwise it is linked to an effective configuration with the same name, if any, or becomes regular.
  * @public
  */
 export async function OnDiscussionOwnerClassChanged (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
@@ -505,7 +573,7 @@ export async function OnDiscussionOwnerClassChanged (txes: Tx[], control: Trigge
 
     const discussions = await control.findAll(control.ctx, chunter.class.Discussion, { attachedTo: updateTx.objectId })
     if (discussions.length === 0) continue
-    const newConfigs = control.modelDb.findAllSync(chunter.class.DefaultDiscussion, { ofClass: newClass })
+    const newConfigs = getDefaultDiscussionConfigs(control, newClass)
     // Entries of the new type already used by a discussion of the object.
     const linked = new Set(
       discussions.map((it) => it.defaultDiscussion).filter((it) => newConfigs.some((config) => config._id === it))
@@ -674,6 +742,7 @@ export default async () => ({
     OnChatMessageRemoved,
     ChatNotificationsHandler,
     OnUserStatus,
+    OnDiscussionOwnerCreated,
     OnDefaultDiscussionUpdated,
     OnDefaultDiscussionRenamed,
     OnDiscussionOwnerClassChanged

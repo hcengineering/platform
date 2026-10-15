@@ -464,6 +464,13 @@ export async function validateOtp (
       }
     }
 
+    // Consume the code atomically: only the request that actually deletes it may proceed,
+    // so concurrent requests with the same valid code cannot both succeed.
+    const consumed = await db.otp.deleteMany({ socialId: emailSocialId._id, code })
+    if (consumed === 0) {
+      ctx.warn('OTP already used', { email: normalizedEmail })
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {}))
+    }
     await db.otp.deleteMany({ socialId: emailSocialId._id })
 
     const targetAccount = await db.account.findOne({ uuid: emailSocialId.personUuid as AccountUuid })
@@ -1197,6 +1204,7 @@ export async function checkJoin (
 
   const invite = await getWorkspaceInvite(db, inviteId)
   if (invite == null) {
+    ctx.warn('Invite not found or expired in checkJoin', { inviteId })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -1255,6 +1263,7 @@ export async function joinByToken (
 
   const invite = await getWorkspaceInvite(db, inviteId)
   if (invite == null) {
+    ctx.warn('Invite not found or expired in joinByToken', { inviteId })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -3800,10 +3809,10 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     createAccessLink: wrap(createAccessLink),
     sendInvite: wrap(sendInvite),
     resendInvite: wrap(resendInvite),
-    selectWorkspace: wrap(selectWorkspace, { allowApiKey: true, guest: 'allGuests' }),
+    selectWorkspace: wrap(selectWorkspace, { allowApiKey: true, guest: 'bypass' }),
     join: wrap(join, { guest: 'bypass' }),
-    joinByToken: wrap(joinByToken, { guest: 'personalGuest' }),
-    checkJoin: wrap(checkJoin, { guest: 'personalGuest' }),
+    joinByToken: wrap(joinByToken, { guest: 'joinWorkspace' }),
+    checkJoin: wrap(checkJoin, { guest: 'joinWorkspace' }),
     checkAutoJoin: wrap(checkAutoJoin, { guest: 'bypass' }),
     getInviteInfo: wrap(getInviteInfo, { guest: 'bypass' }),
     signUpJoin: wrap(signUpJoin, { guest: 'bypass' }),

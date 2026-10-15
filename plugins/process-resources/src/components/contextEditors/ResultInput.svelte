@@ -155,6 +155,7 @@
               docQuery: result.docQuery,
               value: values[result._id],
               onChange: getOnChange(result._id),
+              onInput: getOnChange(result._id),
               focus
             }}
           />

@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,7 +17,7 @@
   import core, { AnyAttribute, ArrOf, Doc, EnumOf, RefTo, Type } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
-  import { AnySvelteComponent, Icon, IconMoreV2, IconOpenedArrow, Label, tooltip } from '@hcengineering/ui'
+  import { AnySvelteComponent, Icon, IconCopy, IconMoreV2, IconOpenedArrow, Label, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import setting from '../plugin'
 
@@ -34,6 +35,10 @@
     | undefined = undefined
 
   const client = getClient()
+  const hierarchy = client.getHierarchy()
+
+  $: parentClass = hierarchy.getClass(attribute.attributeOf).extends
+  $: overridden = parentClass !== undefined && hierarchy.findAttribute(parentClass, attribute.name) !== undefined
 
   async function getEnumName (type: Type<any>): Promise<string | undefined> {
     const ref = (type as EnumOf).of
@@ -65,6 +70,11 @@
   {/if}
   <div class="hulyTableAttr-content__row-label font-regular-14 grow" class:accent={!attribute.hidden}>
     <Label label={attribute.label} />
+    {#if overridden}
+      <span class="override-marker" use:tooltip={{ label: setting.string.OverriddenAttribute }}>
+        <IconCopy size="small" />
+      </span>
+    {/if}
     {#if attribute.required === true}
       <span class="required-marker font-medium-12" use:tooltip={{ label: setting.string.Required }}>*</span>
     {/if}
@@ -102,6 +112,12 @@
     align-items: center;
     min-width: 0;
     gap: var(--spacing-0_5);
+  }
+
+  .override-marker {
+    display: flex;
+    flex-shrink: 0;
+    color: var(--theme-content-color);
   }
 
   .required-marker {
