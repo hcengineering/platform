@@ -33,6 +33,13 @@ Respond to user using Russian language, all comments should be in English.
 - If no suitable component exists, add it to `packages/ui` when it is a reusable UI primitive or serves multiple features. Keep domain-specific components with their owning feature and follow existing theming, localization, and accessibility patterns.
 - Export every new public component from `packages/ui/src/index.ts` and add it to one primary category in the component catalog.
 
+### Styling, text and accessibility
+
+- Use the utility classes in `packages/theme/styles/_layouts.scss` and theme tokens (`--spacing-*`, `--theme-*`) before writing component CSS; keep a `<style>` block only for what has no class.
+- Reuse existing `IntlString` ids and strings before adding one, and name a key after its text. A new key goes to every supported locale.
+- Do not add `aria-*` or `role` by default. Label icons through `tooltip` and `Label`, and mark decorative `<svg>` without text `aria-hidden="true"`.
+- In Playwright tests select by `data-id`, not `data-testid`.
+
 ## Rush Commands
 
 ```bash
