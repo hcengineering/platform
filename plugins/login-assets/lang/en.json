@@ -46,11 +46,8 @@
     "Recover": "Recover",
     "PasswordRecovery": "Password recovery",
     "RecoveryLinkSent": "Password recovery link sent to email",
-    "LinkValidHours": "Invite link expiration (hours):",
     "EmailMask": "Email mask:",
-    "InviteLimit": "Maximum uses per invite link:",
     "GetLink": "Get invite link",
-    "NoLimit": "Unlimited uses:",
     "AlreadyJoined": "Already joined?",
     "ConfirmationSent": "A message has been sent to your email containing a link to confirm your address.",
     "ConfirmationSent2": "Please follow the link to complete your sign up.",
@@ -114,17 +111,16 @@
     "ManageInviteLinks": "Manage active invite links",
     "RevokeInviteLinkConfirm": "People will no longer be able to join the workspace with this link. This cannot be undone.",
     "InviteLinkExpires": "Expires {date}",
-    "InvitePeople": "Invite people",
+    "InvitePeople": "Invite link",
     "JoinAs": "Join as",
     "WorkspaceDefaults": "Workspace defaults",
-    "LinkExpires": "Link expires",
-    "LimitUses": "Limit number of uses",
+    "LinkExpires": "Expiration",
+    "LimitUses": "Usage limit",
     "ExpiresAfterHours": "{count, plural, =1 {Expires after # hour} other {Expires after # hours}}",
     "UsesLimit": "{count, plural, =1 {Up to # use} other {Up to # uses}}",
-    "HoursUnit": "{count, plural, =1 {hour} other {hours}}",
     "CustomizeInviteLink": "Customize",
     "LinkSettings": "Link settings",
     "ResetToWorkspaceDefaults": "Reset to workspace defaults",
-    "PeopleUnit": "{count, plural, =1 {person} other {people}}"
+    "ExpiresAfterDays": "{count, plural, one {Expires after # day} other {Expires after # days}}"
   }
 }

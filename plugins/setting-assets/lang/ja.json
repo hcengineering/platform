@@ -272,6 +272,17 @@
     "OtherSpaces": "その他のスペース",
     "Public": "公開",
     "Member": "メンバー",
-    "CanJoin": "参加可能"
+    "CanJoin": "参加可能",
+    "InviteDays": "{count, plural, other {#日}}",
+    "InviteHours": "{count, plural, other {#時間}}",
+    "InviteNever": "無期限",
+    "InviteCustom": "カスタム",
+    "InviteUnlimitedUses": "無制限",
+    "InviteSingleUse": "1回のみ",
+    "InviteDaysUnit": "{count, plural, other {日}}",
+    "InviteHoursUnit": "{count, plural, other {時間}}",
+    "InviteUsesUnit": "{count, plural, other {回}}",
+    "InvitePositiveNumber": "0より大きい整数を入力してください。",
+    "InviteSettingsSaveFailed": "招待設定を保存できませんでした。もう一度お試しください。"
   }
 }

@@ -27,19 +27,22 @@
     Label,
     locationToUrl,
     Modal,
-    Notice
+    Notice,
+    TextLink
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
-  import { DEFAULT_INVITE_EXP_HOURS, type InviteLinkParams, summarizeInviteLink } from '../inviteLinkParams'
+  import {
+    DEFAULT_INVITE_EXP_HOURS,
+    type InviteLinkParams,
+    LIMITED_ROLE_INVITE_EXP_HOURS,
+    summarizeInviteLink
+  } from '../inviteLinkParams'
   import login from '../plugin'
   import { getInviteLink } from '../utils'
   import InviteLinkSettings from './InviteLinkSettings.svelte'
 
   export let role: AccountRole | undefined = undefined
-  /** Hide links to the invite settings page, e.g. when the dialog is opened from settings. */
-  export let showManageLink: boolean = true
-
   interface CreatedLink extends InviteLinkParams {
     url: string
     role: AccountRole
@@ -50,7 +53,8 @@
   const query = createQuery()
   const isSecureContext = window.isSecureContext
   const isOwnerOrMaintainer = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)
-  const inviteSettingsUrl = isOwnerOrMaintainer && showManageLink ? getInviteSettingsUrl() : undefined
+  // Only maintainers manage links, and there is no point in linking to the page that is already open
+  const inviteSettingsUrl = isOwnerOrMaintainer && !isInviteSettingsOpen() ? getInviteSettingsUrl() : undefined
 
   let defaults: InviteLinkParams = { expHours: DEFAULT_INVITE_EXP_HOURS, limit: -1 }
   let params: InviteLinkParams = defaults
@@ -68,7 +72,10 @@
 
   query.query(setting.class.InviteSettings, {}, (set) => {
     const state = resolveInviteSettings(set?.[0])
-    defaults = { expHours: state.expirationTime, limit: state.noLimit ? -1 : (state.limit ?? -1) }
+    // Only maintainers may create links that never expire, so others get a 30-day link instead
+    const expHours =
+      state.expirationTime < 0 && !isOwnerOrMaintainer ? LIMITED_ROLE_INVITE_EXP_HOURS : state.expirationTime
+    defaults = { expHours, limit: state.noLimit ? -1 : (state.limit ?? -1) }
     emailMask = state.emailMask
     if (role == null) role = state.defaultInviteRole
   })
@@ -123,6 +130,11 @@
     dispatch('close')
   }
 
+  function isInviteSettingsOpen (): boolean {
+    const [, , category, section, page] = getCurrentResolvedLocation().path
+    return category === settingId && section === 'setting' && page === 'invites'
+  }
+
   function getInviteSettingsUrl (): string {
     const loc = getCurrentResolvedLocation()
     // Workspace settings live under /<app>/<workspace>/setting/setting/<category>
@@ -134,6 +146,7 @@
   label={login.string.InvitePeople}
   type={'type-popup'}
   width={'small'}
+  footerPadding={'var(--spacing-1_5) var(--spacing-3)'}
   okLabel={created !== undefined ? login.string.Close : login.string.GetLink}
   okAction={created !== undefined ? close : createLink}
   canSave={created !== undefined || (canGenerateInviteLinks && valid && !creating)}
@@ -166,7 +179,7 @@
       />
     {:else}
       <div class="link-field">
-        <span class="link" class:selectable={!isSecureContext}>{created.url}</span>
+        <span class="link" data-id="invite-link" class:selectable={!isSecureContext}>{created.url}</span>
         {#if isSecureContext}
           <Button
             icon={IconCopy}
@@ -191,9 +204,11 @@
 
   <svelte:fragment slot="footer">
     {#if inviteSettingsUrl !== undefined}
-      <a class="manage-links" href={inviteSettingsUrl} target="_blank" rel="noopener noreferrer">
-        <Label label={login.string.ManageInviteLinks} />
-      </a>
+      <div class="manage-links">
+        <TextLink href={inviteSettingsUrl} external>
+          <Label label={login.string.ManageInviteLinks} />
+        </TextLink>
+      </div>
     {/if}
   </svelte:fragment>
 </Modal>
@@ -268,7 +283,5 @@
   .manage-links {
     margin-right: auto;
     align-self: center;
-    font-size: 0.8125rem;
-    color: var(--theme-link-color);
   }
 </style>

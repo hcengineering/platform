@@ -41,11 +41,8 @@
     "Recover": "Восстановить",
     "PasswordRecovery": "Восстановление пароля",
     "RecoveryLinkSent": "Ссылка для восстановления пароля отправлена на почту",
-    "LinkValidHours": "Ссылка действительна (часов):",
     "EmailMask": "Маска для электронной почты:",
-    "InviteLimit": "Предел использований:",
     "GetLink": "Получить ссылку",
-    "NoLimit": "Без предела использований",
     "AlreadyJoined": "Уже подключены?",
     "ConfirmationSent": "На Вашу почту отправлено сообщение, c ссылкой для подтверждения email.",
     "ConfirmationSent2": "Пожалуйста, перейдите по ссылке для завершения регистрации.",
@@ -114,17 +111,16 @@
     "ManageInviteLinks": "Управлять активными ссылками",
     "RevokeInviteLinkConfirm": "По этой ссылке больше нельзя будет присоединиться к рабочему пространству. Это действие нельзя отменить.",
     "InviteLinkExpires": "Действует до {date}",
-    "InvitePeople": "Пригласить людей",
+    "InvitePeople": "Ссылка-приглашение",
     "JoinAs": "Роль",
     "WorkspaceDefaults": "По умолчанию",
-    "LinkExpires": "Ограничить срок",
-    "LimitUses": "Ограничить число использований",
+    "LinkExpires": "Срок действия",
+    "LimitUses": "Лимит использований",
     "ExpiresAfterHours": "{count, plural, one {Действует # час} few {Действует # часа} other {Действует # часов}}",
     "UsesLimit": "{count, plural, one {До # использования} other {До # использований}}",
-    "HoursUnit": "{count, plural, one {час} few {часа} other {часов}}",
     "CustomizeInviteLink": "Настроить",
     "LinkSettings": "Параметры ссылки",
     "ResetToWorkspaceDefaults": "Вернуть настройки по умолчанию",
-    "PeopleUnit": "{count, plural, one {человек} few {человека} other {человек}}"
+    "ExpiresAfterDays": "{count, plural, one {Действует # день} few {Действует # дня} other {Действует # дней}}"
   }
 }

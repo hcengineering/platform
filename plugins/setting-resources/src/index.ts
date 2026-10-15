@@ -37,6 +37,8 @@ import ClassAttributes from './components/ClassAttributes.svelte'
 import ClassAttributesList from './components/ClassAttributesList.svelte'
 import Configure from './components/Configure.svelte'
 import InviteSetting from './components/InviteSetting.svelte'
+import InviteExpirationSelect from './components/InviteExpirationSelect.svelte'
+import InviteUsesSelect from './components/InviteUsesSelect.svelte'
 import UserRoleSelect from './components/UserRoleSelect.svelte'
 import PermissionPresenter from './components/presenters/PermissionPresenter.svelte'
 import AttributePermissionPresenter from './components/presenters/AttributePermissionPresenter.svelte'
@@ -88,6 +90,7 @@ export { hasRoleCapability, getRolesForCapability } from './roleCapability'
 export { hasRoleCapabilityAsync } from './hasRoleCapabilityAsync'
 export * from './inviteSettingsUtils'
 export * from './inviteLinks'
+export * from './inviteDuration'
 export {
   ClassAttributes,
   ClassAttributesList,
@@ -98,7 +101,9 @@ export {
   RelationSetting,
   CreateRelation,
   BaseIntegrationState,
-  IntegrationStateRow
+  IntegrationStateRow,
+  InviteExpirationSelect,
+  InviteUsesSelect
 }
 
 async function DeleteMixin (object: Mixin<Class<Doc>>): Promise<void> {

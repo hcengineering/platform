@@ -272,6 +272,17 @@
     "OtherSpaces": "其他空间",
     "Public": "公开",
     "Member": "成员",
-    "CanJoin": "可加入"
+    "CanJoin": "可加入",
+    "InviteDays": "{count, plural, other {#天}}",
+    "InviteHours": "{count, plural, other {#小时}}",
+    "InviteNever": "永不",
+    "InviteCustom": "自定义",
+    "InviteUnlimitedUses": "不限",
+    "InviteSingleUse": "仅限一次",
+    "InviteDaysUnit": "{count, plural, other {天}}",
+    "InviteHoursUnit": "{count, plural, other {小时}}",
+    "InviteUsesUnit": "{count, plural, other {次}}",
+    "InvitePositiveNumber": "请输入大于零的整数。",
+    "InviteSettingsSaveFailed": "无法保存邀请设置，请重试。"
   }
 }

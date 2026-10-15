@@ -1,3 +1,18 @@
+//
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { test } from '@playwright/test'
 import { LoginPage } from '../model/login-page'
 import { generateId } from '../utils'
@@ -128,10 +143,10 @@ test.describe('Workspace tests', () => {
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
 
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     const page2 = await browser.newPage()
     try {
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
       const newUser2: SignUpData = {
         firstName: `FirstName2-${generateId()}`,
         lastName: `LastName2-${generateId()}`,
@@ -188,7 +203,7 @@ test.describe('Workspace tests', () => {
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
 
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     const page2 = await browser.newPage()
     try {
       const loginPage2 = new LoginPage(page2)
@@ -206,7 +221,7 @@ test.describe('Workspace tests', () => {
       await signUpPage2.signUp(newUser2)
 
       // Ok we signed in, and no workspace present.
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
       const joinPage = new SignInJoinPage(page2)
       await joinPage.join(newUser2)
 

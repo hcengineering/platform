@@ -41,11 +41,8 @@
     "Recover": "恢复",
     "PasswordRecovery": "密码恢复",
     "RecoveryLinkSent": "密码恢复链接已发送到电子邮件",
-    "LinkValidHours": "链接有效期（小时）：",
     "EmailMask": "电子邮件掩码：",
-    "InviteLimit": "邀请限制：",
     "GetLink": "获取邀请链接",
-    "NoLimit": "无限制",
     "AlreadyJoined": "已经加入了？",
     "ConfirmationSent": "已发送确认邮件到您的邮箱，包含一个确认地址的链接。",
     "ConfirmationSent2": "请点击链接完成注册。",
@@ -114,17 +111,16 @@
     "ManageInviteLinks": "管理有效的邀请链接",
     "RevokeInviteLinkConfirm": "此后将无法通过此链接加入工作区。此操作无法撤销。",
     "InviteLinkExpires": "{date} 到期",
-    "InvitePeople": "邀请成员",
+    "InvitePeople": "邀请链接",
     "JoinAs": "加入角色",
     "WorkspaceDefaults": "工作区默认设置",
-    "LinkExpires": "链接有效期",
-    "LimitUses": "限制使用次数",
+    "LinkExpires": "有效期",
+    "LimitUses": "使用次数上限",
     "ExpiresAfterHours": "{count, plural, other {# 小时后过期}}",
     "UsesLimit": "{count, plural, other {最多 # 次}}",
-    "HoursUnit": "{count, plural, other {小时}}",
     "CustomizeInviteLink": "自定义",
     "LinkSettings": "链接设置",
     "ResetToWorkspaceDefaults": "恢复为工作区默认设置",
-    "PeopleUnit": "{count, plural, other {人}}"
+    "ExpiresAfterDays": "{count, plural, other {#天后过期}}"
   }
 }

@@ -46,11 +46,8 @@
     "Recover": "Odzyskaj",
     "PasswordRecovery": "Odzyskiwanie hasła",
     "RecoveryLinkSent": "Link do odzyskiwania hasła wysłany na e-mail",
-    "LinkValidHours": "Wygaśnięcie linku zaproszenia (godziny):",
     "EmailMask": "Maska e-mail:",
-    "InviteLimit": "Maksymalna liczba użyć na link zaproszenia:",
     "GetLink": "Pobierz link zaproszenia",
-    "NoLimit": "Nieograniczona liczba użyć:",
     "AlreadyJoined": "Już dołączyłeś?",
     "ConfirmationSent": "Wiadomość zawierająca link do potwierdzenia adresu została wysłana na Twój adres e-mail.",
     "ConfirmationSent2": "Kliknij w link, aby zakończyć rejestrację.",
@@ -114,17 +111,16 @@
     "ManageInviteLinks": "Zarządzaj aktywnymi linkami z zaproszeniem",
     "RevokeInviteLinkConfirm": "Nikt nie będzie mógł już dołączyć do obszaru roboczego za pomocą tego linku. Tej operacji nie można cofnąć.",
     "InviteLinkExpires": "Ważny do {date}",
-    "InvitePeople": "Zaproś osoby",
+    "InvitePeople": "Link zaproszenia",
     "JoinAs": "Dołącz jako",
     "WorkspaceDefaults": "Ustawienia domyślne",
-    "LinkExpires": "Link wygasa",
-    "LimitUses": "Ogranicz liczbę użyć",
+    "LinkExpires": "Wygaśnięcie",
+    "LimitUses": "Limit użyć",
     "ExpiresAfterHours": "{count, plural, one {Wygasa po # godzinie} other {Wygasa po # godzinach}}",
     "UsesLimit": "{count, plural, one {Do # użycia} other {Do # użyć}}",
-    "HoursUnit": "{count, plural, one {godzina} few {godziny} other {godzin}}",
     "CustomizeInviteLink": "Dostosuj",
     "LinkSettings": "Ustawienia linku",
     "ResetToWorkspaceDefaults": "Przywróć ustawienia domyślne",
-    "PeopleUnit": "{count, plural, one {osoba} few {osoby} other {osób}}"
+    "ExpiresAfterDays": "{count, plural, one {Wygasa po # dniu} other {Wygasa po # dniach}}"
   }
 }

@@ -41,11 +41,8 @@
     "Recover": "Obnovit",
     "PasswordRecovery": "Obnovení hesla",
     "RecoveryLinkSent": "Odkaz pro obnovení hesla byl odeslán na e-mail",
-    "LinkValidHours": "Platnost odkazu (hodiny):",
     "EmailMask": "E-mailová maska:",
-    "InviteLimit": "Limit pozvánek:",
     "GetLink": "Získat odkaz na pozvánku",
-    "NoLimit": "Bez limitu",
     "AlreadyJoined": "Již jste se připojili?",
     "ConfirmationSent": "Na váš e-mail byla odeslána zpráva obsahující odkaz pro potvrzení adresy.",
     "ConfirmationSent2": "Klikněte na odkaz pro dokončení registrace.",
@@ -115,17 +112,16 @@
     "ManageInviteLinks": "Spravovat aktivní odkazy s pozvánkou",
     "RevokeInviteLinkConfirm": "Přes tento odkaz se již nikdo nebude moci připojit k pracovnímu prostoru. Tuto akci nelze vrátit.",
     "InviteLinkExpires": "Platí do {date}",
-    "InvitePeople": "Pozvat lidi",
+    "InvitePeople": "Odkaz na pozvánku",
     "JoinAs": "Připojit se jako",
     "WorkspaceDefaults": "Výchozí nastavení",
-    "LinkExpires": "Platnost odkazu vyprší",
-    "LimitUses": "Omezit počet použití",
+    "LinkExpires": "Platnost",
+    "LimitUses": "Limit použití",
     "ExpiresAfterHours": "{count, plural, one {Vyprší za # hodinu} few {Vyprší za # hodiny} other {Vyprší za # hodin}}",
     "UsesLimit": "{count, plural, other {Až # použití}}",
-    "HoursUnit": "{count, plural, one {hodina} few {hodiny} other {hodin}}",
     "CustomizeInviteLink": "Přizpůsobit",
     "LinkSettings": "Nastavení odkazu",
     "ResetToWorkspaceDefaults": "Obnovit výchozí nastavení",
-    "PeopleUnit": "{count, plural, one {osoba} few {osoby} other {osob}}"
+    "ExpiresAfterDays": "{count, plural, one {Vyprší za # den} few {Vyprší za # dny} other {Vyprší za # dní}}"
   }
 }

@@ -114,7 +114,7 @@
   }
   function inviteWorkspace (): void {
     Analytics.handleEvent(SettingsEvents.InviteToWorkspace)
-    showPopup(login.component.InviteLink, { showManageLink: false })
+    showPopup(login.component.InviteLink, {})
   }
 
   const updatedStore = (ss: SettingsStore): ComponentType | AnyComponent | null => {

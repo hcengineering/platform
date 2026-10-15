@@ -272,6 +272,17 @@
         "OtherSpaces": "기타 스페이스",
         "Public": "공개",
         "Member": "멤버",
-        "CanJoin": "참여 가능"
+        "CanJoin": "참여 가능",
+        "InviteDays": "{count, plural, other {#일}}",
+        "InviteHours": "{count, plural, other {#시간}}",
+        "InviteNever": "만료 없음",
+        "InviteCustom": "사용자 지정",
+        "InviteUnlimitedUses": "무제한",
+        "InviteSingleUse": "1회 사용",
+        "InviteDaysUnit": "{count, plural, other {일}}",
+        "InviteHoursUnit": "{count, plural, other {시간}}",
+        "InviteUsesUnit": "{count, plural, other {회}}",
+        "InvitePositiveNumber": "0보다 큰 정수를 입력하세요.",
+        "InviteSettingsSaveFailed": "초대 설정을 저장하지 못했습니다. 다시 시도해 주세요."
     }
 }

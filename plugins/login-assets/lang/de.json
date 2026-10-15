@@ -41,11 +41,8 @@
     "Recover": "Wiederherstellen",
     "PasswordRecovery": "Passwort-Wiederherstellung",
     "RecoveryLinkSent": "Link zur Passwort-Wiederherstellung wurde per E-Mail gesendet",
-    "LinkValidHours": "Link gültig (Stunden):",
     "EmailMask": "E-Mail-Maske:",
-    "InviteLimit": "Einladungslimit:",
     "GetLink": "Einladungslink generieren",
-    "NoLimit": "Kein Limit",
     "AlreadyJoined": "Bereits beigetreten?",
     "ConfirmationSent": "Eine Nachricht mit einem Bestätigungslink wurde an Ihre E-Mail-Adresse gesendet.",
     "ConfirmationSent2": "Bitte folgen Sie dem Link, um Ihre Registrierung abzuschließen.",
@@ -115,17 +112,16 @@
     "ManageInviteLinks": "Aktive Einladungslinks verwalten",
     "RevokeInviteLinkConfirm": "Über diesen Link kann niemand mehr dem Arbeitsbereich beitreten. Dies kann nicht rückgängig gemacht werden.",
     "InviteLinkExpires": "Gültig bis {date}",
-    "InvitePeople": "Personen einladen",
+    "InvitePeople": "Einladungslink",
     "JoinAs": "Beitreten als",
     "WorkspaceDefaults": "Arbeitsbereich-Standard",
-    "LinkExpires": "Link läuft ab",
-    "LimitUses": "Anzahl der Nutzungen begrenzen",
+    "LinkExpires": "Ablauf",
+    "LimitUses": "Nutzungslimit",
     "ExpiresAfterHours": "{count, plural, =1 {Läuft nach # Stunde ab} other {Läuft nach # Stunden ab}}",
     "UsesLimit": "{count, plural, =1 {Bis zu # Nutzung} other {Bis zu # Nutzungen}}",
-    "HoursUnit": "{count, plural, =1 {Stunde} other {Stunden}}",
     "CustomizeInviteLink": "Anpassen",
     "LinkSettings": "Link-Einstellungen",
     "ResetToWorkspaceDefaults": "Auf Arbeitsbereich-Standard zurücksetzen",
-    "PeopleUnit": "{count, plural, =1 {Person} other {Personen}}"
+    "ExpiresAfterDays": "{count, plural, one {Läuft nach # Tag ab} other {Läuft nach # Tagen ab}}"
   }
 }

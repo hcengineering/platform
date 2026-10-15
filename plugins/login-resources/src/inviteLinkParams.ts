@@ -14,7 +14,7 @@
 //
 
 import type { IntlString } from '@hcengineering/platform'
-import { formatInviteDate } from '@hcengineering/setting-resources'
+import { formatInviteDate, HOURS_IN_DAY, isWholeDays } from '@hcengineering/setting-resources'
 
 import login from './plugin'
 
@@ -31,6 +31,12 @@ export interface InviteLinkSummaryItem {
 
 /** Expiration used before workspace invite settings are loaded or when customizing a non-expiring link. */
 export const DEFAULT_INVITE_EXP_HOURS = 48
+
+/**
+ * Expiration used instead of a "never expires" workspace default for users who may not create
+ * non-expiring links (the server only allows those for maintainers and above).
+ */
+export const LIMITED_ROLE_INVITE_EXP_HOURS = 30 * 24
 
 const hourMs = 60 * 60 * 1000
 
@@ -52,7 +58,9 @@ export function summarizeInviteLink (
       ? { label: login.string.NoExpiration }
       : createdOn !== undefined
         ? { label: login.string.InviteLinkExpires, params: { date: formatInviteDate(createdOn + expHours * hourMs) } }
-        : { label: login.string.ExpiresAfterHours, params: { count: expHours } }
+        : isWholeDays(expHours)
+          ? { label: login.string.ExpiresAfterDays, params: { count: expHours / HOURS_IN_DAY } }
+          : { label: login.string.ExpiresAfterHours, params: { count: expHours } }
   const usage: InviteLinkSummaryItem =
     limit < 0 ? { label: login.string.UnlimitedUses } : { label: login.string.UsesLimit, params: { count: limit } }
   return [expiry, usage]

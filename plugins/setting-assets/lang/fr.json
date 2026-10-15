@@ -272,6 +272,17 @@
     "OtherSpaces": "Autres espaces",
     "Public": "Public",
     "Member": "Membre",
-    "CanJoin": "Peut rejoindre"
+    "CanJoin": "Peut rejoindre",
+    "InviteDays": "{count, plural, one {# jour} other {# jours}}",
+    "InviteHours": "{count, plural, one {# heure} other {# heures}}",
+    "InviteNever": "Jamais",
+    "InviteCustom": "Personnalisé",
+    "InviteUnlimitedUses": "Illimité",
+    "InviteSingleUse": "Une seule utilisation",
+    "InviteDaysUnit": "{count, plural, one {jour} other {jours}}",
+    "InviteHoursUnit": "{count, plural, one {heure} other {heures}}",
+    "InviteUsesUnit": "{count, plural, one {utilisation} other {utilisations}}",
+    "InvitePositiveNumber": "Saisissez un nombre entier supérieur à zéro.",
+    "InviteSettingsSaveFailed": "Impossible d'enregistrer les paramètres d'invitation. Veuillez réessayer."
   }
 }

@@ -34,6 +34,8 @@
   export let okLabel: IntlString = ui.string.Ok
   export let padding: string | undefined = undefined
   export let bottomPadding: string | undefined = undefined
+  /** Overrides the default footer padding, e.g. to align the footer with custom content padding. */
+  export let footerPadding: string | undefined = undefined
   export let hidden: boolean = false
   export let noTopIndent: boolean = false
   export let hideFooter: boolean = false
@@ -112,7 +114,7 @@
   </div>
   <slot name="afterContent" />
   {#if type !== 'type-component' && !hideFooter}
-    <div class="hulyModal-footer">
+    <div class="hulyModal-footer" style:padding={footerPadding}>
       <ButtonBase
         type={'type-button'}
         kind={'primary'}

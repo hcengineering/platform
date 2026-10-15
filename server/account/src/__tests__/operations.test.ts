@@ -307,9 +307,9 @@ describe('account operations', () => {
 
     test('rejects revoking a link granting a higher role than the caller has', async () => {
       ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
-      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue({ id: 'owner', role: AccountRole.Owner })
+      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue({ id: '12', role: AccountRole.Owner })
 
-      await expect(revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id: 'owner' })).rejects.toThrow(
+      await expect(revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id: '12' })).rejects.toThrow(
         PlatformError
       )
       expect(mockDb.invite.update).not.toHaveBeenCalled()
@@ -322,20 +322,30 @@ describe('account operations', () => {
       expect(mockDb.invite.find).not.toHaveBeenCalled()
     })
 
+    test.each(['', 'invalid-id', '1; DROP TABLE invite'])('rejects malformed invite id %j on revoke', async (id) => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Owner)
+
+      await expect(revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id })).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+      )
+      expect(mockDb.invite.findOne).not.toHaveBeenCalled()
+      expect(mockDb.invite.update).not.toHaveBeenCalled()
+    })
+
     test('revokes only a share link in the current workspace', async () => {
       ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Owner)
-      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue({ id: 'active', role: AccountRole.User })
+      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue({ id: '7', role: AccountRole.User })
 
-      await revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id: 'active' })
+      await revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id: '7' })
 
       expect(mockDb.invite.findOne).toHaveBeenCalledWith({
-        id: 'active',
+        id: '7',
         workspaceUuid: mockWorkspace.uuid,
         isShareLink: true,
         revokedOn: null
       })
       expect(mockDb.invite.update).toHaveBeenCalledWith(
-        { id: 'active', workspaceUuid: mockWorkspace.uuid, revokedOn: null },
+        { id: '7', workspaceUuid: mockWorkspace.uuid, revokedOn: null },
         { revokedOn: expect.any(Number) }
       )
     })

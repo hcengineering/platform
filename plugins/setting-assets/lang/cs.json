@@ -270,6 +270,17 @@
     "OtherSpaces": "Ostatní prostory",
     "Public": "Veřejné",
     "Member": "Člen",
-    "CanJoin": "Může se připojit"
+    "CanJoin": "Může se připojit",
+    "InviteDays": "{count, plural, one {# den} few {# dny} other {# dní}}",
+    "InviteHours": "{count, plural, one {# hodina} few {# hodiny} other {# hodin}}",
+    "InviteNever": "Nikdy",
+    "InviteCustom": "Vlastní",
+    "InviteUnlimitedUses": "Neomezeně",
+    "InviteSingleUse": "Jedno použití",
+    "InviteDaysUnit": "{count, plural, one {den} few {dny} other {dní}}",
+    "InviteHoursUnit": "{count, plural, one {hodina} few {hodiny} other {hodin}}",
+    "InviteUsesUnit": "{count, plural, other {použití}}",
+    "InvitePositiveNumber": "Zadejte celé číslo větší než nula.",
+    "InviteSettingsSaveFailed": "Nepodařilo se uložit nastavení pozvánek. Zkuste to prosím znovu."
   }
 }

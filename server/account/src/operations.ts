@@ -768,7 +768,8 @@ export async function revokeInviteLink (
   token: string,
   params: { id: string }
 ): Promise<void> {
-  if (params.id == null || params.id === '') {
+  // Invite ids are numeric strings (int8 identity column)
+  if (typeof params.id !== 'string' || !/^\d+$/.test(params.id)) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 

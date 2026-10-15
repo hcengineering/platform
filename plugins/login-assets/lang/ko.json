@@ -46,11 +46,8 @@
         "Recover": "복구",
         "PasswordRecovery": "비밀번호 복구",
         "RecoveryLinkSent": "비밀번호 복구 링크를 이메일로 보냈습니다",
-        "LinkValidHours": "초대 링크 만료 (시간):",
         "EmailMask": "이메일 마스크:",
-        "InviteLimit": "초대 링크당 최대 사용 횟수:",
         "GetLink": "초대 링크 받기",
-        "NoLimit": "무제한 사용:",
         "AlreadyJoined": "이미 참여하셨나요?",
         "ConfirmationSent": "이메일 주소 확인 링크를 메일로 보냈습니다.",
         "ConfirmationSent2": "회원가입을 완료하려면 링크를 클릭하세요.",
@@ -113,17 +110,16 @@
         "ManageInviteLinks": "활성 초대 링크 관리",
         "RevokeInviteLinkConfirm": "이 링크로 더 이상 워크스페이스에 참여할 수 없습니다. 이 작업은 되돌릴 수 없습니다.",
         "InviteLinkExpires": "{date}에 만료",
-        "InvitePeople": "사용자 초대",
+        "InvitePeople": "초대 링크",
         "JoinAs": "참여 역할",
         "WorkspaceDefaults": "워크스페이스 기본값",
-        "LinkExpires": "링크 만료 설정",
+        "LinkExpires": "만료",
         "LimitUses": "사용 횟수 제한",
         "ExpiresAfterHours": "{count, plural, other {#시간 후 만료}}",
         "UsesLimit": "{count, plural, other {최대 #회}}",
-        "HoursUnit": "{count, plural, other {시간}}",
         "CustomizeInviteLink": "사용자 지정",
         "LinkSettings": "링크 설정",
         "ResetToWorkspaceDefaults": "워크스페이스 기본값으로 재설정",
-        "PeopleUnit": "{count, plural, other {명}}"
+        "ExpiresAfterDays": "{count, plural, other {#일 후 만료}}"
     }
 }

@@ -41,11 +41,8 @@
     "Recover": "Récupérer",
     "PasswordRecovery": "Récupération de mot de passe",
     "RecoveryLinkSent": "Lien de récupération de mot de passe envoyé par e-mail",
-    "LinkValidHours": "Lien valide (heures) :",
     "EmailMask": "Masque de l'e-mail :",
-    "InviteLimit": "Limite d'invitations :",
     "GetLink": "Obtenir le lien d'invitation",
-    "NoLimit": "Aucune limite",
     "AlreadyJoined": "Déjà inscrit ?",
     "ConfirmationSent": "Un message a été envoyé à votre adresse e-mail contenant un lien pour confirmer votre adresse.",
     "ConfirmationSent2": "Veuillez suivre le lien pour compléter votre inscription.",
@@ -114,17 +111,16 @@
     "ManageInviteLinks": "Gérer les liens d'invitation actifs",
     "RevokeInviteLinkConfirm": "Plus personne ne pourra rejoindre l'espace de travail avec ce lien. Cette action est irréversible.",
     "InviteLinkExpires": "Expire le {date}",
-    "InvitePeople": "Inviter des personnes",
+    "InvitePeople": "Lien d'invitation",
     "JoinAs": "Rejoindre en tant que",
     "WorkspaceDefaults": "Paramètres par défaut",
-    "LinkExpires": "Le lien expire",
-    "LimitUses": "Limiter le nombre d'utilisations",
+    "LinkExpires": "Expiration",
+    "LimitUses": "Limite d'utilisations",
     "ExpiresAfterHours": "{count, plural, one {Expire après # heure} other {Expire après # heures}}",
     "UsesLimit": "{count, plural, one {Jusqu'à # utilisation} other {Jusqu'à # utilisations}}",
-    "HoursUnit": "{count, plural, one {heure} other {heures}}",
     "CustomizeInviteLink": "Personnaliser",
     "LinkSettings": "Paramètres du lien",
     "ResetToWorkspaceDefaults": "Rétablir les paramètres par défaut",
-    "PeopleUnit": "{count, plural, one {personne} other {personnes}}"
+    "ExpiresAfterDays": "{count, plural, one {Expire après # jour} other {Expire après # jours}}"
   }
 }

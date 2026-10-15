@@ -97,7 +97,7 @@ test.describe('Teamspace tests', () => {
 
     const page2 = await browser.newPage()
     try {
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
       await setTestOptions(page2)
       const joinPage: SignInJoinPage = new SignInJoinPage(page2)
       await joinPage.join(newUser2)
@@ -126,7 +126,7 @@ test.describe('Teamspace tests', () => {
 
     const page2 = await browser.newPage()
     try {
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
       await setTestOptions(page2)
       const joinPage: SignInJoinPage = new SignInJoinPage(page2)
       await joinPage.join(newUser2)

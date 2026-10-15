@@ -14,14 +14,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Button, IconEdit, Label, Notice, NumberInput, Toggle } from '@hcengineering/ui'
+  import { InviteExpirationSelect, InviteUsesSelect } from '@hcengineering/setting-resources'
+  import { Button, IconEdit, IconUndo, Label, Notice } from '@hcengineering/ui'
 
-  import {
-    DEFAULT_INVITE_EXP_HOURS,
-    type InviteLinkParams,
-    isValidInviteLinkParams,
-    summarizeInviteLink
-  } from '../inviteLinkParams'
+  import { type InviteLinkParams, isValidInviteLinkParams, summarizeInviteLink } from '../inviteLinkParams'
   import login from '../plugin'
 
   /** Workspace defaults, used until the user customizes the link. */
@@ -34,21 +30,17 @@
   export let settingsUrl: string | undefined = undefined
 
   let customized = false
-  let linkExpires = true
-  let hours: number | undefined = DEFAULT_INVITE_EXP_HOURS
-  let limitUses = false
-  let uses: number | undefined = 1
+  let expHours = defaults.expHours
+  let limit = defaults.limit
 
-  $: value = customized ? { expHours: linkExpires ? (hours ?? 0) : -1, limit: limitUses ? (uses ?? 0) : -1 } : defaults
+  $: value = customized ? { expHours, limit } : defaults
   $: valid = isValidInviteLinkParams(value)
-  $: unsafe = customized && value.expHours < 0 && value.limit < 0
+  $: unsafe = value.expHours < 0 && value.limit < 0
 
   function customize (): void {
     // Start from the workspace defaults so customizing does not change anything by itself
-    linkExpires = defaults.expHours > 0
-    hours = defaults.expHours > 0 ? defaults.expHours : DEFAULT_INVITE_EXP_HOURS
-    limitUses = defaults.limit > 0
-    uses = defaults.limit > 0 ? defaults.limit : 1
+    expHours = defaults.expHours
+    limit = defaults.limit
     customized = true
   }
 </script>
@@ -79,43 +71,28 @@
     <div class="custom-header">
       <span class="title"><Label label={login.string.LinkSettings} /></span>
       <Button
+        icon={IconUndo}
         label={login.string.ResetToWorkspaceDefaults}
-        kind={'link'}
+        kind={'ghost'}
         size={'small'}
-        padding={'0'}
         on:click={() => (customized = false)}
       />
     </div>
     <div class="settings">
       <div class="setting">
-        <div class="row">
-          <Label label={login.string.LinkExpires} />
-          <Toggle size={'small'} bind:on={linkExpires} />
-        </div>
-        {#if linkExpires}
-          <div class="amount">
-            <NumberInput bind:value={hours} minValue={1} maxDigitsAfterPoint={0} maxWidth={'5rem'} />
-            <Label label={login.string.HoursUnit} params={{ count: hours ?? 0 }} />
-          </div>
-        {/if}
+        <span class="name"><Label label={login.string.LinkExpires} /></span>
+        <div class="control"><InviteExpirationSelect bind:value={expHours} /></div>
       </div>
       <div class="setting">
-        <div class="row">
-          <Label label={login.string.LimitUses} />
-          <Toggle size={'small'} bind:on={limitUses} />
-        </div>
-        {#if limitUses}
-          <div class="amount">
-            <NumberInput bind:value={uses} minValue={1} maxDigitsAfterPoint={0} maxWidth={'5rem'} />
-            <Label label={login.string.PeopleUnit} params={{ count: uses ?? 0 }} />
-          </div>
-        {/if}
+        <span class="name"><Label label={login.string.LimitUses} /></span>
+        <div class="control"><InviteUsesSelect bind:value={limit} /></div>
       </div>
     </div>
-    {#if unsafe}
-      <Notice kind={'warning'} label={login.string.UnlimitedInviteWarning} />
-    {/if}
   </div>
+{/if}
+
+{#if unsafe}
+  <Notice kind={'warning'} label={login.string.UnlimitedInviteWarning} />
 {/if}
 
 <style lang="scss">
@@ -166,8 +143,7 @@
     gap: var(--spacing-1);
   }
 
-  .custom-header,
-  .row {
+  .custom-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -188,8 +164,9 @@
 
   .setting {
     display: flex;
-    flex-direction: column;
-    gap: var(--spacing-1);
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-2);
     padding: var(--spacing-1_5) var(--spacing-2);
 
     & + .setting {
@@ -197,11 +174,13 @@
     }
   }
 
-  .amount {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-1);
-    font-size: 0.8125rem;
-    color: var(--theme-dark-color);
+  .name {
+    padding-top: 0.375rem;
+  }
+
+  .control {
+    width: 13rem;
+    max-width: 60%;
+    flex-shrink: 0;
   }
 </style>

@@ -272,6 +272,17 @@
     "OtherSpaces": "Altri spazi",
     "Public": "Pubblico",
     "Member": "Membro",
-    "CanJoin": "Può partecipare"
+    "CanJoin": "Può partecipare",
+    "InviteDays": "{count, plural, one {# giorno} other {# giorni}}",
+    "InviteHours": "{count, plural, one {# ora} other {# ore}}",
+    "InviteNever": "Mai",
+    "InviteCustom": "Personalizzato",
+    "InviteUnlimitedUses": "Illimitati",
+    "InviteSingleUse": "Un solo utilizzo",
+    "InviteDaysUnit": "{count, plural, one {giorno} other {giorni}}",
+    "InviteHoursUnit": "{count, plural, one {ora} other {ore}}",
+    "InviteUsesUnit": "{count, plural, one {utilizzo} other {utilizzi}}",
+    "InvitePositiveNumber": "Inserisci un numero intero maggiore di zero.",
+    "InviteSettingsSaveFailed": "Impossibile salvare le impostazioni degli inviti. Riprova."
   }
 }

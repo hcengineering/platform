@@ -41,11 +41,8 @@
     "Recover": "Recupera",
     "PasswordRecovery": "Recupero password",
     "RecoveryLinkSent": "Link per il recupero password inviato all'email",
-    "LinkValidHours": "Link valido (ore):",
     "EmailMask": "Maschera email:",
-    "InviteLimit": "Limite di inviti:",
     "GetLink": "Ottieni link di invito",
-    "NoLimit": "Nessun limite",
     "AlreadyJoined": "Hai già partecipato?",
     "ConfirmationSent": "Un messaggio è stato inviato alla tua email contenente un link per confermare il tuo indirizzo.",
     "ConfirmationSent2": "Segui il link per completare la registrazione.",
@@ -114,17 +111,16 @@
     "ManageInviteLinks": "Gestisci i link di invito attivi",
     "RevokeInviteLinkConfirm": "Nessuno potrà più unirsi allo spazio di lavoro con questo link. L'azione non può essere annullata.",
     "InviteLinkExpires": "Scade il {date}",
-    "InvitePeople": "Invita persone",
+    "InvitePeople": "Link di invito",
     "JoinAs": "Partecipa come",
     "WorkspaceDefaults": "Impostazioni predefinite",
-    "LinkExpires": "Il link scade",
-    "LimitUses": "Limita il numero di utilizzi",
+    "LinkExpires": "Scadenza",
+    "LimitUses": "Limite di utilizzi",
     "ExpiresAfterHours": "{count, plural, =1 {Scade dopo # ora} other {Scade dopo # ore}}",
     "UsesLimit": "{count, plural, =1 {Fino a # utilizzo} other {Fino a # utilizzi}}",
-    "HoursUnit": "{count, plural, =1 {ora} other {ore}}",
     "CustomizeInviteLink": "Personalizza",
     "LinkSettings": "Impostazioni del link",
     "ResetToWorkspaceDefaults": "Ripristina le impostazioni predefinite",
-    "PeopleUnit": "{count, plural, =1 {persona} other {persone}}"
+    "ExpiresAfterDays": "{count, plural, one {Scade dopo # giorno} other {Scade dopo # giorni}}"
   }
 }

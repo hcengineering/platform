@@ -34,11 +34,8 @@
     "Recover": "復旧",
     "PasswordRecovery": "パスワードの復旧",
     "RecoveryLinkSent": "パスワードの復旧リンクをメールで送信しました",
-    "LinkValidHours": "リンクの有効時間（時間）:",
     "EmailMask": "メールマスク：",
-    "InviteLimit": "招待制限：",
     "GetLink": "招待リンクを取得",
-    "NoLimit": "制限なし",
     "AlreadyJoined": "すでに参加していますか？",
     "ConfirmationSent": "ご登録のメールアドレスに、アドレス確認用のリンクを送信しました。",
     "ConfirmationSent2": "サインアップを完了するには、リンクをクリックしてください。",
@@ -114,17 +111,16 @@
     "ManageInviteLinks": "有効な招待リンクを管理",
     "RevokeInviteLinkConfirm": "このリンクではワークスペースに参加できなくなります。この操作は元に戻せません。",
     "InviteLinkExpires": "有効期限: {date}",
-    "InvitePeople": "メンバーを招待",
+    "InvitePeople": "招待リンク",
     "JoinAs": "参加時のロール",
     "WorkspaceDefaults": "ワークスペースの既定",
-    "LinkExpires": "リンクに有効期限を設定",
-    "LimitUses": "使用回数を制限",
+    "LinkExpires": "有効期限",
+    "LimitUses": "使用回数の上限",
     "ExpiresAfterHours": "{count, plural, other {#時間後に期限切れ}}",
     "UsesLimit": "{count, plural, other {最大#回}}",
-    "HoursUnit": "{count, plural, other {時間}}",
     "CustomizeInviteLink": "カスタマイズ",
     "LinkSettings": "リンクの設定",
     "ResetToWorkspaceDefaults": "ワークスペースの既定に戻す",
-    "PeopleUnit": "{count, plural, other {人}}"
+    "ExpiresAfterDays": "{count, plural, other {#日後に期限切れ}}"
   }
 }

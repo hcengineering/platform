@@ -41,11 +41,8 @@
     "Recover": "Kurtar",
     "PasswordRecovery": "Şifre kurtarma",
     "RecoveryLinkSent": "Şifre kurtarma bağlantısı e-postaya gönderildi",
-    "LinkValidHours": "Bağlantı geçerlilik süresi (saat):",
     "EmailMask": "E-posta maskesi:",
-    "InviteLimit": "Davet limiti:",
     "GetLink": "Davet bağlantısı al",
-    "NoLimit": "Limit yok",
     "AlreadyJoined": "Zaten katıldınız mı?",
     "ConfirmationSent": "Adresinizi onaylamak için bir bağlantı içeren mesaj e-postanıza gönderildi.",
     "ConfirmationSent2": "Kaydınızı tamamlamak için lütfen bağlantıya tıklayın.",
@@ -114,17 +111,16 @@
     "ManageInviteLinks": "Etkin davet bağlantılarını yönet",
     "RevokeInviteLinkConfirm": "Bu bağlantıyla artık kimse çalışma alanına katılamayacak. Bu işlem geri alınamaz.",
     "InviteLinkExpires": "{date} tarihinde sona erer",
-    "InvitePeople": "Kişileri davet et",
+    "InvitePeople": "Davet bağlantısı",
     "JoinAs": "Katılım rolü",
     "WorkspaceDefaults": "Varsayılan ayarlar",
-    "LinkExpires": "Bağlantının süresi dolar",
-    "LimitUses": "Kullanım sayısını sınırla",
+    "LinkExpires": "Son kullanma",
+    "LimitUses": "Kullanım sınırı",
     "ExpiresAfterHours": "{count, plural, other {# saat sonra sona erer}}",
     "UsesLimit": "{count, plural, other {En fazla # kullanım}}",
-    "HoursUnit": "{count, plural, other {saat}}",
     "CustomizeInviteLink": "Özelleştir",
     "LinkSettings": "Bağlantı ayarları",
     "ResetToWorkspaceDefaults": "Varsayılan ayarlara dön",
-    "PeopleUnit": "{count, plural, other {kişi}}"
+    "ExpiresAfterDays": "{count, plural, other {# gün sonra sona erer}}"
   }
 }
