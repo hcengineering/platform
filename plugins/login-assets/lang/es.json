@@ -111,7 +111,7 @@
     "ManageInviteLinks": "Gestionar enlaces de invitación activos",
     "RevokeInviteLinkConfirm": "Ya nadie podrá unirse al espacio de trabajo con este enlace. Esta acción no se puede deshacer.",
     "InviteLinkExpires": "Caduca el {date}",
-    "InvitePeople": "Enlace de invitación",
+    "InvitePeople": "Invitar personas",
     "JoinAs": "Unirse como",
     "WorkspaceDefaults": "Valores predeterminados",
     "LinkExpires": "Caducidad",

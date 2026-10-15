@@ -111,7 +111,7 @@
     "ManageInviteLinks": "管理有效的邀请链接",
     "RevokeInviteLinkConfirm": "此后将无法通过此链接加入工作区。此操作无法撤销。",
     "InviteLinkExpires": "{date} 到期",
-    "InvitePeople": "邀请链接",
+    "InvitePeople": "邀请成员",
     "JoinAs": "加入角色",
     "WorkspaceDefaults": "工作区默认设置",
     "LinkExpires": "有效期",

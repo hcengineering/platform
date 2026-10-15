@@ -34,8 +34,7 @@
     Label,
     locationToUrl,
     Modal,
-    Notice,
-    TextLink
+    Notice
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
@@ -205,9 +204,12 @@
   <svelte:fragment slot="footer">
     {#if inviteSettingsUrl !== undefined}
       <div class="manage-links">
-        <TextLink href={inviteSettingsUrl} external>
+        <a class="manage-link" href={inviteSettingsUrl} target="_blank" rel="noopener noreferrer">
           <Label label={login.string.ManageInviteLinks} />
-        </TextLink>
+          <svg class="arrow" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4" />
+          </svg>
+        </a>
       </div>
     {/if}
   </svelte:fragment>
@@ -265,5 +267,28 @@
   .manage-links {
     margin-right: auto;
     align-self: center;
+  }
+
+  .manage-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--theme-link-color);
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    .arrow {
+      flex-shrink: 0;
+      width: 0.75rem;
+      height: 0.75rem;
+      stroke: currentColor;
+      stroke-width: 1.25;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
   }
 </style>

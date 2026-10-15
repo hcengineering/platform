@@ -111,7 +111,7 @@
     "ManageInviteLinks": "Zarządzaj aktywnymi linkami z zaproszeniem",
     "RevokeInviteLinkConfirm": "Nikt nie będzie mógł już dołączyć do obszaru roboczego za pomocą tego linku. Tej operacji nie można cofnąć.",
     "InviteLinkExpires": "Ważny do {date}",
-    "InvitePeople": "Link zaproszenia",
+    "InvitePeople": "Zaproś osoby",
     "JoinAs": "Dołącz jako",
     "WorkspaceDefaults": "Ustawienia domyślne",
     "LinkExpires": "Wygaśnięcie",

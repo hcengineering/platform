@@ -111,7 +111,7 @@
     "ManageInviteLinks": "Manage active invite links",
     "RevokeInviteLinkConfirm": "People will no longer be able to join the workspace with this link. This cannot be undone.",
     "InviteLinkExpires": "Expires {date}",
-    "InvitePeople": "Invite link",
+    "InvitePeople": "Invite people",
     "JoinAs": "Join as",
     "WorkspaceDefaults": "Workspace defaults",
     "LinkExpires": "Expiration",

@@ -110,7 +110,7 @@
         "ManageInviteLinks": "활성 초대 링크 관리",
         "RevokeInviteLinkConfirm": "이 링크로 더 이상 워크스페이스에 참여할 수 없습니다. 이 작업은 되돌릴 수 없습니다.",
         "InviteLinkExpires": "{date}에 만료",
-        "InvitePeople": "초대 링크",
+        "InvitePeople": "사람 초대",
         "JoinAs": "참여 역할",
         "WorkspaceDefaults": "워크스페이스 기본값",
         "LinkExpires": "만료",

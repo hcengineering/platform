@@ -111,7 +111,7 @@
     "ManageInviteLinks": "Etkin davet bağlantılarını yönet",
     "RevokeInviteLinkConfirm": "Bu bağlantıyla artık kimse çalışma alanına katılamayacak. Bu işlem geri alınamaz.",
     "InviteLinkExpires": "{date} tarihinde sona erer",
-    "InvitePeople": "Davet bağlantısı",
+    "InvitePeople": "Kişileri davet et",
     "JoinAs": "Katılım rolü",
     "WorkspaceDefaults": "Varsayılan ayarlar",
     "LinkExpires": "Son kullanma",

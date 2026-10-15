@@ -112,7 +112,7 @@
     "ManageInviteLinks": "Spravovat aktivní odkazy s pozvánkou",
     "RevokeInviteLinkConfirm": "Přes tento odkaz se již nikdo nebude moci připojit k pracovnímu prostoru. Tuto akci nelze vrátit.",
     "InviteLinkExpires": "Platí do {date}",
-    "InvitePeople": "Odkaz na pozvánku",
+    "InvitePeople": "Pozvat lidi",
     "JoinAs": "Připojit se jako",
     "WorkspaceDefaults": "Výchozí nastavení",
     "LinkExpires": "Platnost",

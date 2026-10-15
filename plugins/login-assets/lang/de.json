@@ -112,7 +112,7 @@
     "ManageInviteLinks": "Aktive Einladungslinks verwalten",
     "RevokeInviteLinkConfirm": "Über diesen Link kann niemand mehr dem Arbeitsbereich beitreten. Dies kann nicht rückgängig gemacht werden.",
     "InviteLinkExpires": "Gültig bis {date}",
-    "InvitePeople": "Einladungslink",
+    "InvitePeople": "Personen einladen",
     "JoinAs": "Beitreten als",
     "WorkspaceDefaults": "Arbeitsbereich-Standard",
     "LinkExpires": "Ablauf",

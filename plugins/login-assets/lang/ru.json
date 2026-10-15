@@ -111,7 +111,7 @@
     "ManageInviteLinks": "Управлять активными ссылками",
     "RevokeInviteLinkConfirm": "По этой ссылке больше нельзя будет присоединиться к рабочему пространству. Это действие нельзя отменить.",
     "InviteLinkExpires": "Действует до {date}",
-    "InvitePeople": "Ссылка-приглашение",
+    "InvitePeople": "Пригласить людей",
     "JoinAs": "Роль",
     "WorkspaceDefaults": "По умолчанию",
     "LinkExpires": "Срок действия",

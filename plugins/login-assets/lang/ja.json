@@ -111,7 +111,7 @@
     "ManageInviteLinks": "有効な招待リンクを管理",
     "RevokeInviteLinkConfirm": "このリンクではワークスペースに参加できなくなります。この操作は元に戻せません。",
     "InviteLinkExpires": "有効期限: {date}",
-    "InvitePeople": "招待リンク",
+    "InvitePeople": "メンバーを招待",
     "JoinAs": "参加時のロール",
     "WorkspaceDefaults": "ワークスペースの既定",
     "LinkExpires": "有効期限",
