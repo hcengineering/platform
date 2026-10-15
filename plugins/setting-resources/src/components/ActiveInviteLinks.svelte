@@ -17,6 +17,7 @@
   import { employeeByAccountStore, PersonPresenter } from '@hcengineering/contact-resources'
   import login from '@hcengineering/login'
   import { copyTextToClipboard, MessageBox } from '@hcengineering/presentation'
+  import view from '@hcengineering/view'
   import { Button, ButtonIcon, IconCopy, IconDelete, Label, Loading, showPopup, TimeSince } from '@hcengineering/ui'
   import { onMount } from 'svelte'
 
@@ -127,7 +128,7 @@
               icon={IconCopy}
               kind={'tertiary'}
               size={'small'}
-              tooltip={{ label: copiedId === invite.id ? login.string.Copied : login.string.Copy }}
+              tooltip={{ label: copiedId === invite.id ? view.string.Copied : view.string.CopyToClipboard }}
               on:click={() => void copy(invite)}
             />
           {/if}
