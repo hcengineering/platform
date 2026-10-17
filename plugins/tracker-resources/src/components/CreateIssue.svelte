@@ -26,6 +26,7 @@
     fillDefaults,
     generateId,
     getCurrentAccount,
+    Hierarchy,
     makeCollabId,
     makeDocCollabId,
     type PersonId,
@@ -50,7 +51,7 @@
     SpaceSelector
   } from '@hcengineering/presentation'
   import tags, { type TagElement, TagReference } from '@hcengineering/tags'
-  import { TaskType } from '@hcengineering/task'
+  import task, { type Task, TaskType } from '@hcengineering/task'
   import { TaskKindSelector } from '@hcengineering/task-resources'
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import {
@@ -83,6 +84,7 @@
   import { ObjectBox } from '@hcengineering/view-resources'
   import { createEventDispatcher, onDestroy } from 'svelte'
 
+  import { type CopiedCustomAttributes, getCustomAttributesToCopy } from '../duplicate'
   import { activeComponent, activeMilestone, generateIssueShortLink, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
@@ -133,10 +135,13 @@
   const parentQuery = createQuery()
 
   let _space = draft?.space ?? space
+  // Custom attribute values copied from the original issue on duplication.
+  let copiedAttributes: CopiedCustomAttributes | undefined
   // let project: Project | undefined
   let object = getDefaultObjectFromDraft() ?? getDefaultObject(id)
   let isAssigneeTouched = false
-  let kind: Ref<TaskType> | undefined = undefined
+  // TaskKindSelector replaces a kind that is not part of the selected project type.
+  let kind: Ref<TaskType> | undefined = draft == null ? originalIssue?.kind : undefined
 
   let templateId: Ref<IssueTemplate> | undefined = draft?.template?.template
   let appliedTemplateId: Ref<IssueTemplate> | undefined = draft?.template?.template
@@ -205,15 +210,23 @@
     if (originalIssue !== undefined && !ignoreOriginal) {
       const res: IssueDraft = {
         ...base,
+        kind: originalIssue.kind,
         status: originalIssue.status,
         priority: originalIssue.priority,
         component: originalIssue.component,
+        milestone: originalIssue.milestone ?? null,
+        startDate: originalIssue.startDate ?? null,
         dueDate: originalIssue.dueDate,
         assignee: originalIssue.assignee,
         estimation: originalIssue.estimation,
         parentIssue: originalIssue.parents[0]?.parentId,
         title: `${originalIssue.title} (copy)`
       }
+      copiedAttributes = getCustomAttributesToCopy(hierarchy, Hierarchy.toDoc(originalIssue), tracker.class.Issue, [
+        core.class.Collection,
+        core.class.TypeIdentifier,
+        core.class.TypeCollaborativeDoc
+      ])
       void getMarkup(makeDocCollabId(originalIssue, 'description'), originalIssue.description).then((res) => {
         object.description = res
       })
@@ -258,6 +271,20 @@
 
   $: objectChange(object, empty)
 
+  // Milestone and component of the original issue belong to its project.
+  $: if (originalIssue !== undefined && _space !== undefined && _space !== originalIssue.space) {
+    clearOriginalProjectRefs(originalIssue)
+  }
+
+  function clearOriginalProjectRefs (original: Issue): void {
+    if (object.milestone != null && object.milestone === original.milestone) {
+      object.milestone = null
+    }
+    if (object.component != null && object.component === original.component) {
+      object.component = null
+    }
+  }
+
   $: if (_space !== undefined && object.space !== _space) {
     object.space = _space
   }
@@ -265,6 +292,7 @@
   function resetObject (): void {
     templateId = undefined
     template = undefined
+    copiedAttributes = undefined
     object = getDefaultObject(undefined, true)
     fillDefaults(hierarchy, object, tracker.class.Issue)
   }
@@ -484,6 +512,7 @@
       const identifier = `${currentProject?.identifier}-${number}`
 
       const value: DocData<Issue> = {
+        ...copiedAttributes?.attributes,
         title: getTitle(object.title),
         description: null,
         assignee: object.assignee,
@@ -535,6 +564,16 @@
         value,
         _id
       )
+      for (const [mixin, data] of copiedAttributes?.mixins ?? []) {
+        // Custom fields of a task type are only relevant for issues of that task type.
+        const taskTypes = client.getModel().findAllSync(task.class.TaskType, {
+          targetClass: mixin as Ref<Class<Task>>
+        })
+        if (taskTypes.length > 0 && !taskTypes.some((it) => it._id === kind)) {
+          continue
+        }
+        await operations.createMixin(_id, tracker.class.Issue, _space, mixin, data)
+      }
       await docCreateManager.commit(operations, _id, currentProject, value, 'post')
       for (const label of object.labels) {
         await operations.addCollection(label._class, label.space, _id, tracker.class.Issue, 'labels', {
