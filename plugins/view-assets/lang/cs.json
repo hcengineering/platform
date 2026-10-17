@@ -79,6 +79,8 @@
     "Grouping": "Seskupení",
     "Ordering": "Řazení",
     "Manual": "Manuální",
+    "Ascending": "Vzestupně",
+    "Descending": "Sestupně",
 
     "FilteredViews": "Filtrovaná zobrazení",
     "NewFilteredView": "Nové filtrované zobrazení",
