@@ -219,12 +219,11 @@ describe('restart-storm protections', () => {
     it('serializes flushes per workspace: a change during a running flush is flushed after it, not in parallel', async () => {
       let releaseFirstTx: () => void = () => {}
       const pipeline = mkPipeline()
-      pipeline.tx.mockImplementationOnce(
-        async () =>
-          await new Promise<void>((resolve) => {
-            releaseFirstTx = resolve
-          })
-      )
+      pipeline.tx.mockImplementationOnce(async () => {
+        await new Promise<void>((resolve) => {
+          releaseFirstTx = resolve
+        })
+      })
       installWorkspace(pipeline)
 
       q('u1', true)
@@ -248,6 +247,7 @@ describe('restart-storm protections', () => {
 
       q('u1', true)
       await jest.advanceTimersByTimeAsync(1000)
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(Analytics.handleError).toHaveBeenCalledTimes(1)
 
       q('u2', true)
@@ -261,7 +261,7 @@ describe('restart-storm protections', () => {
       const w = (sm as any).createWorkspace(
         new MeasureMetricsContext('c', {}),
         new MeasureMetricsContext('p', {}),
-        { account: 'u' as AccountUuid, workspace: ws, extra: {} },
+        { account: 'u' as AccountUuid, workspace: '3f2b8a52-9c1e-4d6a-8b7f-0a1b2c3d4e5f' as WorkspaceUuid, extra: {} },
         'url',
         undefined,
         null

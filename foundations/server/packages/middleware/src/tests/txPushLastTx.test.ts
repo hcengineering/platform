@@ -19,7 +19,7 @@ import { TxMiddleware } from '../txPush'
 
 const ctxWithBroadcast = (): MeasureMetricsContext => {
   const ctx = new MeasureMetricsContext('test', {})
-  ctx.contextData = { broadcast: { txes: [], targets: {}, queue: [], sessions: {} } } as any
+  ctx.contextData = { broadcast: { txes: [], targets: {}, queue: [], sessions: {} } }
   return ctx
 }
 
@@ -55,7 +55,7 @@ describe('TxMiddleware lastTx write-back', () => {
       private: false,
       archived: false,
       members: []
-    } as any)
+    })
   }
 
   it('updates both context.lastTx and the shared boot cache after a stored tx', async () => {
