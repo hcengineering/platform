@@ -562,10 +562,10 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
     }
     return domainSpaces instanceof Promise
       ? await watchStall(
-        'space-security.domainSpaces.shared',
-        () => ({ workspace: this.context.workspace.uuid, domain }),
-        domainSpaces
-      )
+          'space-security.domainSpaces.shared',
+          () => ({ workspace: this.context.workspace.uuid, domain }),
+          domainSpaces
+        )
       : domainSpaces
   }
 

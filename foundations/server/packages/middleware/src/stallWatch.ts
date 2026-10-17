@@ -56,7 +56,11 @@ export class PipelineStallError extends Error {
 function acquire (key: string, now: number): number | undefined {
   if (windows.size >= MAX_WINDOWS) {
     for (const [k, w] of windows) {
-      if (now - w.start >= RATE_WINDOW_MS && w.suppressed === 0) windows.delete(k)
+      if (now - w.start >= RATE_WINDOW_MS) windows.delete(k)
+    }
+    if (windows.size >= MAX_WINDOWS) {
+      const oldestKey = windows.keys().next().value
+      if (oldestKey !== undefined) windows.delete(oldestKey)
     }
   }
   const win = windows.get(key)

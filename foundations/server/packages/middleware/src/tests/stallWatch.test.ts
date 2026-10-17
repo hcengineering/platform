@@ -50,9 +50,9 @@ describe('watchStall', () => {
   })
 
   it('reports a stall after 1s and the resolution later', async () => {
-    let resolve: (v: string) => void = () => {}
-    const pending = new Promise<string>((r) => {
-      resolve = r
+    let pendingResolve: (v: string) => void = () => {}
+    const pending = new Promise<string>((resolve) => {
+      pendingResolve = resolve
     })
     const result = watchStall('space-security.init', () => ({ workspace: 'ws1' }), pending)
 
@@ -65,7 +65,7 @@ describe('watchStall', () => {
     expect((errorObjects[0] as PipelineStallError).attributes.workspace).toBe('ws1')
 
     jest.advanceTimersByTime(3000)
-    resolve('done')
+    pendingResolve('done')
     await expect(result).resolves.toBe('done')
     expect(events).toHaveLength(1)
     expect(events[0].event).toBe('pipeline-stall-resolved')
@@ -84,72 +84,94 @@ describe('watchStall', () => {
     const pendings: Array<Promise<void>> = []
     const resolvers: Array<() => void> = []
     for (let i = 0; i < 50; i++) {
-      pendings.push(
-        watchStall(
-          'busy',
-          () => ({ i }),
-          new Promise<void>((r) => resolvers.push(r))
-        )
-      )
+      pendings.push(watchStall('busy', () => ({ i }), new Promise<void>((resolve) => resolvers.push(resolve))))
     }
     jest.advanceTimersByTime(1001)
     expect(errors).toHaveLength(20)
 
     // new window
     jest.advanceTimersByTime(10_000)
-    const later = watchStall('busy', () => ({}), new Promise<void>((r) => resolvers.push(r)))
+    const later = watchStall('busy', () => ({}), new Promise<void>((resolve) => resolvers.push(resolve)))
     jest.advanceTimersByTime(1001)
     expect(errors).toHaveLength(21)
     expect((errorObjects[20] as PipelineStallError).attributes.suppressedBefore).toBe('30')
 
-    resolvers.forEach((r) => r())
+    resolvers.forEach((r) => { r(); })
     await Promise.all([...pendings, later])
   })
 
   it('swallows errors from the attributes callback', async () => {
-    let resolve: () => void = () => {}
+    let pendingResolve: () => void = () => {}
     const result = watchStall(
       'attrs',
       () => {
         throw new Error('bad attrs')
       },
-      new Promise<void>((r) => {
-        resolve = r
+      new Promise<void>((resolve) => {
+        pendingResolve = resolve
       })
     )
     jest.advanceTimersByTime(1001)
     expect(errors).toHaveLength(1)
     expect((errorObjects[0] as PipelineStallError).attributes.attrsError).toBe('bad attrs')
-    resolve()
+    pendingResolve()
     await result
   })
 
   it('rate limits per workspace, so a noisy one does not hide others', async () => {
     const resolvers: Array<() => void> = []
-    const run = async (workspace: string): Promise<void> =>
-      await watchStall('busy', () => ({ workspace }), new Promise<void>((r) => resolvers.push(r)))
+    const run = async (workspace: string): Promise<void> => { await watchStall('busy', () => ({ workspace }), new Promise<void>((resolve) => resolvers.push(resolve))); }
     const all: Array<Promise<void>> = []
     for (let i = 0; i < 30; i++) all.push(run('noisy'))
     all.push(run('quiet'))
     jest.advanceTimersByTime(1001)
     expect(errors).toHaveLength(21)
     expect(errorObjects.some((e) => (e as PipelineStallError).attributes.workspace === 'quiet')).toBe(true)
-    resolvers.forEach((r) => r())
+    resolvers.forEach((r) => { r(); })
     await Promise.all(all)
   })
 
+  it('discards stale suppressed windows before adding new keys', async () => {
+    const resolvers: Array<() => void> = []
+    const pendings: Array<Promise<void>> = []
+    for (let i = 0; i < 1000; i++) {
+      for (let j = 0; j < 21; j++) {
+        pendings.push(
+          watchStall(
+            'busy',
+            () => ({ workspace: `workspace-${i}` }),
+            new Promise<void>((resolve) => resolvers.push(resolve))
+          )
+        )
+      }
+    }
+    jest.advanceTimersByTime(1001)
+    jest.advanceTimersByTime(10_000)
+
+    const later = watchStall(
+      'busy',
+      () => ({ workspace: 'later' }),
+      new Promise<void>((resolve) => resolvers.push(resolve))
+    )
+    jest.advanceTimersByTime(1001)
+    expect(errors).toHaveLength(20_001)
+
+    resolvers.forEach((r) => { r(); })
+    await Promise.all([...pendings, later])
+  })
+
   it('reports failed=true when a reported stall ends in rejection', async () => {
-    let reject: (e: Error) => void = () => {}
+    let pendingReject: (e: Error) => void = () => {}
     const result = watchStall(
       'fail',
       () => ({}),
-      new Promise<void>((_, rej) => {
-        reject = rej
+      new Promise<void>((_resolve, reject) => {
+        pendingReject = reject
       })
     )
     jest.advanceTimersByTime(1001)
     expect(errors).toHaveLength(1)
-    reject(new Error('late boom'))
+    pendingReject(new Error('late boom'))
     await expect(result).rejects.toThrow('late boom')
     expect(events).toHaveLength(1)
     expect(events[0].params.failed).toBe('true')
@@ -158,17 +180,17 @@ describe('watchStall', () => {
   it('is a pass-through when PIPELINE_STALL_WATCH=false', async () => {
     process.env.PIPELINE_STALL_WATCH = 'false'
     try {
-      let resolve: () => void = () => {}
+      let pendingResolve: () => void = () => {}
       const result = watchStall(
         'off',
         () => ({}),
-        new Promise<void>((r) => {
-          resolve = r
+        new Promise<void>((resolve) => {
+          pendingResolve = resolve
         })
       )
       jest.advanceTimersByTime(5000)
       expect(errors).toHaveLength(0)
-      resolve()
+      pendingResolve()
       await result
       expect(events).toHaveLength(0)
     } finally {
