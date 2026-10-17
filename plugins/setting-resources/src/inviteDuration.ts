@@ -19,14 +19,11 @@ import settingRes from './plugin'
 
 export const HOURS_IN_DAY = 24
 
-/** Expiration presets offered for invite links, in hours. Anything else is entered as a custom value. */
+/** Expiration presets offered for invite links, in hours. */
 export const INVITE_EXPIRATION_PRESET_HOURS: readonly number[] = [24, 48, 168, 720]
 
-/** Number of uses offered as the "one use" preset. */
-export const INVITE_SINGLE_USE = 1
-
-/** Number of uses suggested when switching to a custom limit. */
-export const INVITE_DEFAULT_CUSTOM_USES = 10
+/** Usage limit presets offered for invite links. */
+export const INVITE_USES_PRESETS: readonly number[] = [1, 5, 10]
 
 export interface InviteDurationLabel {
   label: IntlString
@@ -43,9 +40,4 @@ export function formatInviteDuration (hours: number): InviteDurationLabel {
   return isWholeDays(hours)
     ? { label: settingRes.string.InviteDays, params: { count: hours / HOURS_IN_DAY } }
     : { label: settingRes.string.InviteHours, params: { count: hours } }
-}
-
-/** Valid values are negative (no restriction) or positive whole numbers. */
-export function isValidInviteRestriction (value: number | undefined): boolean {
-  return value !== undefined && (value < 0 || (Number.isInteger(value) && value > 0))
 }

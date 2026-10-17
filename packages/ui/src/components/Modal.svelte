@@ -34,7 +34,6 @@
   export let okLabel: IntlString = ui.string.Ok
   export let padding: string | undefined = undefined
   export let bottomPadding: string | undefined = undefined
-  export let footerPadding: string | undefined = undefined
   export let hidden: boolean = false
   export let noTopIndent: boolean = false
   export let hideFooter: boolean = false
@@ -113,7 +112,7 @@
   </div>
   <slot name="afterContent" />
   {#if type !== 'type-component' && !hideFooter}
-    <div class="hulyModal-footer" style:padding={footerPadding}>
+    <div class="hulyModal-footer">
       <ButtonBase
         type={'type-button'}
         kind={'primary'}

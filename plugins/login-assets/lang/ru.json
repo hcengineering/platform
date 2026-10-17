@@ -113,14 +113,8 @@
     "InviteLinkExpires": "Действует до {date}",
     "InvitePeople": "Пригласить людей",
     "JoinAs": "Роль",
-    "WorkspaceDefaults": "По умолчанию",
     "LinkExpires": "Срок действия",
     "LimitUses": "Лимит использований",
-    "ExpiresAfterHours": "{count, plural, one {Действует # час} few {Действует # часа} other {Действует # часов}}",
-    "UsesLimit": "{count, plural, one {До # использования} other {До # использований}}",
-    "CustomizeInviteLink": "Настроить",
-    "LinkSettings": "Параметры ссылки",
-    "RestoreDefaults": "Восстановить значения по умолчанию",
-    "ExpiresAfterDays": "{count, plural, one {Действует # день} few {Действует # дня} other {Действует # дней}}"
+    "UsesLimit": "{count, plural, one {До # использования} other {До # использований}}"
   }
 }

@@ -113,14 +113,8 @@
     "InviteLinkExpires": "有効期限: {date}",
     "InvitePeople": "メンバーを招待",
     "JoinAs": "参加時のロール",
-    "WorkspaceDefaults": "ワークスペースの既定",
     "LinkExpires": "有効期限",
     "LimitUses": "使用回数の上限",
-    "ExpiresAfterHours": "{count, plural, other {#時間後に期限切れ}}",
-    "UsesLimit": "{count, plural, other {最大#回}}",
-    "CustomizeInviteLink": "カスタマイズ",
-    "LinkSettings": "リンクの設定",
-    "RestoreDefaults": "デフォルトに戻す",
-    "ExpiresAfterDays": "{count, plural, other {#日後に期限切れ}}"
+    "UsesLimit": "{count, plural, other {最大#回}}"
   }
 }

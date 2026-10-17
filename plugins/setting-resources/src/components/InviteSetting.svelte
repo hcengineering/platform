@@ -20,7 +20,6 @@
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { type InviteSettings, type RoleCapabilitySettings, RoleCapability } from '@hcengineering/setting'
   import { hasRoleCapability } from '../roleCapability'
-  import { isValidInviteRestriction } from '../inviteDuration'
   import {
     getDefaultInviterRoles,
     getDefaultInviteRole,
@@ -104,10 +103,6 @@
 
   $: query.query(setting.class.InviteSettings, {}, applyInviteSettings)
 
-  function isValid (): boolean {
-    return isValidInviteRestriction(expTime) && isValidInviteRestriction(limit)
-  }
-
   async function setInviteSettings (): Promise<void> {
     const newSettings = {
       expirationTime: expTime,
@@ -144,11 +139,10 @@
     }
   }
 
-  async function autoSaveIfValid (): Promise<void> {
+  async function autoSave (): Promise<void> {
     if (loading) return
-    // A new edit makes the previous save error stale, whether or not the new value can be saved
+    // A new edit makes the previous save error stale
     saveFailed = false
-    if (!isValid()) return
     try {
       await setInviteSettings()
     } catch (err: unknown) {
@@ -159,24 +153,24 @@
 
   function handleExpTimeChange (e: CustomEvent<number>): void {
     expTime = e.detail
-    void autoSaveIfValid()
+    void autoSave()
   }
 
   function handleLimitChange (e: CustomEvent<number>): void {
     limit = e.detail
-    void autoSaveIfValid()
+    void autoSave()
   }
 
   function handleDefaultInviteRoleSelected (e: CustomEvent<AccountRole>): void {
     defaultInviteRole = e.detail
-    void autoSaveIfValid()
+    void autoSave()
   }
 
   function handleGeneratorRolesSelected (e: CustomEvent<AccountRole[] | undefined>): void {
     if (e.detail != null) {
       inviteLinkGeneratorRoles = [...e.detail]
     }
-    void autoSaveIfValid()
+    void autoSave()
   }
 </script>
 

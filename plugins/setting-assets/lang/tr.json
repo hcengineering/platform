@@ -275,13 +275,6 @@
     "CanJoin": "Katılabilir",
     "InviteDays": "{count, plural, other {# gün}}",
     "InviteHours": "{count, plural, other {# saat}}",
-    "InviteNever": "Asla",
-    "InviteCustom": "Özel",
-    "InviteUnlimitedUses": "Sınırsız",
-    "InviteSingleUse": "Tek kullanım",
-    "InviteDaysUnit": "{count, plural, other {gün}}",
-    "InviteHoursUnit": "{count, plural, other {saat}}",
-    "InvitePositiveNumber": "Sıfırdan büyük bir tam sayı girin.",
     "InviteSettingsSaveFailed": "Davet ayarları kaydedilemedi. Lütfen tekrar deneyin."
   }
 }

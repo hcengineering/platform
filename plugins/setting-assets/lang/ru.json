@@ -278,13 +278,6 @@
     "CanJoin": "Может присоединиться",
     "InviteDays": "{count, plural, one {# день} few {# дня} other {# дней}}",
     "InviteHours": "{count, plural, one {# час} few {# часа} other {# часов}}",
-    "InviteNever": "Никогда",
-    "InviteCustom": "Другое",
-    "InviteUnlimitedUses": "Без ограничений",
-    "InviteSingleUse": "Одно использование",
-    "InviteDaysUnit": "{count, plural, one {день} few {дня} other {дней}}",
-    "InviteHoursUnit": "{count, plural, one {час} few {часа} other {часов}}",
-    "InvitePositiveNumber": "Введите целое число больше нуля.",
     "InviteSettingsSaveFailed": "Не удалось сохранить настройки приглашений. Попробуйте ещё раз."
   }
 }

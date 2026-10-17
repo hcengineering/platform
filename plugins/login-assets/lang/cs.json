@@ -114,14 +114,8 @@
     "InviteLinkExpires": "Platí do {date}",
     "InvitePeople": "Pozvat lidi",
     "JoinAs": "Připojit se jako",
-    "WorkspaceDefaults": "Výchozí nastavení",
     "LinkExpires": "Platnost",
     "LimitUses": "Limit použití",
-    "ExpiresAfterHours": "{count, plural, one {Vyprší za # hodinu} few {Vyprší za # hodiny} other {Vyprší za # hodin}}",
-    "UsesLimit": "{count, plural, other {Až # použití}}",
-    "CustomizeInviteLink": "Přizpůsobit",
-    "LinkSettings": "Nastavení odkazu",
-    "RestoreDefaults": "Obnovit výchozí nastavení",
-    "ExpiresAfterDays": "{count, plural, one {Vyprší za # den} few {Vyprší za # dny} other {Vyprší za # dní}}"
+    "UsesLimit": "{count, plural, other {Až # použití}}"
   }
 }

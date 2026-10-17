@@ -266,13 +266,6 @@
     "CanJoin": "Pode participar",
     "InviteDays": "{count, plural, one {# dia} other {# dias}}",
     "InviteHours": "{count, plural, one {# hora} other {# horas}}",
-    "InviteNever": "Nunca",
-    "InviteCustom": "Personalizado",
-    "InviteUnlimitedUses": "Ilimitado",
-    "InviteSingleUse": "Uma utilização",
-    "InviteDaysUnit": "{count, plural, one {dia} other {dias}}",
-    "InviteHoursUnit": "{count, plural, one {hora} other {horas}}",
-    "InvitePositiveNumber": "Introduza um número inteiro superior a zero.",
     "InviteSettingsSaveFailed": "Não foi possível guardar as definições de convite. Tente novamente."
   }
 }

@@ -113,14 +113,8 @@
     "InviteLinkExpires": "{date} 到期",
     "InvitePeople": "邀请成员",
     "JoinAs": "加入角色",
-    "WorkspaceDefaults": "工作区默认设置",
     "LinkExpires": "有效期",
     "LimitUses": "使用次数上限",
-    "ExpiresAfterHours": "{count, plural, other {# 小时后过期}}",
-    "UsesLimit": "{count, plural, other {最多 # 次}}",
-    "CustomizeInviteLink": "自定义",
-    "LinkSettings": "链接设置",
-    "RestoreDefaults": "恢复默认",
-    "ExpiresAfterDays": "{count, plural, other {#天后过期}}"
+    "UsesLimit": "{count, plural, other {最多 # 次}}"
   }
 }

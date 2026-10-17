@@ -113,14 +113,8 @@
     "InviteLinkExpires": "Expira a {date}",
     "InvitePeople": "Convidar pessoas",
     "JoinAs": "Entrar como",
-    "WorkspaceDefaults": "Predefinições",
     "LinkExpires": "Expiração",
     "LimitUses": "Limite de utilizações",
-    "ExpiresAfterHours": "{count, plural, =1 {Expira após # hora} other {Expira após # horas}}",
-    "UsesLimit": "{count, plural, =1 {Até # utilização} other {Até # utilizações}}",
-    "CustomizeInviteLink": "Personalizar",
-    "LinkSettings": "Definições da ligação",
-    "RestoreDefaults": "Restaurar predefinições",
-    "ExpiresAfterDays": "{count, plural, one {Expira após # dia} other {Expira após # dias}}"
+    "UsesLimit": "{count, plural, =1 {Até # utilização} other {Até # utilizações}}"
   }
 }

@@ -113,14 +113,8 @@
     "InviteLinkExpires": "Caduca el {date}",
     "InvitePeople": "Invitar personas",
     "JoinAs": "Unirse como",
-    "WorkspaceDefaults": "Valores predeterminados",
     "LinkExpires": "Caducidad",
     "LimitUses": "Límite de usos",
-    "ExpiresAfterHours": "{count, plural, =1 {Caduca en # hora} other {Caduca en # horas}}",
-    "UsesLimit": "{count, plural, =1 {Hasta # uso} other {Hasta # usos}}",
-    "CustomizeInviteLink": "Personalizar",
-    "LinkSettings": "Configuración del enlace",
-    "RestoreDefaults": "Restaurar valores predeterminados",
-    "ExpiresAfterDays": "{count, plural, one {Caduca tras # día} other {Caduca tras # días}}"
+    "UsesLimit": "{count, plural, =1 {Hasta # uso} other {Hasta # usos}}"
   }
 }

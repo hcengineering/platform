@@ -13,8 +13,6 @@
 // limitations under the License.
 //
 
-import { isValidInviteRestriction } from '@hcengineering/setting-resources'
-
 /** Invite link restrictions. Negative values mean "no restriction". */
 export interface InviteLinkParams {
   expHours: number
@@ -26,7 +24,3 @@ export interface InviteLinkParams {
  * non-expiring links (the server only allows those for maintainers and above).
  */
 export const LIMITED_ROLE_INVITE_EXP_HOURS = 30 * 24
-
-export function isValidInviteLinkParams ({ expHours, limit }: InviteLinkParams): boolean {
-  return isValidInviteRestriction(expHours) && isValidInviteRestriction(limit)
-}

@@ -113,14 +113,8 @@
     "InviteLinkExpires": "{date} tarihinde sona erer",
     "InvitePeople": "Kişileri davet et",
     "JoinAs": "Katılım rolü",
-    "WorkspaceDefaults": "Varsayılan ayarlar",
     "LinkExpires": "Son kullanma",
     "LimitUses": "Kullanım sınırı",
-    "ExpiresAfterHours": "{count, plural, other {# saat sonra sona erer}}",
-    "UsesLimit": "{count, plural, other {En fazla # kullanım}}",
-    "CustomizeInviteLink": "Özelleştir",
-    "LinkSettings": "Bağlantı ayarları",
-    "RestoreDefaults": "Varsayılanlara sıfırla",
-    "ExpiresAfterDays": "{count, plural, other {# gün sonra sona erer}}"
+    "UsesLimit": "{count, plural, other {En fazla # kullanım}}"
   }
 }

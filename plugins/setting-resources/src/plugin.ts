@@ -38,13 +38,6 @@ export default mergeIds(settingId, setting, {
   string: {
     InviteDays: '' as IntlString<{ count: number }>,
     InviteHours: '' as IntlString<{ count: number }>,
-    InviteNever: '' as IntlString,
-    InviteCustom: '' as IntlString,
-    InviteUnlimitedUses: '' as IntlString,
-    InviteSingleUse: '' as IntlString,
-    InviteDaysUnit: '' as IntlString<{ count: number }>,
-    InviteHoursUnit: '' as IntlString<{ count: number }>,
-    InvitePositiveNumber: '' as IntlString,
     InviteSettingsSaveFailed: '' as IntlString,
     IntegrationDisabled: '' as IntlString,
     IntegrationDisabledSetting: '' as IntlString,

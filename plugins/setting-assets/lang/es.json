@@ -266,13 +266,6 @@
     "CanJoin": "Puede unirse",
     "InviteDays": "{count, plural, one {# día} other {# días}}",
     "InviteHours": "{count, plural, one {# hora} other {# horas}}",
-    "InviteNever": "Nunca",
-    "InviteCustom": "Personalizado",
-    "InviteUnlimitedUses": "Ilimitados",
-    "InviteSingleUse": "Un solo uso",
-    "InviteDaysUnit": "{count, plural, one {día} other {días}}",
-    "InviteHoursUnit": "{count, plural, one {hora} other {horas}}",
-    "InvitePositiveNumber": "Introduce un número entero mayor que cero.",
     "InviteSettingsSaveFailed": "No se pudo guardar la configuración de invitaciones. Inténtalo de nuevo."
   }
 }

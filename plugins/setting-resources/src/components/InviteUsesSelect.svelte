@@ -15,99 +15,42 @@
 //
 -->
 <script lang="ts">
-  import { type DropdownIntlItem, DropdownLabelsIntl, EditBox, Label } from '@hcengineering/ui'
+  import login from '@hcengineering/login'
+  import { type DropdownIntlItem, DropdownLabelsIntl } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
-  import { INVITE_DEFAULT_CUSTOM_USES, INVITE_SINGLE_USE, isValidInviteRestriction } from '../inviteDuration'
-  import settingRes from '../plugin'
+  import { INVITE_USES_PRESETS } from '../inviteDuration'
 
   /** Maximum number of uses. A negative value means the link can be used without limit. */
   export let value: number
-  export let valid: boolean = true
   export let disabled: boolean = false
 
+  const UNLIMITED = 'unlimited'
   const dispatch = createEventDispatcher()
 
-  const items: DropdownIntlItem[] = [
-    { id: 'unlimited', label: settingRes.string.InviteUnlimitedUses },
-    { id: 'once', label: settingRes.string.InviteSingleUse },
-    { id: 'custom', label: settingRes.string.InviteCustom }
-  ]
-
-  let preset = 'unlimited'
-  let amount: number | undefined = INVITE_DEFAULT_CUSTOM_USES
-  // The value the local state was last derived from or emitted for
-  let lastValue = value
-
-  // Follow changes made outside of the component, e.g. settings loaded from the server
-  $: if (value !== lastValue) {
-    lastValue = value
-    derive(value)
-  }
-  // Publish changes made by the user. Skipped while an outside change is waiting to be derived above,
-  // so the result does not depend on the order in which Svelte runs these statements.
-  $: emit(preset, amount)
-  $: valid = isValidInviteRestriction(value)
-
-  function derive (uses: number): void {
-    if (uses < 0) {
-      preset = 'unlimited'
-    } else if (uses === INVITE_SINGLE_USE) {
-      preset = 'once'
-    } else {
-      preset = 'custom'
-      amount = uses
-    }
+  function toItem (count: number): DropdownIntlItem {
+    return { id: String(count), label: login.string.UsesLimit, params: { count } }
   }
 
-  function compute (): number {
-    if (preset === 'unlimited') return -1
-    if (preset === 'once') return INVITE_SINGLE_USE
-    return amount ?? 0
-  }
+  // A value saved in the workspace settings that is not a preset is still shown, so nothing is lost
+  $: uses = [...INVITE_USES_PRESETS, ...(value > 0 && !INVITE_USES_PRESETS.includes(value) ? [value] : [])]
+  $: items = [...uses.sort((a, b) => a - b).map(toItem), { id: UNLIMITED, label: login.string.UnlimitedUses }]
+  $: selected = value < 0 ? UNLIMITED : String(value)
 
-  function emit (..._deps: unknown[]): void {
-    if (value !== lastValue) return
-    const next = compute()
+  function onSelected (e: CustomEvent<string>): void {
+    const next = e.detail === UNLIMITED ? -1 : Number(e.detail)
     if (next === value) return
     value = next
-    lastValue = next
     dispatch('change', next)
-  }
-
-  derive(value)
-
-  function onPreset (e: CustomEvent<string>): void {
-    if (e.detail === preset) return
-    if (e.detail === 'custom') {
-      amount = value > INVITE_SINGLE_USE ? value : INVITE_DEFAULT_CUSTOM_USES
-    }
-    preset = e.detail
   }
 </script>
 
-<div class="flex-col flex-gap-2 clear-mins">
-  <DropdownLabelsIntl
-    {items}
-    selected={preset}
-    {disabled}
-    size={'medium'}
-    width={'100%'}
-    justify={'left'}
-    on:selected={onPreset}
-  />
-  {#if preset === 'custom'}
-    <EditBox
-      bind:value={amount}
-      format={'number'}
-      kind={'default'}
-      minValue={1}
-      maxDigitsAfterPoint={0}
-      {disabled}
-      focusable
-    />
-    {#if !valid}
-      <span class="error-color text-sm"><Label label={settingRes.string.InvitePositiveNumber} /></span>
-    {/if}
-  {/if}
-</div>
+<DropdownLabelsIntl
+  {items}
+  {selected}
+  {disabled}
+  size={'medium'}
+  width={'100%'}
+  justify={'left'}
+  on:selected={onSelected}
+/>
