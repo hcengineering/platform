@@ -26,6 +26,7 @@
   } from '@hcengineering/ui'
   import { ToDosMode } from '..'
   import time from '../plugin'
+  import { archivedSpacesStore } from '../archivedSpaces'
 
   export let mode: ToDosMode
   export let tag: Ref<TagElementType> | undefined
@@ -90,6 +91,11 @@
   $: tags = allTags.filter((p) => myTags.has(p._id))
 
   const unplannedQuery = createQuery()
+  // ToDos attached to archived spaces (e.g. issues of archived projects) are hidden in the planner,
+  // so they must not be counted either.
+  const archivedUnplannedQuery = createQuery()
+  let unplannedTotal = 0
+  let archivedUnplannedTotal = 0
 
   unplannedQuery.query(
     time.class.ToDo,
@@ -99,7 +105,7 @@
       workslots: 0
     },
     (res) => {
-      counters.unplanned = res.total
+      unplannedTotal = res.total
     },
     {
       total: true,
@@ -107,7 +113,31 @@
     }
   )
 
+  $: archivedSpaces = Array.from($archivedSpacesStore)
+  $: if (archivedSpaces.length > 0) {
+    archivedUnplannedQuery.query(
+      time.class.ToDo,
+      {
+        user: currentUser,
+        doneOn: null,
+        workslots: 0,
+        attachedSpace: { $in: archivedSpaces }
+      },
+      (res) => {
+        archivedUnplannedTotal = res.total
+      },
+      {
+        total: true,
+        limit: 1
+      }
+    )
+  } else {
+    archivedUnplannedQuery.unsubscribe()
+    archivedUnplannedTotal = 0
+  }
+
   const counters: Record<string, number> = {}
+  $: counters.unplanned = Math.max(0, unplannedTotal - archivedUnplannedTotal)
   const today: Date = new Date()
 
   let pressed: boolean = false
