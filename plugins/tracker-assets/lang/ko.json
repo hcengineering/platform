@@ -225,6 +225,8 @@
         "TimeSpendReportValueTooltip": "사용 시간(시간 단위)",
         "TimeSpendReportDescription": "설명",
         "TimeSpendDays": "{value}일",
+        "HoursPerDay": "근무일당 시간",
+        "HoursPerDayDescription": "예상 시간과 보고된 시간을 일 단위로 표시하는 데 사용됩니다. 비워 두면 8시간입니다.",
         "TimeSpendHours": "{value}시간",
         "TimeSpendMinutes": "{value}분",
         "ChildEstimation": "하위 이슈 예상치",

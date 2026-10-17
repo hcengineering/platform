@@ -225,6 +225,8 @@
     "TimeSpendReportValueTooltip": "Tempo gasto em horas",
     "TimeSpendReportDescription": "Descrição",
     "TimeSpendDays": "{value}d",
+    "HoursPerDay": "Horas por dia útil",
+    "HoursPerDayDescription": "Usado para mostrar a estimativa e o tempo registado em dias. Vazio significa 8 horas.",
     "TimeSpendHours": "{value}h",
     "TimeSpendMinutes": "{value}m",
     "ChildEstimation": "Estimativa de sub-tarefas",

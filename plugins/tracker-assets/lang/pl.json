@@ -235,6 +235,8 @@
     "TimeSpendReportValueTooltip": "Poświęcony czas (w godzinach)",
     "TimeSpendReportDescription": "Opis",
     "TimeSpendDays": "{value, plural, =1 {1 dzień} other {# dni}}",
+    "HoursPerDay": "Godziny w dniu roboczym",
+    "HoursPerDayDescription": "Służy do wyświetlania szacunku i zaraportowanego czasu w dniach. Puste oznacza 8 godzin.",
     "TimeSpendHours": "{value, plural, =1 {1 godzina} few {# godziny} many {# godzin} other {# godziny}}",
     "TimeSpendMinutes": "{value, plural, =1 {1 minuta} few {# minuty} many {# minut} other {# minuty}}",
     "ChildEstimation": "Wycena podzagadnień",

@@ -225,6 +225,8 @@
     "TimeSpendReportValueTooltip": "Tempo trascorso in ore",
     "TimeSpendReportDescription": "Descrizione",
     "TimeSpendDays": "{value}d",
+    "HoursPerDay": "Ore per giorno lavorativo",
+    "HoursPerDayDescription": "Usato per mostrare la stima e il tempo registrato in giorni. Vuoto significa 8 ore.",
     "TimeSpendHours": "{value}h",
     "TimeSpendMinutes": "{value}m",
     "ChildEstimation": "Stima delle subissue",
