@@ -66,7 +66,8 @@ const hangTimeout = 5 * 60 * SECOND
 const dialTimeout = 30 * SECOND
 // After visibilitychange -> visible we probe with short timeout.
 const visibilityProbeTimeout = 1 * SECOND
-// Jitter window for reconnect resend storm.
+// Jitter (ms) applied to reconnect retries after a failed attempt and to pending-request
+// resend, so a herd of clients doesn't redial/resend on the same tick.
 const reconnectJitterMs = 300
 // Throttle window for noisy diagnostics logs in hot paths.
 const diagLogThrottleMs = 5 * SECOND
@@ -367,10 +368,16 @@ class Connection implements ClientConnection {
         if (this.delay === 0) {
           this.openConnection(ctx, socketId)
         } else {
-          this.openAction = setTimeout(() => {
-            this.openAction = undefined
-            this.openConnection(ctx, socketId)
-          }, this.delay * 1000)
+          // delay>0 means a prior attempt failed (transactor down / herd). Jitter the backoff
+          // so clients don't all retry on the same tick; a clean first reconnect stays immediate.
+          const jitter = Math.floor(Math.random() * reconnectJitterMs)
+          this.openAction = setTimeout(
+            () => {
+              this.openAction = undefined
+              this.openConnection(ctx, socketId)
+            },
+            this.delay * 1000 + jitter
+          )
         }
       }
     }
@@ -761,7 +768,9 @@ class Connection implements ClientConnection {
         pendingCount: this.requests.size,
         workspace: this.workspace
       })
-      this.scheduleOpen(this.ctx, true)
+      // Immediate redial for a clean disconnect; if the transactor is down the failed
+      // attempt bumps delay and scheduleOpen jitters the retry herd (see reconnectJitterMs).
+      if (!this.closed) this.scheduleOpen(this.ctx, true)
     }
     wsocket.onopen = () => {
       if (this.websocket !== wsocket) {

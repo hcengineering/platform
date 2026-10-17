@@ -38,8 +38,10 @@ import core, {
   pickPrimarySocialId,
   platformNow,
   platformNowDiff,
+  RateLimiter,
   readOnlyGuestAccountUuid,
   SocialIdType,
+  systemAccount,
   systemAccountUuid,
   type Tx,
   TxFactory,
@@ -82,6 +84,7 @@ import {
   type Session,
   type SessionHealth,
   type SessionManager,
+  SessionDataImpl,
   userEvents,
   type UserStatistics,
   workspaceEvents,
@@ -98,6 +101,10 @@ const workspaceSoftShutdownTicks = 15 * ticksPerSecond
 const hangRequestTimeoutSeconds = 30
 const hangSessionTimeoutSeconds = 60
 
+// Clamp to >=1: RateLimiter(0) deadlocks (its `size >= rate` gate never opens), NaN uncaps it.
+const parsedColdBuildConcurrency = parseInt(process.env.COLD_BUILD_CONCURRENCY ?? '8', 10)
+const coldBuildConcurrency = Number.isNaN(parsedColdBuildConcurrency) ? 8 : Math.max(1, parsedColdBuildConcurrency)
+
 /**
  * @public
  */
@@ -108,7 +115,13 @@ export interface Timeouts {
 }
 
 export class TSessionManager implements SessionManager {
-  private readonly statusPromises = new Map<string, Promise<void>>()
+  // Presence batching: accumulate per-workspace online/offline changes and flush once per
+  // second as a single pipeline tx -> one broadcast fan-out instead of one per user in a
+  // reconnect storm. Last write wins within the window, so connect/disconnect flapping collapses.
+  private readonly pendingStatus = new Map<WorkspaceUuid, Map<AccountUuid, { session: Session, online: boolean }>>()
+  private readonly statusFlushTimers = new Map<WorkspaceUuid, any>()
+  private readonly statusFlushing = new Set<WorkspaceUuid>()
+  private readonly statusFlushDelay = parseInt(process.env.STATUS_FLUSH_MS ?? '1000')
   readonly workspaces = new Map<WorkspaceUuid, Workspace>()
   checkInterval: any
 
@@ -132,6 +145,10 @@ export class TSessionManager implements SessionManager {
   hungSessionsFailPercent = parseInt(process.env.HUNG_SESSIONS_FAIL_PERCENT ?? '75')
   hungRequestsFailPercent = parseInt(process.env.HUNG_REQUESTS_PERCENT ?? '50')
   counters = new OneSecondCountersImpl()
+
+  // Cap concurrent cold pipeline builds so a reconnect storm after a transactor restart
+  // doesn't saturate the event loop at once.
+  coldBuildLimiter = new RateLimiter(coldBuildConcurrency)
 
   constructor (
     readonly ctx: MeasureContext,
@@ -1028,19 +1045,22 @@ export class TSessionManager implements SessionManager {
     }
 
     const factory = async (): Promise<Pipeline> => {
-      const pipeline = await this.counters.withCounter('startWorkspace', 1, () =>
-        this.pipelineFactory(
-          pipelineCtx,
-          workspaceIds,
-          {
-            broadcast: (ctx, tx, targets, exclude) => {
-              this.broadcastAll(ctx, workspaceIds.uuid, tx, targets, exclude)
+      // Only the cold build is gated (see coldBuildLimiter); pipeline ops run unthrottled.
+      const pipeline = await this.coldBuildLimiter.exec(() =>
+        this.counters.withCounter('startWorkspace', 1, () =>
+          this.pipelineFactory(
+            pipelineCtx,
+            workspaceIds,
+            {
+              broadcast: (ctx, tx, targets, exclude) => {
+                this.broadcastAll(ctx, workspaceIds.uuid, tx, targets, exclude)
+              },
+              broadcastSessions: (ctx, sessions) => {
+                this.broadcastSessions(ctx, sessions)
+              }
             },
-            broadcastSessions: (ctx, sessions) => {
-              this.broadcastSessions(ctx, sessions)
-            }
-          },
-          branding
+            branding
+          )
         )
       )
       return pipeline
@@ -1060,66 +1080,89 @@ export class TSessionManager implements SessionManager {
     return workspace
   }
 
-  private async trySetStatus (
-    ctx: MeasureContext,
-    pipeline: Pipeline,
-    session: Session,
-    online: boolean,
-    workspaceId: WorkspaceUuid
-  ): Promise<void> {
-    const current = this.statusPromises.get(session.getUser())
-    if (current !== undefined) {
-      await current
+  private queueStatus (workspaceId: WorkspaceUuid, session: Session, online: boolean): void {
+    const user = session.getUser()
+    if (user === undefined || session.getRawAccount().role === AccountRole.ReadOnlyGuest) return
+    let pending = this.pendingStatus.get(workspaceId)
+    if (pending === undefined) {
+      pending = new Map()
+      this.pendingStatus.set(workspaceId, pending)
     }
-    const promise = this.setStatus(ctx, pipeline, session, online, workspaceId)
-    this.statusPromises.set(session.getUser(), promise)
-    await promise
-    this.statusPromises.delete(session.getUser())
+    pending.set(user, { session, online })
+    this.queueStatusFlush(workspaceId)
   }
 
-  private async setStatus (
-    ctx: MeasureContext,
-    pipeline: Pipeline,
-    session: Session,
-    online: boolean,
-    workspaceId: WorkspaceUuid
-  ): Promise<void> {
+  private queueStatusFlush (workspaceId: WorkspaceUuid): void {
+    if (this.statusFlushTimers.has(workspaceId)) return
+    this.statusFlushTimers.set(
+      workspaceId,
+      setTimeout(() => {
+        this.statusFlushTimers.delete(workspaceId)
+        void this.flushStatus(workspaceId)
+      }, this.statusFlushDelay)
+    )
+  }
+
+  private async flushStatus (workspaceId: WorkspaceUuid): Promise<void> {
+    // Serialize flushes per workspace: an overlapping flush could findAll before the prior
+    // create commits and duplicate a transient UserStatus. Re-arm and bail if one is running.
+    if (this.statusFlushing.has(workspaceId)) {
+      this.queueStatusFlush(workspaceId)
+      return
+    }
+    const pending = this.pendingStatus.get(workspaceId)
+    if (pending === undefined || pending.size === 0) return
+    this.pendingStatus.delete(workspaceId)
+    const workspace = this.workspaces.get(workspaceId)
+    if (workspace === undefined || workspace.maintenance) return
+    this.statusFlushing.add(workspaceId)
+    const entries = [...pending.entries()]
     try {
-      const user = session.getUser()
-      const userRawAccount = session.getRawAccount()
-      if (user === undefined || userRawAccount.role === AccountRole.ReadOnlyGuest) return
-
-      const clientCtx: ClientSessionCtx = {
-        requestId: undefined,
-        pipeline,
-        sendResponse: async () => {
-          // No response
-        },
-        ctx,
-        socialStringsToUsers: this.getActiveSocialStringsToUsersMap(workspaceId, session),
-        sendError: async () => {
-          // Assume no error send
-        },
-        sendPong: () => {}
-      }
-
-      const status = (await session.findAllRaw(clientCtx, core.class.UserStatus, { user }, { limit: 1 }))[0]
-      const txFactory = new TxFactory(userRawAccount.primarySocialId, true)
-      if (status === undefined) {
-        const tx = txFactory.createTxCreateDoc(core.class.UserStatus, core.space.Space, {
-          online,
-          user
+      await workspace.context.with('🧨 status-batch', {}, (ctx) =>
+        workspace.with(async (pipeline) => {
+          ctx.contextData = new SessionDataImpl(
+            systemAccount,
+            'status-batch',
+            true,
+            undefined,
+            {
+              ...workspace.wsId,
+              dataId: workspace.wsId.dataId ?? (workspace.wsId.uuid as unknown as WorkspaceDataId)
+            },
+            true,
+            undefined,
+            undefined,
+            pipeline.context.modelDb,
+            new Map(),
+            'transactor'
+          )
+          const users = entries.map(([user]) => user)
+          const existing = await pipeline.findAll(ctx, core.class.UserStatus, { user: { $in: users } })
+          const byUser = new Map(existing.map((st) => [st.user, st]))
+          const txes: Tx[] = []
+          for (const [user, { session, online }] of entries) {
+            const txFactory = new TxFactory(session.getRawAccount().primarySocialId, true)
+            const cur = byUser.get(user)
+            if (cur === undefined) {
+              if (online) {
+                txes.push(txFactory.createTxCreateDoc(core.class.UserStatus, core.space.Space, { online, user }))
+              }
+            } else if (cur.online !== online) {
+              txes.push(txFactory.createTxUpdateDoc(cur._class, cur.space, cur._id, { online }))
+            }
+          }
+          if (txes.length === 0) return
+          await pipeline.tx(ctx, txes)
+          await pipeline.handleBroadcast(ctx)
         })
-        await session.tx(clientCtx, tx)
-      } else if (status.online !== online) {
-        const tx = txFactory.createTxUpdateDoc(status._class, status.space, status._id, {
-          online
-        })
-        await session.tx(clientCtx, tx)
-      }
+      )
     } catch (err: any) {
-      ctx.error('failed to set status', { err })
+      this.ctx.error('failed to flush status batch', { err, workspaceId })
       Analytics.handleError(err)
+    } finally {
+      this.statusFlushing.delete(workspaceId)
+      // New changes may have arrived during the flush.
+      if ((this.pendingStatus.get(workspaceId)?.size ?? 0) > 0) this.queueStatusFlush(workspaceId)
     }
   }
 
@@ -1165,16 +1208,10 @@ export class TSessionManager implements SessionManager {
                   void workspace.with(async (pipeline) => {
                     await pipeline.closeSession(ctx, sessionRef.session.sessionId)
                     // await communicationApi.closeSession(sessionRef.session.sessionId)
-                    if (user !== docGuestAccountUuid && user !== systemAccountUuid) {
-                      await this.trySetStatus(
-                        workspace.context.newChild('status', {}),
-                        pipeline,
-                        sessionRef.session,
-                        false,
-                        workspaceUuid
-                      ).catch(() => {})
-                    }
                   })
+                  if (user !== docGuestAccountUuid && user !== systemAccountUuid) {
+                    this.queueStatus(workspaceUuid, sessionRef.session, false)
+                  }
                 }
               }
             }
@@ -1699,12 +1736,8 @@ export class TSessionManager implements SessionManager {
         await ws.send(ctx, helloResponse, false, false)
       })
       if (account.uuid !== docGuestAccountUuid && account.uuid !== systemAccountUuid) {
-        void workspace.with(async (pipeline) => {
-          // We do not need to wait for set-status, just return session to client
-          await workspace.context
-            .with('🧨 status', {}, (ctx) => this.trySetStatus(ctx, pipeline, service, true, service.workspace.uuid))
-            .catch(() => {})
-        })
+        // Batched + broadcast once per second (see queueStatus).
+        this.queueStatus(service.workspace.uuid, service, true)
       }
     } catch (err: any) {
       ctx.error('error', { err })

@@ -18,6 +18,7 @@ import type { WorkspaceDestroyAdapter } from '@hcengineering/server-core'
 import { domainSchemas } from './schemas'
 
 export { domainSchemas, getDocFieldsByDomains, translateDomain, type FieldSchema, type Schema } from './schemas'
+export * from './lastTx'
 export * from './storage'
 export { convertDoc, createTables } from './utils'
 

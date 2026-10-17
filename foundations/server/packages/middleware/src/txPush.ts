@@ -76,7 +76,14 @@ export class TxMiddleware extends BaseMiddleware implements Middleware {
         }
       )
       // We need to remember last Tx Id in context, so it will be used during reconnect to track a requirement for refresh.
-      this.context.lastTx = txToStore[txToStore.length - 1]._id
+      const lastTxId = txToStore[txToStore.length - 1]._id
+      this.context.lastTx = lastTxId
+      // Keep the shared boot cache live: a pipeline reopened after this ws advanced must
+      // seed the current lastTx, not the stale boot value (else a reconnect wrongly skips refresh).
+      ;(this.context.contextVars.lastTxCache as Map<string, string> | undefined)?.set(
+        this.context.workspace.uuid,
+        lastTxId
+      )
       // We need to deliver information to all clients so far.
       const evt: TxWorkspaceEvent = {
         _class: core.class.TxWorkspaceEvent,
