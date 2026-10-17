@@ -128,6 +128,7 @@
   let identifier: string = project?.identifier ?? 'TSK'
 
   function getProjectData (): Omit<Data<Project>, 'type'> {
+    const hpd = normalizeHoursPerDay(hoursPerDay)
     return {
       name,
       description,
@@ -144,7 +145,8 @@
       defaultIssueStatus: defaultStatus ?? ('' as Ref<IssueStatus>),
       defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay,
       workingDaysConfig,
-      hoursPerDay: normalizeHoursPerDay(hoursPerDay),
+      // Not configured: leave the field out instead of storing undefined/null.
+      ...(hpd !== undefined ? { hoursPerDay: hpd } : {}),
       autoJoinForRoles: normalizeAutoJoinForRoles(autoJoinForRoles)
     }
   }
@@ -205,13 +207,12 @@
         update.workingDaysConfig = wdUpdate.workingDaysConfig
       }
     }
+    // Clearing is sent as a separate update: an update that mixes `$unset`
+    // with plain fields is not applied as an operator by every storage adapter.
     const hpdUpdate = hoursPerDayUpdate(projectData.hoursPerDay, project?.hoursPerDay)
-    if (hpdUpdate !== undefined) {
-      if ('$unset' in hpdUpdate) {
-        update.$unset = { ...update.$unset, ...hpdUpdate.$unset }
-      } else {
-        update.hoursPerDay = hpdUpdate.hoursPerDay
-      }
+    const hpdUnset = hpdUpdate !== undefined && '$unset' in hpdUpdate ? hpdUpdate : undefined
+    if (hpdUpdate !== undefined && !('$unset' in hpdUpdate)) {
+      update.hoursPerDay = hpdUpdate.hoursPerDay
     }
     if (projectData.autoJoin !== project?.autoJoin) {
       update.autoJoin = projectData.autoJoin
@@ -244,6 +245,9 @@
       isSaving = true
       await client.update(project, update)
       isSaving = false
+    }
+    if (hpdUnset !== undefined) {
+      await client.update(project, hpdUnset)
     }
 
     if (rolesAssignment && !deepEqual(rolesAssignment, getRolesAssignment())) {

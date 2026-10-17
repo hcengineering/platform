@@ -51,9 +51,9 @@ export function splitTime (value: number, hoursPerDay: number = DEFAULT_HOURS_PE
  */
 export function hoursPerDayUpdate (
   next: number | null | undefined,
-  prev: number | undefined
+  prev: number | null | undefined
 ): { hoursPerDay: number } | { $unset: { hoursPerDay: true } } | undefined {
   const value = normalizeHoursPerDay(next)
-  if (value === prev) return undefined
+  if (value === normalizeHoursPerDay(prev)) return undefined
   return value === undefined ? { $unset: { hoursPerDay: true } } : { hoursPerDay: value }
 }

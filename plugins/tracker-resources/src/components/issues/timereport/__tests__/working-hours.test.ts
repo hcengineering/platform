@@ -83,6 +83,12 @@ describe('hoursPerDayUpdate (project dialog persistence)', () => {
     expect(hoursPerDayUpdate(0, undefined)).toBeUndefined()
   })
 
+  it('treats a stored null as not configured', () => {
+    expect(hoursPerDayUpdate(undefined, null)).toBeUndefined()
+    expect(hoursPerDayUpdate(null, null)).toBeUndefined()
+    expect(hoursPerDayUpdate(6, null)).toEqual({ hoursPerDay: 6 })
+  })
+
   it('writes a new value', () => {
     expect(hoursPerDayUpdate(6, undefined)).toEqual({ hoursPerDay: 6 })
     expect(hoursPerDayUpdate(7.5, 6)).toEqual({ hoursPerDay: 7.5 })
