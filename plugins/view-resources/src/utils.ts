@@ -296,9 +296,10 @@ export function getAttrTypePresenter (hierarchy: Hierarchy, type: Type<any>): An
     mixin
   )
 
-  const attributePresenter = presenterMixin as AttributePresenter
-  if (category === 'array' && attributePresenter.arrayPresenter !== undefined) {
-    return attributePresenter.arrayPresenter
+  const arrayPresenter =
+    presenterMixin !== undefined && 'arrayPresenter' in presenterMixin ? presenterMixin.arrayPresenter : undefined
+  if (category === 'array' && arrayPresenter !== undefined) {
+    return arrayPresenter
   } else if (presenterMixin?.presenter !== undefined) {
     return presenterMixin.presenter
   } else if (attrClass === core.class.TypeAny) {
@@ -344,9 +345,10 @@ export function findAttributePresenter (
     presenterMixin = hierarchy.classHierarchyMixin(attrClass, view.mixin.AttributePresenter)
   }
 
-  const attributePresenter = presenterMixin as AttributePresenter
-  if (category === 'array' && attributePresenter.arrayPresenter !== undefined) {
-    return attributePresenter.arrayPresenter
+  const arrayPresenter =
+    presenterMixin !== undefined && 'arrayPresenter' in presenterMixin ? presenterMixin.arrayPresenter : undefined
+  if (category === 'array' && arrayPresenter !== undefined) {
+    return arrayPresenter
   } else if (presenterMixin?.presenter !== undefined) {
     return presenterMixin.presenter
   } else if (attrClass === core.class.TypeAny) {
