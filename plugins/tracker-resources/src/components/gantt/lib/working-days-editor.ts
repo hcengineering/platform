@@ -73,13 +73,14 @@ export function applyDepartmentSelection (
  * Compute the host dialog's update fragment for `workingDaysConfig`.
  * Returns `undefined` when nothing changed. Disabling must `$unset` the
  * field — writing `undefined` could be stored as null, which would
- * masquerade as a configured calendar downstream.
+ * masquerade as a configured calendar downstream. A stored `null` (legacy
+ * create path) counts as "not configured".
  */
 export function workingDaysUpdate (
   next: WorkingDaysConfig | undefined,
-  previous: WorkingDaysConfig | undefined
+  previous: WorkingDaysConfig | null | undefined
 ): { workingDaysConfig: WorkingDaysConfig } | { $unset: { workingDaysConfig: true } } | undefined {
-  if (deepEqual(next, previous)) return undefined
+  if (deepEqual(next, previous ?? undefined)) return undefined
   if (next === undefined) return { $unset: { workingDaysConfig: true } }
   return { workingDaysConfig: next }
 }

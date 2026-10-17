@@ -86,9 +86,9 @@
   let isSaving = false
   let defaultStatus: Ref<IssueStatus> | undefined = project?.defaultIssueStatus
   // Flat copy: the editor mutates the object; the query-cache doc stays
-  // untouched until save.
+  // untouched until save. A stored `null` means "not configured", like undefined.
   let workingDaysConfig: WorkingDaysConfig | undefined =
-    project?.workingDaysConfig !== undefined ? { ...project.workingDaysConfig } : undefined
+    project?.workingDaysConfig != null ? { ...project.workingDaysConfig } : undefined
   let rolesAssignment: RolesAssignment | undefined
 
   let typeId: Ref<ProjectType> | undefined = project?.type
@@ -141,7 +141,8 @@
       color,
       defaultIssueStatus: defaultStatus ?? ('' as Ref<IssueStatus>),
       defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay,
-      workingDaysConfig,
+      // Omitted when disabled: an undefined value would be serialized as null.
+      ...(workingDaysConfig !== undefined ? { workingDaysConfig } : {}),
       autoJoinForRoles: normalizeAutoJoinForRoles(autoJoinForRoles)
     }
   }
@@ -193,11 +194,14 @@
     }
     // Unit-tested in lib/__tests__/working-days-editor.test.ts: no-op on
     // equality, $unset on disable (never write undefined/null), full config
-    // otherwise.
+    // otherwise. The $unset is sent as a separate update: mixed with plain
+    // fields the update is not an operator update, so Mongo rejects it and
+    // Postgres drops the $unset.
     const wdUpdate = workingDaysUpdate(projectData.workingDaysConfig, project?.workingDaysConfig)
+    let unsetUpdate: DocumentUpdate<Project> | undefined
     if (wdUpdate !== undefined) {
       if ('$unset' in wdUpdate) {
-        update.$unset = wdUpdate.$unset
+        unsetUpdate = wdUpdate
       } else {
         update.workingDaysConfig = wdUpdate.workingDaysConfig
       }
@@ -229,10 +233,18 @@
       }
     }
 
-    if (Object.keys(update).length > 0) {
+    if (Object.keys(update).length > 0 || unsetUpdate !== undefined) {
       isSaving = true
-      await client.update(project, update)
-      isSaving = false
+      try {
+        if (Object.keys(update).length > 0) {
+          await client.update(project, update)
+        }
+        if (unsetUpdate !== undefined) {
+          await client.update(project, unsetUpdate)
+        }
+      } finally {
+        isSaving = false
+      }
     }
 
     if (rolesAssignment && !deepEqual(rolesAssignment, getRolesAssignment())) {
