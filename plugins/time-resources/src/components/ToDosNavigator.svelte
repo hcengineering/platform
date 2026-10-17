@@ -2,7 +2,7 @@
   import calendar from '@hcengineering/calendar'
   import { ScheduleNavSection } from '@hcengineering/calendar-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { Ref, getCurrentAccount } from '@hcengineering/core'
+  import core, { Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { Asset, getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { NavFooter } from '@hcengineering/workbench-resources'
@@ -90,6 +90,13 @@
   $: tags = allTags.filter((p) => myTags.has(p._id))
 
   const unplannedQuery = createQuery()
+  // ToDos attached to archived spaces (e.g. issues of archived projects) are hidden in the planner,
+  // so they must not be counted either.
+  const archivedQuery = createQuery()
+  const archivedUnplannedQuery = createQuery()
+  let archivedSpaces: Ref<Space>[] = []
+  let unplannedTotal = 0
+  let archivedUnplannedTotal = 0
 
   unplannedQuery.query(
     time.class.ToDo,
@@ -99,7 +106,7 @@
       workslots: 0
     },
     (res) => {
-      counters.unplanned = res.total
+      unplannedTotal = res.total
     },
     {
       total: true,
@@ -107,7 +114,39 @@
     }
   )
 
+  archivedQuery.query(
+    core.class.Space,
+    { archived: true },
+    (res) => {
+      archivedSpaces = res.map((it) => it._id)
+    },
+    { showArchived: true, projection: { _id: 1, archived: 1 } }
+  )
+
+  $: if (archivedSpaces.length > 0) {
+    archivedUnplannedQuery.query(
+      time.class.ToDo,
+      {
+        user: currentUser,
+        doneOn: null,
+        workslots: 0,
+        attachedSpace: { $in: archivedSpaces }
+      },
+      (res) => {
+        archivedUnplannedTotal = res.total
+      },
+      {
+        total: true,
+        limit: 1
+      }
+    )
+  } else {
+    archivedUnplannedQuery.unsubscribe()
+    archivedUnplannedTotal = 0
+  }
+
   const counters: Record<string, number> = {}
+  $: counters.unplanned = Math.max(0, unplannedTotal - archivedUnplannedTotal)
   const today: Date = new Date()
 
   let pressed: boolean = false
