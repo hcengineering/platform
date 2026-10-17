@@ -8,10 +8,7 @@ import { initOpenTelemetrySDK, reportOTEL, reportOTELError } from '@hcengineerin
 export * from '@hcengineering/measurements-otlp'
 export * from './logging'
 
-/**
- * Only these events are forwarded to OTEL. Other events (e.g. `ChangeAttribute` from core operations) can carry
- * user data and are high volume, so they stay out of the server logs.
- */
+// Other events (e.g. `ChangeAttribute`) carry user data and are high volume, so only these go to OTEL
 const OTEL_EVENTS = new Set<string>(['pipeline-stall-resolved'])
 
 class OTELAnalyticsProvider implements AnalyticProvider {
@@ -34,7 +31,6 @@ class OTELAnalyticsProvider implements AnalyticProvider {
   }
 
   handleError (error: Error): void {
-    // Errors may carry structured details in `attributes`, which keeps the message stable for grouping
     const attributes = (error as { attributes?: Record<string, any> }).attributes
     reportOTELError(error, attributes)
   }

@@ -16,24 +16,22 @@
 import { Analytics } from '@hcengineering/analytics'
 
 /**
- * Diagnostics for pipeline requests that wait on a shared promise (cache load, init, per-document ordering,
- * broadcast target resolution) for too long.
+ * Diagnostics for pipeline requests that wait too long on a shared promise (cache load, init, per-document
+ * ordering, broadcast target resolution).
  *
- * When the awaited promise is still pending after `PIPELINE_STALL_THRESHOLD_MS` (default 1000), a stall is
- * reported once through Analytics (`handleError`). If the promise settles later, the wait time is reported with
- * the `pipeline-stall-resolved` event (with `failed=true` if it rejected), so "slow" can be told from "never finishes".
- *
- * Reports are rate limited per label so a stall storm cannot flood the telemetry pipeline.
+ * If the promise is still pending after `PIPELINE_STALL_THRESHOLD_MS` (default 1000), a stall is reported through
+ * `Analytics.handleError`; when it settles later, `pipeline-stall-resolved` carries the wait time and `failed`, so
+ * "slow" can be told from "never finishes". Reports are rate limited per label and workspace.
  * Set `PIPELINE_STALL_WATCH=false` to turn it off.
  */
 
-// Read lazily so the switch can be flipped without reloading the module (and tested)
 const isEnabled = (): boolean => process.env.PIPELINE_STALL_WATCH !== 'false'
 const parsedThreshold = parseInt(process.env.PIPELINE_STALL_THRESHOLD_MS ?? '1000', 10)
 const THRESHOLD_MS = Number.isFinite(parsedThreshold) && parsedThreshold > 0 ? parsedThreshold : 1000
 
 const RATE_WINDOW_MS = 10_000
 const MAX_REPORTS_PER_WINDOW = 20
+const MAX_WINDOWS = 1000
 
 interface RateWindow {
   start: number
@@ -41,42 +39,30 @@ interface RateWindow {
   suppressed: number
 }
 
-const MAX_WINDOWS = 1000
-
 const windows = new Map<string, RateWindow>()
 
-/**
- * Error with a stable message (good for grouping) and the per-incident details in `attributes`.
- */
+/** Stable message (good for grouping); per-incident details are in `attributes`. */
 export class PipelineStallError extends Error {
   constructor (
-    readonly label: string,
-    thresholdMs: number,
+    label: string,
     readonly attributes: Record<string, string>
   ) {
-    super(`pipeline-stall: ${label} pending > ${thresholdMs}ms`)
+    super(`pipeline-stall: ${label} pending > ${THRESHOLD_MS}ms`)
     this.name = 'PipelineStallError'
   }
 }
 
-/**
- * @param key rate limit key (label + workspace), so one noisy workspace cannot hide stalls in others
- * @returns number of reports suppressed since the previous allowed one, or undefined if this report is not allowed
- */
+/** @returns reports suppressed since the previous allowed one, or undefined if this report is not allowed */
 function acquire (key: string, now: number): number | undefined {
   if (windows.size >= MAX_WINDOWS) {
     for (const [k, w] of windows) {
       if (now - w.start >= RATE_WINDOW_MS && w.suppressed === 0) windows.delete(k)
     }
   }
-  const label = key
-  let win = windows.get(label)
+  const win = windows.get(key)
   if (win === undefined || now - win.start >= RATE_WINDOW_MS) {
-    const suppressed = win?.suppressed ?? 0
-    win = { start: now, reported: 0, suppressed: 0 }
-    windows.set(label, win)
-    win.reported++
-    return suppressed
+    windows.set(key, { start: now, reported: 1, suppressed: 0 })
+    return win?.suppressed ?? 0
   }
   if (win.reported >= MAX_REPORTS_PER_WINDOW) {
     win.suppressed++
@@ -111,22 +97,15 @@ export async function watchStall<T> (
     return await promise
   }
   const started = Date.now()
-  let reported = false
+  let reported: Record<string, string> | undefined
   let failed = false
   const timer = setTimeout(() => {
     try {
       const details = safeAttrs(attrs)
       const suppressed = acquire(`${label}:${details.workspace ?? ''}`, Date.now())
       if (suppressed === undefined) return
-      reported = true
-      Analytics.handleError(
-        new PipelineStallError(label, THRESHOLD_MS, {
-          ...details,
-          label,
-          thresholdMs: String(THRESHOLD_MS),
-          suppressedBefore: String(suppressed)
-        })
-      )
+      reported = details
+      Analytics.handleError(new PipelineStallError(label, { ...details, label, suppressedBefore: String(suppressed) }))
     } catch {
       // diagnostics must never affect the request
     }
@@ -139,13 +118,13 @@ export async function watchStall<T> (
     throw err
   } finally {
     clearTimeout(timer)
-    if (reported) {
+    if (reported !== undefined) {
       try {
         Analytics.handleEvent('pipeline-stall-resolved', {
+          ...reported,
           label,
           elapsedMs: String(Date.now() - started),
-          failed: String(failed),
-          ...safeAttrs(attrs)
+          failed: String(failed)
         })
       } catch {
         // ignore
