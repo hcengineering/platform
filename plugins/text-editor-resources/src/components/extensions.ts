@@ -111,7 +111,12 @@ export function inlineCommandsConfig (
           { id: 'image', label: textEditor.string.Image, icon: view.icon.Image },
           { id: 'table', label: textEditor.string.Table, icon: view.icon.Table2 },
           { id: 'code-block', label: textEditor.string.CodeBlock, icon: view.icon.CodeBlock },
-          { id: 'separator-line', label: textEditor.string.SeparatorLine, icon: view.icon.SeparatorLine },
+          {
+            id: 'separator-line',
+            label: textEditor.string.SeparatorLine,
+            icon: view.icon.SeparatorLine,
+            keywords: ['divider', 'hr']
+          },
           { id: 'todo-list', label: textEditor.string.TodoItem, icon: view.icon.TodoList },
           { id: 'drawing-board', label: textEditor.string.DrawingBoard, icon: IconScribble as any },
           { id: 'mermaid', label: textEditor.string.MermaidDiargram, icon: view.icon.Model }

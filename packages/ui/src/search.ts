@@ -83,3 +83,14 @@ export class LocalizedSearch {
     }
   }
 }
+
+/**
+ * Check whether an item with the given display text and optional keywords matches a search term (case-insensitive)
+ */
+export function matchesSearch (text: string, keywords: string[] | undefined, searchTerm: string): boolean {
+  const term = searchTerm.toLowerCase()
+  if (text.toLowerCase().includes(term)) {
+    return true
+  }
+  return keywords?.some((keyword) => keyword.toLowerCase().includes(term)) ?? false
+}
