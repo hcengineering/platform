@@ -46,6 +46,7 @@
   export let isPresence: boolean = true
   export let isCustomAttr: boolean = true
   export let floatAside: boolean = false
+  export let persistAside: boolean = true
   export let allowClose: boolean = true
   export let embedded: boolean = false
   export let useMaxWidth: boolean | undefined = undefined
@@ -139,6 +140,7 @@
   {allowClose}
   {embedded}
   {floatAside}
+  {persistAside}
   bind:useMaxWidth
   {isFullSize}
   {customAside}
