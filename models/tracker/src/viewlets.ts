@@ -1063,4 +1063,63 @@ export function defineViewlets (builder: Builder): void {
     },
     tracker.viewlet.MilestoneList
   )
+
+  const timeSpendReportOptions = (grouping: boolean): ViewOptionsModel => ({
+    groupBy: grouping ? ['employee', 'space', 'createdBy'] : [],
+    orderBy: [
+      ['date', SortingOrder.Descending],
+      ['value', SortingOrder.Descending],
+      ['modifiedOn', SortingOrder.Descending],
+      ['createdOn', SortingOrder.Descending]
+    ],
+    other: []
+  })
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.TimeSpendReport,
+      descriptor: view.viewlet.Table,
+      viewOptions: timeSpendReportOptions(false),
+      configOptions: {
+        hiddenKeys: ['value'],
+        sortable: true
+      },
+      config: [
+        'date',
+        'employee',
+        '$lookup.attachedTo',
+        '$lookup.attachedTo.title',
+        'space',
+        { key: '', sortingKey: 'value' },
+        'description'
+      ]
+    },
+    tracker.viewlet.TimeSpendReportTable
+  )
+
+  builder.createDoc(
+    view.class.Viewlet,
+    core.space.Model,
+    {
+      attachTo: tracker.class.TimeSpendReport,
+      descriptor: view.viewlet.List,
+      viewOptions: timeSpendReportOptions(true),
+      configOptions: {
+        strict: true,
+        hiddenKeys: ['value']
+      },
+      config: [
+        { key: '$lookup.attachedTo', displayProps: { key: 'issue', fixed: 'left' } },
+        { key: '$lookup.attachedTo.title', displayProps: { grow: true } },
+        { key: 'description', displayProps: { key: 'description', compression: true } },
+        { key: 'space', displayProps: { key: 'space', compression: true } },
+        { key: 'employee', displayProps: { key: 'employee' } },
+        { key: 'date', displayProps: { key: 'date', fixed: 'right' } },
+        { key: '', displayProps: { key: 'value', fixed: 'right', dividerBefore: true } }
+      ]
+    },
+    tracker.viewlet.TimeSpendReportList
+  )
 }

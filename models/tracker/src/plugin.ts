@@ -51,6 +51,7 @@ export default mergeIds(trackerId, tracker, {
   component: {
     MilestoneSelector: '' as AnyComponent,
     IssueStatistics: '' as AnyComponent,
+    TimeSpendReportTotal: '' as AnyComponent,
     TimeSpendReportPopup: '' as AnyComponent,
     NotificationIssuePresenter: '' as AnyComponent,
     MilestoneFilter: '' as AnyComponent,
@@ -75,7 +76,9 @@ export default mergeIds(trackerId, tracker, {
     MilestoneList: '' as Ref<Viewlet>,
     ComponentList: '' as Ref<Viewlet>,
     ProjectList: '' as Ref<Viewlet>,
-    ProjectListGrouped: '' as Ref<Viewlet>
+    ProjectListGrouped: '' as Ref<Viewlet>,
+    TimeSpendReportTable: '' as Ref<Viewlet>,
+    TimeSpendReportList: '' as Ref<Viewlet>
   },
   ids: {
     TrackerNotificationGroup: '' as Ref<NotificationGroup>,
