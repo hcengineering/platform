@@ -18,6 +18,42 @@ linking:
   `hasgroups`, as emitted by Microsoft Entra ID for users with many groups),
   denies access. Group overage is fail-closed; resolving it through Microsoft
   Graph is not supported by this provider.
+- `OPENID_ALLOWED_GROUPS=auto` derives the allowlist from all valid
+  `OPENID_ROLE_GROUPS` rules, so the group list does not have to be repeated.
+  If no valid resolved role rule remains, OIDC login is denied for every user
+  and a warning is logged; `auto` never falls back to unrestricted access.
+- `OPENID_ROLE_GROUPS` synchronizes workspace membership and roles at every
+  successful OIDC login. It is a semicolon-separated list of
+  `<workspace-url>:<group>=<role>` rules; roles are `OWNER`, `MAINTAINER`,
+  `USER`, or `GUEST`. Group matching is case-insensitive and uses the same
+  `groups` claim values as `OPENID_ALLOWED_GROUPS`. For each configured
+  workspace, the highest matching role wins; a matching user is added or
+  updated, and a user with no matching group is removed. Workspaces without
+  rules are never changed. If the groups claim is missing or group overage is
+  indicated, no workspace role is changed. Group names containing ':', '=' or ','
+  cannot be expressed in OPENID_ROLE_GROUPS.
+
+  Rules are resolved against the account database on the first OIDC callback
+  and cached after a successful resolution; a failed resolution (for example a
+  transient database error) fails that login and is retried on the next one. A
+  workspace created or re-created after that first callback is picked up after
+  restarting the account service.
+  Invalid rules and rules for unknown workspaces are ignored with a warning
+  that does not contain group names.
+
+  Accounts without an OIDC identity are never changed, and a workspace's last
+  owner is never demoted or removed by OIDC synchronization. PostgreSQL and
+  CockroachDB serialize OIDC owner demotions and removals per workspace, so two
+  concurrent logins cannot remove every owner. The Mongo account backend
+  stores members in separate documents and only provides a best-effort
+  last-owner check.
+
+  The identity provider is authoritative for workspaces listed in
+  `OPENID_ROLE_GROUPS`: manual membership and role changes there are
+  overwritten at the user's next OIDC login. Changes take effect on the next
+  login; existing sessions are not terminated. Synchronization also runs after
+  an invite join, so a user who joins a configured workspace through an invite
+  without a matching group is removed during that same login.
 - `OPENID_TRUST_EMAIL=true` treats an ID-token email as verified only when the
   token issuer exactly matches `OPENID_ISSUER` and its `tid` matches the tenant
   in an issuer of the form
@@ -49,6 +85,13 @@ OPENID_ISSUER=https://idp.example.com/realms/example
 OPENID_ALLOWED_GROUPS=huly-users,huly-admins
 OPENID_SIGNUP_FOR_ALLOWED_GROUPS=true
 OPENID_PROMPT=select_account
+```
+
+Workspace role synchronization example:
+
+```sh
+OPENID_ALLOWED_GROUPS=auto
+OPENID_ROLE_GROUPS=engineering:huly-admins=OWNER;engineering:huly-users=USER;support:huly-users=GUEST
 ```
 
 A user who is denied by the group allowlist is redirected to the login page,

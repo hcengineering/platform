@@ -29,10 +29,11 @@ export async function authorizeOpenidUser (
   user: OpenidUser,
   issuer: string,
   signUpDisabled: boolean | undefined,
-  authenticate: Authenticate
+  authenticate: Authenticate,
+  allowedGroupsOverride?: string | null
 ): Promise<string> {
   const claims = user._idClaims
-  const allowedGroups = process.env.OPENID_ALLOWED_GROUPS
+  const allowedGroups = allowedGroupsOverride === undefined ? process.env.OPENID_ALLOWED_GROUPS : allowedGroupsOverride
   const groupAccess = evaluateGroupAccess(claims, allowedGroups)
   const candidateEmail = getOidcEmailCandidate(claims)
   const sub = typeof claims?.sub === 'string' ? claims.sub : typeof user.sub === 'string' ? user.sub : undefined
@@ -53,7 +54,9 @@ export async function authorizeOpenidUser (
     trustEmail: process.env.OPENID_TRUST_EMAIL === 'true'
   })
   const allowSignup =
-    process.env.OPENID_SIGNUP_FOR_ALLOWED_GROUPS === 'true' && parseAllowedGroups(allowedGroups).length > 0
+    process.env.OPENID_SIGNUP_FOR_ALLOWED_GROUPS === 'true' &&
+    allowedGroups !== null &&
+    parseAllowedGroups(allowedGroups).length > 0
 
   return await authenticate(email.verified ? email.email : '', allowSignup ? false : signUpDisabled === true)
 }

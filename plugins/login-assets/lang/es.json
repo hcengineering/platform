@@ -4,7 +4,8 @@
     "FieldsDoNotMatch": "{field} no coincide con {field2}",
     "ConnectingToServer": "Conectando al servidor...",
     "IncorrectValue": "Valor incorrecto para {field}",
-    "OidcGroupNotAllowed": "Tu cuenta no está autorizada para iniciar sesión."
+    "OidcGroupNotAllowed": "Tu cuenta no está autorizada para iniciar sesión.",
+    "OidcRoleSyncFailed": "No se pudo sincronizar tu acceso al espacio de trabajo. Intenta iniciar sesión de nuevo."
   },
   "string": {
     "ChangePassword": "Cambiar contraseña",

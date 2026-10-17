@@ -4,7 +4,8 @@
     "FieldsDoNotMatch": "{field} se neshoduje s {field2}",
     "ConnectingToServer": "Připojování k serveru....",
     "IncorrectValue": "Nesprávná hodnota {field}",
-    "OidcGroupNotAllowed": "Váš účet nemá oprávnění k přihlášení."
+    "OidcGroupNotAllowed": "Váš účet nemá oprávnění k přihlášení.",
+    "OidcRoleSyncFailed": "Nepodařilo se synchronizovat přístup k pracovnímu prostoru. Zkuste se prosím znovu přihlásit."
   },
   "string": {
     "LogIn": "Přihlásit se",

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type AccountDB } from '@hcengineering/account'
+import { synchronizeOidcWorkspaceRoles, type AccountDB } from '@hcengineering/account'
 import { type ProviderInfo } from '@hcengineering/account-client'
 import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } from '@hcengineering/core'
 import Router from 'koa-router'
@@ -21,7 +21,14 @@ import { Issuer, Strategy } from 'openid-client'
 import { Passport } from '.'
 import { authorizeOpenidUser, type OpenidUser } from './oidcAuthorization'
 import { type OidcClaims } from './oidcClaims'
-import { encodeState, handleProviderAuth, safeParseAuthState } from './utils'
+import { getOidcGroups } from './oidcGroups'
+import {
+  getAllowedGroups,
+  getOidcWorkspaceRoles,
+  resolveOidcRoleGroupRules,
+  warnOnEmptyAutoAllowedGroups
+} from './oidcRoleGroups'
+import { encodeState, handleProviderAuth, ProviderAuthenticationHookError, safeParseAuthState } from './utils'
 
 const validOpenidPrompts = new Set(['select_account', 'login', 'consent', 'none'])
 
@@ -294,6 +301,25 @@ export function registerOpenid (
   const redirectURL = '/auth/openid/callback'
   if (openidClientId === undefined || openidClientSecret === undefined || issuer === undefined) return
   const prompt = getOpenidPrompt(measureCtx)
+  let roleRules: Promise<Awaited<ReturnType<typeof resolveOidcRoleGroupRules>>> | undefined
+  const getRoleRules = async (): Promise<Awaited<ReturnType<typeof resolveOidcRoleGroupRules>>> => {
+    if (roleRules === undefined) {
+      roleRules = dbPromise
+        .then(async (db) => {
+          const rules = await resolveOidcRoleGroupRules(measureCtx, db, process.env.OPENID_ROLE_GROUPS)
+          warnOnEmptyAutoAllowedGroups(measureCtx, process.env.OPENID_ALLOWED_GROUPS, rules)
+          return rules
+        })
+        .catch((err) => {
+          // Cache successful resolution only. A transient database error must
+          // not make every future OIDC callback fail until the pod restarts.
+          roleRules = undefined
+          measureCtx.error('OIDC role-group rules could not be resolved; retrying on the next login', { err })
+          throw err
+        })
+    }
+    return await roleRules
+  }
   if (openidRouters.has(router)) {
     throw new Error('OIDC provider is already registered on this router')
   }
@@ -406,6 +432,20 @@ export function registerOpenid (
       }
 
       const user = ctx.state.user as OpenidUser
+      const db = await dbPromise
+      const resolvedRoleRules = await getRoleRules()
+      const allowedGroups = getAllowedGroups(process.env.OPENID_ALLOWED_GROUPS, resolvedRoleRules)
+      const oidcGroups = getOidcGroups(user._idClaims)
+      const workspaceRoles = getOidcWorkspaceRoles(user._idClaims, resolvedRoleRules)
+      const subject = typeof user._idClaims?.sub === 'string' ? user._idClaims.sub : undefined
+      if (resolvedRoleRules.length > 0 && oidcGroups.state !== 'available') {
+        measureCtx.warn(
+          oidcGroups.state === 'overage'
+            ? 'oidc_workspace_role_sync_groups_overage'
+            : 'oidc_workspace_role_sync_groups_missing',
+          { sub: subject }
+        )
+      }
       const redirectUrl = await authorizeOpenidUser(
         measureCtx,
         user,
@@ -417,22 +457,35 @@ export function registerOpenid (
           const nameParts = name.split(' ')
           const first = typeof user.given_name === 'string' ? user.given_name : (nameParts[0] ?? '')
           const last = typeof user.family_name === 'string' ? user.family_name : nameParts.slice(1).join(' ')
-          const db = await dbPromise
-          return await handleProviderAuth(
-            measureCtx,
-            db,
-            brandings,
-            frontUrl,
-            'openid',
-            ctx.query?.state,
-            undefined,
-            verifiedEmail,
-            first,
-            last,
-            { type: SocialIdType.OIDC, value: user.sub as string },
-            effectiveSignUpDisabled
-          )
-        }
+          try {
+            return await handleProviderAuth(
+              measureCtx,
+              db,
+              brandings,
+              frontUrl,
+              'openid',
+              ctx.query?.state,
+              undefined,
+              verifiedEmail,
+              first,
+              last,
+              { type: SocialIdType.OIDC, value: user.sub as string },
+              effectiveSignUpDisabled,
+              async (loginInfo) => {
+                if (workspaceRoles !== undefined) {
+                  await synchronizeOidcWorkspaceRoles(measureCtx, db, loginInfo.account, subject, workspaceRoles)
+                }
+              }
+            )
+          } catch (err) {
+            if (err instanceof ProviderAuthenticationHookError) {
+              measureCtx.error('OIDC workspace role synchronization failed', { err: err.cause })
+              return '/login?error=oidc_role_sync_failed'
+            }
+            throw err
+          }
+        },
+        allowedGroups
       )
 
       if (redirectUrl !== '') {

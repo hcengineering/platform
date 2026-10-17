@@ -4,7 +4,8 @@
     "FieldsDoNotMatch": "{field} 与 {field2} 不匹配",
     "ConnectingToServer": "正在连接服务器....",
     "IncorrectValue": "不正确的值 {field}",
-    "OidcGroupNotAllowed": "此帐户无权登录。"
+    "OidcGroupNotAllowed": "此帐户无权登录。",
+    "OidcRoleSyncFailed": "无法同步您的工作区访问权限。请重新登录。"
   },
   "string": {
     "ChangePassword": "更改密码",

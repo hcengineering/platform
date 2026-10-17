@@ -64,6 +64,7 @@
   let navigateUrl: string | undefined
   let tfaToken: string | undefined = undefined
   let oidcGroupNotAllowed = false
+  let oidcRoleSyncFailed = false
 
   onDestroy(location.subscribe(updatePageLoc))
 
@@ -94,6 +95,7 @@
     navigateUrl = loc.query?.navigateUrl ?? undefined
     tfaToken = loc.query?.token ?? undefined
     oidcGroupNotAllowed = loc.query?.oidcError === 'group_not_allowed'
+    oidcRoleSyncFailed = loc.query?.error === 'oidc_role_sync_failed'
   }
 
   async function chooseToken (): Promise<void> {
@@ -162,6 +164,9 @@
             {#if page === 'login'}
               {#if oidcGroupNotAllowed}
                 <div class="oidc-error"><Label label={login.status.OidcGroupNotAllowed} /></div>
+              {/if}
+              {#if oidcRoleSyncFailed}
+                <div class="oidc-error"><Label label={login.status.OidcRoleSyncFailed} /></div>
               {/if}
               {#if localLoginHidden}
                 <ProvidersOnlyForm />

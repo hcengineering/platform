@@ -4,7 +4,8 @@
     "FieldsDoNotMatch": "{field} stimmt nicht mit {field2} überein",
     "ConnectingToServer": "Verbindung zum Server wird hergestellt....",
     "IncorrectValue": "Ungültiger Wert für {field}",
-    "OidcGroupNotAllowed": "Ihr Konto ist für die Anmeldung nicht berechtigt."
+    "OidcGroupNotAllowed": "Ihr Konto ist für die Anmeldung nicht berechtigt.",
+    "OidcRoleSyncFailed": "Der Zugriff auf Ihren Arbeitsbereich konnte nicht synchronisiert werden. Bitte melden Sie sich erneut an."
   },
   "string": {
     "ChangePassword": "Passwort ändern",

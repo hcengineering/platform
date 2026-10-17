@@ -23,7 +23,7 @@ import Router from 'koa-router'
 import { Issuer, Strategy } from 'openid-client'
 import { authorizeOpenidUser } from '../oidcAuthorization'
 import { registerOidcStrategyWithRetry, registerOpenid, shouldWarnOnAttempt } from '../openid'
-import { handleProviderAuth } from '../utils'
+import { handleProviderAuth, ProviderAuthenticationHookError } from '../utils'
 
 jest.mock('openid-client', () => ({
   Issuer: { discover: jest.fn() },
@@ -406,7 +406,7 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
     expect(ctx.error).toHaveBeenCalledWith('OIDC callback failed', expect.objectContaining({ hasErr: true }))
   })
 
-  test('7. no account and provider-handler failures redirect with oidc_no_account', async () => {
+  test('7. no account redirects with oidc_no_account and role-sync failures use a distinct error', async () => {
     ;(Issuer.discover as jest.Mock).mockReturnValue(new Promise(() => {}))
     const { passport, router, ctx } = callRegister()
     const user = { email: 'person@example.com', email_verified: true, sub: 'subject' }
@@ -416,11 +416,12 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
     ;(handleProviderAuth as jest.Mock).mockResolvedValueOnce('')
     const noAccountCtx = await invokeCallbackRoute(router)
     expect(noAccountCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_no_account')
-    // handleProviderAuth catches its own failures and reports them as ''.
-    ;(handleProviderAuth as jest.Mock).mockResolvedValueOnce('')
+    const syncFailure = new Error('workspace synchronization unavailable')
+    ;(handleProviderAuth as jest.Mock).mockRejectedValueOnce(new ProviderAuthenticationHookError(syncFailure))
     const failedHandlerCtx = await invokeCallbackRoute(router)
-    expect(failedHandlerCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_no_account')
-    expect(ctx.error).not.toHaveBeenCalled()
+    expect(failedHandlerCtx.redirect).toHaveBeenCalledWith('http://front.example.com/login?error=oidc_role_sync_failed')
+    expect(ctx.error).toHaveBeenCalledWith('OIDC workspace role synchronization failed', { err: syncFailure })
+    expect(ctx.error).not.toHaveBeenCalledWith('OIDC callback failed', expect.anything())
   })
 
   test('8. a synchronous passport.authenticate throw is caught and redirected', async () => {
@@ -569,6 +570,26 @@ describe('OpenID callback authorization', () => {
     await authorizeOpenidUser(measureCtx, { _idClaims: {} }, issuer, true, handleProviderAuthMock)
 
     expect(handleProviderAuthMock).toHaveBeenCalledWith('', true)
+  })
+
+  test('denies every login when auto allowlist resolution has no valid rules', async () => {
+    const handleProviderAuthMock = jest.fn()
+
+    const result = await authorizeOpenidUser(
+      measureCtx,
+      { _idClaims: { sub: 'subject', groups: ['engineering'], email: 'user@example.com' } },
+      issuer,
+      false,
+      handleProviderAuthMock,
+      null
+    )
+
+    expect(result).toBe('/login?oidcError=group_not_allowed')
+    expect(handleProviderAuthMock).not.toHaveBeenCalled()
+    expect(measureCtx.info).toHaveBeenCalledWith('oidc_groups_not_allowed', {
+      sub: 'subject',
+      email: 'user@example.com'
+    })
   })
 
   test('permits OIDC signup for an allowed group only when explicitly enabled', async () => {

@@ -33,6 +33,7 @@ describe('OpenID callback redirects', () => {
   const previousIssuer = process.env.OPENID_ISSUER
   const previousAllowedGroups = process.env.OPENID_ALLOWED_GROUPS
   const previousPrompt = process.env.OPENID_PROMPT
+  const previousRoleGroups = process.env.OPENID_ROLE_GROUPS
 
   beforeEach(() => {
     jest.useFakeTimers()
@@ -42,6 +43,7 @@ describe('OpenID callback redirects', () => {
     process.env.OPENID_ISSUER = issuer
     process.env.OPENID_ALLOWED_GROUPS = 'engineering'
     delete process.env.OPENID_PROMPT
+    delete process.env.OPENID_ROLE_GROUPS
     ;(Issuer.discover as jest.Mock).mockResolvedValue({ Client: jest.fn() })
   })
 
@@ -60,9 +62,11 @@ describe('OpenID callback redirects', () => {
     else process.env.OPENID_ALLOWED_GROUPS = previousAllowedGroups
     if (previousPrompt === undefined) delete process.env.OPENID_PROMPT
     else process.env.OPENID_PROMPT = previousPrompt
+    if (previousRoleGroups === undefined) delete process.env.OPENID_ROLE_GROUPS
+    else process.env.OPENID_ROLE_GROUPS = previousRoleGroups
   })
 
-  function registerOpenidRoutes (user: Record<string, unknown> = {}): {
+  function registerOpenidRoutes (user: Record<string, unknown> = {}, db: Record<string, unknown> = {}): {
     routes: Map<string, Array<(ctx: any, next: () => Promise<void>) => Promise<void>>>
     passport: { use: jest.Mock, authenticate: jest.Mock }
   } {
@@ -89,7 +93,7 @@ describe('OpenID callback redirects', () => {
       passport as any,
       router as any,
       'https://accounts.example',
-      Promise.resolve({} as any),
+      Promise.resolve(db as any),
       frontUrl,
       {}
     )
@@ -158,6 +162,37 @@ describe('OpenID callback redirects', () => {
     const authenticate = await invokeOpenidLogin()
 
     expect(authenticate.mock.calls[0][1]).not.toHaveProperty('prompt')
+  })
+
+  test('retries role-rule resolution after a transient failure', async () => {
+    process.env.OPENID_ROLE_GROUPS = 'workspace:engineering=user'
+    ;(handleProviderAuth as jest.Mock).mockResolvedValue('https://front.example/login/auth?token=token-value')
+    const findOne = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('temporary database failure'))
+      .mockResolvedValue({ uuid: 'a1111111-1111-4111-9111-111111111111' })
+    const { routes } = registerOpenidRoutes(
+      { sub: 'subject', _idClaims: { sub: 'subject', groups: ['engineering'], email: 'user@example.com', xms_edov: true } },
+      { workspace: { findOne } }
+    )
+    const handlers = routes.get('/auth/openid/callback')
+    if (handlers === undefined) throw new Error('OIDC callback was not registered')
+    const invoke = async (): Promise<jest.Mock> => {
+      const redirect = jest.fn()
+      const ctx = { query: {}, state: {}, redirect }
+      await handlers[0](ctx, async () => {
+        await handlers[1](ctx, async () => {})
+      })
+      return redirect
+    }
+
+    const failedRedirect = await invoke()
+    const redirect = await invoke()
+
+    expect(findOne).toHaveBeenCalledTimes(2)
+    expect(failedRedirect).toHaveBeenCalledWith('https://front.example/login?error=oidc_callback_failed')
+    expect(handleProviderAuth).toHaveBeenCalledTimes(1)
+    expect(redirect).toHaveBeenCalledWith('https://front.example/login/auth?token=token-value')
   })
 
   test('ignores an invalid OPENID_PROMPT and logs one warning without its value', async () => {

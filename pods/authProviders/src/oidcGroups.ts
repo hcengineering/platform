@@ -16,6 +16,12 @@
 import { type OidcClaims } from './oidcClaims'
 
 export type OidcGroupAccess = 'allowed' | 'denied' | 'missing' | 'overage'
+export type OidcGroupsState = 'available' | 'missing' | 'overage'
+
+export interface OidcGroups {
+  state: OidcGroupsState
+  groups: string[]
+}
 
 function normalizeGroup (value: string): string {
   return value.trim().toLowerCase()
@@ -32,21 +38,36 @@ export function parseAllowedGroups (value: string | undefined): string[] {
   ]
 }
 
-export function evaluateGroupAccess (
-  claims: OidcClaims | undefined,
-  allowedGroups: string | undefined
-): OidcGroupAccess {
-  const allowed = parseAllowedGroups(allowedGroups)
-  if (allowed.length === 0) return 'allowed'
-  if (claims == null) return 'missing'
+export function getOidcGroups (claims: OidcClaims | undefined): OidcGroups {
+  if (claims == null) return { state: 'missing', groups: [] }
 
   if (claims._claim_names != null || claims._claim_sources != null || claims.hasgroups === true) {
-    return 'overage'
+    return { state: 'overage', groups: [] }
   }
 
-  const groups = claims.groups
-  if (!Array.isArray(groups)) return 'missing'
+  if (!Array.isArray(claims.groups)) return { state: 'missing', groups: [] }
 
-  const actual = new Set(groups.filter((group): group is string => typeof group === 'string').map(normalizeGroup))
+  return {
+    state: 'available',
+    groups: [
+      ...new Set(claims.groups.filter((group): group is string => typeof group === 'string').map(normalizeGroup))
+    ]
+  }
+}
+
+export function evaluateGroupAccess (
+  claims: OidcClaims | undefined,
+  allowedGroups: string | null | undefined
+): OidcGroupAccess {
+  // `null` is reserved for an invalid derived allowlist. It must not be
+  // treated like an unset/empty explicit allowlist, which intentionally means
+  // unrestricted access for backwards compatibility.
+  if (allowedGroups === null) return 'denied'
+  const allowed = parseAllowedGroups(allowedGroups)
+  if (allowed.length === 0) return 'allowed'
+  const oidcGroups = getOidcGroups(claims)
+  if (oidcGroups.state !== 'available') return oidcGroups.state
+
+  const actual = new Set(oidcGroups.groups)
   return allowed.some((group) => actual.has(group)) ? 'allowed' : 'denied'
 }
