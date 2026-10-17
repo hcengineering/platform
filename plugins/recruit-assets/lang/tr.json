@@ -21,6 +21,7 @@
     "Talent": "Yetenek",
     "TalentCreateLabel": "Yetenek",
     "CreateTalent": "Yeni Yetenek",
+    "TalentCreated": "Yetenek oluşturuldu",
     "CreateTalentDialogClose": "Bu diyalogu kapatmak istiyor musunuz?",
     "CreateTalentDialogCloseNote": "Tüm değişiklikler kaybolacak",
     "ResumeDraft": "Özgeçmiş taslağı",
