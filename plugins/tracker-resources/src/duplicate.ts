@@ -70,11 +70,7 @@ export function getCustomAttributesToCopy (
 
   const mixins = new Map<Ref<Mixin<Doc>>, Record<string, any>>()
   for (const mixin of hierarchy.findAllMixins(doc)) {
-    const values = pickCustomValues(
-      (doc as any)[mixin],
-      hierarchy.getAllAttributes(mixin, _class),
-      excluded
-    )
+    const values = pickCustomValues((doc as any)[mixin], hierarchy.getAllAttributes(mixin, _class), excluded)
     if (Object.keys(values).length > 0) {
       mixins.set(mixin as Ref<Mixin<Doc>>, values)
     }
