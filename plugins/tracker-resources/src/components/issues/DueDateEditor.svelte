@@ -18,15 +18,15 @@
   import task from '@hcengineering/task'
   import { Issue } from '@hcengineering/tracker'
   import { DueDatePresenter } from '@hcengineering/ui'
+  import { statusStore } from '@hcengineering/view-resources'
 
   export let value: WithLookup<Issue>
   export let width: string | undefined = undefined
   export let editable: boolean = true
 
   const client = getClient()
-  $: shouldIgnoreOverdue =
-    value.$lookup?.status?.category === task.statusCategory.Won ||
-    value.$lookup?.status?.category === task.statusCategory.Lost
+  $: status = $statusStore.byId.get(value.status) ?? value.$lookup?.status
+  $: shouldIgnoreOverdue = status?.category === task.statusCategory.Won || status?.category === task.statusCategory.Lost
 
   const handleDueDateChanged = async (newDueDate: number | undefined | null) => {
     if (newDueDate === undefined || value.dueDate === newDueDate) {
