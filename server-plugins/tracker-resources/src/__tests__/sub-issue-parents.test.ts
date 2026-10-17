@@ -60,7 +60,9 @@ function makeControl (issues: FakeIssue[]): any {
       if (key !== '_id' && key !== 'attachedTo') throw new Error(`unsupported query key ${key}`)
     }
     return issues.filter(
-      (i) => (q._id === undefined || matches(i._id, q._id)) && (q.attachedTo === undefined || matches(i.attachedTo, q.attachedTo))
+      (i) =>
+        (q._id === undefined || matches(i._id, q._id)) &&
+        (q.attachedTo === undefined || matches(i.attachedTo, q.attachedTo))
     )
   })
   const txFactory = {

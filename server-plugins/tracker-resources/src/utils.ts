@@ -47,7 +47,7 @@ export function buildParentInfo (issue: ParentChainDoc, docs: Map<Ref<Issue>, Pa
   const seen = new Set<Ref<Issue>>([issue._id])
   let current = issue
   while (hasParent(current)) {
-    const parentId = current.attachedTo as Ref<Issue>
+    const parentId = current.attachedTo
     const parent = docs.get(parentId)
     if (parent === undefined) {
       result.push(...current.parents)
