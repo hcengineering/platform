@@ -15,6 +15,7 @@
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  getCurrentEmployee,
   getGravatarUrl,
   getName,
   type AvatarInfo,
@@ -32,7 +33,8 @@ import {
   type DocumentQuery,
   type Ref,
   type RelatedDocument,
-  type WithLookup
+  type WithLookup,
+  getCurrentAccount
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getResource, type IntlString, type Resources } from '@hcengineering/platform'
@@ -130,7 +132,8 @@ import PersonPreviewProvider from './components/person/PersonPreviewProvider.sve
 import TranslationSettings from './components/TranslationSettings.svelte'
 
 import { get } from 'svelte/store'
-import { canMergePersons, canResendInvitation } from './visibilityTester'
+import { canKickEmployee, canMergePersons, canResendInvitation } from './visibilityTester'
+import { isCurrentUser } from './kickEmployee'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -301,6 +304,10 @@ async function resendInvite (doc: Person): Promise<void> {
 }
 
 async function kickEmployee (doc: Person): Promise<void> {
+  if (isCurrentUser(doc, getCurrentAccount().uuid, getCurrentEmployee())) {
+    // Kicking yourself would lock you out of the workspace, use "Leave workspace" in the profile instead.
+    return
+  }
   showPopup(MessageBox, {
     label: contact.string.KickEmployee,
     message: contact.string.KickEmployeeDescr,
@@ -471,6 +478,7 @@ export default async (): Promise<Resources> => ({
     ChannelIdentifierProvider: channelIdentifierProvider,
     CanResendInvitation: canResendInvitation,
     CanMergePersons: canMergePersons,
+    CanKickEmployee: canKickEmployee,
     HideInactive: hideInactive
   },
   resolver: {
