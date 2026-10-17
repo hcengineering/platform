@@ -2,7 +2,7 @@
   import calendar, { AccessLevel, Calendar, Event, generateEventId, getAllEvents } from '@hcengineering/calendar'
   import { DayCalendar, calendarByIdStore, hidePrivateEvents } from '@hcengineering/calendar-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import core, { Ref, SortingOrder, Space, Timestamp, getCurrentAccount } from '@hcengineering/core'
+  import { Ref, SortingOrder, Timestamp, getCurrentAccount } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import {
@@ -23,6 +23,7 @@
   import { ToDo, WorkSlot } from '@hcengineering/time'
   import time from '../plugin'
   import { filterArchivedWorkSlots } from '../archived'
+  import { archivedSpacesStore } from '../archivedSpaces'
   import IconSun from './icons/Sun.svelte'
 
   export let dragItem: ToDo | null = null
@@ -32,22 +33,12 @@
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
 
   const q = createQuery()
-  const archivedQuery = createQuery()
   const archivedToDosQuery = createQuery()
 
-  let archivedSpaces: Ref<Space>[] = []
   let archivedToDos = new Set<Ref<ToDo>>()
 
   // Work slots of ToDos attached to archived spaces are hidden, like the ToDos themselves.
-  archivedQuery.query(
-    core.class.Space,
-    { archived: true },
-    (res) => {
-      archivedSpaces = res.map((it) => it._id)
-    },
-    { showArchived: true, projection: { _id: 1, archived: 1 } }
-  )
-
+  $: archivedSpaces = Array.from($archivedSpacesStore)
   $: if (archivedSpaces.length > 0) {
     archivedToDosQuery.query(
       time.class.ToDo,

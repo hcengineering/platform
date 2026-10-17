@@ -2,7 +2,7 @@
   import calendar from '@hcengineering/calendar'
   import { ScheduleNavSection } from '@hcengineering/calendar-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import core, { Ref, Space, getCurrentAccount } from '@hcengineering/core'
+  import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { Asset, getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { NavFooter } from '@hcengineering/workbench-resources'
@@ -26,6 +26,7 @@
   } from '@hcengineering/ui'
   import { ToDosMode } from '..'
   import time from '../plugin'
+  import { archivedSpacesStore } from '../archivedSpaces'
 
   export let mode: ToDosMode
   export let tag: Ref<TagElementType> | undefined
@@ -92,9 +93,7 @@
   const unplannedQuery = createQuery()
   // ToDos attached to archived spaces (e.g. issues of archived projects) are hidden in the planner,
   // so they must not be counted either.
-  const archivedQuery = createQuery()
   const archivedUnplannedQuery = createQuery()
-  let archivedSpaces: Ref<Space>[] = []
   let unplannedTotal = 0
   let archivedUnplannedTotal = 0
 
@@ -114,15 +113,7 @@
     }
   )
 
-  archivedQuery.query(
-    core.class.Space,
-    { archived: true },
-    (res) => {
-      archivedSpaces = res.map((it) => it._id)
-    },
-    { showArchived: true, projection: { _id: 1, archived: 1 } }
-  )
-
+  $: archivedSpaces = Array.from($archivedSpacesStore)
   $: if (archivedSpaces.length > 0) {
     archivedUnplannedQuery.query(
       time.class.ToDo,

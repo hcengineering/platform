@@ -15,8 +15,8 @@
 
 <script lang="ts">
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import type { DocumentQuery, IdMap, Ref, Space, WithLookup } from '@hcengineering/core'
-  import core, { SortingOrder, toIdMap } from '@hcengineering/core'
+  import type { DocumentQuery, IdMap, Ref, WithLookup } from '@hcengineering/core'
+  import { SortingOrder, toIdMap } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import type { TagElement } from '@hcengineering/tags'
@@ -40,6 +40,7 @@
   import type { ToDosMode } from '..'
   import time from '../plugin'
   import { filterArchivedToDos } from '../archived'
+  import { archivedSpacesStore } from '../archivedSpaces'
   import { getNearest } from '../utils'
   import CreateToDo from './CreateToDo.svelte'
   import ToDoGroup from './ToDoGroup.svelte'
@@ -55,22 +56,11 @@
   const activeQuery = createQuery()
   const tagsQuery = createQuery()
   const projectsQuery = createQuery()
-  const archivedQuery = createQuery()
 
   let projects: IdMap<Project> = new Map()
   projectsQuery.query(tracker.class.Project, { archived: false }, (result) => {
     projects = toIdMap(result)
   })
-
-  let archivedSpaces = new Set<Ref<Space>>()
-  archivedQuery.query(
-    core.class.Space,
-    { archived: true },
-    (result) => {
-      archivedSpaces = new Set(result.map((it) => it._id))
-    },
-    { showArchived: true, projection: { _id: 1, archived: 1 } }
-  )
 
   let ids: Ref<ToDo>[] = []
 
@@ -211,11 +201,11 @@
   let rawActive: WithLookup<ToDo>[] = []
   let todoValue: string = ''
 
-  $: active = filterActive(mode, filterArchivedToDos(rawActive, archivedSpaces), currentDate)
+  $: active = filterActive(mode, filterArchivedToDos(rawActive, $archivedSpacesStore), currentDate)
 
   $: groups = group(
-    filterArchivedToDos(inbox, archivedSpaces),
-    filterArchivedToDos(done, archivedSpaces),
+    filterArchivedToDos(inbox, $archivedSpacesStore),
+    filterArchivedToDos(done, $archivedSpacesStore),
     active,
     todoValue
   )
