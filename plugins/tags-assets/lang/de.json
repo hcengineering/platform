@@ -40,6 +40,7 @@
     "Expert": "Experte",
     "Meaningfull": "Bedeutsam",
     "Initial": "Initial",
-    "NumberLabels": "{count, plural, =0 {keine Labels} =1 {1 Label} other {# Labels}}"
+    "NumberLabels": "{count, plural, =0 {keine Labels} =1 {1 Label} other {# Labels}}",
+    "UsageCount": "Anzahl Verwendungen"
   }
 }
