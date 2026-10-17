@@ -26,6 +26,7 @@
   import Spinner from './Spinner.svelte'
   import IconCheck from './icons/Check.svelte'
   import IconSearch from './icons/Search.svelte'
+  import { matchesSearch } from '../search'
   import { translate } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
 
@@ -109,7 +110,7 @@
   $: void translateLabels(value)
 
   $: filteredObjects = value.filter((el) =>
-    (itemLabelsTranslation.get(el.label ?? '') ?? el.text ?? '').toLowerCase().includes(search.toLowerCase())
+    matchesSearch(itemLabelsTranslation.get(el.label ?? '') ?? el.text ?? '', el.keywords, search)
   )
 
   $: huge = size === 'medium' || size === 'large'
