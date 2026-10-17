@@ -25,6 +25,7 @@
   export let kind: 'normal' | 'list' = 'normal'
 
   $: _estimation = estimation ?? value.estimation
+  $: space = 'space' in value ? value.space : undefined
 
   $: childReportTime = floorFractionDigits(
     value.reportedTime + (value.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
@@ -53,20 +54,20 @@
             class:mr-1={kind !== 'list'}
             class:showError={reportDiff > 0 && kind !== 'list'}
           >
-            <TimePresenter value={rchildReportTime} />
+            <TimePresenter value={rchildReportTime} {space} />
           </div>
           {#if kind !== 'list'}
             <div class="romColor">
-              (<TimePresenter value={value.reportedTime} />)
+              (<TimePresenter value={value.reportedTime} {space} />)
             </div>
           {/if}
         {:else if value.reportedTime === 0}
-          <TimePresenter value={childReportTime} />
+          <TimePresenter value={childReportTime} {space} />
         {:else}
-          <TimePresenter value={value.reportedTime} />
+          <TimePresenter value={value.reportedTime} {space} />
         {/if}
       {:else}
-        <TimePresenter value={value.reportedTime} />
+        <TimePresenter value={value.reportedTime} {space} />
       {/if}
       <span>/</span>
     {/if}
@@ -79,18 +80,18 @@
           class:mr-1={kind !== 'list'}
           class:showWarning={estimationDiff !== 0 && kind !== 'list'}
         >
-          <TimePresenter value={childEstTime} />
+          <TimePresenter value={childEstTime} {space} />
         </div>
         {#if _estimation !== 0 && kind !== 'list'}
           <div class="romColor">
-            (<TimePresenter value={_estimation} />)
+            (<TimePresenter value={_estimation} {space} />)
           </div>
         {/if}
       {:else}
-        <TimePresenter value={_estimation} />
+        <TimePresenter value={_estimation} {space} />
       {/if}
     {:else}
-      <TimePresenter value={_estimation} />
+      <TimePresenter value={_estimation} {space} />
     {/if}
   </span>
 </div>

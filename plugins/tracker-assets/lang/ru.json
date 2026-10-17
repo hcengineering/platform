@@ -138,6 +138,8 @@
     "WorkingDaysDepartment": "Календарь праздников",
     "WorkingDaysCompanyWide": "Для всей компании",
     "WorkingDaysAtLeastOneDay": "Хотя бы один рабочий день должен оставаться активным",
+    "HoursPerDay": "Часов в рабочем дне",
+    "HoursPerDayDescription": "Используется для отображения оценки и затраченного времени в днях. Пустое значение означает 8 часов.",
     "WorkingDayMon": "Пн",
     "WorkingDayTue": "Вт",
     "WorkingDayWed": "Ср",

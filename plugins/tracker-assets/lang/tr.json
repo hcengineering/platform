@@ -136,6 +136,8 @@
     "WorkingDaysDepartment": "Tatil takvimi",
     "WorkingDaysCompanyWide": "Şirket geneli",
     "WorkingDaysAtLeastOneDay": "En az bir çalışma günü etkin kalmalıdır",
+    "HoursPerDay": "İş günü başına saat",
+    "HoursPerDayDescription": "Tahmini ve raporlanan süreyi gün olarak göstermek için kullanılır. Boş, 8 saat anlamına gelir.",
     "WorkingDayMon": "Pzt",
     "WorkingDayTue": "Sal",
     "WorkingDayWed": "Çar",

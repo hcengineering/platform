@@ -36,7 +36,7 @@
     notEmpty,
     setWorkspaceGuestAutoJoinRoles
   } from '@hcengineering/core'
-  import { Asset } from '@hcengineering/platform'
+  import { Asset, getEmbeddedLabel } from '@hcengineering/platform'
   import presentation, { IconWithEmoji, Card, createQuery, getClient } from '@hcengineering/presentation'
   import task, { ProjectType, TaskType } from '@hcengineering/task'
   import { taskTypeStore, typeStore } from '@hcengineering/task-resources'
@@ -61,6 +61,7 @@
   import tracker from '../../plugin'
   import StatusSelector from '../issues/StatusSelector.svelte'
   import { workingDaysUpdate } from '../gantt/lib/working-days-editor'
+  import { DEFAULT_HOURS_PER_DAY, hoursPerDayUpdate, normalizeHoursPerDay } from '../issues/timereport/working-hours'
   import WorkingDaysEditor from './WorkingDaysEditor.svelte'
 
   export let project: Project | undefined = undefined
@@ -89,6 +90,7 @@
   // untouched until save.
   let workingDaysConfig: WorkingDaysConfig | undefined =
     project?.workingDaysConfig !== undefined ? { ...project.workingDaysConfig } : undefined
+  let hoursPerDay: number | undefined = project?.hoursPerDay
   let rolesAssignment: RolesAssignment | undefined
 
   let typeId: Ref<ProjectType> | undefined = project?.type
@@ -142,6 +144,7 @@
       defaultIssueStatus: defaultStatus ?? ('' as Ref<IssueStatus>),
       defaultTimeReportDay: project?.defaultTimeReportDay ?? TimeReportDayType.PreviousWorkDay,
       workingDaysConfig,
+      hoursPerDay: normalizeHoursPerDay(hoursPerDay),
       autoJoinForRoles: normalizeAutoJoinForRoles(autoJoinForRoles)
     }
   }
@@ -200,6 +203,14 @@
         update.$unset = wdUpdate.$unset
       } else {
         update.workingDaysConfig = wdUpdate.workingDaysConfig
+      }
+    }
+    const hpdUpdate = hoursPerDayUpdate(projectData.hoursPerDay, project?.hoursPerDay)
+    if (hpdUpdate !== undefined) {
+      if ('$unset' in hpdUpdate) {
+        update.$unset = { ...update.$unset, ...hpdUpdate.$unset }
+      } else {
+        update.hoursPerDay = hpdUpdate.hoursPerDay
       }
     }
     if (projectData.autoJoin !== project?.autoJoin) {
@@ -536,6 +547,22 @@
         <span><Label label={tracker.string.WorkingDaysDescription} /></span>
       </div>
       <WorkingDaysEditor bind:value={workingDaysConfig} />
+    </div>
+
+    <div class="antiGrid-row">
+      <div class="antiGrid-row__header withDesciption">
+        <Label label={tracker.string.HoursPerDay} />
+        <span><Label label={tracker.string.HoursPerDayDescription} /></span>
+      </div>
+      <EditBox
+        id="project-hours-per-day"
+        bind:value={hoursPerDay}
+        format={'number'}
+        minValue={1}
+        maxValue={24}
+        maxDigitsAfterPoint={2}
+        placeholder={getEmbeddedLabel(String(DEFAULT_HOURS_PER_DAY))}
+      />
     </div>
 
     <div class="antiGrid-row">

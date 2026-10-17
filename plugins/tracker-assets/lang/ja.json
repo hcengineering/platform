@@ -225,6 +225,8 @@
     "TimeSpendReportValueTooltip": "消費時間 (時間)",
     "TimeSpendReportDescription": "説明",
     "TimeSpendDays": "{value}日",
+    "HoursPerDay": "1営業日あたりの時間",
+    "HoursPerDayDescription": "見積もりと報告時間を日数で表示するために使用します。空欄の場合は8時間です。",
     "TimeSpendHours": "{value}時間",
     "TimeSpendMinutes": "{value}分",
     "ChildEstimation": "子イシューの見積もり",

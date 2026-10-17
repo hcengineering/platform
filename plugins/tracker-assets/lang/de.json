@@ -152,6 +152,8 @@
     "WorkingDaysDepartment": "Feiertagskalender",
     "WorkingDaysCompanyWide": "Unternehmensweit",
     "WorkingDaysAtLeastOneDay": "Mindestens ein Arbeitstag muss aktiv bleiben",
+    "HoursPerDay": "Stunden pro Arbeitstag",
+    "HoursPerDayDescription": "Wird verwendet, um Schätzung und erfasste Zeit in Tagen anzuzeigen. Leer bedeutet 8 Stunden.",
     "WorkingDayMon": "Mo",
     "WorkingDayTue": "Di",
     "WorkingDayWed": "Mi",

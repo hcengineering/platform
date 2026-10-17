@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import type { Ref, Space } from '@hcengineering/core'
   import type { IntlString } from '@hcengineering/platform'
   import type { ButtonSize } from '@hcengineering/ui'
   import { EditBox, Label, showPopup, eventToHTMLElement, Button } from '@hcengineering/ui'
@@ -31,6 +32,7 @@
   export let size: ButtonSize = 'small'
   export let justify: 'left' | 'center' = 'center'
   export let width: string | undefined = 'fit-content'
+  export let space: Ref<Space> | undefined = undefined
 
   let shown: boolean = false
 
@@ -63,7 +65,7 @@
   >
     <svelte:fragment slot="content">
       {#if value != null}
-        <span class="caption-color overflow-label pointer-events-none"><TimePresenter {value} /></span>
+        <span class="caption-color overflow-label pointer-events-none"><TimePresenter {value} {space} /></span>
       {:else}
         <span class="content-dark-color pointer-events-none"><Label label={placeholder} /></span>
       {/if}
@@ -71,7 +73,7 @@
   </Button>
 {:else if readonly}
   {#if value != null}
-    <span class="caption-color overflow-label"><TimePresenter {value} /></span>
+    <span class="caption-color overflow-label"><TimePresenter {value} {space} /></span>
   {:else}
     <span class="content-dark-color"><Label label={placeholder} /></span>
   {/if}
