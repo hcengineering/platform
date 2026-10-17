@@ -35,7 +35,7 @@ function makeUserTx (n: number): Tx[] {
       factory.createTxCreateDoc(
         docClass,
         'bench:space:S' as Ref<any>,
-        { name: `item ${i}`, counter: i } as any,
+        { name: `item ${i}`, counter: i },
         `bench:doc:${i}` as Ref<Doc>
       )
     )

@@ -51,7 +51,7 @@ function makeUserTx (n: number): Tx[] {
       factory.createTxCreateDoc(
         itemClass,
         'test:space:S' as Ref<Space>,
-        { name: `item ${i}` } as any,
+        { name: `item ${i}` },
         `test:doc:${i}` as Ref<Doc>
       )
     )
@@ -186,7 +186,7 @@ describe('ModelMiddleware model cache', () => {
     const external = factory.createTxCreateDoc(
       itemClass,
       'test:space:S' as Ref<Space>,
-      { name: 'written by a migration' } as any,
+      { name: 'written by a migration' },
       'test:doc:external' as Ref<Doc>
     )
     setDbModel(userTx.concat([external]))
@@ -267,6 +267,52 @@ describe('ModelMiddleware model cache', () => {
     expect(model.some((it) => it._id === newClass._id)).toBe(true)
   })
 
+  it('should fail every concurrent loadModel on a failed re-fetch, then recover on the next call', async () => {
+    const { harness, middleware, getModelCalls } = await makeMiddleware(makeUserTx(3))
+    const adapter = (harness.pipelineContext.adapterManager as any).getAdapter(DOMAIN_TX, true) as Record<string, any>
+    const working = adapter.getModel
+    evictAll()
+
+    adapter.getModel = async () => {
+      await sleep(1)
+      throw new Error('db down')
+    }
+    const failed = await Promise.allSettled([
+      middleware.loadModel(harness.ctx, 0),
+      middleware.loadModel(harness.ctx, 0)
+    ])
+    expect(failed.map((it) => it.status)).toEqual(['rejected', 'rejected'])
+
+    // The failed single-flight must not stay parked: the next call has to try again.
+    adapter.getModel = working
+    const callsBefore = getModelCalls()
+    const model = (await middleware.loadModel(harness.ctx, 0)) as Tx[]
+    expect(model.length).toBeGreaterThan(0)
+    expect(getModelCalls()).toBe(callsBefore + 1)
+  })
+
+  it('should keep txs applied during a failed re-fetch for the next successful one', async () => {
+    const { harness, middleware } = await makeMiddleware(makeUserTx(3))
+    const adapter = (harness.pipelineContext.adapterManager as any).getAdapter(DOMAIN_TX, true) as Record<string, any>
+    const working = adapter.getModel
+    evictAll()
+
+    adapter.getModel = async () => {
+      await sleep(1)
+      throw new Error('db down')
+    }
+    const pending = middleware.loadModel(harness.ctx, 0).catch(() => undefined)
+    await sleep(0)
+    const newClass = classTx('test:class:ItemFail' as Ref<Class<Doc>>)
+    await middleware.tx(harness.ctx, [newClass])
+    await pending
+
+    // The DB never saw the tx (write is not modelled here), only the buffer holds it.
+    adapter.getModel = working
+    const model = (await middleware.loadModel(harness.ctx, 0)) as Tx[]
+    expect(model.some((it) => it._id === newClass._id)).toBe(true)
+  })
+
   it('should not push account txs into the cached model', async () => {
     const { harness, middleware, getModelCalls } = await makeMiddleware(makeUserTx(3))
     const before = getModelCalls()
@@ -284,7 +330,7 @@ describe('ModelMiddleware model cache', () => {
       modifiedOn: 1,
       modifiedBy: acc
     } as unknown as TxCUD<Doc>
-    await middleware.tx(harness.ctx, [accountTx as Tx])
+    await middleware.tx(harness.ctx, [accountTx])
 
     const model = (await middleware.loadModel(harness.ctx, 0)) as Tx[]
     expect(model.some((it) => it._id === 'test:tx:account')).toBe(false)
@@ -314,7 +360,7 @@ describe('ModelMiddleware model cache', () => {
       factory.createTxCreateDoc(
         'test:class:Undeclared' as Ref<Class<Doc>>,
         core.space.Model,
-        {} as any,
+        {},
         'test:doc:broken' as Ref<Doc>
       )
     ]
@@ -333,7 +379,7 @@ describe('ModelMiddleware model cache', () => {
     const before = middleware.lastHash
     // A tx the filter drops must move neither the hash nor the served model.
     await middleware.tx(harness.ctx, [
-      factory.createTxCreateDoc(itemClass, core.space.Model, { name: 'x' } as any, 'test:doc:filtered' as Ref<Doc>)
+      factory.createTxCreateDoc(itemClass, core.space.Model, { name: 'x' }, 'test:doc:filtered' as Ref<Doc>)
     ])
     expect(middleware.lastHash).toBe(before)
 

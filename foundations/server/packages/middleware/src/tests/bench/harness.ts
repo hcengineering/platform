@@ -170,7 +170,7 @@ export function createHarness (opts: HarnessOptions = {}): BenchHarness {
   for (const tx of model) {
     hierarchy.tx(tx)
   }
-  modelDb.addTxes(ctx, model as any, true)
+  modelDb.addTxes(ctx, model, true)
 
   const harness: BenchHarness = {
     ctx,
@@ -209,7 +209,7 @@ export function createHarness (opts: HarnessOptions = {}): BenchHarness {
     workspace: { uuid: 'bench-ws' as WorkspaceUuid, url: 'bench', dataId: 'bench' as any },
     hierarchy,
     modelDb,
-    branding: null as any,
+    branding: null,
     adapterManager: {
       getAdapter: () => stubAdapter as DbAdapter
     } as any,
@@ -311,10 +311,10 @@ export function makeSpaces (
   count: number,
   memberAccount: AccountUuid
 ): Array<{
-    _id: Ref<Space>
-    members: AccountUuid[]
-    private: boolean
-  }> {
+  _id: Ref<Space>
+  members: AccountUuid[]
+  private: boolean
+}> {
   const out: Array<{ _id: Ref<Space>, members: AccountUuid[], private: boolean }> = []
   for (let i = 0; i < count; i++) {
     out.push({
