@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 Intabia Fusion
 // Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
