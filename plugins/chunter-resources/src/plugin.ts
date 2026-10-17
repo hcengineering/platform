@@ -63,6 +63,7 @@ export default mergeIds(chunterId, chunter, {
     NewDirectMessage: '' as IntlString,
     ChannelName: '' as IntlString,
     ChannelNamePlaceholder: '' as IntlString,
+    ChannelNameAlreadyExists: '' as IntlString,
     ChannelDescription: '' as IntlString,
     About: '' as IntlString,
     Members: '' as IntlString,
