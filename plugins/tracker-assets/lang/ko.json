@@ -107,6 +107,7 @@
         "DocumentColor": "",
         "Rank": "순위",
         "TypeIssuePriority": "이슈 우선순위",
+        "TypeMilestoneStatus": "마일스톤 상태",
         "IssueTitlePlaceholder": "이슈 제목",
         "SubIssueTitlePlaceholder": "하위 이슈 제목",
         "IssueDescriptionPlaceholder": "설명 추가…",

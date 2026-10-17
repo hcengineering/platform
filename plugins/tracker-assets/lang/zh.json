@@ -109,6 +109,7 @@
     "DocumentColor": "",
     "Rank": "排名",
     "TypeIssuePriority": "问题优先级",
+    "TypeMilestoneStatus": "里程碑状态",
     "IssueTitlePlaceholder": "问题标题",
     "SubIssueTitlePlaceholder": "子问题标题",
     "IssueDescriptionPlaceholder": "添加描述…",
