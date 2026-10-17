@@ -36,6 +36,9 @@ export default mergeIds(settingId, setting, {
     SpaceAccessSettings: '' as AnyComponent
   },
   string: {
+    InviteDays: '' as IntlString<{ count: number }>,
+    InviteHours: '' as IntlString<{ count: number }>,
+    InviteSettingsSaveFailed: '' as IntlString,
     IntegrationDisabled: '' as IntlString,
     IntegrationDisabledSetting: '' as IntlString,
     IntegrationDisabledDescr: '' as IntlString,

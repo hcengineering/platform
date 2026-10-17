@@ -272,6 +272,9 @@
     "OtherSpaces": "其他空间",
     "Public": "公开",
     "Member": "成员",
-    "CanJoin": "可加入"
+    "CanJoin": "可加入",
+    "InviteDays": "{count, plural, other {#天}}",
+    "InviteHours": "{count, plural, other {#小时}}",
+    "InviteSettingsSaveFailed": "无法保存邀请设置，请重试。"
   }
 }

@@ -131,7 +131,7 @@ test.describe('Workspace tests', () => {
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
 
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     const page2 = await browser.newPage()
     try {
       await page2.goto(linkText ?? '')
@@ -171,7 +171,7 @@ test.describe('Workspace tests', () => {
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
 
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     const page2 = await browser.newPage()
     try {
       const loginPage2 = new LoginPage(page2)
@@ -229,7 +229,7 @@ test.describe('Workspace tests', () => {
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     await leftSideMenuPage.clickOnCloseInvite()
 
     const newUser2: SignUpData = {

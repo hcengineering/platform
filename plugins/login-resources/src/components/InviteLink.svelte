@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the 'License');
 // you may not use this file except in compliance with the License. You may
@@ -13,94 +14,79 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, getCurrentAccount, hasAccountRole, Timestamp } from '@hcengineering/core'
-  import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
-  import setting, { RoleCapability } from '@hcengineering/setting'
-  import { getDefaultInviteRole, resolveInviteSettings } from '@hcengineering/setting-resources'
+  import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
-  import { AnySvelteComponent, Button, EditBox, Grid, Label, Loading, MiniToggle, ticker } from '@hcengineering/ui'
-  import { createEventDispatcher } from 'svelte'
+  import { copyTextToClipboard, createQuery } from '@hcengineering/presentation'
+  import setting, { RoleCapability, settingId } from '@hcengineering/setting'
+  import {
+    getDefaultInviteRole,
+    getInviteRoleLabel,
+    INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS,
+    InviteExpirationSelect,
+    InviteLinkSummary,
+    InviteUsesSelect,
+    resolveInviteSettings,
+    summarizeInviteLink
+  } from '@hcengineering/setting-resources'
+  import {
+    type AnySvelteComponent,
+    Button,
+    getCurrentResolvedLocation,
+    Label,
+    locationToUrl,
+    Notice
+  } from '@hcengineering/ui'
+  import { createEventDispatcher, onDestroy } from 'svelte'
 
+  import { type InviteLinkParams, LIMITED_ROLE_INVITE_EXP_HOURS } from '../inviteLinkParams'
   import login from '../plugin'
   import { getInviteLink } from '../utils'
   import InviteWorkspace from './icons/InviteWorkspace.svelte'
 
   export let role: AccountRole | undefined = undefined
-  export let ignoreSettings: boolean = false
+  interface CreatedLink extends InviteLinkParams {
+    url: string
+    role: AccountRole
+    createdOn: number
+  }
 
   const dispatch = createEventDispatcher()
-
   const query = createQuery()
   const isSecureContext = window.isSecureContext
+  const isOwnerOrMaintainer = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)
+  // Only maintainers manage links, and there is no point in linking to the page that is already open
+  const inviteSettingsUrl = isOwnerOrMaintainer && !isInviteSettingsOpen() ? getInviteSettingsUrl() : undefined
 
-  interface InviteParams {
-    expirationTime: number
-    emailMask: string
-    limit: number | undefined
-  }
+  // Filled from the workspace invite settings until the user picks something else
+  let expHours = INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS
+  let limit = -1
+  let touched = false
+  let emailMask = ''
 
-  const defaultInviteRole: AccountRole = getDefaultInviteRole()
-
-  $: !ignoreSettings &&
-    query.query(setting.class.InviteSettings, {}, (set) => {
-      const state = resolveInviteSettings(set?.[0])
-      expHours = state.expirationTime
-      emailMask = state.emailMask
-      limit = state.limit
-      if (role == null) {
-        role = state.defaultInviteRole
-      }
-      if (state.noLimit) noLimit = true
-
-      defaultValues = {
-        expirationTime: expHours,
-        emailMask,
-        limit
-      }
-    })
-
-  function setToDefault (): void {
-    expHours = defaultValues.expirationTime
-    emailMask = defaultValues.emailMask
-    limit = defaultValues.limit
-  }
-
-  async function getLink (expHours: number, mask: string, limit: number | undefined, role: AccountRole): Promise<void> {
-    loading = true
-    link = await getInviteLink(expHours, mask, limit ?? -1, role)
-    loading = false
-  }
-
-  let copiedTime: Timestamp | undefined
+  let creating = false
+  let linkError = false
+  let created: CreatedLink | undefined
   let copied = false
+  let copiedTimer: ReturnType<typeof setTimeout> | undefined
 
-  $: if (copiedTime !== undefined && copied && $ticker - copiedTime > 1000) {
-    copied = false
-  }
-
-  async function copy (): Promise<void> {
-    if (!isSecureContext) return
-    if (link === undefined) return
-
-    await copyTextToClipboard(link)
-    copied = true
-    copiedTime = Date.now()
-  }
-
-  let expHours: number = 48
-  let emailMask: string = ''
-  let limit: number | undefined = undefined
-  let useDefault: boolean | undefined = true
-  let noLimit: boolean = false
-  const currentAccount = getCurrentAccount()
-  const isOwnerOrMaintainer: boolean = hasAccountRole(currentAccount, AccountRole.Maintainer)
-  let userRoleSelectComponent: AnySvelteComponent | undefined
-  void getResource(setting.component.UserRoleSelect).then((component) => {
-    userRoleSelectComponent = component
-  })
   let canGenerateInviteLinks = false
+  let userRoleSelect: AnySvelteComponent | undefined
 
-  // Use shared HasRoleCapability function resource from setting package instead of setting-resources
+  query.query(setting.class.InviteSettings, {}, (set) => {
+    const state = resolveInviteSettings(set?.[0])
+    if (!touched) {
+      // Only maintainers may create links that never expire, so others get a 30-day link instead
+      expHours = state.expirationTime < 0 && !isOwnerOrMaintainer ? LIMITED_ROLE_INVITE_EXP_HOURS : state.expirationTime
+      limit = state.noLimit ? -1 : (state.limit ?? -1)
+    }
+    emailMask = state.emailMask
+    if (role == null) role = state.defaultInviteRole
+  })
+
+  void getResource(setting.component.UserRoleSelect).then((component) => {
+    userRoleSelect = component
+  })
+
   void getResource(setting.function.HasRoleCapability).then((checkCapability) => {
     if (checkCapability != null) {
       void checkCapability(RoleCapability.GenerateInviteLink).then((value: boolean) => {
@@ -108,100 +94,165 @@
       })
     }
   })
-  let defaultValues: InviteParams = {
-    expirationTime: 48,
-    emailMask: '',
-    limit: undefined
+
+  $: selectedRole = role ?? getDefaultInviteRole()
+  $: unsafe = expHours < 0 && limit < 0
+
+  async function createLink (): Promise<void> {
+    if (!canGenerateInviteLinks) return
+    creating = true
+    linkError = false
+    try {
+      const url = await getInviteLink(expHours, emailMask, limit, selectedRole)
+      created = { url, expHours, limit, role: selectedRole, createdOn: Date.now() }
+    } catch {
+      linkError = true
+    } finally {
+      creating = false
+    }
   }
 
-  let link: string | undefined
-  let loading = false
+  async function copy (): Promise<void> {
+    if (created === undefined) return
+    linkError = false
+    try {
+      await copyTextToClipboard(created.url)
+      copied = true
+      clearTimeout(copiedTimer)
+      copiedTimer = setTimeout(() => (copied = false), 1500)
+    } catch {
+      linkError = true
+    }
+  }
 
-  function handleInviteRoleSelected (e: CustomEvent<AccountRole>): void {
-    role = e.detail
-    link = undefined
+  onDestroy(() => {
+    clearTimeout(copiedTimer)
+  })
+
+  function close (): void {
+    dispatch('close')
+  }
+
+  function isInviteSettingsOpen (): boolean {
+    const [, , category, section, page] = getCurrentResolvedLocation().path
+    return category === settingId && section === 'setting' && page === 'invites'
+  }
+
+  function getInviteSettingsUrl (): string {
+    const loc = getCurrentResolvedLocation()
+    // Workspace settings live under /<app>/<workspace>/setting/setting/<category>
+    return locationToUrl({ path: [loc.path[0], loc.path[1], settingId, 'setting', 'invites'] })
   }
 </script>
 
-<div class="antiPopup popup" class:secure={isSecureContext}>
-  <div class="flex-between fs-title mb-9">
-    <Label label={login.string.InviteDescription} />
+<div class="antiPopup popup">
+  <div class="flex-between fs-title mb-2">
+    <Label label={login.string.InvitePeople} />
     <InviteWorkspace size={'large'} />
   </div>
-  {#if isOwnerOrMaintainer && !ignoreSettings}
-    <Grid column={1} rowGap={1.5}>
-      <MiniToggle
-        bind:on={useDefault}
-        label={login.string.UseWorkspaceInviteSettings}
-        on:click={() => {
-          setToDefault()
-        }}
-      />
-      {#if !useDefault}
-        <EditBox
-          label={login.string.LinkValidHours}
-          bind:value={expHours}
-          format={'number'}
-          on:keypress={() => (link = undefined)}
-          disabled={useDefault || !isOwnerOrMaintainer}
-        />
-        <MiniToggle bind:on={noLimit} label={login.string.NoLimit} on:change={() => noLimit && (limit = -1)} />
-        {#if !noLimit}
-          <EditBox
-            label={login.string.InviteLimit}
-            bind:value={limit}
-            format={'number'}
-            on:keypress={() => (link = undefined)}
-            disabled={useDefault || !isOwnerOrMaintainer}
+
+  {#if created === undefined}
+    <span class="text-md content-dark-color mb-6"><Label label={login.string.InviteDescription} /></span>
+    <div class="flex-col flex-gap-4">
+      <div class="flex-between flex-gap-4">
+        <span class="font-medium caption-color"><Label label={login.string.JoinAs} /></span>
+        <div class="control">
+          {#if userRoleSelect}
+            <svelte:component
+              this={userRoleSelect}
+              selected={selectedRole}
+              disabled={!isOwnerOrMaintainer}
+              width={'100%'}
+              justify={'left'}
+              on:selected={(e) => (role = e.detail)}
+            />
+          {/if}
+        </div>
+      </div>
+      <div class="flex-between flex-gap-4">
+        <span class="font-medium caption-color"><Label label={login.string.LinkExpires} /></span>
+        <div class="control">
+          <InviteExpirationSelect
+            bind:value={expHours}
+            disabled={!isOwnerOrMaintainer}
+            on:change={() => (touched = true)}
           />
-        {/if}
-        {#if userRoleSelectComponent}
-          <svelte:component
-            this={userRoleSelectComponent}
-            selected={role ?? defaultInviteRole}
-            on:selected={handleInviteRoleSelected}
-          />
-        {/if}
-      {/if}
-    </Grid>
-  {/if}
-  {#if loading}
-    <Loading />
-  {:else if link !== undefined}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="link" class:notSecure={!isSecureContext} class:over-underline={isSecureContext} on:click={copy}>
-      {link}
-    </div>
-    <div class="buttons">
-      <Button
-        label={login.string.Close}
-        size={'medium'}
-        kind={'primary'}
-        on:click={() => {
-          dispatch('close')
-        }}
-      />
-      {#if isSecureContext}
-        <Button label={copied ? login.string.Copied : login.string.Copy} size={'medium'} on:click={copy} />
+        </div>
+      </div>
+      <div class="flex-between flex-gap-4">
+        <span class="font-medium caption-color"><Label label={login.string.LimitUses} /></span>
+        <div class="control">
+          <InviteUsesSelect bind:value={limit} disabled={!isOwnerOrMaintainer} on:change={() => (touched = true)} />
+        </div>
+      </div>
+      {#if unsafe}
+        <Notice kind={'warning'} label={login.string.UnlimitedInviteWarning} />
       {/if}
     </div>
   {:else}
-    <div class="buttons">
-      <Button
-        label={login.string.GetLink}
-        size={'medium'}
-        kind={'primary'}
-        disabled={!canGenerateInviteLinks}
-        on:click={() => {
-          if (!canGenerateInviteLinks) return
-          const effectiveLimit = limit ?? 0
-          if (effectiveLimit > 0 || noLimit) {
-            void getLink(expHours, emailMask, limit, role ?? defaultInviteRole)
-          }
-        }}
+    <span class="link mt-4" data-id="invite-link">{created.url}</span>
+    <div class="mt-2">
+      <InviteLinkSummary
+        muted
+        role={getInviteRoleLabel(created.role)}
+        items={summarizeInviteLink(created, created.createdOn)}
       />
     </div>
   {/if}
+
+  {#if linkError}
+    <div class="mt-4"><Notice kind={'error'} label={login.string.InviteLinkError} /></div>
+  {/if}
+
+  <div class="flex-between mt-9">
+    {#if inviteSettingsUrl !== undefined}
+      <a
+        class="manage-link noBold text-md flex-row-center flex-gap-1"
+        href={inviteSettingsUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <Label label={login.string.ManageInviteLinks} />
+        <svg
+          class="flex-no-shrink"
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.25"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M3.5 8.5 8.5 3.5M4.5 3.5h4v4" />
+        </svg>
+      </a>
+    {:else}
+      <span />
+    {/if}
+    <div class="flex-row-center flex-gap-2">
+      {#if created === undefined}
+        <Button
+          label={login.string.GetLink}
+          size={'medium'}
+          kind={'primary'}
+          disabled={!canGenerateInviteLinks}
+          loading={creating}
+          on:click={() => void createLink()}
+        />
+      {:else}
+        {#if isSecureContext}
+          <Button
+            label={copied ? login.string.Copied : login.string.Copy}
+            size={'medium'}
+            on:click={() => void copy()}
+          />
+        {/if}
+        <Button label={login.string.Close} size={'medium'} kind={'primary'} on:click={close} />
+      {/if}
+    </div>
+  </div>
 </div>
 
 <style lang="scss">
@@ -213,28 +264,25 @@
     max-width: 40rem;
     background: var(--popup-bg-color);
     border-radius: 1.25rem;
-    -webkit-user-select: none;
-    user-select: none;
     box-shadow: var(--popup-shadow);
+  }
 
-    .link {
-      margin: 1.75rem 0 0;
-      overflow-wrap: break-word;
+  .control {
+    width: 14rem;
+    flex-shrink: 0;
+  }
 
-      &.notSecure {
-        user-select: text;
-      }
-    }
+  .link {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--theme-divider-color);
+    border-radius: var(--small-BorderRadius);
+    font-family: var(--mono-font);
+    overflow-wrap: anywhere;
+    user-select: text;
+  }
 
-    .buttons {
-      margin-top: 1.75rem;
-      flex-shrink: 0;
-      display: grid;
-      grid-auto-flow: column;
-      direction: rtl;
-      justify-content: flex-start;
-      align-items: center;
-      column-gap: 0.5rem;
-    }
+  .manage-link,
+  .manage-link:hover {
+    color: var(--theme-link-color);
   }
 </style>

@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,40 +14,49 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import core, { AccountRole, getCurrentAccount, type Ref } from '@hcengineering/core'
+  import { Analytics } from '@hcengineering/analytics'
+  import core, { AccountRole, getCurrentAccount, hasAccountRole, type Ref } from '@hcengineering/core'
   import login from '@hcengineering/login'
   import { createQuery, getClient } from '@hcengineering/presentation'
   import setting, { type InviteSettings, type RoleCapabilitySettings, RoleCapability } from '@hcengineering/setting'
   import { hasRoleCapability } from '../roleCapability'
-  import { getDefaultInviterRoles, getDefaultInviteRole, resolveInviteSettings } from '../inviteSettingsUtils'
+  import {
+    getDefaultInviterRoles,
+    getDefaultInviteRole,
+    INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS,
+    resolveInviteSettings
+  } from '../inviteSettingsUtils'
   import { translate } from '@hcengineering/platform'
   import {
     Breadcrumb,
     DropdownLabels,
     DropdownTextItem,
-    EditBox,
     Header,
     Label,
     Loading,
+    Notice,
     Scroller,
     SettingsCard,
     SettingsCardsLayout,
-    themeStore,
-    Toggle
+    themeStore
   } from '@hcengineering/ui'
   import settingRes from '../plugin'
+  import ActiveInviteLinks from './ActiveInviteLinks.svelte'
+  import InviteExpirationSelect from './InviteExpirationSelect.svelte'
+  import InviteUsesSelect from './InviteUsesSelect.svelte'
   import UserRoleSelect from './UserRoleSelect.svelte'
 
   const client = getClient()
+  const canManageInviteLinks = hasAccountRole(getCurrentAccount(), AccountRole.Maintainer)
 
   let loading = true
-  let expTime: number = 48
+  let expTime: number = INVITE_SETTINGS_DEFAULT_EXPIRATION_HOURS
   let mask: string = ''
-  let limit: number | undefined = -1
+  let limit: number = -1
+  let saveFailed = false
 
   let defaultInviteRole: AccountRole = getDefaultInviteRole()
   let inviteLinkGeneratorRoles: AccountRole[] = getDefaultInviterRoles()
-  let noLimit: boolean = true
   let existingInviteSettings: InviteSettings[] = []
   let existingRoleCapabilitySettings: {
     _id: Ref<RoleCapabilitySettings>
@@ -57,7 +67,6 @@
   roleCapabilityQuery.query(setting.class.RoleCapabilitySettings, {}, (set) => {
     existingRoleCapabilitySettings = set as typeof existingRoleCapabilitySettings
   })
-  $: inviteLimitInvalid = !noLimit && (limit === undefined || Number.isNaN(limit))
   $: roleByCapability = existingRoleCapabilitySettings[0]?.roleByCapability
   $: canManagePermissions = hasRoleCapability(
     getCurrentAccount(),
@@ -89,26 +98,16 @@
     limit = state.limit
     defaultInviteRole = state.defaultInviteRole
     inviteLinkGeneratorRoles = state.inviteLinkGeneratorRoles
-    noLimit = state.noLimit
     loading = false
   }
 
   $: query.query(setting.class.InviteSettings, {}, applyInviteSettings)
 
-  function normalizeValues (): void {
-    expTime = Math.max(1, expTime)
-    limit = noLimit ? -1 : Math.max(1, limit ?? 1)
-  }
-
   async function setInviteSettings (): Promise<void> {
-    if (inviteLimitInvalid) return
-    normalizeValues()
-    const savedLimit = limit ?? -1
-
     const newSettings = {
       expirationTime: expTime,
       emailMask: mask,
-      limit: savedLimit,
+      limit,
       defaultInviteRole,
       inviteLinkGeneratorRoles: [...inviteLinkGeneratorRoles],
       enabled: true
@@ -140,39 +139,38 @@
     }
   }
 
-  async function autoSaveIfValid (): Promise<void> {
-    if (loading || inviteLimitInvalid) return
-    await setInviteSettings()
-  }
-
-  function handleNoLimitChange (e: CustomEvent<boolean>): void {
-    noLimit = e.detail
-    if (noLimit) {
-      limit = -1
-    } else if (limit === undefined || Number.isNaN(limit) || limit < 1) {
-      limit = 1
+  async function autoSave (): Promise<void> {
+    if (loading) return
+    // A new edit makes the previous save error stale
+    saveFailed = false
+    try {
+      await setInviteSettings()
+    } catch (err: unknown) {
+      saveFailed = true
+      Analytics.handleError(err instanceof Error ? err : new Error(String(err)))
     }
-    void autoSaveIfValid()
   }
 
-  function handleExpTimeChange (): void {
-    void autoSaveIfValid()
+  function handleExpTimeChange (e: CustomEvent<number>): void {
+    expTime = e.detail
+    void autoSave()
   }
 
-  function handleLimitChange (): void {
-    void autoSaveIfValid()
+  function handleLimitChange (e: CustomEvent<number>): void {
+    limit = e.detail
+    void autoSave()
   }
 
   function handleDefaultInviteRoleSelected (e: CustomEvent<AccountRole>): void {
     defaultInviteRole = e.detail
-    void autoSaveIfValid()
+    void autoSave()
   }
 
   function handleGeneratorRolesSelected (e: CustomEvent<AccountRole[] | undefined>): void {
     if (e.detail != null) {
       inviteLinkGeneratorRoles = [...e.detail]
     }
-    void autoSaveIfValid()
+    void autoSave()
   }
 </script>
 
@@ -191,42 +189,28 @@
           <SettingsCardsLayout columns={1}>
             <SettingsCard label={settingRes.string.InviteSettings}>
               <div class="flex-col flex-gap-4">
-                <div class="flex-between flex-gap-4">
-                  <Label label={login.string.LinkValidHours} />
-                  <div class="flex-no-grow">
-                    <EditBox
-                      format={'number'}
-                      kind={'default'}
-                      minValue={1}
-                      maxDigitsAfterPoint={0}
-                      bind:value={expTime}
-                      on:change={handleExpTimeChange}
-                    />
+                <div class="field">
+                  <Label label={login.string.LinkExpires} />
+                  <div class="control">
+                    <InviteExpirationSelect value={expTime} on:change={handleExpTimeChange} />
                   </div>
                 </div>
 
-                <div class="flex-between flex-gap-4">
-                  <Label label={login.string.NoLimit} />
-                  <Toggle on={noLimit} on:change={handleNoLimitChange} />
-                </div>
-
-                {#if !noLimit}
-                  <div class="flex-between flex-gap-4">
-                    <Label label={login.string.InviteLimit} />
-                    <EditBox
-                      format={'number'}
-                      minValue={1}
-                      maxDigitsAfterPoint={0}
-                      bind:value={limit}
-                      on:change={handleLimitChange}
-                    />
+                <div class="field">
+                  <Label label={login.string.LimitUses} />
+                  <div class="control">
+                    <InviteUsesSelect value={limit} on:change={handleLimitChange} />
                   </div>
-                {/if}
+                </div>
 
                 <div class="flex-between flex-gap-4">
                   <Label label={settingRes.string.DefaultInviteRoleForJoin} />
                   <UserRoleSelect selected={defaultInviteRole} on:selected={handleDefaultInviteRoleSelected} />
                 </div>
+
+                {#if saveFailed}
+                  <Notice kind={'error'} label={settingRes.string.InviteSettingsSaveFailed} />
+                {/if}
               </div>
             </SettingsCard>
 
@@ -247,9 +231,30 @@
                 </div>
               </SettingsCard>
             {/if}
+
+            {#if canManageInviteLinks}
+              <SettingsCard label={login.string.ActiveInviteLinks}>
+                <ActiveInviteLinks />
+              </SettingsCard>
+            {/if}
           </SettingsCardsLayout>
         </div>
       </Scroller>
     {/if}
   </div>
 </div>
+
+<style lang="scss">
+  .field {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+  }
+
+  .control {
+    width: 14rem;
+    max-width: 50%;
+    flex-shrink: 0;
+  }
+</style>

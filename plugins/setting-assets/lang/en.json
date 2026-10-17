@@ -275,6 +275,9 @@
     "OtherSpaces": "Other spaces",
     "Public": "Public",
     "Member": "Member",
-    "CanJoin": "Can join"
+    "CanJoin": "Can join",
+    "InviteDays": "{count, plural, one {# day} other {# days}}",
+    "InviteHours": "{count, plural, one {# hour} other {# hours}}",
+    "InviteSettingsSaveFailed": "Failed to save invitation settings. Please try again."
   }
 }

@@ -272,6 +272,9 @@
     "OtherSpaces": "Diğer alanlar",
     "Public": "Herkese açık",
     "Member": "Üye",
-    "CanJoin": "Katılabilir"
+    "CanJoin": "Katılabilir",
+    "InviteDays": "{count, plural, other {# gün}}",
+    "InviteHours": "{count, plural, other {# saat}}",
+    "InviteSettingsSaveFailed": "Davet ayarları kaydedilemedi. Lütfen tekrar deneyin."
   }
 }

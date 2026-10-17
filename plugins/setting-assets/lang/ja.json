@@ -272,6 +272,9 @@
     "OtherSpaces": "その他のスペース",
     "Public": "公開",
     "Member": "メンバー",
-    "CanJoin": "参加可能"
+    "CanJoin": "参加可能",
+    "InviteDays": "{count, plural, other {#日}}",
+    "InviteHours": "{count, plural, other {#時間}}",
+    "InviteSettingsSaveFailed": "招待設定を保存できませんでした。もう一度お試しください。"
   }
 }

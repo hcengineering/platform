@@ -35,6 +35,8 @@ import * as utils from '../utils'
 import { type AccountDB, type SocialId } from '../types'
 import {
   createInvite,
+  getActiveInviteLinks,
+  revokeInviteLink,
   createInviteLink,
   sendInvite,
   resendInvite,
@@ -113,9 +115,11 @@ describe('account operations', () => {
     },
     invite: {
       insertOne: jest.fn(),
+      find: jest.fn(),
       findOne: jest.fn(),
       update: jest.fn()
     },
+    consumeInviteUse: jest.fn(),
     getWorkspaceRole: jest.fn(),
     getWorkspaceMembers: jest.fn(),
     unassignWorkspace: jest.fn(),
@@ -148,6 +152,61 @@ describe('account operations', () => {
   })
 
   describe('createInvite', () => {
+    test('creates a share link without expiration and records its owner', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+      ;(mockDb.invite.insertOne as jest.Mock).mockResolvedValue('new-link')
+
+      await createInvite(mockCtx, mockDb, mockBranding, mockToken, {
+        exp: -1,
+        emailMask: '',
+        limit: -1,
+        role: AccountRole.User,
+        isShareLink: true
+      })
+
+      expect(mockDb.invite.insertOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          expiresOn: -1,
+          remainingUses: -1,
+          isShareLink: true,
+          createdBy: mockAccount.uuid,
+          createdOn: expect.any(Number)
+        })
+      )
+    })
+
+    test('allows links without expiration only for maintainers and above', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
+      const params = { emailMask: '', limit: -1, role: AccountRole.User, isShareLink: true }
+
+      await expect(createInvite(mockCtx, mockDb, mockBranding, mockToken, { ...params, exp: -1 })).rejects.toThrow(
+        PlatformError
+      )
+      expect(mockDb.invite.insertOne).not.toHaveBeenCalled()
+
+      await createInvite(mockCtx, mockDb, mockBranding, mockToken, { ...params, exp: 60 * 60 * 1000 })
+      expect(mockDb.invite.insertOne).toHaveBeenCalledWith(expect.objectContaining({ isShareLink: true }))
+    })
+
+    test('classifies recipient-free invites from older clients as share links', async () => {
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue(mockAccount)
+      ;(mockDb.workspace.findOne as jest.Mock).mockResolvedValue(mockWorkspace)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+
+      await createInvite(mockCtx, mockDb, mockBranding, mockToken, {
+        exp: 24 * 60 * 60 * 1000,
+        emailMask: '',
+        limit: 1,
+        role: AccountRole.User
+      })
+
+      expect(mockDb.invite.insertOne).toHaveBeenCalledWith(expect.objectContaining({ isShareLink: true }))
+    })
+
     test('should create invite for authorized maintainer', async () => {
       const inviteId = 'new-invite-id'
       const beforeTest = Date.now()
@@ -196,6 +255,129 @@ describe('account operations', () => {
           role: AccountRole.Owner
         })
       ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+    })
+  })
+
+  describe('manage invite links', () => {
+    test('lists only active links for a maintainer', async () => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+      ;(mockDb.invite.find as jest.Mock).mockResolvedValue([
+        { id: 'old', expiresOn: -1, remainingUses: -1, role: AccountRole.User, createdOn: 50 },
+        { id: 'active', expiresOn: 0, remainingUses: 2, role: AccountRole.User, createdOn: 100 },
+        { id: 'expired', expiresOn: Date.now() - 1, remainingUses: 1, role: AccountRole.User },
+        { id: 'used', expiresOn: -1, remainingUses: 0, role: AccountRole.User }
+      ])
+
+      await expect(getActiveInviteLinks(mockCtx, mockDb, mockBranding, mockToken)).resolves.toEqual([
+        {
+          id: 'active',
+          expiresOn: 0,
+          remainingUses: 2,
+          role: AccountRole.User,
+          createdBy: undefined,
+          createdOn: 100
+        },
+        {
+          id: 'old',
+          expiresOn: -1,
+          remainingUses: -1,
+          role: AccountRole.User,
+          createdBy: undefined,
+          createdOn: 50
+        }
+      ])
+      expect(mockDb.invite.find).toHaveBeenCalledWith({
+        workspaceUuid: mockWorkspace.uuid,
+        isShareLink: true,
+        revokedOn: null
+      })
+    })
+
+    test('hides links granting a higher role than the caller has', async () => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+      ;(mockDb.invite.find as jest.Mock).mockResolvedValue([
+        { id: 'owner', expiresOn: -1, remainingUses: -1, role: AccountRole.Owner, createdOn: 200 },
+        { id: 'maintainer', expiresOn: -1, remainingUses: -1, role: AccountRole.Maintainer, createdOn: 100 }
+      ])
+
+      const links = await getActiveInviteLinks(mockCtx, mockDb, mockBranding, mockToken)
+
+      expect(links.map((it) => it.id)).toEqual(['maintainer'])
+    })
+
+    test('rejects revoking a link granting a higher role than the caller has', async () => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Maintainer)
+      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue({ id: '12', role: AccountRole.Owner })
+
+      await expect(revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id: '12' })).rejects.toThrow(
+        PlatformError
+      )
+      expect(mockDb.invite.update).not.toHaveBeenCalled()
+    })
+
+    test('rejects listing for an ordinary user', async () => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
+
+      await expect(getActiveInviteLinks(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(PlatformError)
+      expect(mockDb.invite.find).not.toHaveBeenCalled()
+    })
+
+    test.each(['', 'invalid-id', '1; DROP TABLE invite'])('rejects malformed invite id %j on revoke', async (id) => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Owner)
+
+      await expect(revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id })).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+      )
+      expect(mockDb.invite.findOne).not.toHaveBeenCalled()
+      expect(mockDb.invite.update).not.toHaveBeenCalled()
+    })
+
+    test('revokes only a share link in the current workspace', async () => {
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.Owner)
+      ;(mockDb.invite.findOne as jest.Mock).mockResolvedValue({ id: '7', role: AccountRole.User })
+
+      await revokeInviteLink(mockCtx, mockDb, mockBranding, mockToken, { id: '7' })
+
+      expect(mockDb.invite.findOne).toHaveBeenCalledWith({
+        id: '7',
+        workspaceUuid: mockWorkspace.uuid,
+        isShareLink: true,
+        revokedOn: null
+      })
+      expect(mockDb.invite.update).toHaveBeenCalledWith(
+        { id: '7', workspaceUuid: mockWorkspace.uuid, revokedOn: null },
+        { revokedOn: expect.any(Number) }
+      )
+    })
+
+    test('rejects a revoked link during join validation', async () => {
+      await expect(
+        utils.checkInvite(
+          mockCtx,
+          {
+            id: 'revoked',
+            workspaceUuid: mockWorkspace.uuid,
+            expiresOn: -1,
+            remainingUses: -1,
+            role: AccountRole.User,
+            revokedOn: Date.now()
+          },
+          'user@example.com'
+        )
+      ).rejects.toThrow(PlatformError)
+    })
+
+    test('does not count uses of unlimited invites', async () => {
+      await utils.useInvite(mockDb, { id: 'unlimited', remainingUses: -1 } as any)
+
+      expect(mockDb.consumeInviteUse).not.toHaveBeenCalled()
+    })
+
+    test('rejects a limited invite when its last use was already taken', async () => {
+      ;(mockDb.consumeInviteUse as jest.Mock).mockResolvedValue(false)
+
+      await expect(utils.useInvite(mockDb, { id: 'single', remainingUses: 1 } as any)).rejects.toThrow(PlatformError)
+      expect(mockDb.consumeInviteUse).toHaveBeenCalledWith('single')
     })
   })
 

@@ -1,3 +1,18 @@
+//
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { faker } from '@faker-js/faker'
 import { APIRequestContext, Browser, BrowserContext, Locator, Page, expect } from '@playwright/test'
 import { attachment } from 'allure-js-commons'
@@ -147,12 +162,12 @@ export async function getSecondPage (browser: Browser): Promise<{ page: Page, co
 
 export async function getSecondPageByInvite (
   browser: Browser,
-  linkText: string | null,
+  linkText: string,
   newUser: SignUpData
 ): Promise<{ page: Page, context: BrowserContext } & Disposable> {
   const userSecondContext = await browser.newContext({ storageState: PlatformSettingSecond })
   const newPage = await userSecondContext.newPage()
-  await newPage.goto(linkText ?? '')
+  await newPage.goto(linkText)
   const joinPage: SignInJoinPage = new SignInJoinPage(newPage)
   await joinPage.join(newUser)
 
@@ -234,15 +249,14 @@ export async function uploadFile (page: Page, fileName: string, fileUploadTestId
   await page.waitForTimeout(2000)
 }
 
-export async function getInviteLink (page: Page): Promise<string | null> {
+export async function getInviteLink (page: Page): Promise<string> {
   const leftSideMenuPage = new LeftSideMenuPage(page)
   // If we don't wait and it's called on inital render initial navigate may close the popup in the middle
   await leftSideMenuPage.appHeader().waitFor({ state: 'visible' })
   await leftSideMenuPage.openProfileMenu()
   await leftSideMenuPage.inviteToWorkspace()
   await leftSideMenuPage.getInviteLink()
-  const linkText = await page.locator('.antiPopup .link').textContent()
-  expect(linkText).not.toBeNull()
+  const linkText = await leftSideMenuPage.readInviteLink()
   await leftSideMenuPage.clickOnCloseInvite()
   return linkText
 }

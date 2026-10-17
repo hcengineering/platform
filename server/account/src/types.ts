@@ -149,6 +149,10 @@ export interface WorkspaceInvite {
   remainingUses?: number
   role: AccountRole
   autoJoin?: boolean
+  isShareLink?: boolean
+  createdBy?: AccountUuid
+  createdOn?: Timestamp
+  revokedOn?: Timestamp | null
 }
 
 export interface WorkspacePermission {
@@ -333,6 +337,8 @@ export interface AccountDB {
   accountEvent: DbCollection<AccountEvent>
   otp: DbCollection<OTP>
   invite: DbCollection<WorkspaceInvite>
+  /** Atomically takes one use of a limited invite. Returns false when no uses are left. */
+  consumeInviteUse: (inviteId: string) => Promise<boolean>
   mailbox: DbCollection<Mailbox>
   mailboxSecret: DbCollection<MailboxSecret>
   integration: DbCollection<Integration>
@@ -522,6 +528,15 @@ export interface WorkspaceInviteInfo {
 
 export interface InviteInfo {
   workspaceName: string | null
+}
+
+export interface ManagedInviteLink {
+  id: string
+  expiresOn: Timestamp
+  remainingUses: number
+  role: AccountRole
+  createdBy?: AccountUuid
+  createdOn?: Timestamp
 }
 
 export interface MailboxOptions {

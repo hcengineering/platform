@@ -1,5 +1,6 @@
 //
 // Copyright © 2020-2024 Anticrm Platform Contributors.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -71,10 +72,25 @@ export default plugin(loginId, {
   },
   string: {
     LogIn: '' as IntlString,
-    LinkValidHours: '' as IntlString,
     EmailMask: '' as IntlString,
-    NoLimit: '' as IntlString,
-    InviteLimit: '' as IntlString,
+    NoExpiration: '' as IntlString,
+    UnlimitedInviteWarning: '' as IntlString,
+    ActiveInviteLinks: '' as IntlString,
+    NoActiveInviteLinks: '' as IntlString,
+    UnlimitedUses: '' as IntlString,
+    RemainingUses: '' as IntlString,
+    RevokeInviteLink: '' as IntlString,
+    InviteLinkError: '' as IntlString,
+    InviteLinksLoadError: '' as IntlString,
+    RetryInviteLinks: '' as IntlString,
+    ManageInviteLinks: '' as IntlString,
+    RevokeInviteLinkConfirm: '' as IntlString,
+    InviteLinkExpires: '' as IntlString,
+    InvitePeople: '' as IntlString,
+    JoinAs: '' as IntlString,
+    LinkExpires: '' as IntlString,
+    LimitUses: '' as IntlString,
+    UsesLimit: '' as IntlString<{ count: number }>,
     PasswordMinLength: '' as IntlString<{ count: number }>,
     PasswordMinSpecialChars: '' as IntlString<{ count: number }>,
     PasswordMinDigits: '' as IntlString<{ count: number }>,

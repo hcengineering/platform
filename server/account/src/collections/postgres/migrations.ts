@@ -66,7 +66,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV30Migration(ns),
     getV31Migration(ns),
     getV32Migration(ns),
-    getV33Migration(ns)
+    getV33Migration(ns),
+    getV34Migration(ns)
   ]
 }
 
@@ -831,6 +832,29 @@ function getV33Migration (ns: string): [string, string] {
     `
     ALTER TABLE ${ns}.otp
     ADD COLUMN IF NOT EXISTS attempts INTEGER NOT NULL DEFAULT 0;
+    `
+  ]
+}
+
+function getV34Migration (ns: string): [string, string] {
+  return [
+    'account_db_v34_manage_invite_links',
+    `
+    ALTER TABLE ${ns}.invite
+    ADD COLUMN IF NOT EXISTS is_share_link BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS created_by UUID,
+    ADD COLUMN IF NOT EXISTS created_on BIGINT,
+    ADD COLUMN IF NOT EXISTS revoked_on BIGINT;
+
+    -- Existing links created through the share form have no recipient email.
+    -- Email invitations and automatic joins always carry a recipient email.
+    UPDATE ${ns}.invite
+    SET is_share_link = TRUE
+    WHERE email IS NULL AND COALESCE(auto_join, FALSE) = FALSE;
+
+    CREATE INDEX IF NOT EXISTS active_share_invite_idx
+      ON ${ns}.invite (workspace_uuid, created_on DESC)
+      WHERE is_share_link = TRUE AND revoked_on IS NULL;
     `
   ]
 }

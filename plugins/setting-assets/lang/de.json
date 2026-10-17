@@ -272,6 +272,9 @@
     "OtherSpaces": "Andere Bereiche",
     "Public": "Öffentlich",
     "Member": "Mitglied",
-    "CanJoin": "Kann beitreten"
+    "CanJoin": "Kann beitreten",
+    "InviteDays": "{count, plural, one {# Tag} other {# Tage}}",
+    "InviteHours": "{count, plural, one {# Stunde} other {# Stunden}}",
+    "InviteSettingsSaveFailed": "Die Einladungseinstellungen konnten nicht gespeichert werden. Bitte versuchen Sie es erneut."
   }
 }

@@ -1295,6 +1295,10 @@ export async function createWorkspaceRecord (
 }
 
 export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite, email: string): Promise<WorkspaceUuid> {
+  if (invite.revokedOn != null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
   if (invite.remainingUses === 0) {
     ctx.warn('Invite limit exceeded', { email, ...invite })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
@@ -1418,8 +1422,12 @@ export async function confirmHulyIds (ctx: MeasureContext, db: AccountDB, accoun
   }
 }
 
-export async function useInvite (db: AccountDB, inviteId: string): Promise<void> {
-  await db.invite.update({ id: inviteId }, { $inc: { remainingUses: -1 } })
+/** Takes one use of a limited invite. Unlimited invites (negative remainingUses) are not counted. */
+export async function useInvite (db: AccountDB, invite: WorkspaceInvite): Promise<void> {
+  if (invite.remainingUses == null || invite.remainingUses < 0) return
+  if (!(await db.consumeInviteUse(invite.id))) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
 }
 
 export async function getAccount (db: AccountDB, uuid: AccountUuid): Promise<Account | null> {
@@ -1595,13 +1603,14 @@ export async function doJoinByInvite (
   const role = await db.getWorkspaceRole(account, workspace.uuid)
 
   if (invite !== undefined && invite != null) {
+    // Take the use first so concurrent joins cannot exceed the invite limit.
+    await useInvite(db, invite)
     // TODO: should we re-join kicked users? How are they marked as inactive?
     if (role == null) {
       await db.assignWorkspace(account, workspace.uuid, invite.role)
     } else if (getRolePower(role) < getRolePower(invite.role)) {
       await db.updateWorkspaceRole(account, workspace.uuid, invite.role)
     }
-    await useInvite(db, invite.id)
   } else if (workspace.allowReadOnlyGuest && workspace.allowGuestSignUp) {
     if (role == null) {
       await db.assignWorkspace(account, workspace.uuid, AccountRole.Guest)

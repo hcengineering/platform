@@ -263,6 +263,9 @@
     "OtherSpaces": "Outros espaços",
     "Public": "Público",
     "Member": "Membro",
-    "CanJoin": "Pode participar"
+    "CanJoin": "Pode participar",
+    "InviteDays": "{count, plural, one {# dia} other {# dias}}",
+    "InviteHours": "{count, plural, one {# hora} other {# horas}}",
+    "InviteSettingsSaveFailed": "Não foi possível salvar as configurações de convite. Tente novamente."
   }
 }

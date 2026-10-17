@@ -498,6 +498,19 @@ describe('PostgresAccountDB', () => {
     spyValue = []
   })
 
+  test('consumeInviteUse takes a use only while uses remain', async () => {
+    spyValue = [{ id: '123' }]
+    await expect(accountDb.consumeInviteUse('123')).resolves.toBe(true)
+
+    const sqlCall = spyTag.mock.calls.find(([first]) => Array.isArray(first))
+    const sql = (sqlCall?.[0] as string[]).join(' ')
+    expect(sql).toContain('SET remaining_uses = remaining_uses - 1')
+    expect(sql).toContain('remaining_uses > 0')
+
+    spyValue = []
+    await expect(accountDb.consumeInviteUse('123')).resolves.toBe(false)
+  })
+
   describe('init', () => {
     it('should apply migrations in transaction', async () => {
       spyValue = {

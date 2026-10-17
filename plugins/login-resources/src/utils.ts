@@ -31,7 +31,6 @@ import { getClient as getAccountClientRaw } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
 import {
   AccountRole,
-  concatLink,
   getCurrentAccount,
   type AccountUuid,
   type Person,
@@ -39,7 +38,6 @@ import {
   type WorkspaceInfoWithStatus,
   type WorkspaceUserOperation
 } from '@hcengineering/core'
-import { loginId } from '@hcengineering/login'
 import platform, {
   OK,
   PlatformError,
@@ -61,11 +59,14 @@ import {
   setMetadataLocalStorage,
   type Location
 } from '@hcengineering/ui'
+import { getInviteLinkUrl } from '@hcengineering/setting-resources'
 import { logIn, workbenchId } from '@hcengineering/workbench'
 
 import { LoginEvents } from './analytics'
 import { type Pages } from './index'
 import login from './plugin'
+
+export { getInviteLinkUrl }
 
 /**
  * Constructs an account client.
@@ -626,23 +627,7 @@ export async function getInviteLink (
   navigateUrl?: string
 ): Promise<string> {
   const inviteId = await getInviteLinkId(expHours, mask, limit ?? -1, role)
-  const loc = getCurrentLocation()
-  loc.path[0] = loginId
-  loc.path[1] = 'join'
-  loc.path.length = 2
-  loc.query = {
-    inviteId
-  }
-  if (navigateUrl !== undefined) {
-    loc.query.navigateUrl = navigateUrl
-  }
-  loc.fragment = undefined
-
-  const url = locationToUrl(loc)
-
-  const frontUrl = getMetadata(presentation.metadata.FrontUrl)
-  const host = frontUrl ?? document.location.origin
-  return concatLink(host, url)
+  return getInviteLinkUrl(inviteId, navigateUrl)
 }
 
 export async function getInviteLinkId (

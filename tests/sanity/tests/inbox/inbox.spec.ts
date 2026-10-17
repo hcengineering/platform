@@ -1,3 +1,18 @@
+//
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import { faker } from '@faker-js/faker'
 import { test } from '@playwright/test'
 import { ApiEndpoint } from '../API/Api'
@@ -89,13 +104,13 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     const page2 = await browser.newPage()
     try {
       const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
       const inboxPageSecond = new InboxPage(page2)
       await leftSideMenuPage.clickOnCloseInvite()
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
       await setTestOptions(page2)
       const joinPage = new SignInJoinPage(page2)
       await joinPage.join(newUser2)
@@ -114,14 +129,14 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     const page2 = await browser.newPage()
     try {
       const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
       const issuesDetailsPageSecond = new IssuesDetailsPage(page2)
       const inboxPageSecond = new InboxPage(page2)
       await leftSideMenuPage.clickOnCloseInvite()
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
       await setTestOptions(page2)
       const joinPage = new SignInJoinPage(page2)
       await joinPage.join(newUser2)
@@ -142,14 +157,14 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     const page2 = await browser.newPage()
     try {
       const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
       const issuesDetailsPageSecond = new IssuesDetailsPage(page2)
       const inboxPageSecond = new InboxPage(page2)
       await leftSideMenuPage.clickOnCloseInvite()
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
       await setTestOptions(page2)
       const joinPage = new SignInJoinPage(page2)
       await joinPage.join(newUser2)
@@ -175,13 +190,13 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     const page2 = await browser.newPage()
     try {
       const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
       const inboxPageSecond = new InboxPage(page2)
       await leftSideMenuPage.clickOnCloseInvite()
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
       await setTestOptions(page2)
       const joinPage = new SignInJoinPage(page2)
       await joinPage.join(newUser2)
@@ -211,14 +226,14 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     const page2 = await browser.newPage()
     try {
       const leftSideMenuPageSecond = new LeftSideMenuPage(page2)
       const inboxPageSecond = new InboxPage(page2)
       const notificationPageSecond = new NotificationsPage(page2)
       await leftSideMenuPage.clickOnCloseInvite()
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
       await setTestOptions(page2)
       const joinPage = new SignInJoinPage(page2)
       await joinPage.join(newUser2)
@@ -245,14 +260,14 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     const page2 = await browser.newPage()
     try {
       const channelPage2 = new ChannelPage(page2)
       const leftSideMenuPage2 = new LeftSideMenuPage(page2)
       const inboxPage2 = new InboxPage(page2)
       await leftSideMenuPage.clickOnCloseInvite()
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
 
       const joinPage2 = new SignInJoinPage(page2)
       await joinPage2.join(newUser2)
@@ -292,12 +307,12 @@ test.describe('Inbox tests', () => {
     await leftSideMenuPage.openProfileMenu()
     await leftSideMenuPage.inviteToWorkspace()
     await leftSideMenuPage.getInviteLink()
-    const linkText = await page.locator('.antiPopup .link').textContent()
+    const linkText = await leftSideMenuPage.readInviteLink()
     await leftSideMenuPage.clickOnCloseInvite()
 
     const page2 = await browser.newPage()
     try {
-      await page2.goto(linkText ?? '')
+      await page2.goto(linkText)
       await setTestOptions(page2)
       const joinPage = new SignInJoinPage(page2)
       await joinPage.join(newUser2)

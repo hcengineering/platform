@@ -27,6 +27,8 @@
   export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'medium'
   export let minWidth: string | undefined = undefined
+  export let width: string | undefined = undefined
+  export let justify: 'left' | 'center' = 'center'
 
   const dispatch = createEventDispatcher()
 
@@ -59,5 +61,7 @@
   {kind}
   {size}
   {minWidth}
+  {width}
+  {justify}
   on:selected={handleSelected}
 />

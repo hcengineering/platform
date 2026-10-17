@@ -275,6 +275,9 @@
     "OtherSpaces": "Другие пространства",
     "Public": "Публичное",
     "Member": "Участник",
-    "CanJoin": "Может присоединиться"
+    "CanJoin": "Может присоединиться",
+    "InviteDays": "{count, plural, one {# день} few {# дня} other {# дней}}",
+    "InviteHours": "{count, plural, one {# час} few {# часа} other {# часов}}",
+    "InviteSettingsSaveFailed": "Не удалось сохранить настройки приглашений. Попробуйте ещё раз."
   }
 }

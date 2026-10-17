@@ -46,6 +46,7 @@ import type {
   LoginInfoByToken,
   LoginInfoRequestData,
   InviteInfo,
+  ManagedInviteLink,
   LoginInfoWithWorkspaces,
   MailboxInfo,
   MailboxOptions,
@@ -109,6 +110,8 @@ export interface AccountClient {
   ) => Promise<WorkspaceLoginInfo>
   join: (email: string, password: string, inviteId: string, workspaceUrl: string) => Promise<WorkspaceLoginInfo>
   createInvite: (exp: number, emailMask: string, limit: number, role: AccountRole) => Promise<string>
+  getActiveInviteLinks: () => Promise<ManagedInviteLink[]>
+  revokeInviteLink: (id: string) => Promise<void>
   /**
    * @param options.personalized
    * If true, will generate a link with a personalized token for one person access
@@ -604,10 +607,18 @@ class AccountClientImpl implements AccountClient {
   async createInvite (exp: number, emailMask: string, limit: number, role: AccountRole): Promise<string> {
     const request = {
       method: 'createInvite' as const,
-      params: { exp, emailMask, limit, role }
+      params: { exp, emailMask, limit, role, isShareLink: true }
     }
 
     return await this.rpc(request)
+  }
+
+  async getActiveInviteLinks (): Promise<ManagedInviteLink[]> {
+    return await this.rpc({ method: 'getActiveInviteLinks' as const, params: {} })
+  }
+
+  async revokeInviteLink (id: string): Promise<void> {
+    await this.rpc({ method: 'revokeInviteLink' as const, params: { id } })
   }
 
   async checkJoin (inviteId: string): Promise<WorkspaceLoginInfo> {
