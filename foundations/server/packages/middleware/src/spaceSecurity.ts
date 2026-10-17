@@ -59,6 +59,7 @@ import {
   type TxMiddlewareResult
 } from '@hcengineering/server-core'
 import { isOwner, isSystem } from './utils'
+import { watchStall } from './stallWatch'
 
 type SpaceWithMembers = Pick<Space, '_id' | 'members' | 'private' | '_class' | 'archived'>
 
@@ -160,7 +161,7 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
       })()
     }
     if (this.wasInit instanceof Promise) {
-      await this.wasInit
+      await watchStall('space-security.init', () => ({ workspace: this.context.workspace.uuid }), this.wasInit)
       this.wasInit = true
     }
   }
@@ -552,10 +553,20 @@ export class SpaceSecurityMiddleware extends BaseMiddleware implements Middlewar
         this.next?.groupBy<Ref<Space>, Doc>(ctx, domain, this.getKey(domain)) ?? Promise.resolve(new Map())
       ).then((r) => new Set<Ref<Space>>(r.keys()))
       this._domainSpaces.set(domain, p)
-      domainSpaces = await p
+      domainSpaces = await watchStall(
+        'space-security.domainSpaces',
+        () => ({ workspace: this.context.workspace.uuid, domain }),
+        p
+      )
       this._domainSpaces.set(domain, domainSpaces)
     }
-    return domainSpaces instanceof Promise ? await domainSpaces : domainSpaces
+    return domainSpaces instanceof Promise
+      ? await watchStall(
+        'space-security.domainSpaces.shared',
+        () => ({ workspace: this.context.workspace.uuid, domain }),
+        domainSpaces
+      )
+      : domainSpaces
   }
 
   private async filterByDomain (

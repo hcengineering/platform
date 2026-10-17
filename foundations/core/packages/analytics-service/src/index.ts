@@ -3,7 +3,7 @@
 //
 
 import { AnalyticProvider, Analytics } from '@hcengineering/analytics'
-import { initOpenTelemetrySDK, reportOTELError } from '@hcengineering/measurements-otlp'
+import { initOpenTelemetrySDK, reportOTEL, reportOTELError } from '@hcengineering/measurements-otlp'
 
 export * from '@hcengineering/measurements-otlp'
 export * from './logging'
@@ -21,7 +21,9 @@ class OTELAnalyticsProvider implements AnalyticProvider {
 
   setWorkspace: (ws: string, guest: boolean) => void = (ws, guest) => {}
 
-  handleEvent: (event: string, params: Record<string, string>) => void = (event, params) => {}
+  handleEvent: (event: string, params: Record<string, string>) => void = (event, params) => {
+    reportOTEL('info', event, Date.now(), params)
+  }
 
   handleError (error: Error): void {
     reportOTELError(error)

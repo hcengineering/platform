@@ -23,6 +23,7 @@ import {
   type TxCUD
 } from '@hcengineering/core'
 import { BaseMiddleware } from '@hcengineering/server-core'
+import { watchStall } from './stallWatch'
 import type { Middleware, MiddlewareCreator, TxMiddlewareResult } from '@hcengineering/server-core'
 
 interface TxOrderEntry {
@@ -105,7 +106,15 @@ export class TxOrderingMiddleware extends BaseMiddleware implements Middleware {
 
     // Wait for all previous transactions to complete
     if (waitPromises.length > 0) {
-      await Promise.all(waitPromises)
+      await watchStall(
+        'tx-ordering.wait',
+        () => ({
+          workspace: this.context.workspace.uuid,
+          docs: Array.from(txesByDoc.keys()).slice(0, 3),
+          account: ctx.contextData?.account?.uuid
+        }),
+        Promise.all(waitPromises)
+      )
     }
 
     try {

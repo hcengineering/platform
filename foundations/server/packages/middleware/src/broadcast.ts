@@ -35,6 +35,7 @@ import type {
   TxMiddlewareResult
 } from '@hcengineering/server-core'
 import { BaseMiddleware, createBroadcastEvent } from '@hcengineering/server-core'
+import { watchStall } from './stallWatch'
 
 /**
  * @public
@@ -92,8 +93,17 @@ export class BroadcastMiddleware extends BaseMiddleware implements Middleware {
     // Put current user as send target
     for (const txd of tx) {
       let target: BroadcastResult
-      for (const tt of Object.values(targets ?? {})) {
-        target = await tt(txd)
+      for (const [targetKey, tt] of Object.entries(targets ?? {})) {
+        target = await watchStall(
+          'broadcast.target',
+          () => ({
+            workspace: this.context.workspace.uuid,
+            target: targetKey,
+            txClass: txd._class,
+            objectClass: (txd as TxCUD<Doc>).objectClass
+          }),
+          tt(txd)
+        )
         if (target !== undefined) {
           break
         }

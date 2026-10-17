@@ -45,6 +45,7 @@ import {
 } from '@hcengineering/server-core'
 import { isPersonAttachedClass, isPersonClass, restrictField } from './guestPersonUtils'
 import { GuestVisibilityCache, type VisibleSet } from './guestVisibilityCache'
+import { watchStall } from '../stallWatch'
 
 interface BroadcastPersonSubject {
   personRef: Ref<Person>
@@ -77,6 +78,14 @@ export class GuestPersonMiddleware extends BaseMiddleware implements Middleware 
     next: Middleware | undefined
   ): Promise<GuestPersonMiddleware> {
     return new GuestPersonMiddleware(context, next)
+  }
+
+  private async visible (ctx: MeasureContext<SessionData>, account: AccountUuid): Promise<VisibleSet> {
+    return await watchStall(
+      'guest-visibility.load',
+      () => ({ workspace: this.context.workspace.uuid, account }),
+      this.cache.getVisible(ctx, account)
+    )
   }
 
   // ─── Find ───────────────────────────────────────────────────────────────────
@@ -112,7 +121,7 @@ export class GuestPersonMiddleware extends BaseMiddleware implements Middleware 
     options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
     const q = query as Record<string, unknown>
-    const { accounts } = await this.cache.getVisible(ctx, account.uuid)
+    const { accounts } = await this.visible(ctx, account.uuid)
     const newQuery = { ...q, personUuid: restrictField(q.personUuid, accounts) } as unknown as DocumentQuery<T>
     return await this.provideFindAll(ctx, _class, newQuery, options)
   }
@@ -133,7 +142,7 @@ export class GuestPersonMiddleware extends BaseMiddleware implements Middleware 
     ) {
       return await this.provideFindAll(ctx, _class, query, options)
     }
-    const { personRefs: refs } = await this.cache.getVisible(ctx, account.uuid)
+    const { personRefs: refs } = await this.visible(ctx, account.uuid)
     const newQuery = { ...q, attachedTo: restrictField(q.attachedTo, refs) } as unknown as DocumentQuery<T>
     return await this.provideFindAll(ctx, _class, newQuery, options)
   }
@@ -145,7 +154,7 @@ export class GuestPersonMiddleware extends BaseMiddleware implements Middleware 
     query: DocumentQuery<T>,
     options?: ServerFindOptions<T>
   ): Promise<FindResult<T>> {
-    const { accounts } = await this.cache.getVisible(ctx, account.uuid)
+    const { accounts } = await this.visible(ctx, account.uuid)
     const requestedLimit = options?.limit
     let fetchLimit = requestedLimit
     let result = await this.provideFindAll(ctx, _class, query, options)
@@ -183,7 +192,7 @@ export class GuestPersonMiddleware extends BaseMiddleware implements Middleware 
       return await this.provideSearchFulltext(ctx, query, options)
     }
 
-    const visible = await this.cache.getVisible(ctx, account.uuid)
+    const visible = await this.visible(ctx, account.uuid)
     const requestedLimit = options.limit
     let fetchLimit = requestedLimit
     let result = await this.searchWithPersons(ctx, query, options)
@@ -363,7 +372,7 @@ export class GuestPersonMiddleware extends BaseMiddleware implements Middleware 
     } else {
       // Load visibility of all guests in parallel: on a cold cache each load is a few DB queries.
       const hidden = await Promise.all(
-        others.map(async (guest) => !(await this.cache.getVisible(ctx, guest)).accounts.has(personUuid))
+        others.map(async (guest) => !(await this.visible(ctx, guest)).accounts.has(personUuid))
       )
       exclude = others.filter((_, i) => hidden[i])
     }
