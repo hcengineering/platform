@@ -96,7 +96,9 @@ describe('watchStall', () => {
     expect(errors).toHaveLength(21)
     expect((errorObjects[20] as PipelineStallError).attributes.suppressedBefore).toBe('30')
 
-    resolvers.forEach((r) => { r(); })
+    resolvers.forEach((r) => {
+      r()
+    })
     await Promise.all([...pendings, later])
   })
 
@@ -120,14 +122,18 @@ describe('watchStall', () => {
 
   it('rate limits per workspace, so a noisy one does not hide others', async () => {
     const resolvers: Array<() => void> = []
-    const run = async (workspace: string): Promise<void> => { await watchStall('busy', () => ({ workspace }), new Promise<void>((resolve) => resolvers.push(resolve))); }
+    const run = async (workspace: string): Promise<void> => {
+      await watchStall('busy', () => ({ workspace }), new Promise<void>((resolve) => resolvers.push(resolve)))
+    }
     const all: Array<Promise<void>> = []
     for (let i = 0; i < 30; i++) all.push(run('noisy'))
     all.push(run('quiet'))
     jest.advanceTimersByTime(1001)
     expect(errors).toHaveLength(21)
     expect(errorObjects.some((e) => (e as PipelineStallError).attributes.workspace === 'quiet')).toBe(true)
-    resolvers.forEach((r) => { r(); })
+    resolvers.forEach((r) => {
+      r()
+    })
     await Promise.all(all)
   })
 
@@ -156,7 +162,9 @@ describe('watchStall', () => {
     jest.advanceTimersByTime(1001)
     expect(errors).toHaveLength(20_001)
 
-    resolvers.forEach((r) => { r(); })
+    resolvers.forEach((r) => {
+      r()
+    })
     await Promise.all([...pendings, later])
   })
 
