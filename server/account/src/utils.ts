@@ -80,6 +80,12 @@ import { type Sql } from 'postgres'
 
 export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b' as PersonUuid
 
+export interface OidcWorkspaceRoleUpdate {
+  workspaceUuid: WorkspaceUuid
+  workspaceUrl: string
+  role: AccountRole | null
+}
+
 export async function getDbFlavor (pgClient: Sql<any>): Promise<DBFlavor> {
   // Run the version query
   const [{ version }] = await pgClient`SELECT version()`
@@ -1159,15 +1165,64 @@ export async function updateWorkspaceRole (
 
   if (currentRole === targetRole) return
 
-  if (currentRole === AccountRole.Owner) {
-    // Check if there are other owners
-    const owners = (await db.getWorkspaceMembers(workspace)).filter((m) => m.role === AccountRole.Owner)
-    if (owners.length === 1) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-    }
+  if (currentRole === AccountRole.Owner && (await isLastWorkspaceOwner(db, workspace))) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   await db.updateWorkspaceRole(targetAccount, workspace, targetRole)
+}
+
+export async function isLastWorkspaceOwner (
+  db: AccountDB,
+  workspace: WorkspaceUuid
+): Promise<boolean> {
+  const owners = (await db.getWorkspaceMembers(workspace)).filter((member) => member.role === AccountRole.Owner)
+  return owners.length === 1
+}
+
+/**
+ * Applies OIDC-derived workspace roles through the same membership primitives
+ * used by invite joins. The account-side OIDC identity check protects local
+ * accounts even if this function is called from a provider callback by mistake.
+ */
+export async function synchronizeOidcWorkspaceRoles (
+  ctx: MeasureContext,
+  db: AccountDB,
+  account: AccountUuid,
+  sub: string | undefined,
+  updates: OidcWorkspaceRoleUpdate[]
+): Promise<void> {
+  const oidcIdentity = await db.socialId.findOne({
+    personUuid: account,
+    type: SocialIdType.OIDC,
+    isDeleted: { $ne: true }
+  })
+  if (oidcIdentity == null) return
+
+  for (const { workspaceUuid, workspaceUrl, role: newRole } of updates) {
+    const oldRole = await db.getWorkspaceRole(account, workspaceUuid)
+    if (oldRole === newRole) continue
+
+    if (oldRole === AccountRole.Owner && newRole !== AccountRole.Owner) {
+      const changed = await db.updateOrUnassignWorkspaceOwnerIfNotLast(account, workspaceUuid, newRole)
+      if (!changed) {
+        ctx.warn('oidc_workspace_role_sync_last_owner', { sub, workspace: workspaceUrl, oldRole, newRole })
+        continue
+      }
+      ctx.info('oidc_workspace_role_sync', { sub, workspace: workspaceUrl, oldRole, newRole })
+      continue
+    }
+
+    if (newRole == null) {
+      if (oldRole != null) await db.unassignWorkspace(account, workspaceUuid)
+    } else if (oldRole == null) {
+      await db.assignWorkspace(account, workspaceUuid, newRole)
+    } else {
+      await db.updateWorkspaceRole(account, workspaceUuid, newRole)
+    }
+
+    ctx.info('oidc_workspace_role_sync', { sub, workspace: workspaceUrl, oldRole, newRole })
+  }
 }
 
 /**
