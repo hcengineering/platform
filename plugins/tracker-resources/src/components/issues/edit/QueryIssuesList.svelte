@@ -143,7 +143,13 @@
   {/if}
   <div class="flex-row-center gap-2 no-print">
     {#if hasSubIssues}
-      <ViewletsSettingButton bind:viewOptions viewletQuery={{ _id: viewletId }} kind={'tertiary'} bind:viewlet />
+      <ViewletsSettingButton
+        bind:viewOptions
+        viewletQuery={{ _id: viewletId }}
+        kind={'tertiary'}
+        useViewletDefaults
+        bind:viewlet
+      />
     {/if}
     <slot name="buttons" />
     {#if !$restrictionStore.readonly}
