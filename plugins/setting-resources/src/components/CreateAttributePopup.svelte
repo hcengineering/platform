@@ -38,6 +38,7 @@
   } from '@hcengineering/ui'
   import { DropdownIntlItem } from '@hcengineering/ui/src/types'
   import setting from '../plugin'
+  import { nextDefaultValue } from '../attributeDefaultValue'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import { IconPicker } from '@hcengineering/view-resources'
@@ -122,7 +123,7 @@
       extra = e.detail?.extra ?? {}
     } else {
       index = e.detail?.index ?? index
-      defaultValue = e.detail?.defaultValue ?? defaultValue
+      defaultValue = nextDefaultValue(e.detail, defaultValue)
       extra = e.detail?.extra ?? extra
     }
   }
