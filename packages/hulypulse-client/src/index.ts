@@ -14,3 +14,4 @@
 //
 
 export * from './client'
+export * from './reconnect'
