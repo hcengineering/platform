@@ -314,7 +314,7 @@ export class ClientSession implements Session {
   }
 
   broadcast (ctx: MeasureContext, socket: ConnectionSocket, tx: Tx[]): void {
-    if (this.tx.length > 10000) {
+    if (tx.length > 10000) {
       const classes = new Set<Ref<Class<Doc>>>()
       for (const dtx of tx) {
         if (TxProcessor.isExtendsCUD(dtx._class)) {
@@ -397,6 +397,7 @@ export class ClientSession implements Session {
   async upload (ctx: ClientSessionCtx, domain: Domain, docs: Doc[]): Promise<void> {
     if (!this.allowUpload) {
       await ctx.sendResponse(ctx.requestId, { error: 'Upload not allowed' })
+      return
     }
     this.lastRequest = Date.now()
     try {
@@ -412,6 +413,7 @@ export class ClientSession implements Session {
   async clean (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
     if (!this.allowUpload) {
       await ctx.sendResponse(ctx.requestId, { error: 'Clean not allowed' })
+      return
     }
     this.lastRequest = Date.now()
     try {

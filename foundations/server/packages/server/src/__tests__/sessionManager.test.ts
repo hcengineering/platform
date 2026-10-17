@@ -1009,6 +1009,31 @@ describe('TSessionManager', () => {
     })
   })
 
+  describe('addSession', () => {
+    it('removes the session from both maps when the login event cannot be sent', async () => {
+      const workspaceUuid = 'ws-1' as WorkspaceUuid
+      const user = 'user-1' as AccountUuid
+      const account = {
+        account: user,
+        socialIds: [{ _id: 'p1', type: 'email', value: 'a@b.c' }],
+        workspaces: { [workspaceUuid]: { role: AccountRole.User } }
+      }
+      const workspace = { sessions: new Map(), wsId: { uuid: workspaceUuid }, context: {} }
+      jest.spyOn(sessionManager, 'getLoginWithWorkspaceInfo').mockResolvedValue(account as any)
+      jest.spyOn(sessionManager, 'getWorkspace').mockResolvedValue({ workspace } as any)
+      mockUsersProducer.send.mockRejectedValue(new Error('queue down'))
+      const socket = { id: 'sock-1', send: jest.fn() }
+      const token: Token = { account: user, workspace: workspaceUuid }
+
+      await expect(sessionManager.addSession(mockContext, socket as any, token, 'raw', undefined)).rejects.toThrow(
+        'queue down'
+      )
+
+      expect(sessionManager.sessions.has(socket.id)).toBe(false)
+      expect(workspace.sessions.size).toBe(0)
+    })
+  })
+
   describe('integration scenarios', () => {
     it('should handle full session lifecycle', () => {
       const workspaceId = 'ws-lifecycle' as WorkspaceUuid

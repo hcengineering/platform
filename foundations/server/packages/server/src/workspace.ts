@@ -1,5 +1,6 @@
 //
 // Copyright © 2022, 2023 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -64,13 +65,21 @@ export class Workspace {
   }
 
   async with<T>(op: (pipeline: Pipeline) => Promise<T>): Promise<T> {
-    this.operations++
-    let pipeline = this.getPipeline()
-    if (pipeline instanceof Promise) {
-      pipeline = await pipeline
-      this.pipeline = pipeline
-    }
     try {
+      this.operations++
+      let pipeline = this.getPipeline()
+      if (pipeline instanceof Promise) {
+        const pipelinePromise = pipeline
+        try {
+          pipeline = await pipelinePromise
+          this.pipeline = pipeline
+        } catch (err) {
+          if (this.pipeline === pipelinePromise) {
+            this.pipeline = undefined
+          }
+          throw err
+        }
+      }
       return await op(pipeline)
     } finally {
       this.operations--
