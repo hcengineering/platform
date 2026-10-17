@@ -85,6 +85,7 @@
     })
   } else {
     tagsQuery.unsubscribe()
+    labels = []
   }
 
   $: canSave = title.trim().length > 0
