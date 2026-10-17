@@ -1622,6 +1622,15 @@ export async function doJoinByInvite (
   return result
 }
 
+/**
+ * Whether new accounts may NOT be created through external auth providers (Google, GitHub, OpenID Connect).
+ * By default this follows DISABLE_SIGNUP; ALLOW_PROVIDER_SIGNUP=true keeps provider sign-up enabled
+ * while password sign-up stays disabled.
+ */
+export function isProviderSignUpDisabled (env: Record<string, string | undefined> = process.env): boolean {
+  return env.DISABLE_SIGNUP === 'true' && env.ALLOW_PROVIDER_SIGNUP !== 'true'
+}
+
 export async function loginOrSignUpWithProvider (
   ctx: MeasureContext,
   db: AccountDB,
