@@ -80,6 +80,12 @@ import { type Sql } from 'postgres'
 
 export const GUEST_ACCOUNT = 'b6996120-416f-49cd-841e-e4a5d2e49c9b' as PersonUuid
 
+export interface OidcWorkspaceRoleUpdate {
+  workspaceUuid: WorkspaceUuid
+  workspaceUrl: string
+  role: AccountRole | null
+}
+
 export async function getDbFlavor (pgClient: Sql<any>): Promise<DBFlavor> {
   // Run the version query
   const [{ version }] = await pgClient`SELECT version()`
@@ -1159,15 +1165,64 @@ export async function updateWorkspaceRole (
 
   if (currentRole === targetRole) return
 
-  if (currentRole === AccountRole.Owner) {
-    // Check if there are other owners
-    const owners = (await db.getWorkspaceMembers(workspace)).filter((m) => m.role === AccountRole.Owner)
-    if (owners.length === 1) {
-      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
-    }
+  if (currentRole === AccountRole.Owner && (await isLastWorkspaceOwner(db, workspace))) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
   await db.updateWorkspaceRole(targetAccount, workspace, targetRole)
+}
+
+export async function isLastWorkspaceOwner (
+  db: AccountDB,
+  workspace: WorkspaceUuid
+): Promise<boolean> {
+  const owners = (await db.getWorkspaceMembers(workspace)).filter((member) => member.role === AccountRole.Owner)
+  return owners.length === 1
+}
+
+/**
+ * Applies OIDC-derived workspace roles through the same membership primitives
+ * used by invite joins. The account-side OIDC identity check protects local
+ * accounts even if this function is called from a provider callback by mistake.
+ */
+export async function synchronizeOidcWorkspaceRoles (
+  ctx: MeasureContext,
+  db: AccountDB,
+  account: AccountUuid,
+  sub: string | undefined,
+  updates: OidcWorkspaceRoleUpdate[]
+): Promise<void> {
+  const oidcIdentity = await db.socialId.findOne({
+    personUuid: account,
+    type: SocialIdType.OIDC,
+    isDeleted: { $ne: true }
+  })
+  if (oidcIdentity == null) return
+
+  for (const { workspaceUuid, workspaceUrl, role: newRole } of updates) {
+    const oldRole = await db.getWorkspaceRole(account, workspaceUuid)
+    if (oldRole === newRole) continue
+
+    if (oldRole === AccountRole.Owner && newRole !== AccountRole.Owner) {
+      const changed = await db.updateOrUnassignWorkspaceOwnerIfNotLast(account, workspaceUuid, newRole)
+      if (!changed) {
+        ctx.warn('oidc_workspace_role_sync_last_owner', { sub, workspace: workspaceUrl, oldRole, newRole })
+        continue
+      }
+      ctx.info('oidc_workspace_role_sync', { sub, workspace: workspaceUrl, oldRole, newRole })
+      continue
+    }
+
+    if (newRole == null) {
+      if (oldRole != null) await db.unassignWorkspace(account, workspaceUuid)
+    } else if (oldRole == null) {
+      await db.assignWorkspace(account, workspaceUuid, newRole)
+    } else {
+      await db.updateWorkspaceRole(account, workspaceUuid, newRole)
+    }
+
+    ctx.info('oidc_workspace_role_sync', { sub, workspace: workspaceUrl, oldRole, newRole })
+  }
 }
 
 /**
@@ -1640,11 +1695,25 @@ export async function loginOrSignUpWithProvider (
     }
 
     // Find if any of the target/email social ids exist
-    const targetSocialId = await db.socialId.findOne(normalizedSocialId)
+    const targetSocialId = await db.socialId.findOne({ ...normalizedSocialId, isDeleted: { $ne: true } })
     const emailSocialId =
       normalizedEmail !== ''
-        ? await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail })
+        ? await db.socialId.findOne({ type: SocialIdType.EMAIL, value: normalizedEmail, isDeleted: { $ne: true } })
         : undefined
+    const socialIdEmailConflict =
+      targetSocialId?.personUuid != null &&
+      emailSocialId?.personUuid != null &&
+      targetSocialId.personUuid !== emailSocialId.personUuid
+    if (socialIdEmailConflict && socialId.type === SocialIdType.OIDC) {
+      ctx.error('oidc_email_conflict', {
+        sub: normalizedSocialId.value,
+        socialIdPersonUuid: targetSocialId.personUuid,
+        emailPersonUuid: emailSocialId.personUuid
+      })
+    }
+
+    // A provider identity is authoritative when it already exists. In particular,
+    // never attach or confirm an email social id owned by another person.
     let personUuid = targetSocialId?.personUuid ?? emailSocialId?.personUuid
 
     if (personUuid == null) {
@@ -1678,7 +1747,11 @@ export async function loginOrSignUpWithProvider (
 
     // We should check and reset password if there's an account with password but no social ids have been
     // confirmed yet
-    const confirmedSocialId = await db.socialId.findOne({ personUuid, verifiedOn: { $gt: 0 } })
+    const confirmedSocialId = await db.socialId.findOne({
+      personUuid,
+      verifiedOn: { $gt: 0 },
+      isDeleted: { $ne: true }
+    })
 
     if (confirmedSocialId == null) {
       await db.resetPassword(personUuid as AccountUuid)
@@ -1693,6 +1766,7 @@ export async function loginOrSignUpWithProvider (
       socialIdId = targetSocialId._id
     }
 
+    let emailSocialIdBelongsToPerson = emailSocialId?.personUuid === personUuid
     if (emailSocialId == null) {
       if (normalizedEmail !== '') {
         await db.socialId.insertOne({
@@ -1701,13 +1775,15 @@ export async function loginOrSignUpWithProvider (
           personUuid,
           verifiedOn: Date.now()
         })
+        emailSocialIdBelongsToPerson = true
       }
-    } else if (emailSocialId.verifiedOn == null) {
+    } else if (!socialIdEmailConflict && emailSocialId.verifiedOn == null) {
       await db.socialId.update({ key: emailSocialId.key }, { verifiedOn: Date.now() })
     }
 
     await confirmHulyIds(ctx, db, personUuid as AccountUuid)
-    const extraToken: Record<string, string> = isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
+    const extraToken: Record<string, string> =
+      emailSocialIdBelongsToPerson && isAdminEmail(normalizedEmail) ? { admin: 'true' } : {}
     ctx.info('Provider login succeeded', { email, normalizedEmail, emailSocialId, socialId, ...extraToken })
 
     return {

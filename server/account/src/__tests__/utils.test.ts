@@ -77,6 +77,7 @@ import platform, { getMetadata, PlatformError, Severity, Status } from '@hcengin
 import serverToken, { decodeTokenVerbose, generateToken, TokenError } from '@hcengineering/server-token'
 import { Analytics } from '@hcengineering/analytics'
 import { randomBytes } from 'crypto'
+import * as admin from '../admin'
 
 import { type AccountDB, type AccountEvent, AccountEventType, type Workspace } from '../types'
 import { accountPlugin } from '../plugin'
@@ -1909,6 +1910,144 @@ describe('account utils', () => {
       )
 
       expect(result).toBeNull()
+    })
+
+    test('adds a verified email to an existing OIDC account only once', async () => {
+      const personUuid = 'oidc-person' as PersonUuid
+      const oidcSocialId = { key: 'oidc-key', personUuid, verifiedOn: Date.now() }
+      const emailSocialId = { key: 'email-key', personUuid, verifiedOn: Date.now() }
+      let emailExists = false
+
+      ;(mockDb.socialId.findOne as jest.Mock).mockImplementation(async (query) => {
+        if (query.type === SocialIdType.OIDC) return oidcSocialId
+        if (query.type === SocialIdType.EMAIL) return emailExists ? emailSocialId : null
+        return { personUuid, verifiedOn: Date.now() }
+      })
+      ;(mockDb.socialId.insertOne as jest.Mock).mockImplementation(async (value) => {
+        if (value.type === SocialIdType.EMAIL) emailExists = true
+        return 'social-id'
+      })
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({ firstName: 'Ada', lastName: 'Lovelace' })
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({ uuid: personUuid })
+
+      await loginOrSignUpWithProvider(mockCtx, mockDb, mockBranding, 'Ada@Example.com', 'Ada', 'Lovelace', {
+        type: SocialIdType.OIDC,
+        value: 'entra-subject'
+      })
+      await loginOrSignUpWithProvider(mockCtx, mockDb, mockBranding, 'Ada@Example.com', 'Ada', 'Lovelace', {
+        type: SocialIdType.OIDC,
+        value: 'entra-subject'
+      })
+
+      expect(mockDb.socialId.insertOne).toHaveBeenCalledTimes(1)
+      expect(mockDb.socialId.insertOne).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: SocialIdType.EMAIL,
+          value: 'ada@example.com',
+          personUuid,
+          verifiedOn: expect.any(Number)
+        })
+      )
+    })
+
+    test('keeps an OIDC login on its existing person when its email belongs to another person', async () => {
+      const oidcPerson = 'oidc-person' as PersonUuid
+      const emailPerson = 'email-person' as PersonUuid
+      const oidcSocialId = { key: 'oidc-key', personUuid: oidcPerson, verifiedOn: Date.now() }
+      const emailSocialId = { key: 'email-key', personUuid: emailPerson, verifiedOn: undefined }
+
+      ;(mockDb.socialId.findOne as jest.Mock).mockImplementation(async (query) => {
+        if (query.type === SocialIdType.OIDC) return oidcSocialId
+        if (query.type === SocialIdType.EMAIL) return emailSocialId
+        return { personUuid: oidcPerson, verifiedOn: Date.now() }
+      })
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({ firstName: 'Ada', lastName: 'Lovelace' })
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({ uuid: oidcPerson })
+
+      const result = await loginOrSignUpWithProvider(
+        mockCtx,
+        mockDb,
+        mockBranding,
+        'ada@example.com',
+        'Ada',
+        'Lovelace',
+        { type: SocialIdType.OIDC, value: 'entra-subject' }
+      )
+
+      expect(result?.account).toBe(oidcPerson)
+      expect(mockCtx.error).toHaveBeenCalledWith('oidc_email_conflict', {
+        sub: 'entra-subject',
+        socialIdPersonUuid: oidcPerson,
+        emailPersonUuid: emailPerson
+      })
+      expect(mockDb.socialId.update).not.toHaveBeenCalledWith({ key: 'email-key' }, expect.anything())
+      expect(mockDb.socialId.insertOne).not.toHaveBeenCalled()
+    })
+
+    test('does not derive admin from an email owned by another person during an OIDC conflict', async () => {
+      const oidcPerson = 'oidc-person' as PersonUuid
+      const emailPerson = 'email-person' as PersonUuid
+      const oidcSocialId = { key: 'oidc-key', personUuid: oidcPerson, verifiedOn: Date.now() }
+      const emailSocialId = { key: 'email-key', personUuid: emailPerson, verifiedOn: Date.now() }
+      const isAdminEmail = jest.spyOn(admin, 'isAdminEmail').mockReturnValue(true)
+
+      ;(mockDb.socialId.findOne as jest.Mock).mockImplementation(async (query) => {
+        if (query.type === SocialIdType.OIDC) return oidcSocialId
+        if (query.type === SocialIdType.EMAIL) return emailSocialId
+        return { personUuid: oidcPerson, verifiedOn: Date.now() }
+      })
+      ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({ firstName: 'Ada', lastName: 'Lovelace' })
+      ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({ uuid: oidcPerson })
+
+      await loginOrSignUpWithProvider(mockCtx, mockDb, mockBranding, 'admin@example.com', 'Ada', 'Lovelace', {
+        type: SocialIdType.OIDC,
+        value: 'entra-subject'
+      })
+
+      expect(generateToken).toHaveBeenCalledWith(oidcPerson, undefined, {})
+      isAdminEmail.mockRestore()
+    })
+
+    test('ignores deleted OIDC and email social ids during provider login', async () => {
+      const deletedOidcSocialId = { key: 'deleted-oidc-key', personUuid: 'deleted-oidc-person', isDeleted: true }
+      const deletedEmailSocialId = { key: 'deleted-email-key', personUuid: 'deleted-email-person', isDeleted: true }
+      const isAdminEmail = jest.spyOn(admin, 'isAdminEmail').mockReturnValue(true)
+
+      ;(mockDb.socialId.findOne as jest.Mock).mockImplementation(async (query) => {
+        if (query.type === SocialIdType.OIDC) {
+          return query.isDeleted === undefined ? deletedOidcSocialId : null
+        }
+        if (query.type === SocialIdType.EMAIL) {
+          return query.isDeleted === undefined ? deletedEmailSocialId : null
+        }
+        return null
+      })
+
+      const result = await loginOrSignUpWithProvider(
+        mockCtx,
+        mockDb,
+        mockBranding,
+        'admin@example.com',
+        'Ada',
+        'Lovelace',
+        { type: SocialIdType.OIDC, value: 'deleted-entra-subject' },
+        true
+      )
+
+      expect(result).toBeNull()
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        type: SocialIdType.OIDC,
+        value: 'deleted-entra-subject',
+        isDeleted: { $ne: true }
+      })
+      expect(mockDb.socialId.findOne).toHaveBeenCalledWith({
+        type: SocialIdType.EMAIL,
+        value: 'admin@example.com',
+        isDeleted: { $ne: true }
+      })
+      expect(mockCtx.error).not.toHaveBeenCalledWith('oidc_email_conflict', expect.anything())
+      expect(generateToken).not.toHaveBeenCalled()
+      isAdminEmail.mockRestore()
     })
   })
 
