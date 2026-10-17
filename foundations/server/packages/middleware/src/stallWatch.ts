@@ -21,13 +21,14 @@ import { Analytics } from '@hcengineering/analytics'
  *
  * When the awaited promise is still pending after `PIPELINE_STALL_THRESHOLD_MS` (default 1000), a stall is
  * reported once through Analytics (`handleError`). If the promise settles later, the wait time is reported with
- * the `pipeline-stall-resolved` event, so "slow" can be told from "never finishes".
+ * the `pipeline-stall-resolved` event (with `failed=true` if it rejected), so "slow" can be told from "never finishes".
  *
  * Reports are rate limited per label so a stall storm cannot flood the telemetry pipeline.
  * Set `PIPELINE_STALL_WATCH=false` to turn it off.
  */
 
-const ENABLED = process.env.PIPELINE_STALL_WATCH !== 'false'
+// Read lazily so the switch can be flipped without reloading the module (and tested)
+const isEnabled = (): boolean => process.env.PIPELINE_STALL_WATCH !== 'false'
 const parsedThreshold = parseInt(process.env.PIPELINE_STALL_THRESHOLD_MS ?? '1000', 10)
 const THRESHOLD_MS = Number.isFinite(parsedThreshold) && parsedThreshold > 0 ? parsedThreshold : 1000
 
@@ -40,10 +41,35 @@ interface RateWindow {
   suppressed: number
 }
 
+const MAX_WINDOWS = 1000
+
 const windows = new Map<string, RateWindow>()
 
-/** @returns number of reports suppressed since the previous allowed one, or undefined if this report is not allowed */
-function acquire (label: string, now: number): number | undefined {
+/**
+ * Error with a stable message (good for grouping) and the per-incident details in `attributes`.
+ */
+export class PipelineStallError extends Error {
+  constructor (
+    readonly label: string,
+    thresholdMs: number,
+    readonly attributes: Record<string, string>
+  ) {
+    super(`pipeline-stall: ${label} pending > ${thresholdMs}ms`)
+    this.name = 'PipelineStallError'
+  }
+}
+
+/**
+ * @param key rate limit key (label + workspace), so one noisy workspace cannot hide stalls in others
+ * @returns number of reports suppressed since the previous allowed one, or undefined if this report is not allowed
+ */
+function acquire (key: string, now: number): number | undefined {
+  if (windows.size >= MAX_WINDOWS) {
+    for (const [k, w] of windows) {
+      if (now - w.start >= RATE_WINDOW_MS && w.suppressed === 0) windows.delete(k)
+    }
+  }
+  const label = key
   let win = windows.get(label)
   if (win === undefined || now - win.start >= RATE_WINDOW_MS) {
     const suppressed = win?.suppressed ?? 0
@@ -81,18 +107,26 @@ export async function watchStall<T> (
   attrs: () => Record<string, unknown>,
   promise: Promise<T>
 ): Promise<T> {
-  if (!ENABLED) {
+  if (!isEnabled()) {
     return await promise
   }
   const started = Date.now()
   let reported = false
+  let failed = false
   const timer = setTimeout(() => {
     try {
-      const suppressed = acquire(label, Date.now())
+      const details = safeAttrs(attrs)
+      const suppressed = acquire(`${label}:${details.workspace ?? ''}`, Date.now())
       if (suppressed === undefined) return
       reported = true
-      const details = { ...safeAttrs(attrs), thresholdMs: String(THRESHOLD_MS), suppressedBefore: String(suppressed) }
-      Analytics.handleError(new Error(`pipeline-stall: ${label} pending > ${THRESHOLD_MS}ms ${JSON.stringify(details)}`))
+      Analytics.handleError(
+        new PipelineStallError(label, THRESHOLD_MS, {
+          ...details,
+          label,
+          thresholdMs: String(THRESHOLD_MS),
+          suppressedBefore: String(suppressed)
+        })
+      )
     } catch {
       // diagnostics must never affect the request
     }
@@ -100,6 +134,9 @@ export async function watchStall<T> (
   timer.unref?.()
   try {
     return await promise
+  } catch (err: any) {
+    failed = true
+    throw err
   } finally {
     clearTimeout(timer)
     if (reported) {
@@ -107,6 +144,7 @@ export async function watchStall<T> (
         Analytics.handleEvent('pipeline-stall-resolved', {
           label,
           elapsedMs: String(Date.now() - started),
+          failed: String(failed),
           ...safeAttrs(attrs)
         })
       } catch {
