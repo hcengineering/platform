@@ -21,12 +21,13 @@
     type FindOptions,
     type Ref
   } from '@hcengineering/core'
+  import { getFieldSearch } from '@hcengineering/contact'
   import type { IntlString } from '@hcengineering/platform'
   import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { searchFor, type SearchItem } from '..'
   import { ObjectCreate, type ObjectSearchCategory } from '../types'
-  import { createQuery } from '../utils'
+  import { createQuery, getClient } from '../utils'
   import DocPopup from './DocPopup.svelte'
 
   export let _class: Ref<Class<Doc>>
@@ -80,9 +81,12 @@
   let objects: Doc[] = []
   let selObjects: Doc[] = []
   let resObjects: Doc[] = []
+  let selResult: Doc[] = []
+  let queryResult: Doc[] = []
 
   let extraItems: Ref<Doc>[] = []
 
+  const hierarchy = getClient().getHierarchy()
   const query = createQuery()
   const sQuery = createQuery() // Query for selected objects
 
@@ -95,6 +99,9 @@
   } else {
     extraItems = []
   }
+
+  $: fieldSearch = getFieldSearch(hierarchy, _class, searchField, search)
+  $: fieldMatches = (doc: Doc): boolean => search === '' || fieldSearch.matches(getObjectValue(searchField, doc))
 
   $: fquery = {
     ...(docQuery ?? {}),
@@ -112,7 +119,7 @@
             : { _id: { $nin: ignoreObjects, ..._idExtra } }
         default:
           return search !== ''
-            ? { [searchField]: { $like: '%' + search + '%' }, _id: { $nin: ignoreObjects, ..._idExtra } }
+            ? { [searchField]: { $like: fieldSearch.like }, _id: { $nin: ignoreObjects, ..._idExtra } }
             : { _id: { $nin: ignoreObjects, ..._idExtra } }
       }
     })()
@@ -123,7 +130,7 @@
     fquery,
     (result) => {
       result.sort(sort)
-      resObjects = result
+      queryResult = result
     },
     { ...(options ?? {}), limit: 200 }
   )
@@ -132,18 +139,22 @@
     sQuery.query<Doc>(
       _class,
       search !== ''
-        ? { [searchField]: { $like: '%' + search + '%' }, _id: { $in: selectedObjects } }
+        ? { [searchField]: { $like: fieldSearch.like }, _id: { $in: selectedObjects } }
         : { _id: { $in: selectedObjects } },
       (result) => {
         result.sort(sort)
-        selObjects = result
+        selResult = result
       },
       {}
     )
   } else {
-    selObjects = []
+    selResult = []
     sQuery.unsubscribe()
   }
+
+  // Filter outside of the query callback: the live query is not re-run when only the client side part changes
+  $: resObjects = searchMode === 'field' ? queryResult.filter(fieldMatches) : queryResult
+  $: selObjects = selResult.filter(fieldMatches)
 
   $: {
     if (created.length > 0 || selObjects.length > 0) {
