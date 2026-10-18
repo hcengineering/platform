@@ -271,6 +271,7 @@
     bind:useMaxWidth
     {sideContentSpace}
     printHeader={false}
+    printActivity={false}
     {embedded}
     adaptive={'default'}
     bind:content
