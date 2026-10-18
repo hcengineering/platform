@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { concatLink, TxOperations } from '@hcengineering/core'
+import { concatLink, type PersonId, pickPrimarySocialId, TxOperations } from '@hcengineering/core'
 import {
   ClickupImporter,
   defaultDocumentPreprocessors,
@@ -31,6 +31,7 @@ import { readFileSync } from 'fs'
 import * as yaml from 'js-yaml'
 import mammoth from 'mammoth'
 import { join } from 'path'
+import { API_TOKEN_ENV, type CredentialOptions, type ImportCredentials, resolveCredentials } from './credentials'
 
 class ConsoleLogger implements Logger {
   log (msg: string, data?: any): void {
@@ -62,27 +63,46 @@ export function importTool (): void {
   program.version('0.0.1')
 
   async function authorize (
-    user: string,
-    password: string,
+    credentials: CredentialOptions,
     workspaceUrl: string,
     f: (client: TxOperations, uploader: FileUploader) => Promise<void>
   ): Promise<void> {
-    if (workspaceUrl === '' || user === '' || password === '') {
+    let auth: ImportCredentials
+    try {
+      auth = resolveCredentials(credentials)
+    } catch (err: any) {
+      console.error(err.message)
+      process.exit(1)
+    }
+    if (workspaceUrl === '') {
       return
     }
     const config = await (await fetch(concatLink(getFrontUrl(), '/config.json'))).json()
     console.log('Setting up Accounts URL: ', config.ACCOUNTS_URL)
     setMetadata(serverClientPlugin.metadata.Endpoint, config.ACCOUNTS_URL)
-    console.log('Trying to login user: ', user)
-    const unauthAccountClient = getAccountClient()
-    const { account, token, socialId } = await unauthAccountClient.login(user, password)
-    if (token === undefined || account === undefined || socialId === undefined) {
-      console.log('Login failed for user: ', user)
-      return
+
+    let token: string
+    let socialId: PersonId | undefined
+    if (auth.kind === 'password') {
+      console.log('Trying to login user: ', auth.user)
+      const unauthAccountClient = getAccountClient()
+      const loginInfo = await unauthAccountClient.login(auth.user, auth.password)
+      if (loginInfo.token === undefined || loginInfo.account === undefined || loginInfo.socialId === undefined) {
+        console.log('Login failed for user: ', auth.user)
+        return
+      }
+      token = loginInfo.token
+      socialId = loginInfo.socialId
+    } else {
+      console.log('Using API token')
+      token = auth.token
     }
 
     console.log('Looking for workspace: ', workspaceUrl)
     const accountClient = getAccountClient(token)
+    if (socialId === undefined) {
+      socialId = pickPrimarySocialId(await accountClient.getSocialIds())._id
+    }
     const allWorkspaces = await accountClient.getUserWorkspaces()
     const workspaces = allWorkspaces.filter((ws) => ws.url === workspaceUrl)
     if (workspaces.length < 1) {
@@ -91,7 +111,7 @@ export function importTool (): void {
     }
     console.log('Workspace found')
     const selectedWs = await accountClient.selectWorkspace(workspaces[0].url)
-    console.log(selectedWs)
+    console.log({ ...selectedWs, token: '***' })
 
     console.log('Connecting to Transactor URL: ', selectedWs.endpoint)
     const connection = await createClient(selectedWs.endpoint, selectedWs.token)
@@ -114,12 +134,13 @@ export function importTool (): void {
   program
     .command('import-notion-with-teamspaces <dir>')
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
-    .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-p, --password <password>', 'password')
+    .option('-u, --user <user>', 'user')
+    .option('-p, --password <password>', 'password')
+    .option('--token <token>', `API token, used instead of user and password (or set ${API_TOKEN_ENV})`)
     .requiredOption('-w, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .action(async (dir: string, cmd) => {
-      const { workspace, user, password } = cmd
-      await authorize(user, password, workspace, async (client, uploader) => {
+      const { workspace, user, password, token } = cmd
+      await authorize({ user, password, token }, workspace, async (client, uploader) => {
         await importNotion(client, uploader, dir)
       })
     })
@@ -128,13 +149,14 @@ export function importTool (): void {
   program
     .command('import-notion-to-teamspace <dir>')
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
-    .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-p, --password <password>', 'password')
+    .option('-u, --user <user>', 'user')
+    .option('-p, --password <password>', 'password')
+    .option('--token <token>', `API token, used instead of user and password (or set ${API_TOKEN_ENV})`)
     .requiredOption('-w, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .requiredOption('-t, --teamspace <teamspace>', 'new teamspace name where the documents should be imported to')
     .action(async (dir: string, cmd) => {
-      const { workspace, user, password, teamspace } = cmd
-      await authorize(user, password, workspace, async (client, uploader) => {
+      const { workspace, user, password, token, teamspace } = cmd
+      await authorize({ user, password, token }, workspace, async (client, uploader) => {
         await importNotion(client, uploader, dir, teamspace)
       })
     })
@@ -143,12 +165,13 @@ export function importTool (): void {
   program
     .command('import-clickup-tasks <file>')
     .description('import extracted archive exported from Notion as "Markdown & CSV"')
-    .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-p, --password <password>', 'password')
+    .option('-u, --user <user>', 'user')
+    .option('-p, --password <password>', 'password')
+    .option('--token <token>', `API token, used instead of user and password (or set ${API_TOKEN_ENV})`)
     .requiredOption('-w, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .action(async (file: string, cmd) => {
-      const { workspace, user, password } = cmd
-      await authorize(user, password, workspace, async (client, uploader) => {
+      const { workspace, user, password, token } = cmd
+      await authorize({ user, password, token }, workspace, async (client, uploader) => {
         const importer = new ClickupImporter(client, uploader, new ConsoleLogger())
         await importer.importClickUpTasks(file)
       })
@@ -158,12 +181,13 @@ export function importTool (): void {
   program
     .command('import <dir>')
     .description('import issues in Unified Huly Format')
-    .requiredOption('-u, --user <user>', 'user')
-    .requiredOption('-p, --password <password>', 'password')
+    .option('-u, --user <user>', 'user')
+    .option('-p, --password <password>', 'password')
+    .option('--token <token>', `API token, used instead of user and password (or set ${API_TOKEN_ENV})`)
     .requiredOption('-w, --workspace <workspace>', 'workspace url where the documents should be imported to')
     .action(async (dir: string, cmd) => {
-      const { workspace, user, password } = cmd
-      await authorize(user, password, workspace, async (client, uploader) => {
+      const { workspace, user, password, token } = cmd
+      await authorize({ user, password, token }, workspace, async (client, uploader) => {
         const importer = new HulyFormatImporter(client, uploader, new ConsoleLogger())
         await importer.importFolder(dir)
       })
