@@ -5,7 +5,7 @@
 
 // Placeholder parity between the locale files.
 //
-// `makeLocalesTest` only checks that `ru` mirrors the *key structure* of `en`.
+// `makeLocalesTest` only checks that each locale mirrors the *key structure* of `en`.
 // It cannot catch a translation that keeps the key but changes the ICU
 // arguments — e.g. a German string asking for `{issue}` while the component
 // passes `{title}`, or a copy-pasted string asking for `{start}`/`{due}` while

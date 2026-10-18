@@ -27,6 +27,14 @@
     "ServerUnderMaintenance": "Il server è in manutenzione",
     "WorkspaceCreating": "Creazione in corso...",
     "AccessDenied": "L'oggetto non esiste o non hai autorizzazione per accedervi.",
+    "UpgradeDownloadProgress": "Download dell'aggiornamento: {percent}%",
+    "Widget": "Widget",
+    "WidgetPreferences": "Preferenze del widget",
+    "OpenInSidebar": "Apri nella barra laterale",
+    "OpenInSidebarNewTab": "Apri in una nuova scheda della barra laterale",
+    "ConfigureWidgets": "Configura widget",
+    "Tab": "Scheda",
+    "WorkspaceIsArchived": "Il workspace è stato archiviato perché inutilizzato. Contattaci per ripristinarlo...",
     "WorkspaceIsMigrating": "Il workspace è in fase di aggiornamento. Attendi..."
   }
 }

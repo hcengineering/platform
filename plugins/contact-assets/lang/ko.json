@@ -150,6 +150,7 @@
         "WorkspaceStatusIn1Hour": "1시간 후",
         "WorkspaceStatusIn4Hours": "4시간 후",
         "WorkspaceStatusEndOfDay": "오늘 종료",
-        "WorkspaceStatusPickDate": "날짜 선택"
+        "WorkspaceStatusPickDate": "날짜 선택",
+        "HideInactive": "비활성 숨기기"
     }
 }

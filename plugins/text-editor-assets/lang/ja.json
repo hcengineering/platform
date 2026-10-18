@@ -82,6 +82,7 @@
     "CannotConnectToCollaborationService": "コラボレーションサービスに接続できません",
     "SourceURL": "ソースURL",
     "SelectedDocuments": "選択されたドキュメント ({count, plural, =1 {1 項目} other {# 項目}})",
+    "LatestVersion": "最新",
     "Highlight": "Highlight",
     "Subscript": "Subscript",
     "Superscript": "Superscript",
