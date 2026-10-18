@@ -28,6 +28,18 @@
     "Restore": "Restaurar",
     "Root": "/",
     "ForbidCreateDrivePermission": "Proibir criação de unidade",
-    "ForbidCreateDrivePermissionDescription": "Proíbe os utilizadores de criar novas unidades"
+    "ForbidCreateDrivePermissionDescription": "Proíbe os utilizadores de criar novas unidades",
+    "CreateFilePermission": "Criar arquivo",
+    "CreateFilePermissionDescription": "Permite que os usuários criem arquivos",
+    "UpdateFilePermission": "Atualizar arquivo",
+    "UpdateFilePermissionDescription": "Permite que os usuários atualizem arquivos",
+    "RemoveFilePermission": "Remover arquivo",
+    "RemoveFilePermissionDescription": "Permite que os usuários removam arquivos",
+    "CreateFolderPermission": "Criar pasta",
+    "CreateFolderPermissionDescription": "Permite que os usuários criem pastas",
+    "UpdateFolderPermission": "Atualizar pasta",
+    "UpdateFolderPermissionDescription": "Permite que os usuários atualizem pastas",
+    "RemoveFolderPermission": "Remover pasta",
+    "RemoveFolderPermissionDescription": "Permite que os usuários removam pastas"
   }
 }

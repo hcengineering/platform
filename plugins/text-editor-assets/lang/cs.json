@@ -82,6 +82,7 @@
     "CannotConnectToCollaborationService": "Nelze se připojit k službě spolupráce",
     "SourceURL": "Zdrojová URL",
     "SelectedDocuments": "Vybrané dokumenty ({count, plural, =1 {1 položka} other {# položek}})",
+    "LatestVersion": "Nejnovější",
     "Highlight": "Highlight",
     "Subscript": "Subscript",
     "Superscript": "Superscript",

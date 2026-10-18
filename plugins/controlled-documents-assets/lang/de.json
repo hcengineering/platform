@@ -86,6 +86,8 @@
     "ProvideRejectionReason": "Ablehnungsgrund eingeben...",
     "RejectionReason": "Ablehnungsgrund",
     "ConfirmReviewCompletion": "Prüfungsabschluss bestätigen",
+    "ConfirmApprovalSubmission": "Übermittlung zur Genehmigung bestätigen",
+    "ConfirmReviewSubmission": "Übermittlung zur Prüfung bestätigen",
     "AddApprovalTitle": "Senden Sie Ihr Dokument an die Genehmiger",
     "AddApprovalDescription1": "Um Ihr Dokument für die Genehmigung vorzubereiten, muss es folgende Anforderungen erfüllen:",
     "AddApprovalDescription2": "hat den Status 'Entwurf' oder 'Geprüft'",

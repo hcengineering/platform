@@ -56,10 +56,6 @@
     "ConfigLabel": "文档",
     "ConfigDescription": "协作文档编辑扩展",
 
-    "UnassignToDo": "未指派待办事项",
-    "UnassignToDoConfirm": "您要取消指派待办事项吗？待办事项将从被指派人计划中移除。",
-    "ReassignToDo": "更改待办事项被指派人",
-    "ReassignToDoConfirm": "您要更改待办事项被指派人吗？待办事项将从当前被指派人的计划中移除。",
     "Icon": "图标",
     "Color": "颜色",
     "ForbidCreateTeamspacePermission": "禁止创建团队空间",
