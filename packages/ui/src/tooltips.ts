@@ -27,19 +27,20 @@ export const tooltipstore = derived(modalStore, (modals) => {
 })
 
 let toHandler: any
+function hasTooltip (options: LabelAndProps | undefined): options is LabelAndProps {
+  return options !== undefined && (options.label !== undefined || options.component !== undefined)
+}
+
 export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
-  if (options === undefined || (options.label === undefined && options.component === undefined)) {
-    // No tooltip
-    // TODO: Fix reactive options update in this case
-    return {}
-  }
   let opt = options
   const show = (): void => {
+    if (!hasTooltip(opt)) return
     const shown = !!(storedValue.label !== undefined || storedValue.component !== undefined)
     if (!shown) {
       if (opt?.kind !== 'submenu' || opt.timeout !== undefined) {
         clearTimeout(toHandler)
         toHandler = setTimeout(() => {
+          if (!hasTooltip(opt)) return
           showTooltip(
             opt.label,
             node,
@@ -74,14 +75,19 @@ export function tooltip (node: HTMLElement, options?: LabelAndProps): any {
     }
   }
   const hide = (): void => {
+    if (!hasTooltip(opt)) return
     clearTimeout(toHandler)
   }
   node.addEventListener('mouseleave', hide)
   node.addEventListener('mousemove', show)
   return {
-    update (options: LabelAndProps) {
+    update (options?: LabelAndProps) {
       opt = options
       if (node !== storedValue.element) return
+      if (!hasTooltip(opt)) {
+        closeTooltip()
+        return
+      }
       const shown = !!(storedValue.label !== undefined || storedValue.component !== undefined)
       if (shown) {
         showTooltip(
