@@ -6,6 +6,7 @@ import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLo
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
+import { getIssueIdentifierPrefix } from './issueIdentifier'
 import tracker from './plugin'
 
 export const activeComponent = writable<Ref<Component> | undefined>(undefined)
@@ -73,13 +74,27 @@ export function generateIssueShortLink (issueId: string): string {
 export async function generateIssueLocation (loc: Location, issueId: string): Promise<ResolvedLocation | undefined> {
   const client = getClient()
   const issue = await client.findOne(tracker.class.Issue, { identifier: issueId }, { showArchived: true })
+  const appComponent = loc.path[0] ?? ''
+  const workspace = loc.path[1] ?? ''
   if (issue === undefined) {
-    accessDeniedStore.set(true)
+    const prefix = getIssueIdentifierPrefix(issueId)
+    const project =
+      prefix !== undefined ? await client.findOne(tracker.class.Project, { identifier: prefix }) : undefined
+    accessDeniedStore.set({
+      label: tracker.string.IssueNotFound,
+      params: { id: issueId },
+      link:
+        project !== undefined
+          ? {
+              label: tracker.string.ShowProjectIssues,
+              params: { project: project.name },
+              location: { path: [appComponent, workspace, trackerId, project._id, 'issues'] }
+            }
+          : undefined
+    })
     console.error(`Could not find issue ${issueId}.`)
     return undefined
   }
-  const appComponent = loc.path[0] ?? ''
-  const workspace = loc.path[1] ?? ''
   return {
     loc: {
       path: [appComponent, workspace],

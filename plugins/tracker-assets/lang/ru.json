@@ -262,6 +262,8 @@
     "CapacityValue": "из {value} д",
     "NewRelatedIssue": "Завести связанную задачу",
     "RelatedIssuesNotFound": "Связанные задачи не найдены",
+    "IssueNotFound": "Задача {id} не найдена. Возможно, она была удалена или у вас нет прав на её просмотр.",
+    "ShowProjectIssues": "Показать все задачи проекта {project}",
 
     "AddedReference": "Добавлена зависимость",
     "AddedAsBlocked": "Отмечено как заблокировано",
