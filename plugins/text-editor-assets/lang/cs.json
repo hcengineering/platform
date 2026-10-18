@@ -44,6 +44,8 @@
     "DeleteColumn": "Smazat",
     "AddRowBefore": "Přidat před",
     "AddRowAfter": "Přidat za",
+    "AddRowsBefore": "Přidat řádky před ({count})",
+    "AddRowsAfter": "Přidat řádky za ({count})",
     "DeleteRow": "Smazat",
     "DeleteTable": "Smazat",
     "MergeCells": "Sloučit buňky",
