@@ -914,7 +914,7 @@ export function createModel (builder: Builder): void {
       type: AvatarType.EXTERNAL,
       getUrl: contact.function.GetExternalUrl
     },
-    contact.avatarProvider.Color
+    contact.avatarProvider.External
   )
 
   builder.createDoc(

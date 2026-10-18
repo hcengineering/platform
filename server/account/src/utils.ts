@@ -21,6 +21,7 @@ import {
   groupByArray,
   isActiveMode,
   type MeasureContext,
+  normalizeExternalAvatarUrl,
   type Person,
   type PersonId,
   type PersonUuid,
@@ -1630,7 +1631,8 @@ export async function loginOrSignUpWithProvider (
   first: string,
   last: string,
   socialId: SocialKey,
-  signUpDisabled = false
+  signUpDisabled = false,
+  avatarUrl?: string
 ): Promise<LoginInfo | null> {
   try {
     const normalizedEmail = email != null ? cleanEmail(email) : ''
@@ -1674,6 +1676,13 @@ export async function loginOrSignUpWithProvider (
 
       await createAccount(db, personUuid, true)
       await db.person.update({ uuid: personUuid }, { firstName: first, lastName: last })
+    }
+
+    // Keep the provider avatar URL up to date. It is only stored as a link and never fetched here;
+    // workspaces decide whether to show it (see ensureEmployee in @hcengineering/contact).
+    const providerAvatarUrl = normalizeExternalAvatarUrl(avatarUrl)
+    if (providerAvatarUrl !== undefined && person.avatarUrl !== providerAvatarUrl) {
+      await db.person.update({ uuid: personUuid }, { avatarUrl: providerAvatarUrl })
     }
 
     // We should check and reset password if there's an account with password but no social ids have been
@@ -1732,7 +1741,8 @@ export async function joinWithProvider (
   last: string,
   inviteId: string,
   socialId: SocialKey,
-  signUpDisabled = false
+  signUpDisabled = false,
+  avatarUrl?: string
 ): Promise<WorkspaceLoginInfo | LoginInfo | null> {
   const normalizedEmail = email != null ? cleanEmail(email) : ''
   const invite = await getWorkspaceInvite(db, inviteId)
@@ -1755,7 +1765,8 @@ export async function joinWithProvider (
     first,
     last,
     socialId,
-    signUpDisabled
+    signUpDisabled,
+    avatarUrl
   )
 
   if (loginInfo == null) {
