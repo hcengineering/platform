@@ -1,8 +1,8 @@
-FROM node:24
+FROM node:24.22.0
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production
-RUN npm install --ignore-scripts=false --verbose bufferutil utf-8-validate snappy msgpackr msgpackr-extract --unsafe-perm
+RUN npm install --ignore-scripts=false --verbose bufferutil utf-8-validate snappy@7.2.2 msgpackr msgpackr-extract --unsafe-perm
 
 # Chromium hangs when usging LD_PRELOAD and MALLOC_CONF
 ENV LD_PRELOAD=
