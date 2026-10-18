@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 
-import core, { MeasureMetricsContext } from '@hcengineering/core'
+import core, { MeasureMetricsContext, type Tx, WorkspaceEvent } from '@hcengineering/core'
 import { ClientSession } from '../client'
 
 jest.mock('@hcengineering/server-core', () => ({
@@ -126,5 +126,69 @@ describe('ClientSession response path', () => {
 
     expect(sendResponse).not.toHaveBeenCalled()
     expect(sendError).toHaveBeenCalledWith('req-1', 'Failed to loadModel', expect.anything())
+  })
+})
+
+describe('ClientSession upload and clean access control', () => {
+  function makeReadOnlySession (): {
+    session: ClientSession
+    ctx: ReturnType<typeof makeCtx>
+    ops: { upload: jest.Mock, clean: jest.Mock }
+  } {
+    const { counter } = makeCounter()
+    const session = new ClientSession(
+      { account: 'user-1', workspace: 'ws-1', extra: {} } as any,
+      { uuid: 'ws-1', url: 'ws' } as any,
+      {} as any,
+      {} as any,
+      false,
+      counter
+    )
+    const ops = { upload: jest.fn(), clean: jest.fn() }
+    jest.spyOn(session, 'getOps').mockReturnValue(ops as any)
+    return { session, ctx: makeCtx({}), ops }
+  }
+
+  it('rejects upload without running it when upload is disallowed', async () => {
+    const { session, ctx, ops } = makeReadOnlySession()
+
+    await session.upload(ctx.ctx, 'tx' as any, [])
+
+    expect(ops.upload).not.toHaveBeenCalled()
+    expect(ctx.sendResponse).toHaveBeenCalledTimes(1)
+    expect(ctx.sendResponse).toHaveBeenCalledWith('req-1', { error: 'Upload not allowed' })
+  })
+
+  it('rejects clean without running it when upload is disallowed', async () => {
+    const { session, ctx, ops } = makeReadOnlySession()
+
+    await session.clean(ctx.ctx, 'tx' as any, [])
+
+    expect(ops.clean).not.toHaveBeenCalled()
+    expect(ctx.sendResponse).toHaveBeenCalledTimes(1)
+    expect(ctx.sendResponse).toHaveBeenCalledWith('req-1', { error: 'Clean not allowed' })
+  })
+})
+
+describe('ClientSession broadcast', () => {
+  function txes (count: number): Tx[] {
+    return Array.from(
+      { length: count },
+      (_, index) =>
+        ({ _id: `tx-${index}`, _class: core.class.TxCreateDoc, objectClass: core.class.Space }) as unknown as Tx
+    )
+  }
+
+  it('collapses more than 10,000 transactions into a bulk update event', () => {
+    const { counter } = makeCounter()
+    const session = makeSession(counter)
+    const socket = { send: jest.fn() }
+
+    session.broadcast(new MeasureMetricsContext('test', {}), socket as any, txes(10001))
+
+    const result = socket.send.mock.calls[0][1].result
+    expect(result).toHaveLength(1)
+    expect(result[0].event).toBe(WorkspaceEvent.BulkUpdate)
+    expect(result[0].params._class).toEqual([core.class.Space])
   })
 })
