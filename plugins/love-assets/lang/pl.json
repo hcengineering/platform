@@ -93,6 +93,7 @@
     "Window": "Okno",
     "MeetingEmptyTitle": "Spotkanie się skończyło?",
     "MeetingEmptyMessage": "Wszyscy uczestnicy opuścili. Zostaniesz rozłączony za 1 minutę. Czy chcesz zostać?",
-    "StayInRoom": "Pozostań w pokoju"
+    "StayInRoom": "Pozostań w pokoju",
+    "ScreenSharedBy": "{name} udostępnia ekran"
   }
 }
