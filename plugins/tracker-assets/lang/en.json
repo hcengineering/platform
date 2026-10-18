@@ -162,6 +162,7 @@
     "ComponentLeadSearchPlaceholder": "Set component lead\u2026",
     "ComponentMembersSearchPlaceholder": "Change component members\u2026",
     "MoveToProject": "Move to project",
+    "CopyToProject": "Copy to project…",
     "Duplicate": "Duplicate",
 
     "GotoIssues": "Go to issues",

@@ -143,6 +143,7 @@
     "ComponentLeadSearchPlaceholder": "Definir responsável pelo componente...",
     "ComponentMembersSearchPlaceholder": "Alterar membros do componente...",
     "MoveToProject": "Mover para o projeto",
+    "CopyToProject": "Copiar para o projeto…",
     "Duplicate": "Duplicar",
     "GotoIssues": "Ir para as questões",
     "GotoActive": "Ir para as questões ativas",

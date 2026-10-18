@@ -145,6 +145,7 @@
     "ComponentLeadSearchPlaceholder": "设置组件负责人…",
     "ComponentMembersSearchPlaceholder": "更改组件成员…",
     "MoveToProject": "移动到项目",
+    "CopyToProject": "复制到项目…",
     "Duplicate": "复制",
 
     "GotoIssues": "前往问题",

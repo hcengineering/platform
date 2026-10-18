@@ -143,6 +143,7 @@
         "ComponentLeadSearchPlaceholder": "컴포넌트 리더 설정…",
         "ComponentMembersSearchPlaceholder": "컴포넌트 멤버 변경…",
         "MoveToProject": "프로젝트로 이동",
+        "CopyToProject": "프로젝트로 복사…",
         "Duplicate": "복제",
         "GotoIssues": "이슈로 이동",
         "GotoActive": "활성 이슈로 이동",

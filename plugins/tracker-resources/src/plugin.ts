@@ -187,6 +187,7 @@ export default mergeIds(trackerId, tracker, {
     List: '' as IntlString,
     NumberLabels: '' as IntlString,
     MoveToProject: '' as IntlString,
+    CopyToProject: '' as IntlString,
     Duplicate: '' as IntlString,
     MoveIssues: '' as IntlString,
     MoveIssuesDescription: '' as IntlString,
