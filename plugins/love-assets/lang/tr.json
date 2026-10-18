@@ -93,6 +93,12 @@
     "Window": "Pencere",
     "MeetingEmptyTitle": "Toplantı bitti mi?",
     "MeetingEmptyMessage": "Tüm katılımcılar ayrıldı. 1 dakika içinde bağlantınız kesilecek. Kalmak ister misiniz?",
+    "ScreenShareFailed": "Ekran paylaşılamıyor",
+    "ScreenShareDenied": "Ekran paylaşımı tarayıcınız veya işletim sisteminiz tarafından engellendi. Sistem gizlilik ayarlarında tarayıcınız için ekran kaydına izin verin ve tekrar deneyin.",
+    "ScreenShareUnsupported": "Ekran paylaşımı bu tarayıcıda veya bağlantıda desteklenmiyor. HTTPS üzerinden güncel bir masaüstü tarayıcısı kullanın.",
+    "ScreenShareError": "Ekran paylaşımı başlatılamadı. Lütfen tekrar deneyin.",
+    "ScreenShareNotStartedTitle": "Ekran paylaşımı başlatılmadı",
+    "ScreenShareNotStarted": "Ekran paylaşımı başlatılmadı. İptal etmediyseniz, tarayıcınızın ve işletim sisteminizin bu site için ekran paylaşımına izin verdiğini kontrol edin.",
     "StayInRoom": "Odada kal"
   }
 }

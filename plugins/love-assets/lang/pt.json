@@ -93,6 +93,12 @@
     "Window": "Janela",
     "MeetingEmptyTitle": "Reunião encerrada?",
     "MeetingEmptyMessage": "Todos os participantes saíram. Você será desconectado em 1 minuto. Deseja permanecer?",
+    "ScreenShareFailed": "Não foi possível partilhar o ecrã",
+    "ScreenShareDenied": "A partilha de ecrã foi bloqueada pelo navegador ou pelo sistema operativo. Permita a gravação de ecrã para o navegador nas definições de privacidade do sistema e tente novamente.",
+    "ScreenShareUnsupported": "A partilha de ecrã não é suportada neste navegador ou ligação. Utilize um navegador de computador atualizado através de HTTPS.",
+    "ScreenShareError": "Não foi possível iniciar a partilha de ecrã. Tente novamente.",
+    "ScreenShareNotStartedTitle": "Partilha de ecrã não iniciada",
+    "ScreenShareNotStarted": "A partilha de ecrã não foi iniciada. Se não a cancelou, verifique se o navegador e o sistema operativo permitem a partilha de ecrã para este site.",
     "StayInRoom": "Permanecer na sala"
   }
 }

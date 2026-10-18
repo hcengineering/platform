@@ -93,6 +93,12 @@
     "Window": "窗口",
     "MeetingEmptyTitle": "会议已结束？",
     "MeetingEmptyMessage": "所有参与者已离开。您将在1分钟后断开连接。是否要留在会议中？",
+    "ScreenShareFailed": "无法共享屏幕",
+    "ScreenShareDenied": "屏幕共享已被浏览器或操作系统阻止。请在系统隐私设置中允许浏览器录制屏幕，然后重试。",
+    "ScreenShareUnsupported": "此浏览器或连接不支持屏幕共享。请通过 HTTPS 使用最新的桌面浏览器。",
+    "ScreenShareError": "无法开始屏幕共享。请重试。",
+    "ScreenShareNotStartedTitle": "未开始屏幕共享",
+    "ScreenShareNotStarted": "屏幕共享未开始。如果您没有取消，请检查浏览器和操作系统是否允许此网站共享屏幕。",
     "StayInRoom": "留在房间"
   }
 }
