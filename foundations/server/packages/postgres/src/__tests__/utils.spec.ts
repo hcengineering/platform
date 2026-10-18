@@ -49,6 +49,11 @@ describe('utils - inferType', () => {
     expect(inferType([null, 'text'])).toBe('::text[]')
   })
 
+  it('should infer array type from the first non-null element', () => {
+    expect(inferType([undefined, null, 'text'])).toBe('::text[]')
+    expect(inferType([null, undefined, 5])).toBe('::numeric[]')
+  })
+
   it('should handle arrays with all null elements', () => {
     // BUG: Arrays with only null elements return '::jsonb[]'
     // Expected: Should probably return '' or handle as empty array

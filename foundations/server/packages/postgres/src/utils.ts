@@ -255,7 +255,7 @@ export function inferType (val: any): string {
     return '::boolean'
   }
   if (Array.isArray(val)) {
-    const type = inferType(val[0] ?? val[1])
+    const type = inferType(val.find((it) => it != null) ?? val[0])
     if (type !== '') {
       return type + '[]'
     }
