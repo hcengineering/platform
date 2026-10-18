@@ -228,6 +228,7 @@
     "TimeSpendHours": "{value}時間",
     "TimeSpendMinutes": "{value}分",
     "ChildEstimation": "子イシューの見積もり",
+    "ShowEstimationSum": "グループに見積もりの合計を表示",
     "ChildReportedTime": "子イシューの時間",
     "CapacityValue": "うち {value}日",
     "NewRelatedIssue": "新しい関連イシュー",

@@ -228,6 +228,7 @@
         "TimeSpendHours": "{value}시간",
         "TimeSpendMinutes": "{value}분",
         "ChildEstimation": "하위 이슈 예상치",
+        "ShowEstimationSum": "그룹에 예상치 합계 표시",
         "ChildReportedTime": "하위 이슈 시간",
         "CapacityValue": "{value}일 중",
         "NewRelatedIssue": "새 관련 이슈",

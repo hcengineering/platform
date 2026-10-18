@@ -272,6 +272,7 @@
     "TimeSpendHours": "{value}Std",
     "TimeSpendMinutes": "{value}Min",
     "ChildEstimation": "Schätzung Unteraufgaben",
+    "ShowEstimationSum": "Summe der Schätzungen in Gruppen anzeigen",
     "ChildReportedTime": "Zeit Unteraufgaben",
     "CapacityValue": "von {value}T",
     "NewRelatedIssue": "Neue verwandte Aufgabe",

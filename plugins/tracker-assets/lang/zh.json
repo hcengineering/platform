@@ -241,6 +241,7 @@
     "TimeSpendHours": "{value} 小时",
     "TimeSpendMinutes": "{value} 分钟",
     "ChildEstimation": "子问题估算",
+    "ShowEstimationSum": "在分组中显示估算总和",
     "ChildReportedTime": "子问题时间",
     "CapacityValue": "共 {value} 天",
     "NewRelatedIssue": "新相关问题",

@@ -182,7 +182,10 @@
         {/if}
         <div class="flex-row-center flex-reverse flex-grow mr-2 gap-2 reverse">
           {#each extraHeaders ?? [] as extra}
-            <Component is={extra} props={{ ...props, value: category, category: groupByKey, docs: items }} />
+            <Component
+              is={extra}
+              props={{ ...props, value: category, category: groupByKey, docs: items, allDocs: itemsProj, viewOptions }}
+            />
           {/each}
         </div>
       {/if}

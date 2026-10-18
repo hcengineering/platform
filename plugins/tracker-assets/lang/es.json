@@ -228,6 +228,7 @@
     "TimeSpendHours": "{value}h",
     "TimeSpendMinutes": "{value}m",
     "ChildEstimation": "Estimación de subtemas",
+    "ShowEstimationSum": "Mostrar la suma de estimaciones en los grupos",
     "ChildReportedTime": "Tiempo de subtemas",
     "CapacityValue": "de {value}d",
     "NewRelatedIssue": "Nuevo problema relacionado",
