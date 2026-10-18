@@ -40,6 +40,7 @@
   } from '@hcengineering/ui'
   import { getContextActions, SortableList } from '@hcengineering/view-resources'
   import settings from '../plugin'
+  import { isAttributeUsed } from '../attributeUsage'
   import ClassAttributeRow from './ClassAttributeRow.svelte'
   import { makeRank } from '@hcengineering/rank'
   import EditAttribute from './EditAttribute.svelte'
@@ -133,7 +134,7 @@
 
   async function showMenu (ev: MouseEvent, attribute: AnyAttribute): Promise<void> {
     hovered = attribute._id
-    const exist = (await client.findOne(attribute.attributeOf, { [attribute.name]: { $exists: true } })) !== undefined
+    const exist = await isAttributeUsed(client, attribute)
     const actions: Action[] = [
       {
         label: presentation.string.Edit,

@@ -33,6 +33,7 @@
   import { ObjectPresenter } from '@hcengineering/view-resources'
   import { onDestroy } from 'svelte'
   import settings from '../plugin'
+  import { isAttributeUsed } from '../attributeUsage'
   import { clearSettingsStore, settingsStore } from '../store'
   import ClassAttributesList from './ClassAttributesList.svelte'
   import CreateAttribute from './CreateAttribute.svelte'
@@ -147,7 +148,7 @@
   const handleSelect = async (event: CustomEvent): Promise<void> => {
     selected = event.detail as AnyAttribute
     if (selected?._id != null) {
-      const exist = (await client.findOne(selected.attributeOf, { [selected.name]: { $exists: true } })) !== undefined
+      const exist = await isAttributeUsed(client, selected)
       $settingsStore = {
         id: selected._id,
         component: EditAttribute,
