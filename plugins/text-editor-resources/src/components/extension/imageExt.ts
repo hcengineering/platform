@@ -207,7 +207,7 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
         const finishLoading = (): void => {
           setNodeLoadingState(false)
         }
-        void imgElement.decode().finally(finishLoading)
+        void imgElement.decode().then(finishLoading, finishLoading)
       }
 
       for (const [k, v] of Object.entries(divAttributes)) {
