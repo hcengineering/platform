@@ -38,8 +38,10 @@
     targetDate: Date.now() + 14 * 24 * 60 * 60 * 1000
   }
 
+  let createdMilestone: Ref<Milestone> | undefined
+
   async function onSave () {
-    await client.createDoc(tracker.class.Milestone, space, object)
+    createdMilestone = await client.createDoc(tracker.class.Milestone, space, object)
   }
 </script>
 
@@ -49,7 +51,7 @@
   canSave={object.label !== ''}
   okLabel={tracker.string.CreateMilestone}
   gap={'gapV-4'}
-  on:close={() => dispatch('close')}
+  on:close={() => dispatch('close', createdMilestone)}
   on:changeContent
 >
   <svelte:fragment slot="header">
