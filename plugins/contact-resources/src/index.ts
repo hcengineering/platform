@@ -15,6 +15,7 @@
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  getExternalAvatarUrl,
   getGravatarUrl,
   getName,
   type AvatarInfo,
@@ -451,7 +452,7 @@ export default async (): Promise<Resources> => ({
     }),
     GetExternalUrl: async (person: Data<WithLookup<AvatarInfo>>, name: string) => ({
       color: getPersonColor(person, name),
-      url: person.avatarProps?.url
+      url: getExternalAvatarUrl(person)
     }),
     EmployeeSort: employeeSort,
     FilterChannelInResult: filterChannelInResult,

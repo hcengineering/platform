@@ -305,7 +305,8 @@ export const contactPlugin = plugin(contactId, {
   avatarProvider: {
     Color: '' as Ref<AvatarProvider>,
     Image: '' as Ref<AvatarProvider>,
-    Gravatar: '' as Ref<AvatarProvider>
+    Gravatar: '' as Ref<AvatarProvider>,
+    External: '' as Ref<AvatarProvider>
   },
   function: {
     GetColorUrl: '' as Resource<GetAvatarUrl>,

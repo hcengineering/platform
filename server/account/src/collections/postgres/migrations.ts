@@ -84,7 +84,8 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV24Migration(ns, flavor),
     getV25Migration(ns, flavor),
     getV26Migration(ns, flavor),
-    getV27Migration(ns, flavor)
+    getV27Migration(ns, flavor),
+    getV28Migration(ns, flavor)
   ]
 }
 
@@ -838,6 +839,18 @@ function getV27Migration (ns: string, flavor: DBFlavor): [string, string] {
 
     CREATE INDEX IF NOT EXISTS api_tokens_expires_on_idx
     ON ${ns}.api_tokens (expires_on);
+    `
+  ]
+}
+
+function getV28Migration (ns: string, flavor: DBFlavor): [string, string] {
+  const types = dbTypes[flavor]
+  return [
+    'account_db_v28_add_person_avatar_url',
+    `
+    -- External avatar URL provided by an identity provider (OIDC/OAuth) on login.
+    ALTER TABLE ${ns}.person
+    ADD COLUMN IF NOT EXISTS avatar_url ${types.string};
     `
   ]
 }

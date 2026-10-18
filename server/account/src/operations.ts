@@ -3285,7 +3285,7 @@ async function setMyProfile (
   }
 }
 
-async function getUserProfile (
+export async function getUserProfile (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -3331,8 +3331,11 @@ async function getUserProfile (
   // 1. Requesting own profile (authenticated user requesting their own)
   // 2. Profile is public
   if (requestingAccount === targetPersonUuid || profile.isPublic) {
+    // The identity provider avatar URL may carry signed query parameters; it is only
+    // meant for the person's own workspace avatar sync and is never part of a profile.
+    const { avatarUrl, ...profilePerson } = person
     const res: PersonWithProfile = {
-      ...person,
+      ...profilePerson,
       ...profile
     }
 
