@@ -233,6 +233,8 @@ export default mergeIds(trackerId, tracker, {
     AddIsBlocking: '' as IntlString,
     AddRelatedIssue: '' as IntlString,
     RelatedIssuesNotFound: '' as IntlString,
+    IssueNotFound: '' as IntlString,
+    ShowProjectIssues: '' as IntlString,
     RelatedIssue: '' as IntlString,
     BlockedIssue: '' as IntlString,
     BlockingIssue: '' as IntlString,

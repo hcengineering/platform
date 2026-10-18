@@ -249,6 +249,8 @@
     "CapacityValue": "{value}g üzerinden",
     "NewRelatedIssue": "Yeni ilgili sorun",
     "RelatedIssuesNotFound": "İlgili sorun bulunamadı",
+    "IssueNotFound": "{id} sorunu bulunamadı. Silinmiş olabilir veya görüntüleme izniniz olmayabilir.",
+    "ShowProjectIssues": "{project} projesindeki tüm sorunları göster",
     "AddedReference": "Referans eklendi",
     "AddedAsBlocked": "Engellendi olarak işaretlendi",
     "AddedAsBlocking": "Engelliyor olarak işaretlendi",

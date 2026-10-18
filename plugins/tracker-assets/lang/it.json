@@ -232,6 +232,8 @@
     "CapacityValue": "di {value}d",
     "NewRelatedIssue": "Nuova issue correlata",
     "RelatedIssuesNotFound": "Issue correlate non trovate",
+    "IssueNotFound": "L'issue {id} non è stata trovata. Potrebbe essere stata eliminata oppure non hai il permesso di visualizzarla.",
+    "ShowProjectIssues": "Mostra tutte le issue di {project}",
     "AddedReference": "Riferimento aggiunto",
     "AddedAsBlocked": "Contrassegnato come bloccato",
     "AddedAsBlocking": "Contrassegnato come bloccante",

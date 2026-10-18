@@ -245,6 +245,8 @@
     "CapacityValue": "共 {value} 天",
     "NewRelatedIssue": "新相关问题",
     "RelatedIssuesNotFound": "未找到相关问题",
+    "IssueNotFound": "未找到问题 {id}。它可能已被删除，或者您没有查看权限。",
+    "ShowProjectIssues": "显示 {project} 中的所有问题",
 
     "AddedReference": "添加了引用",
     "AddedAsBlocked": "标记为被阻塞",

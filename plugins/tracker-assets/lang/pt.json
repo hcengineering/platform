@@ -232,6 +232,8 @@
     "CapacityValue": "de {value}d",
     "NewRelatedIssue": "Nova tarefa relacionada",
     "RelatedIssuesNotFound": "Tarefas relacionadas não encontradas",
+    "IssueNotFound": "A tarefa {id} não foi encontrada. Pode ter sido eliminada ou pode não ter permissão para a visualizar.",
+    "ShowProjectIssues": "Mostrar todas as tarefas de {project}",
     "AddedReference": "Referência adicionada",
     "AddedAsBlocked": "Marcado como bloqueado",
     "AddedAsBlocking": "Marcado como bloqueador",
