@@ -26,10 +26,11 @@ import core, {
   TxOperations,
   type AnyAttribute,
   type Rank,
-  type RefTo
+  type RefTo,
+  type StatusCategory
 } from '@hcengineering/core'
 import { PlatformError, getEmbeddedLabel, unknownStatus } from '@hcengineering/platform'
-import task, { Project, ProjectStatus, ProjectType, Task, TaskType } from '.'
+import task, { Project, ProjectStatus, ProjectType, Task, TaskType, TaskTypeDescriptor } from '.'
 import { makeRank } from '@hcengineering/rank'
 
 export { genRanks, makeRank } from '@hcengineering/rank'
@@ -168,6 +169,74 @@ export type TaskTypeWithFactory = Omit<Data<TaskType>, 'statuses' | 'parent' | '
 } & Partial<Pick<TaskType, 'targetClass'>>
 
 type ProjectData = Omit<Data<ProjectType>, 'statuses' | 'targetClass'>
+
+/**
+ * @public
+ *
+ * Build a task type for a new project type from a built-in task type of the same descriptor
+ * (for example the Issue type of the classic tracker project type).
+ * The statuses of the template are reused, limited to the given status categories if specified.
+ */
+export function makeTaskTypeFromTemplate (
+  _id: Ref<TaskType>,
+  template: TaskType,
+  templateStatuses: Status[],
+  categories?: Array<Ref<StatusCategory>>
+): TaskTypeWithFactory {
+  const isAllowed = (category: Ref<StatusCategory> | undefined): boolean =>
+    categories === undefined || (category !== undefined && categories.includes(category))
+  const statuses = new Map(templateStatuses.map((it) => [it._id, it]))
+  const factory: Data<Status>[] = []
+  for (const st of template.statuses) {
+    const status = statuses.get(st)
+    if (status === undefined || !isAllowed(status.category)) continue
+    factory.push({
+      name: status.name,
+      ofAttribute: status.ofAttribute,
+      category: status.category,
+      ...(status.color !== undefined ? { color: status.color } : {})
+    })
+  }
+  return {
+    _id,
+    name: template.name,
+    descriptor: template.descriptor,
+    ofClass: template.ofClass,
+    kind: template.kind,
+    allowedAsChildOf: template.allowedAsChildOf?.includes(template._id) === true ? [_id] : [],
+    statusClass: template.statusClass,
+    statusCategories: template.statusCategories.filter((it) => isAllowed(it)),
+    factory
+  }
+}
+
+/**
+ * @public
+ *
+ * Build a generic task type for a new project type, with one default status per status category.
+ * Used when there is no built-in task type to take as a template.
+ */
+export function makeDefaultTaskType (
+  _id: Ref<TaskType>,
+  name: string,
+  descriptor: Pick<TaskTypeDescriptor, '_id' | 'baseClass'>,
+  statusAttr: AnyAttribute,
+  categories: Array<Pick<StatusCategory, '_id' | 'defaultStatusName'>>
+): TaskTypeWithFactory {
+  const statusClass =
+    statusAttr.type._class === core.class.RefTo ? (statusAttr.type as RefTo<Status>).to : core.class.Status
+  return {
+    _id,
+    name,
+    descriptor: descriptor._id,
+    ofClass: descriptor.baseClass,
+    kind: 'task',
+    allowedAsChildOf: [],
+    statusClass,
+    statusCategories: categories.map((it) => it._id),
+    factory: categories.map((it) => ({ name: it.defaultStatusName, ofAttribute: statusAttr._id, category: it._id }))
+  }
+}
 
 async function createStates (
   client: TxOperations,
