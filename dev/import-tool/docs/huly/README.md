@@ -202,6 +202,8 @@ docker run \
   --workspace workspace-id
 ```
 
+Instead of `--user` and `--password` you can authenticate with an API token, which also works for accounts that sign in with Google or another single sign-on provider. See [Authentication](../../README.md#authentication).
+
 ### Limitations
 * All users must exist in the system before import
 * Assignees are mapped by full name
