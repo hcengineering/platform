@@ -238,6 +238,7 @@ const view = plugin(viewId, {
     Archive: '' as IntlString,
     Save: '' as IntlString,
     PublicView: '' as IntlString,
+    OverwriteWithCurrentFilters: '' as IntlString,
     Archived: '' as IntlString,
     MoreActions: '' as IntlString,
     Pin: '' as IntlString,
