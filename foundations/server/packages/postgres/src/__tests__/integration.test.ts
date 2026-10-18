@@ -73,6 +73,7 @@ describe('PostgreSQL Integration Tests (Real Database)', () => {
   })
 
   afterAll(async () => {
+    await (await adminClientRef.getClient()).end()
     adminClientRef.close()
     await shutdownPostgres()
   })
@@ -101,13 +102,19 @@ describe('PostgreSQL Integration Tests (Real Database)', () => {
 
   afterEach(async () => {
     try {
-      // Close connections to the test database
-      await client?.close()
-      await serverStorage?.close()
+      // Keep the pool alive until the adapters close, then await all connections before dropping the database.
+      const dbClientRef = getDBClient(dbUri)
+      try {
+        await client?.close()
+        await serverStorage?.close()
+        await (await dbClientRef.getClient()).end()
+      } finally {
+        dbClientRef.close()
+      }
 
       // Use admin client to drop the test database
       const adminClient = await adminClientRef.getClient()
-      await adminClient`DROP DATABASE IF EXISTS ${adminClient(dbUuid)} WITH (FORCE)`
+      await adminClient`DROP DATABASE IF EXISTS ${adminClient(dbUuid)}`
     } catch (err) {
       console.error('Cleanup error:', err)
     }
@@ -1325,19 +1332,22 @@ describe('PostgreSQL Integration Tests (Real Database)', () => {
       })
 
       // Perform concurrent increments
-      const updates = Array.from({ length: 10 }, (_, i) =>
+      const updates = Array.from({ length: 10 }, () =>
         operations.updateDoc(taskPlugin.class.Task, '' as Ref<Space>, taskId, {
           $inc: { rate: 1 }
         })
       )
 
-      await Promise.all(updates)
+      // Wait for every update before cleanup, even if one fails.
+      const results = await Promise.allSettled(updates)
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          throw result.reason
+        }
+      }
 
       const task = await client.findOne<Task>(taskPlugin.class.Task, { _id: taskId })
-      // Note: This might not always be 10 due to race conditions,
-      // but it validates the database handles concurrent writes
-      expect(task?.rate).toBeGreaterThan(0)
-      expect(task?.rate).toBeLessThanOrEqual(10)
+      expect(task?.rate).toBe(updates.length)
     })
   })
 
