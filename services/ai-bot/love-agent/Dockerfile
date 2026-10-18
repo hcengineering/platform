@@ -1,4 +1,4 @@
-FROM tracexapp/base-slim:v20261006
+FROM tracexapp/base-slim:v20261018
 WORKDIR /usr/src/app
 
 RUN npm install -g pnpm@10
