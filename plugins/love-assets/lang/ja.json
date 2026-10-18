@@ -93,6 +93,12 @@
     "Window": "ウィンドウ",
     "MeetingEmptyTitle": "ミーティング終了？",
     "MeetingEmptyMessage": "全参加者が退出しました。1分後に自動切断されます。ミーティングに残りますか？",
+    "ScreenShareFailed": "画面を共有できません",
+    "ScreenShareDenied": "画面共有がブラウザーまたはOSによってブロックされました。システムのプライバシー設定でブラウザーの画面収録を許可してから、もう一度お試しください。",
+    "ScreenShareUnsupported": "このブラウザーまたは接続では画面共有がサポートされていません。HTTPS経由で最新のデスクトップブラウザーをご利用ください。",
+    "ScreenShareError": "画面共有を開始できませんでした。もう一度お試しください。",
+    "ScreenShareNotStartedTitle": "画面共有が開始されませんでした",
+    "ScreenShareNotStarted": "画面共有が開始されませんでした。キャンセルしていない場合は、ブラウザーとOSでこのサイトの画面共有が許可されているか確認してください。",
     "StayInRoom": "ルームに残る"
   }
 }

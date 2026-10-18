@@ -107,6 +107,12 @@ export default mergeIds(loveId, love, {
     Window: '' as IntlString,
     MeetingEmptyTitle: '' as IntlString,
     MeetingEmptyMessage: '' as IntlString,
+    ScreenShareFailed: '' as IntlString,
+    ScreenShareDenied: '' as IntlString,
+    ScreenShareUnsupported: '' as IntlString,
+    ScreenShareError: '' as IntlString,
+    ScreenShareNotStartedTitle: '' as IntlString,
+    ScreenShareNotStarted: '' as IntlString,
     StayInRoom: '' as IntlString
   }
 })
