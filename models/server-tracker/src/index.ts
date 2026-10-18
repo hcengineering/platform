@@ -50,6 +50,11 @@ export function createModel (builder: Builder): void {
     title: [['title']]
   })
 
+  builder.mixin(tracker.class.Milestone, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchIcon: tracker.icon.Milestone,
+    title: [['label']]
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTracker.trigger.OnIssueUpdate,
     txMatch: {

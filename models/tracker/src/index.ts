@@ -710,6 +710,21 @@ export function createModel (builder: Builder): void {
     tracker.completion.IssueCategory
   )
 
+  builder.createDoc(
+    presentation.class.ObjectSearchCategory,
+    core.space.Model,
+    {
+      icon: tracker.icon.Milestone,
+      label: tracker.string.SearchMilestone,
+      title: tracker.string.Milestones,
+      query: tracker.completion.MilestoneQuery,
+      context: ['search', 'mention', 'spotlight'],
+      classToSearch: tracker.class.Milestone,
+      priority: 250
+    },
+    tracker.completion.MilestoneCategory
+  )
+
   defineNotifications(builder)
 
   builder.createDoc(setting.class.WorkspaceSettingCategory, core.space.Model, {
