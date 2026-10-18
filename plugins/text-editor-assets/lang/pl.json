@@ -49,6 +49,8 @@
     "DeleteColumn": "Usuń kolumnę",
     "AddRowBefore": "Dodaj wiersz przed",
     "AddRowAfter": "Dodaj wiersz po",
+    "AddRowsBefore": "Dodaj wiersze przed ({count})",
+    "AddRowsAfter": "Dodaj wiersze po ({count})",
     "DeleteRow": "Usuń wiersz",
     "DeleteTable": "Usuń tabelę",
     "MergeCells": "Scal komórki",

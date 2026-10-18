@@ -44,6 +44,8 @@
     "DeleteColumn": "Sil",
     "AddRowBefore": "Önce ekle",
     "AddRowAfter": "Sonra ekle",
+    "AddRowsBefore": "Önce {count} satır ekle",
+    "AddRowsAfter": "Sonra {count} satır ekle",
     "DeleteRow": "Sil",
     "DeleteTable": "Sil",
     "MergeCells": "Hücreleri birleştir",
