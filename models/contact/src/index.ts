@@ -766,7 +766,8 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.Phone,
       icon: contact.icon.Phone,
-      placeholder: contact.string.PhonePlaceholder
+      placeholder: contact.string.PhonePlaceholder,
+      action: contact.action.OpenChannel
     },
     contact.channelProvider.Phone
   )
