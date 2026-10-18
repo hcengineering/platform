@@ -24,6 +24,7 @@ import {
 } from '@hcengineering/core'
 import { BaseMiddleware } from '@hcengineering/server-core'
 import type { Middleware, MiddlewareCreator, TxMiddlewareResult } from '@hcengineering/server-core'
+import { watchStall } from './stallWatch'
 
 interface TxOrderEntry {
   txIds: string[] // All transaction IDs in this batch
@@ -103,9 +104,18 @@ export class TxOrderingMiddleware extends BaseMiddleware implements Middleware {
       this.docTxQueue.set(docId, entry)
     }
 
-    // Wait for all previous transactions to complete
+    // Wait for all previous transactions to complete.
+    // Note: the stall label measures the completion of *predecessor* txes, not the work of this one.
     if (waitPromises.length > 0) {
-      await Promise.all(waitPromises)
+      await watchStall(
+        'tx-ordering.wait',
+        () => ({
+          workspace: this.context.workspace.uuid,
+          docs: Array.from(txesByDoc.keys()).slice(0, 3),
+          account: ctx.contextData?.account?.uuid
+        }),
+        Promise.all(waitPromises)
+      )
     }
 
     try {
