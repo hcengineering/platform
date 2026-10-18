@@ -19,7 +19,7 @@
   import chunter, { ChatMessage, ChunterEvents, ThreadMessage } from '@hcengineering/chunter'
   import { Class, Doc, generateId, getCurrentAccount, Ref, type CommitResult } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { areEqualMarkups, EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
   import { ThrottledCaller } from '@hcengineering/ui'
@@ -62,24 +62,41 @@
   }
 
   let inputRef: AttachmentRefInput
-  let currentMessage: MessageDraft = chatMessage ?? currentDraft ?? getDefault()
+  // Copy the stored draft: the object in draftsStore is shared with any other input showing the same draft, and
+  // onUpdate() below mutates currentMessage in place.
+  let currentMessage: MessageDraft = chatMessage ?? (currentDraft != null ? { ...currentDraft } : getDefault())
   let _id = currentMessage._id
   let inputContent = currentMessage.message
 
-  $: if (currentDraft != null) {
-    createdMessageQuery.query(_class, { _id, space: getSpace(object) }, (result: ChatMessage[]) => {
-      if (result.length > 0 && _id !== chatMessage?._id) {
-        // Ouch we have got comment with same id created already.
-        clear()
-      }
-    })
+  // The same draft (and message _id) can be open in several inputs at once, e.g. in the channel view and in the
+  // sidebar. Watch for the message being created to clear this input when it was sent from another one.
+  $: hasContent = !isEmptyMarkup(currentMessage.message) || (currentMessage.attachments ?? 0) > 0
+  $: if (currentDraft != null || (shouldSaveDraft && hasContent)) {
+    createdMessageQuery.query(_class, { _id, space: getSpace(object) }, onMessageCreated)
   } else {
     createdMessageQuery.unsubscribe()
+  }
+
+  function onMessageCreated (result: ChatMessage[]): void {
+    if (result.length === 0 || _id === chatMessage?._id) return
+    // Ouch we have got comment with same id created already.
+    const sent = result[0]
+    if (
+      areEqualMarkups(currentMessage.message, sent.message) &&
+      (currentMessage.attachments ?? 0) === (sent.attachments ?? 0)
+    ) {
+      clear()
+    } else {
+      // Content added here after the message was sent elsewhere is kept as a new draft
+      _id = generateId()
+      currentMessage = { ...currentMessage, _id }
+    }
   }
 
   function clear (): void {
     currentMessage = getDefault()
     _id = currentMessage._id
+    inputContent = currentMessage.message
     inputRef.removeDraft(false)
   }
 
