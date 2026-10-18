@@ -1,5 +1,6 @@
 //
 // Copyright © 2026 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,11 +15,14 @@
 //
 
 import { getClient as getAccountClient } from '@hcengineering/account-client'
+import { Analytics } from '@hcengineering/analytics'
+import { configureAnalytics, createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import core, {
-  MeasureMetricsContext,
+  newMetrics,
   systemAccountUuid,
   type Class,
   type Doc,
+  type MeasureContext,
   type PersonId,
   type Ref,
   type Tx,
@@ -34,9 +38,10 @@ import githubNext, {
 } from '@hcengineering/github-next'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { setMetadata } from '@hcengineering/platform'
-import { QueueTopic, type ConsumerHandle, type PlatformQueue } from '@hcengineering/server-core'
+import { initStatisticsContext, QueueTopic, type ConsumerHandle, type PlatformQueue } from '@hcengineering/server-core'
 import serverToken, { generateToken } from '@hcengineering/server-token'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import { join } from 'node:path'
 import config from './config'
 import {
   isGithubNextOutboundRelevantTx,
@@ -58,6 +63,22 @@ const defaultCapabilities: GithubNextCapabilities = {
 }
 
 prepare()
+
+configureAnalytics(config.ServiceID, process.env.VERSION ?? '0.7.0')
+Analytics.setTag('application', config.ServiceID)
+const ctx = initStatisticsContext(config.ServiceID, {
+  factory: () =>
+    createOpenTelemetryMetricsContext(
+      config.ServiceID,
+      {},
+      {},
+      newMetrics(),
+      new SplitLogger(config.ServiceID, {
+        root: join(process.cwd(), 'logs'),
+        enableConsole: (process.env.ENABLE_CONSOLE ?? 'true') === 'true'
+      })
+    )
+})
 
 interface GithubNextAuthorizationState {
   token: string
@@ -268,13 +289,13 @@ function startHttpServer (): { close: () => void } {
 
       jsonResponse(res, 404, { error: 'Not found' })
     })().catch((err) => {
-      console.error(`[${config.ServiceID}] request failed`, err)
+      ctx.error('request failed', { err })
       jsonResponse(res, 500, { error: err instanceof Error ? err.message : String(err) })
     })
   })
 
   server.listen(config.Port, () => {
-    console.info(`[${config.ServiceID}] HTTP API listening on ${config.Port}`)
+    ctx.info(`[${config.ServiceID}] HTTP API listening on ${config.Port}`)
   })
 
   return {
@@ -298,27 +319,27 @@ async function getGithubNextWorkspaces (): Promise<WorkspaceUuid[]> {
   return uniqueWorkspaces(integrations.map((integration) => integration.workspaceUuid))
 }
 
-async function syncInboundWorkspace (ctx: MeasureMetricsContext, workspaceUuid: WorkspaceUuid): Promise<void> {
+async function syncInboundWorkspace (ctx: MeasureContext, workspaceUuid: WorkspaceUuid): Promise<void> {
   if (!config.SyncInbound) return
 
   inboundWorkspaces.add(workspaceUuid)
   try {
     const issuesResult = await syncGithubNextWorkspace(ctx, config.AccountsURL, workspaceUuid)
-    console.info(
+    ctx.info(
       `[${config.ServiceID}] inbound issues ${workspaceUuid}: integrations=${issuesResult.integrations}, ` +
         `repositories=${issuesResult.repositories}, issues=${issuesResult.issuesSeen}, created=${issuesResult.created}, ` +
         `updated=${issuesResult.updated}, skipped=${issuesResult.skipped}`
     )
 
     const discussionsResult = await syncGithubNextDiscussions(ctx, config.AccountsURL, workspaceUuid)
-    console.info(
+    ctx.info(
       `[${config.ServiceID}] inbound discussions ${workspaceUuid}: integrations=${discussionsResult.integrations}, ` +
         `repositories=${discussionsResult.repositories}, discussions=${discussionsResult.discussionsSeen}, ` +
         `created=${discussionsResult.created}, updated=${discussionsResult.updated}, skipped=${discussionsResult.skipped}`
     )
 
     const pullRequestsResult = await syncGithubNextPullRequests(ctx, config.AccountsURL, workspaceUuid)
-    console.info(
+    ctx.info(
       `[${config.ServiceID}] inbound pull requests ${workspaceUuid}: integrations=${pullRequestsResult.integrations}, ` +
         `repositories=${pullRequestsResult.repositories}, pullRequests=${pullRequestsResult.pullRequestsSeen}, ` +
         `created=${pullRequestsResult.created}, updated=${pullRequestsResult.updated}, skipped=${pullRequestsResult.skipped}`
@@ -328,25 +349,25 @@ async function syncInboundWorkspace (ctx: MeasureMetricsContext, workspaceUuid: 
   }
 }
 
-async function syncOutboundWorkspace (ctx: MeasureMetricsContext, workspaceUuid: WorkspaceUuid): Promise<void> {
+async function syncOutboundWorkspace (ctx: MeasureContext, workspaceUuid: WorkspaceUuid): Promise<void> {
   if (!config.SyncOutbound) return
 
   const outboundIssuesResult = await syncGithubNextOutboundIssues(ctx, config.AccountsURL, workspaceUuid)
-  console.info(
+  ctx.info(
     `[${config.ServiceID}] outbound issues ${workspaceUuid}: integrations=${outboundIssuesResult.integrations}, ` +
       `repositories=${outboundIssuesResult.repositories}, issues=${outboundIssuesResult.issuesSeen}, ` +
       `updated=${outboundIssuesResult.updated}, skipped=${outboundIssuesResult.skipped}`
   )
 
   const outboundDiscussionsResult = await syncGithubNextOutboundDiscussions(ctx, config.AccountsURL, workspaceUuid)
-  console.info(
+  ctx.info(
     `[${config.ServiceID}] outbound discussions ${workspaceUuid}: integrations=${outboundDiscussionsResult.integrations}, ` +
       `repositories=${outboundDiscussionsResult.repositories}, discussions=${outboundDiscussionsResult.discussionsSeen}, ` +
       `updated=${outboundDiscussionsResult.updated}, skipped=${outboundDiscussionsResult.skipped}`
   )
 
   const outboundPullRequestsResult = await syncGithubNextOutboundPullRequests(ctx, config.AccountsURL, workspaceUuid)
-  console.info(
+  ctx.info(
     `[${config.ServiceID}] outbound pull requests ${workspaceUuid}: integrations=${outboundPullRequestsResult.integrations}, ` +
       `repositories=${outboundPullRequestsResult.repositories}, pullRequests=${outboundPullRequestsResult.pullRequestsSeen}, ` +
       `updated=${outboundPullRequestsResult.updated}, skipped=${outboundPullRequestsResult.skipped}`
@@ -371,21 +392,22 @@ async function tick (): Promise<void> {
   if (running || stopped) return
 
   running = true
-  const ctx = new MeasureMetricsContext(config.ServiceID, {})
 
   try {
     const workspaces = await getGithubNextWorkspaces()
-    console.info(`[${config.ServiceID}] discovered ${workspaces.length} workspace(s)`)
+    ctx.info(`[${config.ServiceID}] discovered ${workspaces.length} workspace(s)`)
 
     for (const workspaceUuid of workspaces) {
       try {
-        await syncInboundWorkspace(ctx, workspaceUuid)
+        await ctx.with('sync-inbound-workspace', { workspace: workspaceUuid }, async (ctx) => {
+          await syncInboundWorkspace(ctx, workspaceUuid)
+        })
       } catch (err) {
-        console.error(`[${config.ServiceID}] workspace inbound sync failed for ${workspaceUuid}`, err)
+        ctx.error('workspace inbound sync failed', { workspace: workspaceUuid, err })
       }
     }
   } catch (err) {
-    console.error(`[${config.ServiceID}] sync iteration failed`, err)
+    ctx.error('sync iteration failed', { err })
   } finally {
     running = false
   }
@@ -442,7 +464,6 @@ async function drainOutboundQueue (reason: string): Promise<void> {
   if (outboundRunning || stopped) return
 
   outboundRunning = true
-  const ctx = new MeasureMetricsContext(config.ServiceID, {})
 
   try {
     while (outboundWorkspaces.size > 0) {
@@ -454,7 +475,7 @@ async function drainOutboundQueue (reason: string): Promise<void> {
       if (inboundWorkspaces.has(workspaceUuid)) {
         if (!delayedOutboundWorkspaces.has(workspaceUuid)) {
           delayedOutboundWorkspaces.add(workspaceUuid)
-          console.info(`[${config.ServiceID}] outbound queue delayed ${workspaceUuid}: inbound sync is running`)
+          ctx.info(`[${config.ServiceID}] outbound queue delayed ${workspaceUuid}: inbound sync is running`)
         }
         outboundWorkspaces.add(workspaceUuid)
         break
@@ -462,10 +483,12 @@ async function drainOutboundQueue (reason: string): Promise<void> {
       delayedOutboundWorkspaces.delete(workspaceUuid)
 
       try {
-        console.info('[%s] outbound queue sync %s: reason=%s', config.ServiceID, workspaceUuid, reason)
-        await syncOutboundWorkspace(ctx, workspaceUuid)
+        ctx.info('outbound queue sync', { workspace: workspaceUuid, reason })
+        await ctx.with('sync-outbound-workspace', { workspace: workspaceUuid }, async (ctx) => {
+          await syncOutboundWorkspace(ctx, workspaceUuid)
+        })
       } catch (err) {
-        console.error('[%s] workspace outbound sync failed for %s', config.ServiceID, workspaceUuid, err)
+        ctx.error('workspace outbound sync failed', { workspace: workspaceUuid, err })
       }
     }
   } finally {
@@ -486,7 +509,7 @@ async function enqueueAllOutboundWorkspaces (reason: string): Promise<void> {
   }
 }
 
-function startOutboundQueueConsumer (ctx: MeasureMetricsContext): { close: () => Promise<void> } {
+function startOutboundQueueConsumer (ctx: MeasureContext): { close: () => Promise<void> } {
   if (!config.SyncOutbound) {
     return {
       close: async () => {}
@@ -499,14 +522,14 @@ function startOutboundQueueConsumer (ctx: MeasureMetricsContext): { close: () =>
       ctx,
       QueueTopic.Tx,
       queue.getClientId(),
-      async (_ctx, msg) => {
+      async (ctx, msg) => {
         const tx = (msg as any).value as Tx | undefined
         const workspace = (msg as any).workspace as WorkspaceUuid | undefined
         const skipReason = getOutboundTxSkipReason(tx, workspace)
         if (skipReason === undefined && tx !== undefined && workspace !== undefined) {
           const relevant = await isGithubNextOutboundRelevantTx(config.AccountsURL, workspace, tx)
           if (!relevant) {
-            console.info(`[${config.ServiceID}] outbound tx ignored`, {
+            ctx.info(`[${config.ServiceID}] outbound tx ignored`, {
               workspace,
               reason: 'unmatched-github-next',
               txClass: tx._class,
@@ -518,7 +541,7 @@ function startOutboundQueueConsumer (ctx: MeasureMetricsContext): { close: () =>
             return
           }
 
-          console.info(`[${config.ServiceID}] outbound tx accepted`, {
+          ctx.info(`[${config.ServiceID}] outbound tx accepted`, {
             workspace,
             txClass: tx._class,
             objectClass: isTxCUD(tx) ? tx.objectClass : undefined,
@@ -528,7 +551,7 @@ function startOutboundQueueConsumer (ctx: MeasureMetricsContext): { close: () =>
           })
           enqueueOutboundWorkspace(workspace, 'tx')
         } else {
-          console.info(`[${config.ServiceID}] outbound tx ignored`, {
+          ctx.info(`[${config.ServiceID}] outbound tx ignored`, {
             workspace,
             reason: skipReason,
             txClass: tx?._class,
@@ -544,7 +567,7 @@ function startOutboundQueueConsumer (ctx: MeasureMetricsContext): { close: () =>
       }
     )
 
-    console.info(`[${config.ServiceID}] outbound queue consumer started`)
+    ctx.info(`[${config.ServiceID}] outbound queue consumer started`)
 
     return {
       close: async () => {
@@ -553,7 +576,7 @@ function startOutboundQueueConsumer (ctx: MeasureMetricsContext): { close: () =>
       }
     }
   } catch (err) {
-    console.error(`[${config.ServiceID}] failed to start outbound queue consumer`, err)
+    ctx.error('failed to start outbound queue consumer', { err })
     return {
       close: async () => {}
     }
@@ -565,7 +588,6 @@ async function main (): Promise<void> {
   setMetadata(serverToken.metadata.Service, config.ServiceID)
 
   const httpServer = startHttpServer()
-  const ctx = new MeasureMetricsContext(config.ServiceID, {})
   const outboundConsumer = startOutboundQueueConsumer(ctx)
   await tick()
   await enqueueAllOutboundWorkspaces('startup')
@@ -586,9 +608,15 @@ async function main (): Promise<void> {
 
   process.once('SIGINT', shutdown)
   process.once('SIGTERM', shutdown)
+  process.on('uncaughtException', (error: Error) => {
+    ctx.error('Uncaught exception', { error })
+  })
+  process.on('unhandledRejection', (error: unknown) => {
+    ctx.error('Unhandled rejection', { error })
+  })
 }
 
 void main().catch((err) => {
-  console.error(`[${config.ServiceID}] fatal error`, err)
+  ctx.error('fatal error', { err })
   process.exit(1)
 })

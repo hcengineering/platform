@@ -69,7 +69,15 @@ SYNC_OUTBOUND       default: true
 HULYLAKE_URL        default: http://huly.local:8096
 QUEUE_CONFIG        default from kafka package: huly.local:9092
 QUEUE_REGION        default: empty
+OTEL_EXPORTER_OTLP_ENDPOINT optional: OpenTelemetry collector URL
+ENABLE_CONSOLE      default: true
+LOG_LEVEL           default: info
+VERSION             default: 0.7.0
 ```
+
+Telemetry uses `SERVICE_ID` as the service name. The local Docker overlay exports traces to
+`http://jaeger:4318/v1/traces`. Service logs are written to `logs/` and to the console when
+`ENABLE_CONSOLE=true`.
 
 For local docker, `PUBLIC_URL` must match the GitHub OAuth callback host:
 

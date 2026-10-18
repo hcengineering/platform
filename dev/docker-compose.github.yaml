@@ -19,6 +19,7 @@ services:
       - 3510:3510
     environment:
       - SERVICE_ID=github-next-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - SERVER_SECRET=${SECRET}
       - ACCOUNTS_URL=http://tracex.local:3000
       - FRONT_URL=http://tracex.local:8087

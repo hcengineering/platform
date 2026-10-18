@@ -45,7 +45,7 @@ import { BaseMiddleware } from '@hcengineering/server-core'
 import crypto from 'node:crypto'
 
 const isAccountTx = (it: TxCUD<Doc>): boolean =>
-  ['core:class:Account', 'contact:class:PersonAccount'].includes(it.objectClass)
+  it.objectClass === 'core:class:Account' || it.objectClass === 'contact:class:PersonAccount'
 
 /**
  * @public

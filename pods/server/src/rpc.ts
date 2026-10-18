@@ -1,6 +1,7 @@
 //
 // Copyright © 2022 Hardcore Engineering Inc.
 // Copyright © 2026 TraceX
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -167,6 +168,19 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
     return getAccountClientRaw(accountsUrl, token)
   }
 
+  function ensureFindAllClass (ctx: ClientSessionCtx, res: ExpressResponse, _class: Ref<Class<Doc>>): boolean {
+    const domain = ctx.pipeline.context.hierarchy.findDomain(_class) ?? ''
+    if (domain === '') {
+      sendError(res, 400, {
+        message: 'Failed to execute operation',
+        error: 'Class is not registered in the model. Failed to findAll.',
+        _class
+      })
+      return false
+    }
+    return true
+  }
+
   // The direct create/update/remove/mixin operations below build their client with
   // `wrapPipeline(..., true)`, which runs as the system account and therefore bypasses
   // space-membership, role and read-only checks. They must only be reachable by trusted
@@ -296,14 +310,7 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
         options.limit = parseInt(req.query.limit as string)
       }
 
-      const domain = ctx.pipeline.context.hierarchy.findDomain(_class) ?? ''
-      if (domain === '') {
-        sendError(res, 404, {
-          message: 'Failed to execute operation',
-          error: 'Invalid class name is passed. Failed to findAll.'
-        })
-        return
-      }
+      if (!ensureFindAllClass(ctx, res, _class)) return
 
       const result = await session.findAllRaw(ctx, _class, query, options)
       await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
@@ -313,6 +320,8 @@ export function registerRPC (app: Express, sessions: SessionManager, ctx: Measur
   app.post('/api/v1/find-all/:workspaceId', (req, res) => {
     void withSession(req, res, 'findAll', async (ctx, session, rateLimit) => {
       const { _class, query, options }: any = (await retrieveJson(req)) ?? {}
+
+      if (!ensureFindAllClass(ctx, res, _class)) return
 
       const result = await session.findAllRaw(ctx, _class, query, options)
       await sendJson(req, res, result, rateLimitToHeaders(rateLimit))
