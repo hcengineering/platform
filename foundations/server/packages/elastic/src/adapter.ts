@@ -33,6 +33,7 @@ import serverCore from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { getMetadata } from '@hcengineering/platform'
+import { getElasticTlsOptions } from './tls'
 
 const DEFAULT_LIMIT = 200
 
@@ -762,8 +763,10 @@ class ElasticAdapter implements FullTextAdapter {
  * @public
  */
 export async function createElasticAdapter (url: string): Promise<FullTextAdapter> {
+  const ssl = getElasticTlsOptions()
   const client = new Client({
-    node: url
+    node: url,
+    ...(ssl !== undefined ? { ssl } : {})
   })
   const indexBaseName = getIndexName()
   const indexVersion = getIndexVersion()
