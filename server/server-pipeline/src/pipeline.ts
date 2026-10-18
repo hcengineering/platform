@@ -210,6 +210,7 @@ export function createServerPipeline (
 
     const hierarchy = new Hierarchy()
     const modelDb = new ModelDb(hierarchy)
+    const contextVars = opt.pipelineContextVars ?? {}
     const context: PipelineContext = {
       workspace,
       branding,
@@ -217,7 +218,10 @@ export function createServerPipeline (
       hierarchy,
       queue: opt.queue,
       storageAdapter: opt.externalStorage,
-      contextVars: opt.pipelineContextVars ?? {}
+      contextVars,
+      // Seed from the boot last-tx cache so a restart with no data change reconnects clients
+      // as Reconnected instead of Refresh (see pods/server loadLastTxCache).
+      lastTx: (contextVars.lastTxCache as Map<string, Ref<Tx>> | undefined)?.get(workspace.uuid)
     }
     return createPipeline(ctx, middlewares, context)
   }
@@ -361,6 +365,25 @@ function matchAdapterFactory (dbUrl: string): DbAdapterFactory {
     }
   }
   return adapterFactories['']
+}
+
+// Optional boot-time last-tx loader per backend (SQL specifics stay in the backend package).
+// Unregistered backends -> matchLastTxLoader returns undefined; the caller skips the cache and
+// clients fall back to Refresh, which is safe.
+export type LastTxLoader = (ctx: MeasureContext, dbUrl: string, cache: Map<string, Ref<Tx>>) => Promise<void>
+const lastTxLoaders: Record<string, LastTxLoader> = {}
+
+export function registerLastTxLoader (name: string, loader: LastTxLoader): void {
+  lastTxLoaders[name] = loader
+}
+
+export function matchLastTxLoader (dbUrl: string): LastTxLoader | undefined {
+  for (const [k, v] of Object.entries(lastTxLoaders)) {
+    if (k !== '' && dbUrl.startsWith(k)) {
+      return v
+    }
+  }
+  return undefined
 }
 
 export function getWorkspaceDestroyAdapter (dbUrl: string): WorkspaceDestroyAdapter {

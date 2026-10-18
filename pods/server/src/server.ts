@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 
-import { type BrandingMap, type MeasureContext, type Tx } from '@hcengineering/core'
+import { type BrandingMap, type MeasureContext, type Ref, type Tx } from '@hcengineering/core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 
 import { startSessionManager } from '@hcengineering/server'
@@ -24,8 +24,10 @@ import { type PlatformQueue, type SessionManager, type StorageConfiguration } fr
 import {
   createServerPipeline,
   isAdapterSecurity,
+  matchLastTxLoader,
   registerAdapterFactory,
   registerDestroyFactory,
+  registerLastTxLoader,
   registerServerPlugins,
   registerStringLoaders,
   registerTxAdapterFactory,
@@ -36,6 +38,7 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
+  loadLastTxCache,
   setDBExtraOptions,
   shutdownPostgres
 } from '@hcengineering/postgres'
@@ -77,6 +80,7 @@ export function start (
 ): { shutdown: () => Promise<void>, sessionManager: SessionManager } {
   registerTxAdapterFactory('postgresql', createPostgresTxAdapter, true)
   registerAdapterFactory('postgresql', createPostgresAdapter, true)
+  registerLastTxLoader('postgresql', loadLastTxCache)
   registerDestroyFactory('postgresql', createPostgreeDestroyAdapter, true)
   setAdapterSecurity('postgresql', true)
   setAdapterSecurity('postgres://', true)
@@ -91,11 +95,24 @@ export function start (
 
   const externalStorage = buildStorageFromConfig(opt.storageConfig)
 
+  // Seed each workspace's context.lastTx on cold build so a restart with no data change
+  // reconnects clients as Reconnected, not Refresh (full LiveQuery refetch). Empty until loaded = safe.
+  const lastTxCache = new Map<string, Ref<Tx>>()
+  // Feature-detect: backends that registered a loader fill the cache; others skip -> Refresh.
+  const lastTxLoader = matchLastTxLoader(dbUrl)
+  if (lastTxLoader !== undefined) void lastTxLoader(metrics, dbUrl, lastTxCache)
+
   const pipelineFactory = createServerPipeline(
     metrics,
     dbUrl,
     model,
-    { ...opt, externalStorage, adapterSecurity: isAdapterSecurity(dbUrl), queue: opt.queue },
+    {
+      ...opt,
+      externalStorage,
+      adapterSecurity: isAdapterSecurity(dbUrl),
+      queue: opt.queue,
+      pipelineContextVars: { lastTxCache }
+    },
     {}
   )
 
