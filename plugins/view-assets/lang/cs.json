@@ -161,6 +161,8 @@
     "AllowAttributeChanges": "Povolit změny: ",
     "RelationshipTable": "Tabulka vztahů",
     "FilterOverflowBadge": "+{count}",
+    "PreviousItem": "Předchozí položka",
+    "NextItem": "Další položka",
     "AddFilter": "Přidat filtr",
     "HiddenFilters": "Skryté filtry"
   }

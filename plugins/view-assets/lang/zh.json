@@ -161,6 +161,8 @@
     "AllowAttributeChanges": "允许更改属性: ",
     "RelationshipTable": "关系表",
     "FilterOverflowBadge": "+{count}",
+    "PreviousItem": "上一项",
+    "NextItem": "下一项",
     "AddFilter": "添加过滤器",
     "HiddenFilters": "隐藏的过滤器"
   }

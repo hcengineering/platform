@@ -44,7 +44,13 @@
   import HierarchyAddPopup from '../HierarchyAddPopup.svelte'
   import { makeRank } from '@hcengineering/task'
   import view from '@hcengineering/view'
-  import { DocNavLink, ParentsNavigator, showMenu, RelationsEditor } from '@hcengineering/view-resources'
+  import {
+    DocNavLink,
+    ParentsNavigator,
+    showMenu,
+    RelationsEditor,
+    UpDownNavigator
+  } from '@hcengineering/view-resources'
   import ProjectPresenter from '../../projects/ProjectPresenter.svelte'
   import { InboxNotificationsClientImpl } from '@hcengineering/notification-resources'
   import { Analytics } from '@hcengineering/analytics'
@@ -301,6 +307,9 @@
     </svelte:fragment>
 
     <svelte:fragment slot="utils">
+      {#if !embedded}
+        <UpDownNavigator element={issue} />
+      {/if}
       {#if !effectiveReadonly}
         <Button
           icon={IconMoreH}

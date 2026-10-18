@@ -156,6 +156,8 @@
     "AllowAttributeChanges": "Permitir cambios: ",
     "RelationshipTable": "Tabla de relaciones",
     "FilterOverflowBadge": "+{count}",
+    "PreviousItem": "Elemento anterior",
+    "NextItem": "Elemento siguiente",
     "AddFilter": "Añadir filtro",
     "HiddenFilters": "Filtros ocultos"
   }

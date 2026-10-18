@@ -1,55 +1,73 @@
 <script lang="ts">
   import { Doc } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
-  import { Button, IconDownOutline, IconUpOutline, navigate } from '@hcengineering/ui'
+  import { Button, IconDownOutline, IconUpOutline } from '@hcengineering/ui'
   import { tick } from 'svelte'
-  import { select } from '../actionImpl'
+  import { get } from 'svelte/store'
   import view from '../plugin'
-  import { focusStore } from '../selection'
-  import { getObjectLinkFragment } from '../utils'
+  import { ListSelectionProvider, focusStore } from '../selection'
+  import { getUpDownNavigationOffset, nextDocumentKeys, previousDocumentKeys } from '../upDownNavigation'
+  import { openDoc, restrictionStore } from '../utils'
 
   export let element: Doc
 
   const client = getClient()
 
-  async function next (evt: Event, pn: boolean): Promise<void> {
-    select(evt, pn ? 1 : -1, element, 'vertical')
-    await tick()
-    if ($focusStore.focus !== undefined) {
-      const doc = await client.findOne($focusStore.focus._class, { _id: $focusStore.focus._id })
-      if (doc !== undefined) {
-        const component = client.getHierarchy().classHierarchyMixin(doc._class, view.mixin.ObjectPanel)
-        const link = await getObjectLinkFragment(
-          client.getHierarchy(),
-          doc,
-          {},
-          component?.component ?? view.component.EditDoc
-        )
-        navigate(link)
-      }
+  // The list the document was opened from. Looked up by document, since the focus could
+  // belong to another list (for example sub-issues shown inside the opened document).
+  // Re-evaluated on focus changes, which also happen when the list content is updated.
+  $: provider = $focusStore !== undefined ? ListSelectionProvider.Find(element._id) : undefined
+
+  let navigating = false
+
+  async function next (offset: 1 | -1): Promise<void> {
+    const current = element
+    const listProvider = ListSelectionProvider.Find(current._id)
+    if (navigating || listProvider === undefined) return
+    navigating = true
+    try {
+      // Let the list resolve the neighbour, so grouping and sorting are respected.
+      listProvider.select(offset, current, 'vertical')
+      await tick()
+      const { focus, provider: focusProvider } = get(focusStore)
+      if (focus === undefined || focus._id === current._id || focusProvider !== listProvider) return
+      if (!listProvider.docs().some((it) => it._id === focus._id)) return
+      await openDoc(client.getHierarchy(), focus)
+    } finally {
+      navigating = false
     }
   }
 
-  $: select(undefined, 0, element, 'vertical', true)
+  function onKeydown (evt: KeyboardEvent): void {
+    if (provider === undefined || $restrictionStore.disableNavigation) return
+    const offset = getUpDownNavigationOffset(evt, evt.target as HTMLElement | null)
+    if (offset === undefined) return
+    evt.preventDefault()
+    void next(offset)
+  }
 </script>
 
-{#if $focusStore.focus !== undefined && $focusStore.provider !== undefined}
+<svelte:window on:keydown={onKeydown} />
+
+{#if provider !== undefined && !$restrictionStore.disableNavigation}
   <Button
-    focusIndex={10005}
-    icon={IconDownOutline}
-    kind={'regular'}
-    size={'medium'}
-    on:click={async (evt) => {
-      await next(evt, true)
+    icon={IconUpOutline}
+    iconProps={{ size: 'medium' }}
+    kind={'icon'}
+    dataId={'btnPreviousDocument'}
+    showTooltip={{ label: view.string.PreviousItem, keys: previousDocumentKeys }}
+    on:click={() => {
+      void next(-1)
     }}
   />
   <Button
-    focusIndex={10006}
-    icon={IconUpOutline}
-    kind={'regular'}
-    size={'medium'}
-    on:click={async (evt) => {
-      await next(evt, false)
+    icon={IconDownOutline}
+    iconProps={{ size: 'medium' }}
+    kind={'icon'}
+    dataId={'btnNextDocument'}
+    showTooltip={{ label: view.string.NextItem, keys: nextDocumentKeys }}
+    on:click={() => {
+      void next(1)
     }}
   />
 {/if}
