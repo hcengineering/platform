@@ -158,6 +158,8 @@
     "AllowAttributeChanges": "Разрешить изменение: ",
     "RelationshipTable": "Таблица связей",
     "FilterOverflowBadge": "+{count}",
+    "PreviousItem": "Предыдущий элемент",
+    "NextItem": "Следующий элемент",
     "AddFilter": "Добавить фильтр",
     "HiddenFilters": "Скрытые фильтры"
   }

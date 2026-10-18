@@ -161,6 +161,8 @@
     "AllowAttributeChanges": "Allow changes: ",
     "RelationshipTable": "Traceability Matrix",
     "FilterOverflowBadge": "+{count}",
+    "PreviousItem": "Previous item",
+    "NextItem": "Next item",
     "AddFilter": "Add filter",
     "HiddenFilters": "Hidden filters"
   }
