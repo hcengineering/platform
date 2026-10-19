@@ -49,6 +49,8 @@
     "DeleteColumn": "Delete",
     "AddRowBefore": "Add before",
     "AddRowAfter": "Add after",
+    "AddRowsBefore": "Add {count} rows before",
+    "AddRowsAfter": "Add {count} rows after",
     "DeleteRow": "Delete",
     "DeleteTable": "Delete",
     "MergeCells": "Merge cells",

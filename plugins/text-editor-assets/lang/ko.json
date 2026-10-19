@@ -49,6 +49,8 @@
         "DeleteColumn": "삭제",
         "AddRowBefore": "위에 추가",
         "AddRowAfter": "아래에 추가",
+        "AddRowsBefore": "위에 {count}개 행 추가",
+        "AddRowsAfter": "아래에 {count}개 행 추가",
         "DeleteRow": "삭제",
         "DeleteTable": "삭제",
         "MergeCells": "셀 병합",

@@ -44,6 +44,8 @@
     "DeleteColumn": "削除",
     "AddRowBefore": "前に挿入",
     "AddRowAfter": "後に挿入",
+    "AddRowsBefore": "前に{count}行を挿入",
+    "AddRowsAfter": "後に{count}行を挿入",
     "DeleteRow": "削除",
     "DeleteTable": "削除",
     "MergeCells": "セルを結合",

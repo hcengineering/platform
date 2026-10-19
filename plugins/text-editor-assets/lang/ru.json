@@ -44,6 +44,8 @@
     "DeleteColumn": "Удалить",
     "AddRowBefore": "Добавить до",
     "AddRowAfter": "Добавить после",
+    "AddRowsBefore": "Добавить строки до ({count})",
+    "AddRowsAfter": "Добавить строки после ({count})",
     "DeleteRow": "Удалить",
     "DeleteTable": "Удалить",
     "MergeCells": "Объединить ячейки",
