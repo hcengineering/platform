@@ -68,10 +68,13 @@ export const CollaborationExtension = Collaboration.extend({
     const parent = this.parent?.()
     if (parent === undefined) return {}
 
+    const { undo, redo } = parent
+    if (undo === undefined || redo === undefined) return parent
+
     return {
       ...parent,
-      undo: () => withRevealChange(parent.undo),
-      redo: () => withRevealChange(parent.redo)
+      undo: () => withRevealChange(undo),
+      redo: () => withRevealChange(redo)
     }
   }
 })
