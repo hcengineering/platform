@@ -1328,9 +1328,13 @@ abstract class PostgresAdapterBase implements DbAdapter {
           case '$in':
             switch (type) {
               case 'common':
-                if (Array.isArray(val) && val.includes(null)) {
-                  const vv = vars.addArray(val, valType)
-                  res.push(`(${tlkey} = ANY(${vv}) OR ${tkey} IS NULL)`)
+                if (Array.isArray(val) && val.some((it) => it == null)) {
+                  if (val.every((it) => it == null)) {
+                    res.push(`${tkey} IS NULL`)
+                  } else {
+                    const vv = vars.addArray(val, valType)
+                    res.push(`(${tlkey} = ANY(${vv}) OR ${tkey} IS NULL)`)
+                  }
                 } else {
                   if (val.length > 0) {
                     res.push(`${tlkey} = ANY(${vars.addArray(val, valType)})`)
@@ -1354,8 +1358,12 @@ abstract class PostgresAdapterBase implements DbAdapter {
             }
             break
           case '$nin':
-            if (Array.isArray(val) && val.includes(null)) {
-              res.push(`(${tlkey} != ALL(${vars.addArray(val, valType)}) AND ${tkey} IS NOT NULL)`)
+            if (Array.isArray(val) && val.some((it) => it == null)) {
+              if (val.every((it) => it == null)) {
+                res.push(`${tkey} IS NOT NULL`)
+              } else {
+                res.push(`(${tlkey} != ALL(${vars.addArray(val, valType)}) AND ${tkey} IS NOT NULL)`)
+              }
             } else if (Array.isArray(val) && val.length > 0) {
               res.push(`${tlkey} != ALL(${vars.addArray(val, valType)})`)
             }
