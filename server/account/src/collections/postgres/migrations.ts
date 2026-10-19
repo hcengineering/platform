@@ -285,12 +285,11 @@ function getV2Migration2 (ns: string, flavor: DBFlavor): [string, string] {
     ALTER TABLE ${ns}.otp
     DROP CONSTRAINT IF EXISTS otp_social_id_fk;
 
-    -- Drop the existing primary key on social_id
+    -- Replace the primary key on social_id with a new one on _id.
+    -- Both changes must be in a single statement: CockroachDB v25+ commits DDL
+    -- statements individually and rejects a table left without a primary key.
     ALTER TABLE ${ns}.social_id
-    DROP CONSTRAINT IF EXISTS social_id_pk;
-
-    -- Add the new primary key on _id
-    ALTER TABLE ${ns}.social_id
+    DROP CONSTRAINT IF EXISTS social_id_pk,
     ADD CONSTRAINT social_id_pk PRIMARY KEY (_id);
     `
   ]
