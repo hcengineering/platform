@@ -232,6 +232,8 @@
     "CapacityValue": "うち {value}日",
     "NewRelatedIssue": "新しい関連イシュー",
     "RelatedIssuesNotFound": "関連イシューが見つかりません",
+    "IssueNotFound": "イシュー {id} が見つかりません。削除されたか、表示する権限がない可能性があります。",
+    "ShowProjectIssues": "{project} のすべてのイシューを表示",
     "AddedReference": "参照を追加",
     "AddedAsBlocked": "ブロックされているとしてマーク",
     "AddedAsBlocking": "ブロックしているとしてマーク",
