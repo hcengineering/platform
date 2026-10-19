@@ -10,6 +10,7 @@ import type {
 } from '@hcengineering/emoji'
 import { emojiCategories } from './types'
 import { unicodeEmojiStore, customEmojiStore, getSkinTone } from './store'
+import { searchEmojisForSuggestion } from './search'
 import { get } from 'svelte/store'
 import { deviceOptionsStore as deviceInfo } from '@hcengineering/ui'
 
@@ -114,10 +115,20 @@ function findEmoji (
   const emojis = get(unicodeEmojiStore).concat(get(customEmojiStore))
   const matchEmoji = emojis.find(predicate)
   if (matchEmoji === undefined) return undefined
-  if (isCustomEmoji(matchEmoji)) return matchEmoji
+  return applySkinTone(matchEmoji, skinTone)
+}
+
+function applySkinTone (emoji: ExtendedEmoji, skinTone?: number): ExtendedEmoji {
+  if (isCustomEmoji(emoji)) return emoji
   if (skinTone === undefined) skinTone = getSkinTone()
-  if (skinTone === 0 || matchEmoji.skins === undefined) return matchEmoji
-  return matchEmoji.skins[skinTone - 1]
+  if (skinTone === 0 || emoji.skins === undefined) return emoji
+  return emoji.skins[skinTone - 1]
+}
+
+export function searchEmojis (query: string, limit?: number): ExtendedEmoji[] {
+  const emojis = get(unicodeEmojiStore).concat(get(customEmojiStore))
+  const skinTone = getSkinTone()
+  return searchEmojisForSuggestion(emojis, query, limit).map((emoji) => applySkinTone(emoji, skinTone))
 }
 
 export function getEmojiSkins (emoji: ExtendedEmoji): Emoji.Emoji[] | undefined {

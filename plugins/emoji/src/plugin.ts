@@ -91,7 +91,8 @@ export const emojiPlugin = plugin(emojiId, {
     (shortcode: string | undefined, skinTone?: number) => ExtendedEmoji | undefined
     >,
     GetCustomEmoji: '' as Resource<(shortcode: string | undefined, skinTone?: number) => CustomEmoji | undefined>,
-    ParseTextWithEmojis: '' as Resource<(text: string) => ParsedTextWithEmojis>
+    ParseTextWithEmojis: '' as Resource<(text: string) => ParsedTextWithEmojis>,
+    SearchEmojis: '' as Resource<(query: string, limit?: number) => ExtendedEmoji[]>
   }
 })
 

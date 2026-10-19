@@ -1,6 +1,7 @@
 import { EmojiNode, type EmojiNodeOptions } from '@hcengineering/text'
 import {
   emoticonRegex,
+  emoticonBeforeSpaceRegex,
   emoticonGlobalRegex,
   shortcodeRegex,
   shortcodeGlobalRegex,
@@ -19,9 +20,13 @@ import {
   InputRule,
   PasteRule
 } from '@tiptap/core'
-import { type EditorState } from '@tiptap/pm/state'
+import { type EditorState, PluginKey } from '@tiptap/pm/state'
 import { getBlobRef } from '@hcengineering/presentation'
 import { getResource } from '@hcengineering/platform'
+import Suggestion, { type SuggestionKeyDownProps, type SuggestionProps } from './suggestion'
+import { SvelteRenderer } from '../node-view'
+import EmojiSuggestionList from '../EmojiSuggestionList.svelte'
+import { isWordLikeEmoticon } from './emoticon'
 
 const invalidMarks = ['link']
 
@@ -51,27 +56,26 @@ function handleEmoji (
   if (emoji === undefined) return
   if (match.length > 0) range.from = range.to - emojiString.length + 1
 
+  commands.insertContentAt(range, [getEmojiNodeContent(emoji)])
+}
+
+function getEmojiNodeContent (emoji: ExtendedEmoji | string): Record<string, any> {
   if (typeof emoji === 'string' || !isCustomEmoji(emoji)) {
-    commands.insertContentAt(range, [
-      {
-        type: 'emoji',
-        attrs: {
-          emoji: typeof emoji === 'string' ? emoji : emoji.emoji,
-          kind: 'unicode'
-        }
+    return {
+      type: 'emoji',
+      attrs: {
+        emoji: typeof emoji === 'string' ? emoji : emoji.emoji,
+        kind: 'unicode'
       }
-    ])
-  } else {
-    commands.insertContentAt(range, [
-      {
-        type: 'emoji',
-        attrs: {
-          emoji: `:${emoji.shortcode}:`,
-          kind: 'image',
-          image: emoji.image
-        }
-      }
-    ])
+    }
+  }
+  return {
+    type: 'emoji',
+    attrs: {
+      emoji: `:${emoji.shortcode}:`,
+      kind: 'image',
+      image: emoji.image
+    }
   }
 }
 
@@ -171,7 +175,95 @@ export const EmojiExtension = EmojiNode.extend<EmojiNodeOptions>({
       new InputRule({
         find: emoticonRegex,
         handler: ({ state, range, match, commands }) => {
+          const emoticon = match[match.length - 1]
+          if (emoticon === undefined || isWordLikeEmoticon(emoticon)) return null
           handleEmoji(state, range, match, commands, emoticonFn)
+        }
+      }),
+      new InputRule({
+        find: emoticonBeforeSpaceRegex,
+        handler: ({ state, range, match, commands }) => {
+          const emoticon = match[1]
+          if (emoticon === undefined || !isWordLikeEmoticon(emoticon)) return null
+          const emoji = emoticonFn?.(emoticon)
+          if (emoji === undefined || !isValidEmojiPosition(state.doc.resolve(range.from))) return null
+          // the typed whitespace is not in the document yet, the range ends right after the emoticon
+          commands.insertContentAt({ from: range.to - emoticon.length, to: range.to }, [
+            getEmojiNodeContent(emoji),
+            { type: 'text', text: match[0].slice(-1) }
+          ])
+        }
+      })
+    ]
+  },
+  addProseMirrorPlugins () {
+    let searchFn: ((query: string, limit?: number) => ExtendedEmoji[]) | undefined
+    void getResource(emojiPlugin.functions.SearchEmojis).then((res) => {
+      searchFn = res
+    })
+    return [
+      Suggestion<ExtendedEmoji>({
+        pluginKey: new PluginKey('emoji-suggestion'),
+        editor: this.editor,
+        char: ':',
+        decorationClass: 'emoji-suggestion',
+        items: ({ query }) => searchFn?.(query) ?? [],
+        allow: ({ state, range }) => {
+          if (range.from > state.doc.content.size) return false
+          const $from = state.doc.resolve(range.from)
+          if ($from.parent.type.spec.code === true) return false
+          return isValidEmojiPosition($from) && !$from.marks().some((m) => m.type.name === 'code')
+        },
+        command: ({ editor, range, props }) => {
+          // replace the following space as well, a new one is inserted after the emoji
+          const nodeAfter = editor.view.state.selection.$to.nodeAfter
+          if (nodeAfter?.text?.startsWith(' ') === true) {
+            range.to += 1
+          }
+          editor
+            .chain()
+            .focus()
+            .insertContentAt(range, [getEmojiNodeContent(props), { type: 'text', text: ' ' }])
+            .run()
+        },
+        render: () => {
+          let component: SvelteRenderer | undefined
+          let hasItems = false
+
+          const destroy = (): void => {
+            component?.destroy()
+            component = undefined
+          }
+          const close = (): void => {
+            destroy()
+            hasItems = false
+          }
+
+          return {
+            onStart: (props: SuggestionProps<ExtendedEmoji>) => {
+              hasItems = props.items.length > 0
+              component = new SvelteRenderer(EmojiSuggestionList, {
+                element: document.body,
+                props: { ...props, close }
+              })
+            },
+            onUpdate (props: SuggestionProps<ExtendedEmoji>) {
+              hasItems = component !== undefined && props.items.length > 0
+              component?.updateProps(props)
+            },
+            onKeyDown (props: SuggestionKeyDownProps) {
+              if (props.event.key === 'Escape') {
+                // The suggestion plugin cancels itself on Escape (and may already have called onExit),
+                // keep the key from also closing the surrounding popup or panel when the list was shown
+                if (!hasItems) return false
+                props.event.stopPropagation()
+                close()
+                return true
+              }
+              return component?.onKeyDown(props) ?? false
+            },
+            onExit: destroy
+          }
         }
       })
     ]
