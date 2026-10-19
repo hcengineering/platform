@@ -93,6 +93,12 @@
     "Window": "Ventana",
     "MeetingEmptyTitle": "¿Reunión finalizada?",
     "MeetingEmptyMessage": "Todos los participantes han salido. Serás desconectado en 1 minuto. ¿Deseas permanecer?",
+    "ScreenShareFailed": "No se puede compartir la pantalla",
+    "ScreenShareDenied": "Tu navegador o sistema operativo ha bloqueado la pantalla compartida. Permite la grabación de pantalla para tu navegador en la configuración de privacidad del sistema e inténtalo de nuevo.",
+    "ScreenShareUnsupported": "Compartir pantalla no es compatible con este navegador o conexión. Usa un navegador de escritorio actualizado a través de HTTPS.",
+    "ScreenShareError": "No se pudo iniciar la pantalla compartida. Inténtalo de nuevo.",
+    "ScreenShareNotStartedTitle": "No se inició la pantalla compartida",
+    "ScreenShareNotStarted": "No se inició la pantalla compartida. Si no la cancelaste, comprueba que tu navegador y tu sistema operativo permitan compartir pantalla para este sitio.",
     "StayInRoom": "Permanecer en sala"
   }
 }
