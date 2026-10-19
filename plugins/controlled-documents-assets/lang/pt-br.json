@@ -101,7 +101,13 @@
     "CreateFolder": "Criar nova pasta",
     "RenameFolder": "Renomear pasta",
     "CreateChildFolder": "Criar subpasta",
-    "AllDocumentSpaces": "Todos os espaços de documentos"
+    "AllDocumentSpaces": "Todos os espaços de documentos",
+    "VerificationCode": "Código de verificação",
+    "SendVerificationCode": "Enviar código",
+    "SignatureOtpHint": "Sua conta não tem senha. Confirme sua assinatura com um código de verificação enviado para seu e-mail.",
+    "SignatureOtpSent": "Um código de verificação foi enviado para seu e-mail.",
+    "SignatureNoEmail": "Nenhum endereço de e-mail está vinculado à sua conta, portanto a assinatura não pode ser confirmada.",
+    "SignatureAccountMismatch": "As credenciais não pertencem ao usuário atual."
   },
   "controlledDocStates": {
     "Empty": "",

@@ -155,6 +155,12 @@ export default mergeIds(documentsId, documents, {
     Password: '' as IntlString,
     FieldIsEmpty: '' as IntlString,
     ValidatingCredentials: '' as IntlString,
+    VerificationCode: '' as IntlString,
+    SendVerificationCode: '' as IntlString,
+    SignatureOtpHint: '' as IntlString,
+    SignatureOtpSent: '' as IntlString,
+    SignatureNoEmail: '' as IntlString,
+    SignatureAccountMismatch: '' as IntlString,
 
     EffectiveImmediately: '' as IntlString,
     EffectiveOn: '' as IntlString,

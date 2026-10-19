@@ -26,9 +26,10 @@
     Severity,
     Status,
     getMetadata,
+    getResource,
     translate
   } from '@hcengineering/platform'
-  import { EditBox, StylishEdit, ModernDialog } from '@hcengineering/ui'
+  import { Button, EditBox, Label, Spinner, StylishEdit, ModernDialog } from '@hcengineering/ui'
   import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
   import { getClient } from '@hcengineering/presentation'
   import contact, { SocialIdentityRef } from '@hcengineering/contact'
@@ -36,6 +37,7 @@
   import documents from '../plugin'
   import StatusControl from './requests/StatusControl.svelte'
   import { LoginInfo, loginIntlFieldNames } from '../utils'
+  import { SignatureCredentials, verifySignatureCredentials } from '../signature'
 
   export let confirmationTitle: IntlString = documents.string.ConfirmApproval
   export let rejectionTitle: IntlString = documents.string.ConfirmRejection
@@ -51,6 +53,13 @@
     password: ''
   }
 
+  // Accounts without a password (e.g. SSO-only) confirm their signature with a one-time code sent to their email
+  let hasPassword: boolean | undefined = undefined
+  let emailLoaded = false
+  let code = ''
+  let codeSent = false
+  let sendingCode = false
+
   void client
     .findOne(contact.class.SocialIdentity, {
       _id: { $in: account.socialIds as SocialIdentityRef[] },
@@ -61,49 +70,81 @@
         object.email = si.value
       }
     })
+    .finally(() => {
+      emailLoaded = true
+    })
+
+  async function checkPassword (): Promise<void> {
+    try {
+      const check = await getResource(login.function.CheckHasPassword)
+      hasPassword = await check()
+    } catch {
+      hasPassword = true // fall back to the password confirmation
+    }
+  }
+  void checkPassword()
 
   const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
-  $: disableEmailField = object.email !== ''
-  $: canSubmit = object.email !== '' && object.password !== '' && (!isRejection || rejectionNote.trim().length > 0)
+  $: useOtp = hasPassword === false
+  $: disableEmailField = object.email !== '' || useOtp
+  $: canSubmit =
+    hasPassword !== undefined &&
+    object.email !== '' &&
+    (useOtp ? codeSent && code.trim() !== '' : object.password !== '') &&
+    (!isRejection || rejectionNote.trim().length > 0)
 
   let status = OK
 
   async function submit (): Promise<void> {
-    if (object.email === '' || object.password === '') {
+    if (!canSubmit) {
       return
     }
 
-    status = await validateAccount(object.email, object.password)
+    const credentials: SignatureCredentials = useOtp
+      ? { method: 'otp', email: object.email, code: code.trim() }
+      : { method: 'password', email: object.email, password: object.password }
+
+    status = await verifySignatureCredentials(getAccountClient(accountsUrl), credentials, account.uuid)
 
     if (status === OK) {
       dispatch('close', { rejectionNote: isRejection ? rejectionNote : undefined })
     }
   }
 
-  async function validateAccount (email: string, password: string): Promise<Status> {
-    const accountClient = getAccountClient(accountsUrl)
+  async function sendCode (): Promise<void> {
+    if (object.email === '') {
+      return
+    }
 
+    sendingCode = true
     try {
-      await accountClient.login(email, password)
-
-      return OK
+      await getAccountClient(accountsUrl).loginOtp(object.email)
+      codeSent = true
+      status = OK
     } catch (err: any) {
-      if (err instanceof PlatformError) {
-        return err.status
-      } else {
-        return ERROR
-      }
+      status = err instanceof PlatformError ? err.status : ERROR
+    } finally {
+      sendingCode = false
     }
   }
 
   async function validate (): Promise<void> {
-    for (const field of Object.keys(object)) {
-      const k = field as keyof LoginInfo
-      if (object[k] === '') {
+    if (useOtp) {
+      if (code.trim() === '') {
         status = new Status(Severity.INFO, documents.string.FieldIsEmpty, {
-          field: await translate(loginIntlFieldNames[k], {})
+          field: await translate(documents.string.VerificationCode, {})
         })
         return
+      }
+    } else {
+      for (const field of Object.keys(object)) {
+        const k = field as keyof LoginInfo
+        if (object[k] === '') {
+          status = new Status(Severity.INFO, documents.string.FieldIsEmpty, {
+            field: await translate(loginIntlFieldNames[k], {})
+          })
+          return
+        }
       }
     }
 
@@ -137,14 +178,46 @@
       on:blur={() => object.email.trim()}
       disabled={disableEmailField}
     />
-    <StylishEdit
-      label={documents.string.Password}
-      name={documents.string.Password}
-      password={true}
-      bind:value={object.password}
-      on:input={validate}
-      on:blur={() => object.email.trim()}
-    />
+    {#if hasPassword === undefined}
+      <Spinner size={'small'} />
+    {:else if useOtp}
+      {#if emailLoaded && object.email === ''}
+        <div class="signature-hint">
+          <Label label={documents.string.SignatureNoEmail} />
+        </div>
+      {:else}
+        <div class="signature-hint">
+          <Label label={codeSent ? documents.string.SignatureOtpSent : documents.string.SignatureOtpHint} />
+        </div>
+        <div class="flex-row-center flex-gap-2">
+          <div class="flex-grow">
+            <StylishEdit
+              label={documents.string.VerificationCode}
+              name={documents.string.VerificationCode}
+              password={false}
+              bind:value={code}
+              on:input={validate}
+              disabled={!codeSent}
+            />
+          </div>
+          <Button
+            label={documents.string.SendVerificationCode}
+            kind={'regular'}
+            disabled={sendingCode || object.email === ''}
+            on:click={sendCode}
+          />
+        </div>
+      {/if}
+    {:else}
+      <StylishEdit
+        label={documents.string.Password}
+        name={documents.string.Password}
+        password={true}
+        bind:value={object.password}
+        on:input={validate}
+        on:blur={() => object.email.trim()}
+      />
+    {/if}
     {#if isRejection}
       <div class="mt-2">
         <EditBox
@@ -167,3 +240,11 @@
     <StatusControl {status} />
   </div>
 </ModernDialog>
+
+<style lang="scss">
+  .signature-hint {
+    font-size: 0.8125rem;
+    color: var(--theme-dark-color);
+    line-height: 1.5;
+  }
+</style>

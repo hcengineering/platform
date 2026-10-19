@@ -187,6 +187,12 @@
     "Password": "密码",
     "FieldIsEmpty": "{field} 为空",
     "ValidatingCredentials": "验证凭据...",
+    "VerificationCode": "验证码",
+    "SendVerificationCode": "发送验证码",
+    "SignatureOtpHint": "您的账户没有密码。请使用发送到您邮箱的验证码确认签名。",
+    "SignatureOtpSent": "验证码已发送到您的邮箱。",
+    "SignatureNoEmail": "您的账户未关联电子邮件地址，因此无法确认签名。",
+    "SignatureAccountMismatch": "凭据不属于当前用户。",
 
     "GeneralDocumentation": "常规文档",
     "TechnicalDocumentation": "技术文档",
