@@ -58,6 +58,7 @@
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
   export let printHeader: boolean = true
   export let printAside: boolean = false
+  export let printActivity: boolean = true
   export let adaptive: HeaderAdaptive = 'disabled'
   export let hideBefore: boolean = false
   export let hideSearch: boolean = true
@@ -256,12 +257,14 @@
     <div bind:this={content} class="popupPanel-body__mobile-content clear-mins" class:max>
       <slot />
       {#if showActivity}
-        {#key object._id}
-          <Component
-            is={activity.component.Activity}
-            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
-          />
-        {/key}
+        <div class="panel-activity" class:no-print={!printActivity}>
+          {#key object._id}
+            <Component
+              is={activity.component.Activity}
+              props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
+            />
+          {/key}
+        </div>
       {/if}
     </div>
   {:else if withoutContentScroll}
@@ -274,18 +277,20 @@
     >
       <slot />
       {#if showActivity}
-        {#key object._id}
-          <Component
-            is={activity.component.Activity}
-            props={{
-              object,
-              showCommenInput: !withoutInput,
-              shouldScroll: embedded,
-              focusIndex: 1000,
-              boundary: content
-            }}
-          />
-        {/key}
+        <div class="panel-activity" class:no-print={!printActivity}>
+          {#key object._id}
+            <Component
+              is={activity.component.Activity}
+              props={{
+                object,
+                showCommenInput: !withoutInput,
+                shouldScroll: embedded,
+                focusIndex: 1000,
+                boundary: content
+              }}
+            />
+          {/key}
+        </div>
       {/if}
     </div>
   {:else}
@@ -308,21 +313,30 @@
       >
         <slot />
         {#if showActivity}
-          {#key object._id}
-            <Component
-              is={activity.component.Activity}
-              bind:innerRef={activityRef}
-              props={{
-                object,
-                showCommenInput: !withoutInput,
-                shouldScroll: embedded,
-                focusIndex: 1000,
-                boundary: content
-              }}
-            />
-          {/key}
+          <div class="panel-activity" class:no-print={!printActivity}>
+            {#key object._id}
+              <Component
+                is={activity.component.Activity}
+                bind:innerRef={activityRef}
+                props={{
+                  object,
+                  showCommenInput: !withoutInput,
+                  shouldScroll: embedded,
+                  focusIndex: 1000,
+                  boundary: content
+                }}
+              />
+            {/key}
+          </div>
         {/if}
       </div>
     </Scroller>
   {/if}
 </Panel>
+
+<style lang="scss">
+  // Keeps the layout of the activity section unchanged; only used to exclude it from printing.
+  .panel-activity {
+    display: contents;
+  }
+</style>
