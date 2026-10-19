@@ -13,9 +13,12 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata } from '@hcengineering/platform'
-  import uiPlugin, { closePopup, closeTooltip, navigate, parseLocation } from '@hcengineering/ui'
+  import { getMetadata, getResource } from '@hcengineering/platform'
+  import uiPlugin, { closePopup, closeTooltip, navigate, parseLocation, type Location } from '@hcengineering/ui'
+  import workbench from '@hcengineering/workbench'
   import presentation from '../plugin'
+  import { hasResource } from '../configuration'
+  import { isNewTabClick } from '../linkClick'
 
   export let href: string | undefined
   export let title: string | undefined = undefined
@@ -33,6 +36,38 @@
   export let noSelect: boolean = true
   export let maxWidth: string | undefined = undefined
 
+  function getInternalLocation (link: string): Location | undefined {
+    try {
+      const url = new URL(link)
+      const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
+      if (url.origin === frontUrl) {
+        const loc = parseLocation(url)
+        const routes = getMetadata(uiPlugin.metadata.Routes)
+        const app = routes?.get(loc.path[0])
+
+        if (app !== undefined) {
+          return loc
+        }
+      }
+    } catch {}
+    return undefined
+  }
+
+  // Ctrl/Cmd + click and middle click open internal links in a new Huly tab,
+  // other links (and Shift/Alt combinations) are left to the browser.
+  function newTabHandler (e: MouseEvent): void {
+    if (disabled || href === undefined || !isNewTabClick(e)) return
+    if (hasResource(workbench.function.OpenInNewTab) !== true) return
+    const loc = getInternalLocation(href)
+    if (loc === undefined) return
+
+    e.preventDefault()
+    e.stopPropagation()
+    void getResource(workbench.function.OpenInNewTab).then(async (openInNewTab) => {
+      await openInNewTab(loc)
+    })
+  }
+
   function clickHandler (e: MouseEvent): void {
     if (disabled) return
 
@@ -43,27 +78,19 @@
     } else if (href !== undefined) {
       if (e.metaKey || e.ctrlKey) {
         e.stopPropagation()
+        newTabHandler(e)
         return
       }
 
       // we need to close popups and tooltips
       closePopup()
       closeTooltip()
-      try {
-        const url = new URL(href)
-        const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-        if (url.origin === frontUrl) {
-          const loc = parseLocation(url)
-          const routes = getMetadata(uiPlugin.metadata.Routes)
-          const app = routes?.get(loc.path[0])
-
-          if (app !== undefined) {
-            e.preventDefault()
-            e.stopPropagation()
-            navigate(loc)
-          }
-        }
-      } catch {}
+      const loc = getInternalLocation(href)
+      if (loc !== undefined) {
+        e.preventDefault()
+        e.stopPropagation()
+        navigate(loc)
+      }
     }
   }
 </script>
@@ -106,6 +133,7 @@
     class:select-text={!noSelect}
     {title}
     on:click={clickHandler}
+    on:auxclick={newTabHandler}
   >
     <slot />
   </a>
