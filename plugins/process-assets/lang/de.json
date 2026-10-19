@@ -97,6 +97,11 @@
     "WhenCardMatches": "Wenn Karte übereinstimmt",
     "WhenFieldChanges": "Wenn sich das Feld ändert",
     "WhenRequiredFieldsFilled": "Wenn erforderliche Felder ausgefüllt sind",
+    "ArraySizeEquals": "Anzahl gleich",
+    "ArraySizeGt": "Anzahl größer als",
+    "ArraySizeGte": "Anzahl größer oder gleich",
+    "ArraySizeLt": "Anzahl kleiner als",
+    "ArraySizeLte": "Anzahl kleiner oder gleich",
     "Insert": "Einfügen",
     "Remove": "Entfernen",
     "RemoveFirst": "Erstes entfernen",
@@ -179,7 +184,7 @@
     "ExportWithoutSlots": "Slot-freier Export",
     "RequiredSlots": "Erforderliche Slots",
     "Bindings": "Bindungen",
-    "AskRequiredFields": "Erforderliche Felder erfragen"
+    "AskRequired": "Erforderliche Felder erfragen"
   },
   "error": {
     "MethodNotFound": "Methode nicht gefunden: {methodId}",

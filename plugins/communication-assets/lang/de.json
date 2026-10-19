@@ -39,7 +39,7 @@
     "IsThinking": "{count, plural, =1 {denkt nach} other {denken nach}}",
     "Loading": "Laden...",
     "MessageIn": "Nachricht #{title}",
-    "ThreadWasDeleted": "Dieser Thread wurde gelöscht.",
+    "ThreadWasRemoved": "Dieser Thread wurde gelöscht.",
     "MessageWasRemoved": "Diese Nachricht wurde entfernt.",
     "JoinedThe": "Beigetreten",
     "LeftThe": "Verließ",

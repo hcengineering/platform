@@ -39,7 +39,7 @@
     "IsThinking": "{count, plural, =1 {正在思考} other {正在思考}}",
     "Loading": "加载中...",
     "MessageIn": "消息 #{title}",
-    "ThreadWasDeleted": "此线程已被删除。",
+    "ThreadWasRemoved": "此线程已被删除。",
     "MessageWasRemoved": "此消息已被删除。",
     "JoinedThe": "加入",
     "LeftThe": "离开",
