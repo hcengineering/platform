@@ -46,14 +46,16 @@
     if (cursor?.head != null) {
       try {
         const ystate = ySyncPluginKey.getState(editor.state)
-        const abs = relativePositionToAbsolutePosition(
-          ystate.doc,
-          ystate.type,
-          createRelativePositionFromJSON(cursor.head),
-          ystate.binding.mapping
-        )
-        if (abs != null) {
-          editor.commands.focus(abs, { scrollIntoView: true })
+        if (ystate !== undefined) {
+          const abs = relativePositionToAbsolutePosition(
+            ystate.doc,
+            ystate.type,
+            createRelativePositionFromJSON(cursor.head),
+            ystate.binding.mapping
+          )
+          if (abs != null) {
+            editor.commands.focus(abs, { scrollIntoView: true })
+          }
         }
       } catch (err) {
         // relative to absolute position conversion sometimes fails

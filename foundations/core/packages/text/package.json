@@ -66,14 +66,14 @@
     "@tiptap/extension-code-block": "^3.32.0",
     "@tiptap/extension-code": "^3.32.0",
     "@tiptap/extension-underline": "^3.32.0",
+    "@tiptap/extension-text-align": "^3.32.0",
+    "@tiptap/extension-text-style": "^3.32.0",
+    "@tiptap/extension-subscript": "^3.32.0",
+    "@tiptap/extension-superscript": "^3.32.0",
     "@tiptap/suggestion": "^3.32.0",
     "prosemirror-codemark": "^0.4.2",
     "fast-equals": "^5.2.2",
-    "zeed-dom": "^0.17.7",
-    "@tiptap/extension-text-align": "~3.29.2",
-    "@tiptap/extension-text-style": "~3.29.2",
-    "@tiptap/extension-subscript": "^3.32.0",
-    "@tiptap/extension-superscript": "^3.32.0"
+    "zeed-dom": "^0.17.7"
   },
   "repository": {
     "type": "git",
