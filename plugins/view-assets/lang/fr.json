@@ -156,6 +156,8 @@
     "AllowAttributeChanges": "Autoriser les modifications: ",
     "RelationshipTable": "Matrice de traçabilité",
     "FilterOverflowBadge": "+{count}",
+    "PreviousItem": "Élément précédent",
+    "NextItem": "Élément suivant",
     "AddFilter": "Ajouter un filtre",
     "HiddenFilters": "Filtres masqués"
   }
