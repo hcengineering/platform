@@ -1018,3 +1018,28 @@ export function toRank (str: string | undefined): Rank | undefined {
 export function escapeRegExp (value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
+
+const MAX_EXTERNAL_AVATAR_URL_LENGTH = 2048
+
+/**
+ * Returns a normalized http(s) URL suitable for an external avatar, or undefined
+ * when the value is not a string, not an absolute http(s) URL, carries credentials
+ * or is unreasonably long. The URL is never fetched here.
+ */
+export function normalizeExternalAvatarUrl (value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined
+  const trimmed = value.trim()
+  if (trimmed === '' || trimmed.length > MAX_EXTERNAL_AVATAR_URL_LENGTH) return undefined
+
+  let url: URL
+  try {
+    url = new URL(trimmed)
+  } catch {
+    return undefined
+  }
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return undefined
+  if (url.username !== '' || url.password !== '') return undefined
+
+  const normalized = url.toString()
+  return normalized.length > MAX_EXTERNAL_AVATAR_URL_LENGTH ? undefined : normalized
+}

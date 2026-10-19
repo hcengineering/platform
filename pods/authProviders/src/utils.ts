@@ -13,7 +13,14 @@
 // limitations under the License.
 //
 import { AccountDB, joinWithProvider, LoginInfo, loginOrSignUpWithProvider } from '@hcengineering/account'
-import { BrandingMap, concatLink, getBranding, MeasureContext, SocialKey } from '@hcengineering/core'
+import {
+  BrandingMap,
+  concatLink,
+  getBranding,
+  MeasureContext,
+  normalizeExternalAvatarUrl,
+  SocialKey
+} from '@hcengineering/core'
 import { IncomingHttpHeaders } from 'http'
 import qs from 'querystringify'
 
@@ -59,6 +66,20 @@ export function encodeState (ctx: any, brandings: BrandingMap): string {
   return encodeURIComponent(JSON.stringify(state))
 }
 
+/**
+ * Picks the avatar URL from a provider profile: the OIDC `picture` claim, or the first
+ * entry of the passport `photos` list (Google, GitHub). Only http(s) URLs are returned.
+ */
+export function getProviderAvatarUrl (user: any): string | undefined {
+  if (user == null || typeof user !== 'object') return undefined
+  const candidates = [user.picture, Array.isArray(user.photos) ? user.photos[0]?.value : undefined]
+  for (const candidate of candidates) {
+    const url = normalizeExternalAvatarUrl(candidate)
+    if (url !== undefined) return url
+  }
+  return undefined
+}
+
 export async function handleProviderAuth (
   measureCtx: MeasureContext,
   db: AccountDB,
@@ -78,6 +99,7 @@ export async function handleProviderAuth (
     let loginInfo: LoginInfo | null
     const state = safeParseAuthState(rawState)
     const branding = getBranding(brandings, state?.branding)
+    const avatarUrl = getProviderAvatarUrl(user)
 
     if (state.inviteId != null && state.inviteId !== '' && state.autoJoin !== true) {
       loginInfo = await joinWithProvider(
@@ -89,7 +111,8 @@ export async function handleProviderAuth (
         last,
         state.inviteId as any,
         socialKey,
-        signUpDisabled
+        signUpDisabled,
+        avatarUrl
       )
     } else {
       loginInfo = await loginOrSignUpWithProvider(
@@ -100,7 +123,8 @@ export async function handleProviderAuth (
         first,
         last,
         socialKey,
-        signUpDisabled === true || state.autoJoin === true
+        signUpDisabled === true || state.autoJoin === true,
+        avatarUrl
       )
     }
 

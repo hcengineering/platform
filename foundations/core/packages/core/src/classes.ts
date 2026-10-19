@@ -639,6 +639,8 @@ export interface Person {
   uuid: PersonUuid
   firstName: string
   lastName: string
+  /** External avatar URL provided by an identity provider (OIDC/OAuth), if any. */
+  avatarUrl?: string
 }
 
 export interface PersonInfo extends BasePerson {

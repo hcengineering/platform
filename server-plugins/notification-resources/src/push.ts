@@ -44,6 +44,7 @@ import { encodeObjectURI } from '@hcengineering/view'
 import contact, {
   type AvatarInfo,
   getAvatarProviderId,
+  getExternalAvatarUrl,
   getGravatarUrl,
   Person,
   PersonSpace
@@ -189,6 +190,8 @@ export async function createPushNotification (
       }
     } else if (provider === contact.avatarProvider.Gravatar && senderAvatar.avatarProps?.url !== undefined) {
       data.icon = getGravatarUrl(senderAvatar.avatarProps?.url, 512)
+    } else if (provider === contact.avatarProvider.External) {
+      data.icon = getExternalAvatarUrl(senderAvatar)
     }
   }
 

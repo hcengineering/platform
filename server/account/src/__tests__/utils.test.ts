@@ -1910,6 +1910,69 @@ describe('account utils', () => {
 
       expect(result).toBeNull()
     })
+
+    describe('provider avatar url', () => {
+      const personUuid = 'existing-person' as PersonUuid
+
+      function mockExistingAccount (storedAvatarUrl?: string): void {
+        ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({
+          _id: 'social-id',
+          key: 'google:test-id',
+          personUuid,
+          verifiedOn: 1
+        })
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({
+          uuid: personUuid,
+          firstName: 'John',
+          lastName: 'Doe',
+          avatarUrl: storedAvatarUrl
+        })
+        ;(mockDb.account.findOne as jest.Mock).mockResolvedValue({ uuid: personUuid })
+      }
+
+      async function login (avatarUrl?: string): Promise<void> {
+        await loginOrSignUpWithProvider(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          'test@example.com',
+          'John',
+          'Doe',
+          mockSocialId,
+          false,
+          avatarUrl
+        )
+      }
+
+      test('should store an http(s) avatar url from the provider', async () => {
+        mockExistingAccount()
+
+        await login('https://idp.example.com/avatar.png')
+
+        expect(mockDb.person.update).toHaveBeenCalledWith(
+          { uuid: personUuid },
+          { avatarUrl: 'https://idp.example.com/avatar.png' }
+        )
+      })
+
+      test('should not update an unchanged avatar url', async () => {
+        mockExistingAccount('https://idp.example.com/avatar.png')
+
+        await login('https://idp.example.com/avatar.png')
+
+        expect(mockDb.person.update).not.toHaveBeenCalled()
+      })
+
+      test('should ignore missing and non-http avatar urls', async () => {
+        mockExistingAccount('https://idp.example.com/avatar.png')
+
+        await login(undefined)
+        await login('javascript:alert(1)')
+        await login('data:image/png;base64,AAAA')
+
+        expect(mockDb.person.update).not.toHaveBeenCalled()
+      })
+    })
   })
 
   describe('getWorkspaceInvite', () => {

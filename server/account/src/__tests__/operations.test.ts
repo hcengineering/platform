@@ -54,6 +54,7 @@ import {
   requestPasswordReset,
   changePassword,
   getPerson,
+  getUserProfile,
   getSocialIds,
   getAccountInfo,
   createAccessLink,
@@ -3244,6 +3245,47 @@ describe('account operations', () => {
         await expect(getPerson(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
           new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: mockAccountId }))
         )
+      })
+    })
+
+    describe('getUserProfile', () => {
+      const ownerUuid = 'profile-owner-uuid' as PersonUuid
+      const profileDb = {
+        person: {
+          findOne: jest.fn()
+        },
+        userProfile: {
+          findOne: jest.fn()
+        }
+      } as unknown as AccountDB
+
+      beforeEach(() => {
+        ;(profileDb.person.findOne as jest.Mock).mockResolvedValue({
+          uuid: ownerUuid,
+          firstName: 'John',
+          lastName: 'Doe',
+          avatarUrl: 'https://idp.example.com/avatar.png?signature=secret'
+        })
+        ;(profileDb.userProfile.findOne as jest.Mock).mockResolvedValue({
+          personUuid: ownerUuid,
+          bio: 'Hello',
+          isPublic: true
+        })
+      })
+
+      test('should not expose the provider avatar url in a public profile', async () => {
+        const result = await getUserProfile(mockCtx, profileDb, mockBranding, undefined, { personUuid: ownerUuid })
+
+        expect(result).toEqual({ uuid: ownerUuid, firstName: 'John', lastName: 'Doe', bio: 'Hello', isPublic: true })
+        expect(result).not.toHaveProperty('avatarUrl')
+      })
+
+      test('should not expose the provider avatar url in the own profile', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: ownerUuid })
+
+        const result = await getUserProfile(mockCtx, profileDb, mockBranding, mockToken, {})
+
+        expect(result).not.toHaveProperty('avatarUrl')
       })
     })
 
