@@ -91,6 +91,25 @@ export const recruitOperation: MigrateOperation = {
           const tx = new TxOperations(client, core.account.System)
           await createDefaults(client, tx)
         }
+      },
+      {
+        state: 'create-vacancy-tag-category',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await createOrUpdate(
+            tx,
+            tags.class.TagCategory,
+            core.space.Workspace,
+            {
+              icon: tags.icon.Tags,
+              label: 'Other',
+              targetClass: recruit.class.Vacancy,
+              tags: [],
+              default: true
+            },
+            recruit.category.VacancyOther
+          )
+        }
       }
     ])
   }

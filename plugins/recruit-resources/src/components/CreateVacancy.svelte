@@ -19,6 +19,8 @@
   import core, {
     AttachedData,
     Data,
+    Doc,
+    PersonId,
     Ref,
     Role,
     RolesAssignment,
@@ -39,7 +41,7 @@
     getClient
   } from '@hcengineering/presentation'
   import { RecruitEvents, Vacancy, Vacancy as VacancyClass } from '@hcengineering/recruit'
-  import tags from '@hcengineering/tags'
+  import tags, { TagElement, TagReference } from '@hcengineering/tags'
   import task, { ProjectType } from '@hcengineering/task'
   import { selectedTypeStore, typeStore } from '@hcengineering/task-resources'
   import tracker, { Issue, IssueStatus, IssueTemplate, IssueTemplateData, Project } from '@hcengineering/tracker'
@@ -110,6 +112,32 @@
   const hierarchy = client.getHierarchy()
   const templateQ = createQuery()
   fillDefaults(hierarchy, vacancyData, recruit.class.Vacancy)
+
+  let labels: TagReference[] = []
+  const labelsKey = {
+    key: 'labels',
+    attr: hierarchy.getAttribute(recruit.class.Vacancy, 'labels')
+  }
+
+  function addTagRef (tag: TagElement): void {
+    labels = [
+      ...labels,
+      {
+        _class: tags.class.TagReference,
+        _id: generateId(),
+        attachedTo: '' as Ref<Doc>,
+        attachedToClass: recruit.class.Vacancy,
+        collection: 'labels',
+        space: core.space.Space,
+        modifiedOn: 0,
+        modifiedBy: '' as PersonId,
+        title: tag.title,
+        tag: tag._id,
+        color: tag.color
+      }
+    ]
+  }
+
   $: typeId &&
     templateQ.query(task.class.ProjectType, { _id: typeId }, (result) => {
       const { _class, _id, description, targetClass, ...templateData } = result[0]
@@ -254,6 +282,13 @@
 
     const ops = client.apply()
     const id = await ops.createDoc(recruit.class.Vacancy, core.space.Space, data, objectId)
+    for (const label of labels) {
+      await ops.addCollection(tags.class.TagReference, core.space.Space, id, recruit.class.Vacancy, 'labels', {
+        title: label.title,
+        color: label.color,
+        tag: label.tag
+      })
+    }
     await descriptionBox.createAttachments(undefined, ops)
     await ops.commit()
     Analytics.handleEvent(RecruitEvents.VacancyCreated, {
@@ -413,6 +448,24 @@
       allowGuests
       kind={'regular'}
       size={'large'}
+    />
+
+    <Component
+      is={tags.component.TagsDropdownEditor}
+      props={{
+        items: labels,
+        key: labelsKey,
+        targetClass: recruit.class.Vacancy,
+        countLabel: recruit.string.NumberLabels,
+        kind: 'regular',
+        size: 'large'
+      }}
+      on:open={(evt) => {
+        addTagRef(evt.detail)
+      }}
+      on:delete={(evt) => {
+        labels = labels.filter((it) => it.tag !== evt.detail._id)
+      }}
     />
 
     {#each roles as role}
