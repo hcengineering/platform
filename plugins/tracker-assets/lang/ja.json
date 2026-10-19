@@ -143,6 +143,7 @@
     "ComponentLeadSearchPlaceholder": "コンポーネントリーダーを設定\u2026",
     "ComponentMembersSearchPlaceholder": "コンポーネントメンバーを変更\u2026",
     "MoveToProject": "プロジェクトに移動",
+    "CopyToProject": "プロジェクトにコピー…",
     "Duplicate": "複製",
     "GotoIssues": "イシューへ移動",
     "GotoActive": "アクティブなイシューへ移動",

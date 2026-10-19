@@ -176,6 +176,7 @@
     "ComponentLeadSearchPlaceholder": "Komponentenleitung festlegen...",
     "ComponentMembersSearchPlaceholder": "Komponentenmitglieder ändern...",
     "MoveToProject": "Zu Projekt verschieben",
+    "CopyToProject": "In Projekt kopieren…",
     "Duplicate": "Duplizieren",
 
     "GotoIssues": "Zu Aufgaben",
