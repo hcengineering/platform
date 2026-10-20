@@ -510,6 +510,8 @@ export interface SelectPopupValueType {
   iconColor?: string
   label?: IntlString
   text?: string
+  // Additional search terms the item is matched by, besides its label/text
+  keywords?: string[]
   isSelected?: boolean
 
   component?: AnySvelteComponent
