@@ -17,6 +17,7 @@
     Doc,
     Ref,
     SearchResultDoc,
+    Space,
     Tx,
     TxWorkspaceEvent,
     WithLookup,
@@ -52,6 +53,7 @@
   import { Action, ActionCategory, ViewContext } from '@hcengineering/view'
   import { createEventDispatcher, onMount, tick } from 'svelte'
   import { filterActions, getSelection, normalizeActionContext } from '../actions'
+  import { withCurrentSpace } from '../actionSpace'
   import view from '../plugin'
   import { focusStore, selectionStore } from '../selection'
   import { openDoc } from '../utils'
@@ -62,6 +64,8 @@
   import ChevronUp from './icons/ChevronUp.svelte'
 
   export let viewContext: ViewContext | undefined = $contextStore.getLastContext()
+  // Space the user currently works in, passed to actions like the keyboard shortcuts do
+  export let space: Ref<Space> | undefined = undefined
 
   let search: string = ''
   let actions: Array<WithLookup<Action>> = []
@@ -185,18 +189,25 @@
         return
       }
       const docs = getSelection($focusStore, $selectionStore)
+      // Only actions of the active application get the current space, it belongs to that application
+      const actionProps =
+        space !== undefined &&
+        action.context.application !== undefined &&
+        action.context.application === viewContext?.application
+          ? withCurrentSpace(action.actionProps, space)
+          : action.actionProps
       if (action.input === 'focus') {
         const impl = await getResource(action.action)
         if (impl !== undefined) {
           closePopup()
-          void impl(docs[0], evt, { ...action.actionProps, action })
+          void impl(docs[0], evt, { ...actionProps, action })
         }
       }
       if (action.input === 'selection' || action.input === 'any' || action.input === 'none') {
         const impl = await getResource(action.action)
         if (impl !== undefined) {
           closePopup()
-          void impl(docs, evt, { ...action.actionProps, action })
+          void impl(docs, evt, { ...actionProps, action })
         }
       }
     }
