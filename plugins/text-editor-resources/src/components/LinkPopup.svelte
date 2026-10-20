@@ -18,6 +18,7 @@
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { Card } from '@hcengineering/presentation'
   import { EditBox } from '@hcengineering/ui'
+  import { canParseUrl } from './url'
 
   export let link = ''
 
@@ -28,7 +29,7 @@
     dispatch('update', link)
   }
 
-  $: canSave = link === '' || URL.canParse(link)
+  $: canSave = link === '' || canParseUrl(link)
 </script>
 
 <Card
