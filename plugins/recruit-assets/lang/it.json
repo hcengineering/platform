@@ -21,6 +21,7 @@
     "Talent": "Candidato",
     "TalentCreateLabel": "Candidato",
     "CreateTalent": "Nuovo candidato",
+    "TalentCreated": "Candidato creato",
     "CreateTalentDialogClose": "Vuoi chiudere questa finestra?",
     "CreateTalentDialogCloseNote": "Tutte le modifiche andranno perse",
     "ResumeDraft": "Bozza del curriculum",
