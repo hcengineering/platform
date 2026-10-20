@@ -79,7 +79,7 @@ export const main = async (ctx: MeasureContext): Promise<void> => {
           return
         }
 
-        const result = await sendPushToSubscription(ctx, subscriptions, data)
+        const result = await sendPushToSubscription(ctx, subscriptions, data, config.PushTtl)
         res.json({ result }).end()
       }
     }
