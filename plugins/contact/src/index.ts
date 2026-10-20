@@ -445,6 +445,7 @@ export * from './types'
 export * from './utils'
 export * from './analytics'
 export * from './avatar'
+export * from './nameSearch'
 export {
   WORKSPACE_MEMBER_STATUS_MESSAGE_MAX,
   trimWorkspaceMemberStatusMessage,
