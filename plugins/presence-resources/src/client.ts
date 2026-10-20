@@ -15,6 +15,7 @@
 
 import { type Ref, concatLink } from '@hcengineering/core'
 import { getCurrentEmployee, type Person } from '@hcengineering/contact'
+import { getReconnectDelay } from '@hcengineering/hulypulse-client'
 import { getMetadata } from '@hcengineering/platform'
 import presence from '@hcengineering/presence'
 import presentation from '@hcengineering/presentation'
@@ -45,7 +46,7 @@ export class PresenceClient implements Disposable {
   private reconnectTimeout: number | undefined
   private pingTimeout: number | undefined
   private pingInterval: number | undefined
-  private readonly RECONNECT_INTERVAL = 1000
+  private reconnectAttempt = 0
   private readonly PING_INTERVAL = 30 * 1000
   private readonly PING_TIMEOUT = 5 * 60 * 1000
   private readonly myDataThrottleInterval = 100
@@ -108,6 +109,8 @@ export class PresenceClient implements Disposable {
           return
         }
 
+        // Any message from the server proves the connection is alive
+        this.resetPingTimeout()
         this.handleMessage(event.data)
       }
 
@@ -129,15 +132,22 @@ export class PresenceClient implements Disposable {
       if (this.ws !== null && this.ws.readyState === WebSocket.OPEN) {
         this.ws.send('ping')
       }
-      clearTimeout(this.pingTimeout)
-      this.pingTimeout = window.setTimeout(() => {
-        if (this.ws !== null) {
-          console.log('no response from server')
-          clearInterval(this.pingInterval)
-          this.ws.close(1000)
-        }
-      }, this.PING_TIMEOUT)
     }, this.PING_INTERVAL)
+    this.resetPingTimeout()
+  }
+
+  /** (Re)starts the dead-connection timer; called on connect and on every message received from the server. */
+  private resetPingTimeout (): void {
+    clearTimeout(this.pingTimeout)
+    this.pingTimeout = window.setTimeout(() => {
+      this.pingTimeout = undefined
+      console.log('no response from server')
+      const ws = this.ws
+      // Detach the stale socket, so its late close event does not trigger a second reconnect
+      this.ws = null
+      ws?.close(1000)
+      this.reconnect()
+    }, this.PING_TIMEOUT)
   }
 
   private stopPing (): void {
@@ -153,13 +163,17 @@ export class PresenceClient implements Disposable {
     this.stopPing()
 
     if (!this.closed) {
+      const delay = getReconnectDelay(this.reconnectAttempt)
       this.reconnectTimeout = window.setTimeout(() => {
+        this.reconnectTimeout = undefined
+        this.reconnectAttempt++
         this.connect()
-      }, this.RECONNECT_INTERVAL)
+      }, delay)
     }
   }
 
   private handleConnect (): void {
+    this.reconnectAttempt = 0
     this.sendPresence(getCurrentEmployee(), this.presence)
     this.startPing()
     this.handleMyDataChanged(get(myData), true)
@@ -167,7 +181,6 @@ export class PresenceClient implements Disposable {
 
   private handleMessage (data: string): void {
     if (data === 'pong') {
-      clearTimeout(this.pingTimeout)
       return
     }
 
