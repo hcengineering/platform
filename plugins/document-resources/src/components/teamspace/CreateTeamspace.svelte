@@ -145,7 +145,11 @@
       update.private = teamspaceData.private
     }
     if (teamspaceData.icon !== teamspace?.icon) {
-      update.icon = teamspaceData.icon
+      if (teamspaceData.icon === undefined) {
+        update.$unset = { icon: true }
+      } else {
+        update.icon = teamspaceData.icon
+      }
     }
     if (teamspaceData.color !== teamspace?.color) {
       update.color = teamspaceData.color
@@ -218,12 +222,18 @@
     const icons = [document.icon.Document, document.icon.Teamspace]
     const update = (result: any): void => {
       if (result !== undefined && result !== null) {
-        icon = result.icon
-        color = result.color
-        isColorSelected = true
+        if (result.icon === undefined) {
+          icon = undefined
+          color = getColorNumberByText(name)
+          isColorSelected = false
+        } else {
+          icon = result.icon
+          color = result.color
+          isColorSelected = true
+        }
       }
     }
-    showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
+    showPopup(IconPicker, { icon, color, icons, showReset: true }, 'top', update, update)
   }
 
   function close (id?: Ref<Teamspace>): void {
