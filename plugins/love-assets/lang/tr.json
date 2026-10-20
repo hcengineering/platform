@@ -93,6 +93,7 @@
     "Window": "Pencere",
     "MeetingEmptyTitle": "Toplantı bitti mi?",
     "MeetingEmptyMessage": "Tüm katılımcılar ayrıldı. 1 dakika içinde bağlantınız kesilecek. Kalmak ister misiniz?",
-    "StayInRoom": "Odada kal"
+    "StayInRoom": "Odada kal",
+    "ScreenSharedBy": "{name} ekranı paylaşıyor"
   }
 }

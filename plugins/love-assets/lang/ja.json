@@ -93,6 +93,7 @@
     "Window": "ウィンドウ",
     "MeetingEmptyTitle": "ミーティング終了？",
     "MeetingEmptyMessage": "全参加者が退出しました。1分後に自動切断されます。ミーティングに残りますか？",
-    "StayInRoom": "ルームに残る"
+    "StayInRoom": "ルームに残る",
+    "ScreenSharedBy": "{name} が画面を共有しています"
   }
 }

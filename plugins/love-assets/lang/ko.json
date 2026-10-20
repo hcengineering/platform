@@ -93,6 +93,7 @@
         "Window": "창",
         "MeetingEmptyTitle": "회의가 종료되었나요?",
         "MeetingEmptyMessage": "모든 참가자가 나갔습니다. 1분 후 연결이 종료됩니다. 계속 머무르시겠습니까?",
-        "StayInRoom": "룸에 머무르기"
+        "StayInRoom": "룸에 머무르기",
+        "ScreenSharedBy": "{name}님이 화면을 공유하고 있습니다"
     }
 }
