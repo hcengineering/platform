@@ -434,7 +434,7 @@ export class TComponent extends TDoc implements Component {
 @UX(tracker.string.Milestone, tracker.icon.Milestone, '', 'label', undefined, tracker.string.Milestones)
 export class TMilestone extends TDoc implements Milestone {
   @Prop(TypeString(), tracker.string.Title)
-  // @Index(IndexKind.FullText)
+  @Index(IndexKind.FullText)
     label!: string
 
   @Prop(TypeMarkup(), tracker.string.Description)

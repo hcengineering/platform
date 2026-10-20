@@ -195,6 +195,7 @@
         "AllFilters": "모든 필터",
         "NoDescription": "설명 없음",
         "SearchIssue": "작업 검색...",
+        "SearchMilestone": "마일스톤 검색...",
         "StatusHistory": "상태 이력",
         "NewSubIssue": "하위 이슈 추가...",
         "AddLabel": "라벨 추가",

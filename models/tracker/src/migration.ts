@@ -569,6 +569,14 @@ export const trackerOperation: MigrateOperation = {
         state: 'relation-activity-attached-v2',
         mode: 'upgrade',
         func: migrateRelationActivityAttachment
+      },
+      {
+        // Milestones became searchable (search presenter + full-text label),
+        // so existing milestones need to be indexed again.
+        state: 'milestone-search-reindex-v1',
+        func: async (client) => {
+          await client.reindex(DOMAIN_TRACKER, [tracker.class.Milestone])
+        }
       }
     ])
   },
