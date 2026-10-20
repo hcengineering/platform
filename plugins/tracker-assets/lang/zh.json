@@ -238,6 +238,8 @@
     "TimeSpendReportValueTooltip": "花费时间（小时）",
     "TimeSpendReportDescription": "描述",
     "TimeSpendDays": "{value} 天",
+    "HoursPerDay": "每个工作日的小时数",
+    "HoursPerDayDescription": "用于以天为单位显示预估时间和已报告时间。留空表示 8 小时。",
     "TimeSpendHours": "{value} 小时",
     "TimeSpendMinutes": "{value} 分钟",
     "ChildEstimation": "子问题估算",

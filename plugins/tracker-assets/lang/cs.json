@@ -228,6 +228,8 @@
     "TimeSpendReportValueTooltip": "Strávený čas v hodinách",
     "TimeSpendReportDescription": "Popis",
     "TimeSpendDays": "{value}d",
+    "HoursPerDay": "Hodin za pracovní den",
+    "HoursPerDayDescription": "Používá se k zobrazení odhadu a vykázaného času ve dnech. Prázdné znamená 8 hodin.",
     "TimeSpendHours": "{value}h",
     "TimeSpendMinutes": "{value}m",
     "ChildEstimation": "Odhad podúkolů",
