@@ -19,11 +19,13 @@ import core, {
   generateId,
   getCurrentAccount,
   reduceCalls,
-  type Ref
+  type Ref,
+  type Tx,
+  type TxRemoveDoc
 } from '@hcengineering/core'
 import notification, { notificationId } from '@hcengineering/notification'
 import { type Asset, getMetadata, getResource, type IntlString, setMetadata, translate } from '@hcengineering/platform'
-import presentation, { configurationStore, getClient } from '@hcengineering/presentation'
+import presentation, { addTxListener, configurationStore, getClient } from '@hcengineering/presentation'
 import {
   type AnyComponent,
   getCurrentLocation,
@@ -42,6 +44,7 @@ import { derived, get, writable } from 'svelte/store'
 
 import setting from '@hcengineering/setting'
 import workbench from './plugin'
+import { isTabOfRemovedDoc } from './tabTargets'
 import { locationWorkspaceStore } from './utils'
 
 export const tabIdStore = writable<Ref<WorkbenchTab> | undefined>()
@@ -49,6 +52,42 @@ export const prevTabIdStore = writable<Ref<WorkbenchTab> | undefined>()
 export const tabsStore = writable<WorkbenchTab[]>([])
 export const currentTabStore = derived([tabIdStore, tabsStore], ([tabId, tabs]) => {
   return tabs.find((tab) => tab._id === tabId)
+})
+
+// Documents opened in tabs by their location url, remembered while the tab names are resolved
+const tabTargets = new Map<string, Ref<Doc>>()
+const maxTabTargets = 100
+
+tabsStore.subscribe((tabs) => {
+  // Locations are remembered before a tab is moved to them, so forget unused ones only occasionally
+  if (tabTargets.size <= maxTabTargets) return
+  const locations = new Set(tabs.map((tab) => locationToUrl(getTabLocation(tab))))
+  for (const url of tabTargets.keys()) {
+    if (!locations.has(url)) tabTargets.delete(url)
+  }
+})
+
+// Close background tabs whose document was removed, e.g. from another tab or by another user
+addTxListener((txes: Tx[]) => {
+  const removed = new Set<string>()
+  for (const tx of txes) {
+    if (tx._class === core.class.TxRemoveDoc) {
+      removed.add((tx as TxRemoveDoc<Doc>).objectId)
+    }
+  }
+  if (removed.size === 0) return
+
+  const currentTabId = get(tabIdStore)
+  const orphanedTabs = get(tabsStore).filter((tab) => {
+    if (tab._id === currentTabId || tab.isPinned) return false
+    const target = tabTargets.get(locationToUrl(getTabLocation(tab)))
+    return isTabOfRemovedDoc(tab.location, removed, target)
+  })
+  for (const tab of orphanedTabs) {
+    closeTab(tab).catch((err) => {
+      console.warn('Failed to close tab of removed document', err)
+    })
+  }
 })
 
 let prevTabId: Ref<WorkbenchTab> | undefined
@@ -279,6 +318,7 @@ export async function getTabDataByLocation (loc: Location): Promise<{
   if (application?.locationDataResolver != null) {
     const resolver = await getResource(application.locationDataResolver)
     const data = await resolver(loc)
+    if (data.objectId !== undefined) tabTargets.set(locationToUrl(loc), data.objectId)
     name = data.name
     label = data.nameIntl ?? application.label ?? workbench.string.Tab
     iconComponent = data.iconComponent
@@ -288,7 +328,7 @@ export async function getTabDataByLocation (loc: Location): Promise<{
     const special = loc.path[3]
     const specialLabel = application?.navigatorModel?.specials?.find((s) => s.id === special)?.label
     const resolvedLoc = await getResolvedLocation(loc, application)
-    name = await getDefaultTabName(resolvedLoc)
+    name = await getDefaultTabName(resolvedLoc, locationToUrl(loc))
     label = specialLabel ?? application?.label ?? workbench.string.Tab
     icon = application?.icon
   }
@@ -303,7 +343,7 @@ async function getResolvedLocation (loc: Location, app?: Application): Promise<L
   return (await resolver(loc))?.loc ?? loc
 }
 
-async function getDefaultTabName (loc: Location): Promise<string | undefined> {
+async function getDefaultTabName (loc: Location, url: string): Promise<string | undefined> {
   if (loc.fragment == null) return
   const client = getClient()
   const hierarchy = client.getHierarchy()
@@ -316,6 +356,7 @@ async function getDefaultTabName (loc: Location): Promise<string | undefined> {
   try {
     const linkProviders = client.getModel().findAllSync(view.mixin.LinkIdProvider, {})
     const _id = await parseLinkId(linkProviders, id, _class as Ref<Class<Doc>>)
+    tabTargets.set(url, _id)
     return await titleProvider(client, _id)
   } catch (err: any) {
     console.error(err)
