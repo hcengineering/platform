@@ -149,7 +149,7 @@
     {
       key: '',
       presenter: tags.component.TagElementCountPresenter,
-      label: item,
+      label: tags.string.UsageCount,
       props: { tagElements, label: item, icon, onTag },
       sortingKey: '@tagCount',
       sortingFunction: countSorting

@@ -39,6 +39,7 @@
     "Expert": "Uzman",
     "Meaningfull": "Anlamlı",
     "Initial": "İlk",
-    "NumberLabels": "{count, plural, =0 {etiket yok} =1 {1 etiket} other {# etiket}}"
+    "NumberLabels": "{count, plural, =0 {etiket yok} =1 {1 etiket} other {# etiket}}",
+    "UsageCount": "Kullanım sayısı"
   }
 }
