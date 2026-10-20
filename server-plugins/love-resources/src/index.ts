@@ -38,13 +38,13 @@ import love, {
   Office,
   ParticipantInfo,
   Room,
-  RoomAccess,
   RoomInfo
 } from '@hcengineering/love'
 import { getMetadata } from '@hcengineering/platform'
 import serverCore, { TriggerControl } from '@hcengineering/server-core'
 import view from '@hcengineering/view'
 import { workbenchId } from '@hcengineering/workbench'
+import { getDefaultRoomAccess, getRoomAccessToRestore } from './utils'
 
 export async function OnEmployee (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
@@ -293,7 +293,7 @@ async function setDefaultRoomAccess (info: ParticipantInfo, control: TriggerCont
         core.space.Workspace,
         oldRoomInfo.room,
         {
-          access: oldRoomInfo.isOffice ? RoomAccess.Knock : RoomAccess.Open
+          access: getDefaultRoomAccess(oldRoomInfo.isOffice)
         }
       )
       res.push(resetAccessTx)
@@ -396,6 +396,14 @@ async function isRoomEmpty (
   return false
 }
 
+async function restoreRoomAccess (room: Ref<Room>, isOffice: boolean, control: TriggerControl): Promise<Tx[]> {
+  const doc = (await control.findAll(control.ctx, love.class.Room, { _id: room }, { limit: 1 }))[0]
+  if (doc === undefined) return []
+  const access = getRoomAccessToRestore(doc, isOffice)
+  if (access === undefined) return []
+  return [control.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, { access })]
+}
+
 async function OnRoomInfo (txes: TxCUD<RoomInfo>[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
   const personsByRoom = new Map<Ref<RoomInfo>, Ref<Person>[]>()
@@ -426,6 +434,10 @@ async function OnRoomInfo (txes: TxCUD<RoomInfo>[], control: TriggerControl): Pr
 
       if (await isRoomEmpty(roomInfo.room, roomInfo.isOffice, newPersons, control)) {
         result.push(...(await finishRoomMeetings(roomInfo.room, tx.modifiedOn, control)))
+        if (pulled.length > 0) {
+          // The meeting is over: reset access changed during the call (e.g. to Knock or DND)
+          result.push(...(await restoreRoomAccess(roomInfo.room, roomInfo.isOffice, control)))
+        }
       }
     }
   }
