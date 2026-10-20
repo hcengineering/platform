@@ -238,6 +238,7 @@
     "TimeSpendHours": "{value, plural, =1 {1 godzina} few {# godziny} many {# godzin} other {# godziny}}",
     "TimeSpendMinutes": "{value, plural, =1 {1 minuta} few {# minuty} many {# minut} other {# minuty}}",
     "ChildEstimation": "Wycena podzagadnień",
+    "ShowEstimationSum": "Pokaż sumę wycen w grupach",
     "ChildReportedTime": "Czas poświęcony na podzagadnienia",
     "CapacityValue": "z {value, plural, =1 {1 dnia} other {# dni}}",
     "NewRelatedIssue": "Nowe powiązane zadanie",

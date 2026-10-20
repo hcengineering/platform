@@ -13,75 +13,92 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Doc } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import task from '@hcengineering/task'
   import { Issue } from '@hcengineering/tracker'
   import { floorFractionDigits, Label } from '@hcengineering/ui'
+  import { ViewOptions } from '@hcengineering/view'
   import { FixedColumn, statusStore } from '@hcengineering/view-resources'
+  import { calcIssueTimeStats } from '../../issueTimeStats'
   import tracker from '../../plugin'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
   export let docs: Issue[] | undefined = undefined
+  // All documents of the group, docs may hold only the loaded part of it.
+  export let allDocs: Doc[] | undefined = undefined
+  export let viewOptions: ViewOptions | undefined = undefined
   export let capacity: number | undefined = undefined
   export let category: string | undefined = undefined
 
-  $: ids = new Set(docs?.map((it) => it._id) ?? [])
+  $: planning = category === 'milestone' || category === 'assignee'
+  $: showSum = viewOptions?.showEstimationSum === true
+  $: show = docs !== undefined && (planning || showSum)
 
-  $: noParents = docs?.filter((it) => !ids.has(it.attachedTo))
+  const client = getClient()
+  let fetched: Issue[] | undefined = undefined
+  let fetchSeq = 0
 
-  $: rootNoBacklogIssues = noParents?.filter(
-    (it) => $statusStore.byId.get(it.status)?.category !== task.statusCategory.UnStarted
-  )
+  // Rows of a group are loaded page by page, so with the option enabled the
+  // time fields of the remaining issues are fetched once per set of group ids.
+  // Live updates of loaded rows or loading another page do not refetch.
+  $: groupIds =
+    showSum && allDocs !== undefined && allDocs.length > (docs?.length ?? 0)
+      ? allDocs.map((it) => it._id as Issue['_id']).sort((a, b) => a.localeCompare(b))
+      : undefined
+  $: void fetchGroup(groupIds?.join(','), groupIds)
 
-  $: totalEstimation = floorFractionDigits(
-    (rootNoBacklogIssues ?? [{ estimation: 0, childInfo: [] } as unknown as Issue])
-      .map((it) => {
-        const cat = $statusStore.byId.get(it.status)?.category
+  let fetchedKey: string | undefined = undefined
 
-        let retEst = it.estimation
-        if (it.childInfo?.length > 0) {
-          const cEstimation = it.childInfo.map((ct) => ct.estimation).reduce((a, b) => a + b, 0)
-          const cReported = it.childInfo.map((ct) => ct.reportedTime).reduce((a, b) => a + b, 0)
-          if (cEstimation !== 0) {
-            retEst = cEstimation
-            if (cat === task.statusCategory.Won || cat === task.statusCategory.Lost) {
-              if (cReported < cEstimation) {
-                retEst = cReported
-              }
-            }
-          }
-        } else {
-          if (cat === task.statusCategory.Won || cat === task.statusCategory.Lost) {
-            if (it.reportedTime < it.estimation) {
-              return it.reportedTime
-            }
-          }
+  async function fetchGroup (key: string | undefined, ids: Array<Issue['_id']> | undefined): Promise<void> {
+    if (key === fetchedKey) return
+    fetchedKey = key
+    const seq = ++fetchSeq
+    if (ids === undefined) {
+      fetched = undefined
+      return
+    }
+    const res = await client.findAll(
+      tracker.class.Issue,
+      { _id: { $in: ids } },
+      {
+        projection: {
+          _id: 1,
+          _class: 1,
+          space: 1,
+          attachedTo: 1,
+          parents: 1,
+          status: 1,
+          estimation: 1,
+          reportedTime: 1,
+          childInfo: 1
         }
-        return retEst
-      })
-      .reduce((it, cur) => {
-        return it + cur
-      }, 0),
-    3
-  )
-  $: totalReported = floorFractionDigits(
-    (noParents ?? [{ reportedTime: 0, childInfo: [] } as unknown as Issue])
-      .map((it) => {
-        if (it.childInfo?.length > 0) {
-          const cReported = it.childInfo.map((ct) => ct.reportedTime).reduce((a, b) => a + b, 0)
-          if (cReported !== 0) {
-            return cReported + it.reportedTime
-          }
-        }
-        return it.reportedTime
-      })
-      .reduce((it, cur) => {
-        return it + cur
-      }, 0),
-    3
-  )
+      }
+    )
+    if (seq === fetchSeq) {
+      fetched = res
+    }
+  }
+
+  // Prefer the live loaded rows, fetched data only completes them.
+  $: loaded = new Map((docs ?? []).map((it) => [it._id, it]))
+  $: groupDocs =
+    fetched !== undefined ? [...loaded.values(), ...fetched.filter((it) => !loaded.has(it._id))] : (docs ?? [])
+
+  $: stats = calcIssueTimeStats(groupDocs, {
+    isUnStarted: (it) => $statusStore.byId.get(it.status)?.category === task.statusCategory.UnStarted,
+    isClosed: (it) => {
+      const cat = $statusStore.byId.get(it.status)?.category
+      return cat === task.statusCategory.Won || cat === task.statusCategory.Lost
+    },
+    skipUnStarted: planning,
+    includeAllChildren: viewOptions?.shouldShowSubIssues === false
+  })
+  $: totalEstimation = floorFractionDigits(stats.estimation, 3)
+  $: totalReported = floorFractionDigits(stats.reportedTime, 3)
 </script>
 
-{#if docs && (category === 'milestone' || category === 'assignee')}
+{#if show}
   <FixedColumn key="estimation-editor">
     <!-- <Label label={tracker.string.MilestoneDay} value={}/> -->
     <div class="flex-row-center flex-no-shrink h-6" class:showWarning={totalEstimation > (capacity ?? 0)}>

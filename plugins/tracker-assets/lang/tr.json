@@ -245,6 +245,7 @@
     "TimeSpendHours": "{value}s",
     "TimeSpendMinutes": "{value}dk",
     "ChildEstimation": "Alt sorunlar tahmini",
+    "ShowEstimationSum": "Gruplarda tahmin toplamını göster",
     "ChildReportedTime": "Alt sorunlar zamanı",
     "CapacityValue": "{value}g üzerinden",
     "NewRelatedIssue": "Yeni ilgili sorun",
