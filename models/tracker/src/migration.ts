@@ -147,6 +147,28 @@ async function createDefaults (tx: TxOperations): Promise<void> {
   )
 }
 
+/**
+ * Re-create the default issue label category for workspaces that lost it.
+ * Labels referencing a missing category are hidden in the label selection popup,
+ * which groups labels by their category. An existing category is left untouched.
+ */
+export async function ensureDefaultLabelCategory (tx: TxOperations): Promise<void> {
+  const current = await tx.findOne(tags.class.TagCategory, { _id: tracker.category.Other })
+  if (current !== undefined) return
+  await tx.createDoc(
+    tags.class.TagCategory,
+    core.space.Workspace,
+    {
+      icon: tags.icon.Tags,
+      label: 'Other',
+      targetClass: tracker.class.Issue,
+      tags: [],
+      default: true
+    },
+    tracker.category.Other
+  )
+}
+
 async function passIdentifierToParentInfo (client: MigrationClient): Promise<void> {
   const issues = await client.find<Issue>(DOMAIN_TASK, { _class: tracker.class.Issue, 'parents.0': { $exists: true } })
   for (const issue of issues) {
@@ -588,6 +610,13 @@ export const trackerOperation: MigrateOperation = {
       {
         state: 'add-search-view-options',
         func: addSearchViewOptions
+      },
+      {
+        state: 'ensure-default-label-category',
+        func: async (client) => {
+          const tx = new TxOperations(client, core.account.System)
+          await ensureDefaultLabelCategory(tx)
+        }
       }
     ])
   }
