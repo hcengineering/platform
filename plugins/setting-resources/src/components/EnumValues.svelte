@@ -31,6 +31,7 @@
   } from '@hcengineering/ui'
   import type { DropdownIntlItem } from '@hcengineering/ui'
   import setting from '../plugin'
+  import { isSameEnumValues, normalizeEditedEnumValues } from '../enumValuesUtils'
   import EnumValuesList from './EnumValuesList.svelte'
   import IconCrossedArrows from './icons/CrossedArrows.svelte'
   import IconBulletList from './icons/BulletList.svelte'
@@ -43,6 +44,20 @@
   let newValue: string = ''
   let newItem: boolean = false
   let opened: boolean = false
+
+  // Local copy, so an invalid inline edit can be reverted to the stored values.
+  // It is a plain variable (not a `$:` declaration): a child binding write to a reactive
+  // declaration also invalidates its dependencies and would reset the edit in progress.
+  let values: string[] = []
+  let syncedValues: string[] | undefined
+
+  function syncFromDoc (enumValues: string[]): void {
+    if (syncedValues !== undefined && isSameEnumValues(syncedValues, enumValues)) return
+    syncedValues = [...enumValues]
+    values = [...enumValues]
+  }
+
+  $: syncFromDoc(value.enumValues)
 
   async function add () {
     if (newValue.trim().length === 0) return
@@ -131,7 +146,18 @@
   }
 
   async function onDrop () {
-    await client.update(value, { enumValues: value.enumValues })
+    await client.update(value, { enumValues: values })
+  }
+
+  async function onValuesUpdate (): Promise<void> {
+    const enumValues = normalizeEditedEnumValues(value.enumValues, values)
+    if (enumValues === undefined) {
+      values = [...value.enumValues]
+      return
+    }
+    values = enumValues
+    if (isSameEnumValues(enumValues, value.enumValues)) return
+    await client.update(value, { enumValues })
   }
 
   const items: (DropdownIntlItem & { action: () => void })[] = [
@@ -223,10 +249,11 @@
   {#if value.enumValues.length > 0 || newItem}
     <div class="hulyTableAttr-content options">
       <EnumValuesList
-        bind:values={value.enumValues}
+        bind:values
         disableMouseOver={newItem}
         on:remove={(e) => remove(e.detail)}
         on:drop={onDrop}
+        on:update={onValuesUpdate}
       />
       {#if newItem}
         <div class="hulyTableAttr-content__row hovered">
