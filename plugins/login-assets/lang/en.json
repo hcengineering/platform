@@ -3,7 +3,9 @@
     "RequiredField": "Required field {field}",
     "FieldsDoNotMatch": "{field} don't match {field2}",
     "ConnectingToServer": "Connecting to server....",
-    "IncorrectValue": "Incorrect value {field}"
+    "IncorrectValue": "Incorrect value {field}",
+    "OidcGroupNotAllowed": "Your account is not authorized to sign in.",
+    "OidcRoleSyncFailed": "Could not synchronize your workspace access. Please try signing in again."
   },
   "string": {
     "ChangePassword": "Change password",
