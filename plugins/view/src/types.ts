@@ -668,6 +668,7 @@ export interface DisplayProps {
   compression?: boolean
   grow?: boolean
   dividerBefore?: boolean // should show divider before
+  defaultHidden?: boolean // not displayed until enabled in the view settings
 }
 
 /**
