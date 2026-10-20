@@ -3,7 +3,8 @@
     "RequiredField": "Campo obrigatório {field}",
     "FieldsDoNotMatch": "{field} não coincide com {field2}",
     "ConnectingToServer": "Conectando ao servidor....",
-    "IncorrectValue": "Valor incorreto no campo {field}"
+    "IncorrectValue": "Valor incorreto no campo {field}",
+    "OidcGroupNotAllowed": "Sua conta não está autorizada a entrar."
   },
   "string": {
     "ChangePassword": "Mudar senha",
