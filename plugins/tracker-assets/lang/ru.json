@@ -109,6 +109,7 @@
     "DocumentColor": "",
     "Rank": "Ранг",
     "TypeIssuePriority": "Приоритет задачи",
+    "TypeMilestoneStatus": "Статус вехи",
     "IssueTitlePlaceholder": "Имя задачи",
     "SubIssueTitlePlaceholder": "Имя подзадачи",
     "IssueDescriptionPlaceholder": "Добавить описание\u2026",

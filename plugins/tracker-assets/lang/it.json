@@ -107,6 +107,7 @@
     "DocumentColor": "",
     "Rank": "Classifica",
     "TypeIssuePriority": "Priorità della issue",
+    "TypeMilestoneStatus": "Stato della milestone",
     "IssueTitlePlaceholder": "Titolo della issue",
     "SubIssueTitlePlaceholder": "Titolo della subissue",
     "IssueDescriptionPlaceholder": "Aggiungi descrizione…",

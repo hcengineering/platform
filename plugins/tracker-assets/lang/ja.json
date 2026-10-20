@@ -107,6 +107,7 @@
     "DocumentColor": "",
     "Rank": "ランク",
     "TypeIssuePriority": "イシューの優先度",
+    "TypeMilestoneStatus": "マイルストーンのステータス",
     "IssueTitlePlaceholder": "イシューのタイトル",
     "SubIssueTitlePlaceholder": "子イシューのタイトル",
     "IssueDescriptionPlaceholder": "説明を追加\u2026",

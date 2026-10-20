@@ -200,6 +200,7 @@ export default mergeIds(trackerId, tracker, {
     OriginalDescription: '' as IntlString,
 
     TypeIssuePriority: '' as IntlString,
+    TypeMilestoneStatus: '' as IntlString,
     IssueTitlePlaceholder: '' as IntlString,
     SubIssueTitlePlaceholder: '' as IntlString,
     IssueDescriptionPlaceholder: '' as IntlString,

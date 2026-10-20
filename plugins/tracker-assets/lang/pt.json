@@ -107,6 +107,7 @@
     "DocumentColor": "",
     "Rank": "Classificação",
     "TypeIssuePriority": "Prioridade da Tarefa",
+    "TypeMilestoneStatus": "Estado do marco",
     "IssueTitlePlaceholder": "Título da Tarefa",
     "SubIssueTitlePlaceholder": "Título da Sub-Tarefa",
     "IssueDescriptionPlaceholder": "Adicionar descrição...",

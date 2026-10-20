@@ -123,6 +123,7 @@
     "DocumentColor": "Dokumentfarbe",
     "Rank": "Rang",
     "TypeIssuePriority": "Aufgabenpriorität",
+    "TypeMilestoneStatus": "Meilensteinstatus",
     "IssueTitlePlaceholder": "Aufgabentitel",
     "SubIssueTitlePlaceholder": "Unteraufgabentitel",
     "IssueDescriptionPlaceholder": "Beschreibung hinzufügen...",
