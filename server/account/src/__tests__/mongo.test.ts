@@ -1011,6 +1011,22 @@ describe('MongoAccountDB', () => {
         )
       })
 
+      it('should get workspace for all operations including pending-deletion', async () => {
+        await accountDb.getPendingWorkspace('', version, 'all', processingTimeoutMs)
+
+        // The query should match pending-deletion / deleting workspaces too
+        const callArgs = (accountDb.workspace.collection.findOneAndUpdate as jest.Mock).mock.calls[0][0]
+        const orClauses = callArgs.$and[1].$or
+        const flatOrs = orClauses.flatMap((c: any) => (c.$or ? c.$or : [c]))
+        const deletingClause = flatOrs.find(
+          (c: any) => c['status.mode']?.$in?.includes('pending-deletion')
+        )
+        expect(deletingClause).toBeDefined()
+        expect(deletingClause['status.mode'].$in).toEqual(
+          expect.arrayContaining(['pending-deletion', 'deleting'])
+        )
+      })
+
       it('should get workspace for all+backup operations', async () => {
         await accountDb.getPendingWorkspace('', version, 'all+backup', processingTimeoutMs)
 
