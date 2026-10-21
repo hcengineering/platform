@@ -56,8 +56,29 @@ interface InlineState {
 
 // *************************************************************
 
-function backticksFor (side: boolean): string {
-  return side ? '`' : '`'
+function maxBacktickRun (text: string): number {
+  let len = 0
+  for (const m of text.matchAll(/`+/g)) {
+    len = Math.max(len, m[0].length)
+  }
+  return len
+}
+
+// Use a backtick string longer than any backtick run inside the code,
+// and pad it with a space so code that starts or ends with a backtick
+// is not merged with the delimiter.
+function backticksFor (node: MarkupNode | undefined, side: boolean): string {
+  const len = node?.type === MarkupNodeType.text ? maxBacktickRun(node.text ?? '') : 0
+  const ticks = '`'.repeat(len + 1)
+  if (len === 0) return ticks
+  return side ? ' ' + ticks : ticks + ' '
+}
+
+function fenceFor (node: MarkupNode): string {
+  const text = nodeContent(node)
+    .map((it) => it.text ?? '')
+    .join('')
+  return '`'.repeat(Math.max(3, maxBacktickRun(text) + 1))
 }
 
 function isPlainURL (link: MarkupMark, parent: MarkupNode, index: number): boolean {
@@ -95,19 +116,21 @@ export const storeNodes: Record<string, NodeProcessor> = {
     })
   },
   codeBlock: (state, node) => {
-    state.write('```' + `${nodeAttrs(node).language ?? ''}` + '\n')
+    const fence = fenceFor(node)
+    state.write(fence + `${nodeAttrs(node).language ?? ''}` + '\n')
     // TODO: Check for node.textContent
     state.renderInline(node)
     // state.text(node.text ?? '', false)
     state.ensureNewLine()
-    state.write('```')
+    state.write(fence)
     state.closeBlock(node)
   },
   mermaid: (state, node) => {
-    state.write('```mermaid\n')
+    const fence = fenceFor(node)
+    state.write(fence + 'mermaid\n')
     state.renderInline(node)
     state.ensureNewLine()
-    state.write('```')
+    state.write(fence)
     state.closeBlock(node)
   },
   heading: (state, node) => {
@@ -370,10 +393,10 @@ export const storeMarks: Record<string, MarkProcessor> = {
   },
   code: {
     open: (state, mark, parent, index) => {
-      return backticksFor(false)
+      return backticksFor(parent.content?.[index], false)
     },
     close: (state, mark, parent, index) => {
-      return backticksFor(true)
+      return backticksFor(parent.content?.[index - 1], true)
     },
     mixable: false,
     expelEnclosingWhitespace: false,

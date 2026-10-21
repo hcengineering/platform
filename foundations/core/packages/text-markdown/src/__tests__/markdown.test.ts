@@ -1100,6 +1100,38 @@ describe('markupToMarkdown', () => {
           }
         ]
       }
+    },
+    {
+      name: 'inline code with backticks',
+      markdown: 'Run `` `ls` `` or ``` a``b ```',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              { type: MarkupNodeType.text, text: 'Run ' },
+              { type: MarkupNodeType.text, text: '`ls`', marks: [{ type: MarkupMarkType.code }] },
+              { type: MarkupNodeType.text, text: ' or ' },
+              { type: MarkupNodeType.text, text: 'a``b', marks: [{ type: MarkupMarkType.code }] }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'code block with backtick fence',
+      markdown: '````markdown\n```js\nconst x = 1\n```\n````',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.code_block,
+            attrs: { language: 'markdown' },
+            content: [{ type: MarkupNodeType.text, text: '```js\nconst x = 1\n```' }]
+          }
+        ]
+      }
     }
   ]
 
@@ -1149,6 +1181,14 @@ describe('markdownToMarkup -> markupToMarkdown', () => {
     {
       name: 'Codeblock',
       markdown: '```typescript\nconst x: number = 42;\n```'
+    },
+    {
+      name: 'Inline code with backticks',
+      markdown: 'Use `` `x` `` and `` a`b ``'
+    },
+    {
+      name: 'Codeblock with backtick fence',
+      markdown: '````markdown\n```typescript\nconst x: number = 42;\n```\n````'
     },
     {
       name: 'Image',
