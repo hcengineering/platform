@@ -33,5 +33,6 @@
     align-items: center;
     background-color: var(--theme-statusbar-color);
     overflow: hidden;
+    height: 100%;
   }
 </style>
