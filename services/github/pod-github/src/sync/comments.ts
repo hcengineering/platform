@@ -361,22 +361,24 @@ export class CommentSyncManager implements DocSyncManager {
 
     if (Object.keys(platformUpdate).length > 0) {
       // Check and update body with external
-      const okit = ensureRESTOctokit(
-        (await this.provider.getOctokit(ctx, existing.modifiedBy)) ?? container.container.octokit,
-        container
-      )
-      const mdown = await this.provider.getMarkdown(existingComment.message)
-      if (mdown.trim().length > 0) {
-        await okit.rest.issues.updateComment({
-          owner: repository.owner?.login as string,
-          repo: repository.name,
-          issue_number: parent.githubNumber,
-          comment_id: comment.id,
-          body: mdown,
-          headers: {
-            'X-GitHub-Api-Version': '2022-11-28'
-          }
-        })
+      if (isGHWriteAllowed()) {
+        const okit = ensureRESTOctokit(
+          (await this.provider.getOctokit(ctx, existing.modifiedBy)) ?? container.container.octokit,
+          container
+        )
+        const mdown = await this.provider.getMarkdown(existingComment.message)
+        if (mdown.trim().length > 0) {
+          await okit.rest.issues.updateComment({
+            owner: repository.owner?.login as string,
+            repo: repository.name,
+            issue_number: parent.githubNumber,
+            comment_id: comment.id,
+            body: mdown,
+            headers: {
+              'X-GitHub-Api-Version': '2022-11-28'
+            }
+          })
+        }
       }
     }
     if (Object.keys(update).length > 0) {
@@ -435,6 +437,9 @@ export class CommentSyncManager implements DocSyncManager {
 
     if (parent === undefined) {
       return {}
+    }
+    if (!isGHWriteAllowed()) {
+      return { needSync: githubSyncVersion }
     }
     const chatMessage = existing as ChatMessage
     const okit = ensureRESTOctokit(
