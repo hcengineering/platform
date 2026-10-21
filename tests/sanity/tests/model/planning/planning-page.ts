@@ -115,6 +115,8 @@ export class PlanningPage extends CalendarPage {
       .locator('xpath=..')
       .locator('button.reference')
 
+  readonly buttonPanelSpaceSelector = (): Locator => this.panel().locator('button[id="space.selector"]')
+
   async clickButtonPrevDayInSchedule (): Promise<void> {
     await this.buttonPrevDayInSchedule().click()
   }
@@ -416,5 +418,14 @@ export class PlanningPage extends CalendarPage {
     await expect(
       row.locator('div.dateEditor-container:first-child > div.min-w-28:first-child .hulyButton')
     ).toContainText(dateEnd)
+  }
+
+  async selectLstItem (itemLabel: string): Promise<void> {
+    await this.popup().locator('div.list-container button.menu-item', { hasText: itemLabel }).click()
+  }
+
+  public async addEventToSpace (projectName: string): Promise<void> {
+    await this.buttonPanelSpaceSelector().click()
+    await this.selectLstItem(projectName)
   }
 }
