@@ -286,7 +286,8 @@
     selection = pos
     onRow(objects[pos])
     if (r !== undefined && !noScroll) {
-      r?.scrollIntoView({ behavior: 'auto', block: 'nearest' })
+      const block = offset < 0 ? 'start' : offset > 0 ? 'end' : 'nearest'
+      r.scrollIntoView({ behavior: 'auto', block, inline: 'nearest' })
     }
   }
 
