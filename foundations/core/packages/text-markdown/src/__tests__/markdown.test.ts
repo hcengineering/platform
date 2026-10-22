@@ -1132,6 +1132,62 @@ describe('markupToMarkdown', () => {
           }
         ]
       }
+    },
+    {
+      name: 'inline code across nodes with other marks',
+      markdown: '`` [a`b](http://a)[c](http://c) ``',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              {
+                type: MarkupNodeType.text,
+                text: 'a`b',
+                marks: [{ type: MarkupMarkType.code }, { type: MarkupMarkType.link, attrs: { href: 'http://a' } }]
+              },
+              {
+                type: MarkupNodeType.text,
+                text: 'c',
+                marks: [{ type: MarkupMarkType.code }, { type: MarkupMarkType.link, attrs: { href: 'http://c' } }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'inline code with spaces on both ends',
+      markdown: 'Run `  ls  ` or ` `',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              { type: MarkupNodeType.text, text: 'Run ' },
+              { type: MarkupNodeType.text, text: ' ls ', marks: [{ type: MarkupMarkType.code }] },
+              { type: MarkupNodeType.text, text: ' or ' },
+              { type: MarkupNodeType.text, text: ' ', marks: [{ type: MarkupMarkType.code }] }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      name: 'code block with a backtick in the language',
+      markdown: '~~~a`b\n```\n~~~',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.code_block,
+            attrs: { language: 'a`b' },
+            content: [{ type: MarkupNodeType.text, text: '```' }]
+          }
+        ]
+      }
     }
   ]
 
@@ -1189,6 +1245,10 @@ describe('markdownToMarkup -> markupToMarkdown', () => {
     {
       name: 'Codeblock with backtick fence',
       markdown: '````markdown\n```typescript\nconst x: number = 42;\n```\n````'
+    },
+    {
+      name: 'Inline code with spaces on both ends',
+      markdown: 'Run `  ls  ` now'
     },
     {
       name: 'Image',

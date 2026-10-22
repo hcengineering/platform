@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { MarkupMark, MarkupNode, MarkupNodeType } from '@hcengineering/text-core'
+import { MarkupMark, MarkupMarkType, MarkupNode, MarkupNodeType } from '@hcengineering/text-core'
 import { markupToHtml } from '@hcengineering/text-html'
 
 import { isInSet, markEq } from './marks'
@@ -56,29 +56,55 @@ interface InlineState {
 
 // *************************************************************
 
-function maxBacktickRun (text: string): number {
+function maxRun (text: string, re: RegExp): number {
   let len = 0
-  for (const m of text.matchAll(/`+/g)) {
+  for (const m of text.matchAll(re)) {
     len = Math.max(len, m[0].length)
   }
   return len
 }
 
-// Use a backtick string longer than any backtick run inside the code,
-// and pad it with a space so code that starts or ends with a backtick
-// is not merged with the delimiter.
-function backticksFor (node: MarkupNode | undefined, side: boolean): string {
-  const len = node?.type === MarkupNodeType.text ? maxBacktickRun(node.text ?? '') : 0
-  const ticks = '`'.repeat(len + 1)
-  if (len === 0) return ticks
-  return side ? ' ' + ticks : ticks + ' '
+function hasCodeMark (node: MarkupNode): boolean {
+  return node.marks?.some((it) => it.type === MarkupMarkType.code) ?? false
 }
 
-function fenceFor (node: MarkupNode): string {
+// A text node whose innermost mark is code renders as a code span of its own.
+function isOwnCodeSpan (node: MarkupNode): boolean {
+  return node.type === MarkupNodeType.text && node.marks?.[node.marks.length - 1]?.type === MarkupMarkType.code
+}
+
+// Delimiters of the code span that is open for a given code mark.
+const codeSpanDelims = new WeakMap<MarkupMark, string>()
+
+// Build the code span delimiter once, from the text of every node the code
+// mark covers starting at `index`, so the opening and closing delimiters
+// match. Use a backtick string longer than any backtick run inside the code.
+// Pad it with a space when the code contains a backtick, or when it starts
+// and ends with a space, since CommonMark strips one space from each side.
+function codeSpanDelim (parent: MarkupNode, index: number): string {
+  const content = parent.content ?? []
+  let text = ''
+  for (let i = index; i < content.length && hasCodeMark(content[i]); i++) {
+    const own = isOwnCodeSpan(content[i])
+    if (i > index && own) break
+    if (content[i].type === MarkupNodeType.text) text += content[i].text ?? ''
+    if (own) break
+  }
+  const len = maxRun(text, /`+/g)
+  const ticks = '`'.repeat(len + 1)
+  const pad = len > 0 || (/^ [\s\S]* $/.test(text) && /[^ ]/.test(text))
+  return pad ? ticks + ' ' : ticks
+}
+
+function fenceFor (node: MarkupNode, info: string): string {
   const text = nodeContent(node)
     .map((it) => it.text ?? '')
     .join('')
-  return '`'.repeat(Math.max(3, maxBacktickRun(text) + 1))
+  // A backtick fence cannot have a backtick in its info string.
+  if (info.includes('`')) {
+    return '~'.repeat(Math.max(3, maxRun(text, /~+/g) + 1))
+  }
+  return '`'.repeat(Math.max(3, maxRun(text, /`+/g) + 1))
 }
 
 function isPlainURL (link: MarkupMark, parent: MarkupNode, index: number): boolean {
@@ -116,8 +142,9 @@ export const storeNodes: Record<string, NodeProcessor> = {
     })
   },
   codeBlock: (state, node) => {
-    const fence = fenceFor(node)
-    state.write(fence + `${nodeAttrs(node).language ?? ''}` + '\n')
+    const language = `${nodeAttrs(node).language ?? ''}`
+    const fence = fenceFor(node, language)
+    state.write(fence + language + '\n')
     // TODO: Check for node.textContent
     state.renderInline(node)
     // state.text(node.text ?? '', false)
@@ -126,7 +153,7 @@ export const storeNodes: Record<string, NodeProcessor> = {
     state.closeBlock(node)
   },
   mermaid: (state, node) => {
-    const fence = fenceFor(node)
+    const fence = fenceFor(node, 'mermaid')
     state.write(fence + 'mermaid\n')
     state.renderInline(node)
     state.ensureNewLine()
@@ -393,10 +420,14 @@ export const storeMarks: Record<string, MarkProcessor> = {
   },
   code: {
     open: (state, mark, parent, index) => {
-      return backticksFor(parent.content?.[index], false)
+      const delim = codeSpanDelim(parent, index)
+      codeSpanDelims.set(mark, delim)
+      return delim
     },
     close: (state, mark, parent, index) => {
-      return backticksFor(parent.content?.[index - 1], true)
+      const delim = codeSpanDelims.get(mark) ?? '`'
+      codeSpanDelims.delete(mark)
+      return delim.split('').reverse().join('')
     },
     mixable: false,
     expelEnclosingWhitespace: false,
