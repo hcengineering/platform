@@ -141,20 +141,25 @@ export class HulypulseClient implements Disposable {
       this.ws = ws
 
       ws.onopen = () => {
+        if (this.ws !== ws) return
         this.resubscribe()
         this.startPing()
         resolve(undefined)
       }
 
+      // Ignore late events from a socket that was already replaced.
       ws.onerror = (event) => {
+        if (this.ws !== ws) return
         this.reconnect()
       }
 
       ws.onclose = (event) => {
+        if (this.ws !== ws) return
         this.reconnect()
       }
 
       ws.onmessage = (event) => {
+        if (this.ws !== ws) return
         try {
           if (event.data === 'ping') {
             this.ws?.send('pong')
@@ -235,9 +240,12 @@ export class HulypulseClient implements Disposable {
       this.pingTimeout = setTimeout(() => {
         this.pingTimeout = undefined
         console.warn('WS-server not responding to ping, closing connection')
-        clearInterval(this.pingInterval)
-        this.pingInterval = undefined
-        this.ws?.close(WS_CLOSE_NORMAL)
+        // Detach the dead socket and reconnect now. On a half-open connection
+        // the close handshake can take a long time to fire onclose.
+        const ws = this.ws
+        this.ws = null
+        ws?.close(WS_CLOSE_NORMAL)
+        this.reconnect()
       }, this.PING_TIMEOUT_MS)
     }, this.PING_INTERVAL_MS)
   }
@@ -470,7 +478,6 @@ export class HulypulseClient implements Disposable {
       }, this.SEND_TIMEOUT_MS)
       this.pending.set(id, { resolve, reject, send_timeout: sendTimeout })
       this.ws.send(JSON.stringify(message))
-      this.startPing() // reset ping timer on any send
     })
   }
 }

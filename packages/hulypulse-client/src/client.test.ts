@@ -21,6 +21,8 @@ class FakeWebSocket {
   static readonly CLOSING = 2
   static readonly CLOSED = 3
   static instances: FakeWebSocket[] = []
+  // Simulate a half-open connection, where close() never fires onclose.
+  static closeHangs = false
 
   readyState = FakeWebSocket.CONNECTING
   sent: string[] = []
@@ -44,6 +46,10 @@ class FakeWebSocket {
 
   close (code?: number): void {
     this.closeCode = code
+    if (FakeWebSocket.closeHangs) {
+      this.readyState = FakeWebSocket.CLOSING
+      return
+    }
     this.readyState = FakeWebSocket.CLOSED
     this.onclose?.({ code })
   }
@@ -52,10 +58,12 @@ class FakeWebSocket {
 describe('HulypulseClient ping', () => {
   const PING_INTERVAL_MS = 30 * 1000
   const PING_TIMEOUT_MS = 5 * 60 * 1000
+  const RECONNECT_INTERVAL_MS = 1000
 
   beforeEach(() => {
     jest.useFakeTimers()
     FakeWebSocket.instances = []
+    FakeWebSocket.closeHangs = false
     ;(global as any).WebSocket = FakeWebSocket
     jest.spyOn(console, 'warn').mockImplementation(() => {})
   })
@@ -91,6 +99,39 @@ describe('HulypulseClient ping', () => {
     }
 
     expect(ws.closeCode).toBeUndefined()
+    client.close()
+  })
+
+  it('closes an open socket that never answers ping while the client keeps sending', async () => {
+    const { client, ws } = await connect()
+
+    for (let elapsed = 0; elapsed <= PING_TIMEOUT_MS + PING_INTERVAL_MS; elapsed += 10 * 1000) {
+      client.info().catch(() => {})
+      await jest.advanceTimersByTimeAsync(10 * 1000)
+    }
+
+    expect(ws.sent).toContain('ping')
+    expect(ws.closeCode).toBe(1000)
+    client.close()
+  })
+
+  it('reconnects without waiting for a dead socket to finish closing', async () => {
+    FakeWebSocket.closeHangs = true
+    const { client, ws } = await connect()
+
+    await jest.advanceTimersByTimeAsync(PING_TIMEOUT_MS + PING_INTERVAL_MS + RECONNECT_INTERVAL_MS + 1)
+
+    expect(ws.closeCode).toBe(1000)
+    expect(FakeWebSocket.instances).toHaveLength(2)
+    const next = FakeWebSocket.instances[1]
+    expect(next.readyState).toBe(FakeWebSocket.OPEN)
+
+    // A late close event from the old socket leaves the new one alone.
+    ws.onclose?.({ code: 1000 })
+    await jest.advanceTimersByTimeAsync(PING_INTERVAL_MS + RECONNECT_INTERVAL_MS)
+
+    expect(FakeWebSocket.instances).toHaveLength(2)
+    expect(next.sent).toContain('ping')
     client.close()
   })
 })
