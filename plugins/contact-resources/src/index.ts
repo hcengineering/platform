@@ -51,6 +51,7 @@ import {
   type TooltipAlignment
 } from '@hcengineering/ui'
 import { AggregationManager } from '@hcengineering/view-resources'
+import { getChannelProviderUrl } from './channelUrl'
 import PersonIdArrayEditor from './components/PersonIdArrayEditor.svelte'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import AccountBox from './components/AccountBox.svelte'
@@ -319,7 +320,13 @@ async function kickEmployee (doc: Person): Promise<void> {
 }
 
 async function openChannelURL (doc: Channel): Promise<void> {
-  const url = parseURL(doc.value)
+  const providerUrl = getChannelProviderUrl(doc.provider, doc.value)
+  if (providerUrl !== undefined && !providerUrl.startsWith('https://')) {
+    // tel: and mailto: links are handed over to the system handler without opening a new tab
+    window.open(providerUrl, '_self')
+    return
+  }
+  const url = providerUrl ?? parseURL(doc.value)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     window.open(url)
   }
