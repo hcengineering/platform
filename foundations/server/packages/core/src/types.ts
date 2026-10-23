@@ -409,6 +409,12 @@ export interface FullTextAdapter {
 
   // If no field is provided, will return existing mapping of all dimms.
   initMapping: (ctx: MeasureContext, field?: { key: string, dims: number }) => Promise<boolean>
+
+  // Optional: return the total document count in the index/collection.
+  // Used by non-persistent backends (e.g. Typesense with emptyDir) to detect
+  // empty state on startup and trigger automatic reindex.
+  // Returns -1 if the count cannot be determined (e.g. connection error).
+  getDocCount?: (ctx: MeasureContext) => Promise<number>
 }
 
 /**
