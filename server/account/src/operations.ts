@@ -2679,7 +2679,7 @@ async function getMailboxes (
   return await db.mailbox.find({ accountUuid: account })
 }
 
-async function getMailboxSecret (
+export async function getMailboxSecret (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2689,7 +2689,7 @@ async function getMailboxSecret (
   }
 ): Promise<MailboxSecret | null> {
   const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['huly-mail'], extra, false)
+  verifyAllowedServices(['huly-mail'], extra)
   return await db.mailboxSecret.findOne({ mailbox: params.mailbox })
 }
 
