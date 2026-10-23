@@ -25,9 +25,11 @@
     createState,
     findStatusAttr
   } from '@hcengineering/task'
-  import { DropdownIntlItem, Modal, ModernEditbox, Label, ButtonMenu } from '@hcengineering/ui'
+  import { DropdownIntlItem, Modal, ModernEditbox, Label, ButtonMenu, Toggle } from '@hcengineering/ui'
   import task from '../../plugin'
   import TaskTypeKindEditor from './TaskTypeKindEditor.svelte'
+  import ClassMixinSelector from './ClassMixinSelector.svelte'
+  import LinkTaskTypeSelector from './LinkTaskTypeSelector.svelte'
   import { clearSettingsStore } from '@hcengineering/setting-resources'
 
   const client = getClient()
@@ -68,6 +70,12 @@
   let { kind, name, targetClass, statusCategories, statuses, allowedAsChildOf } =
     taskType !== undefined ? { ...taskType } : { ...defaultTaskType(type) }
 
+  let baseMixin = taskType?.baseMixin
+
+  // Mode: 'create' for new TaskType, 'clone' for cloning existing
+  let mode: 'create' | 'clone' = 'create'
+  let selectedTaskTypesToClone: Ref<TaskType>[] = []
+
   function findStatusClass (_class: Ref<Class<Task>>): Ref<Class<Status>> | undefined {
     const h = getClient().getHierarchy()
     const attrs = h.getAllAttributes(_class)
@@ -82,6 +90,12 @@
 
   async function save (): Promise<void> {
     if (type === undefined) return
+
+    // Clone mode: clone selected TaskTypes
+    if (mode === 'clone') {
+      await cloneSelectedTaskTypes()
+      return
+    }
 
     const descr = taskTypeDescriptors.find((it) => it._id === taskTypeDescriptor._id)
     if (descr === undefined) return
@@ -98,7 +112,8 @@
       allowedAsChildOf,
       statusClass: findStatusClass(ofClass) ?? core.class.Status,
       parent: type._id,
-      icon: descr.icon
+      icon: descr.icon,
+      baseMixin
     }
 
     if (taskType === undefined && descr.statusCategoriesFunc !== undefined) {
@@ -136,8 +151,10 @@
     } else {
       const ofClassClass = client.getHierarchy().getClass(ofClass)
       // Create target class for custom field.
+      // Use baseMixin if provided, otherwise use ofClass
+      const extendsClass = baseMixin ?? ofClass
       _taskType.targetClass = await client.createDoc(core.class.Class, core.space.Model, {
-        extends: ofClass,
+        extends: extendsClass,
         kind: ClassifierKind.MIXIN,
         label: getEmbeddedLabel(name),
         icon: ofClassClass.icon
@@ -158,49 +175,158 @@
     icon: it.icon,
     label: it.name
   }))
+
+  async function cloneSelectedTaskTypes (): Promise<void> {
+    if (selectedTaskTypesToClone.length === 0) return
+
+    // Fetch the selected TaskTypes
+    const sourceTaskTypes = await client.findAll(task.class.TaskType, {
+      _id: { $in: selectedTaskTypesToClone }
+    })
+
+    for (const source of sourceTaskTypes) {
+      const newTaskTypeId: Ref<TaskType> = generateId()
+
+      // Create new targetClass (mixin) that extends the source's targetClass
+      const sourceClass = client.getHierarchy().getClass(source.ofClass)
+      const newTargetClass = await client.createDoc(core.class.Class, core.space.Model, {
+        extends: source.targetClass, // Inherit from source's mixin
+        kind: ClassifierKind.MIXIN,
+        label: getEmbeddedLabel(source.name),
+        icon: sourceClass.icon
+      })
+
+      // Clone statuses for this TaskType
+      const clonedStatuses: Ref<Status>[] = []
+      const statusAttr = findStatusAttr(client.getHierarchy(), source.ofClass) ??
+        client.getHierarchy().getAttribute(task.class.Task, 'status')
+
+      for (const statusId of source.statuses) {
+        const originalStatus = await client.findOne(core.class.Status, { _id: statusId })
+        if (originalStatus !== undefined) {
+          const newStatus = await createState(client, source.statusClass, {
+            name: originalStatus.name,
+            ofAttribute: statusAttr._id,
+            category: originalStatus.category
+          })
+          clonedStatuses.push(newStatus)
+
+          // Add to ProjectType statuses
+          if (type.statuses.find((it) => it._id === newStatus) === undefined) {
+            await client.update(type, {
+              $push: { statuses: { _id: newStatus, taskType: newTaskTypeId } }
+            })
+          }
+        }
+      }
+
+      // Create the cloned TaskType
+      const clonedTaskType: Data<TaskType> = {
+        name: source.name,
+        kind: source.kind,
+        parent: type._id,
+        descriptor: source.descriptor,
+        ofClass: source.ofClass,
+        targetClass: newTargetClass,
+        statusCategories: source.statusCategories,
+        statuses: clonedStatuses,
+        statusClass: source.statusClass,
+        allowedAsChildOf: source.allowedAsChildOf,
+        baseMixin: source.targetClass, // Point to source's targetClass for inheritance
+        icon: source.icon,
+        color: source.color
+      }
+
+      await client.createDoc(task.class.TaskType, core.space.Model, clonedTaskType, newTaskTypeId)
+
+      // Add to ProjectType tasks array
+      if (!type.tasks.includes(newTaskTypeId)) {
+        await client.update(type, { $push: { tasks: newTaskTypeId } })
+      }
+    }
+
+    clearSettingsStore()
+  }
+
+  $: canSave = mode === 'create' ? name.trim().length > 0 : selectedTaskTypesToClone.length > 0
 </script>
 
 <Modal
   label={task.string.TaskType}
   type={'type-aside'}
   okAction={save}
-  canSave
-  okLabel={taskType !== undefined ? presentation.string.Save : presentation.string.Create}
+  canSave={canSave}
+  okLabel={mode === 'clone' ? task.string.CloneTaskTypes : (taskType !== undefined ? presentation.string.Save : presentation.string.Create)}
   on:changeContent
   onCancel={() => {
     clearSettingsStore()
   }}
 >
-  <div class="hulyModal-content__titleGroup">
-    <ModernEditbox bind:value={name} label={task.string.TaskName} size={'large'} kind={'ghost'} autoFocus />
-  </div>
-  <div class="hulyModal-content__settingsSet">
-    <div class="hulyModal-content__settingsSet-line">
-      <span class="label">
-        <Label label={task.string.TaskType} />
-      </span>
-      <TaskTypeKindEditor bind:kind />
+  <!-- Mode Toggle -->
+  {#if taskType === undefined}
+    <div class="hulyModal-content__settingsSet">
+      <div class="hulyModal-content__settingsSet-line mode-toggle">
+        <span class="label">
+          <Label label={task.string.CreateNew} />
+        </span>
+        <Toggle
+          on={mode === 'clone'}
+          on:change={() => { mode = mode === 'create' ? 'clone' : 'create' }}
+        />
+        <span class="label">
+          <Label label={task.string.CloneExisting} />
+        </span>
+      </div>
     </div>
-    {#if taskTypeDescriptors.length > 1}
+  {/if}
+
+  {#if mode === 'clone' && taskType === undefined}
+    <!-- Clone Mode: Select existing TaskTypes -->
+    <div class="hulyModal-content__settingsSet">
+      <LinkTaskTypeSelector
+        currentProjectType={type._id}
+        bind:selectedTaskTypes={selectedTaskTypesToClone}
+      />
+    </div>
+  {:else}
+    <!-- Create Mode: Original form -->
+    <div class="hulyModal-content__titleGroup">
+      <ModernEditbox bind:value={name} label={task.string.TaskName} size={'large'} kind={'ghost'} autoFocus />
+    </div>
+    <div class="hulyModal-content__settingsSet">
       <div class="hulyModal-content__settingsSet-line">
         <span class="label">
-          <Label label={task.string.Type} />
+          <Label label={task.string.TaskType} />
         </span>
-        <ButtonMenu
-          selected={taskTypeDescriptor._id}
-          items={descriptorItems}
-          icon={taskTypeDescriptor.icon}
-          label={taskTypeDescriptor.name}
-          kind={'secondary'}
-          size={'large'}
-          on:selected={(evt) => {
-            if (evt.detail != null) {
-              const tt = taskTypeDescriptors.find((tt) => tt._id === evt.detail)
-              if (tt) taskTypeDescriptor = tt
-            }
-          }}
+        <TaskTypeKindEditor bind:kind />
+      </div>
+      <div class="hulyModal-content__settingsSet-line">
+        <ClassMixinSelector
+          baseClass={taskTypeDescriptor?.baseClass ?? task.class.Task}
+          bind:value={baseMixin}
         />
       </div>
-    {/if}
-  </div>
+      {#if taskTypeDescriptors.length > 1}
+        <div class="hulyModal-content__settingsSet-line">
+          <span class="label">
+            <Label label={task.string.Type} />
+          </span>
+          <ButtonMenu
+            selected={taskTypeDescriptor._id}
+            items={descriptorItems}
+            icon={taskTypeDescriptor.icon}
+            label={taskTypeDescriptor.name}
+            kind={'secondary'}
+            size={'large'}
+            on:selected={(evt) => {
+              if (evt.detail != null) {
+                const tt = taskTypeDescriptors.find((tt) => tt._id === evt.detail)
+                if (tt) taskTypeDescriptor = tt
+              }
+            }}
+          />
+        </div>
+      {/if}
+    </div>
+  {/if}
 </Modal>
