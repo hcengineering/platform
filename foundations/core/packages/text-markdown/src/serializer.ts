@@ -96,6 +96,32 @@ function codeSpanDelim (parent: MarkupNode, index: number): string {
   return pad ? ticks + ' ' : ticks
 }
 
+// Join neighboring code text nodes when exactly one of them is a code span of
+// its own, since their delimiters would otherwise touch and merge into a longer
+// backtick run. The merged node keeps the marks of the node that is a span.
+function mergeAdjacentCode (content: MarkupNode[]): MarkupNode[] {
+  const result: MarkupNode[] = []
+  for (const node of content) {
+    const prev = result[result.length - 1]
+    if (
+      prev !== undefined &&
+      prev.type === MarkupNodeType.text &&
+      node.type === MarkupNodeType.text &&
+      hasCodeMark(prev) &&
+      hasCodeMark(node) &&
+      isOwnCodeSpan(prev) !== isOwnCodeSpan(node)
+    ) {
+      result[result.length - 1] = {
+        ...(isOwnCodeSpan(prev) ? prev : node),
+        text: (prev.text ?? '') + (node.text ?? '')
+      }
+    } else {
+      result.push(node)
+    }
+  }
+  return result
+}
+
 function fenceFor (node: MarkupNode, info: string): string {
   const text = nodeContent(node)
     .map((it) => it.text ?? '')
@@ -826,7 +852,9 @@ export class MarkdownState implements IState {
 
   // :: (Node)
   // Render the contents of `parent` as inline content.
-  renderInline (parent: MarkupNode): void {
+  renderInline (source: MarkupNode): void {
+    const parent: MarkupNode =
+      source.content !== undefined ? { ...source, content: mergeAdjacentCode(source.content) } : source
     const state: InlineState = { active: [], trailing: '', parent, marks: [] }
     nodeContent(parent).forEach((nde, index) => {
       state.node = nde

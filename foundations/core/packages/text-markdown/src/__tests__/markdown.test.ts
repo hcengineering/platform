@@ -1176,6 +1176,26 @@ describe('markupToMarkdown', () => {
       }
     },
     {
+      name: 'adjacent inline code nodes with different marks',
+      markdown: '`` a` b ``',
+      markup: {
+        type: MarkupNodeType.doc,
+        content: [
+          {
+            type: MarkupNodeType.paragraph,
+            content: [
+              { type: MarkupNodeType.text, text: 'a` ', marks: [{ type: MarkupMarkType.code }] },
+              {
+                type: MarkupNodeType.text,
+                text: 'b',
+                marks: [{ type: MarkupMarkType.code }, { type: MarkupMarkType.bold }]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       name: 'code block with a backtick in the language',
       markdown: '~~~a`b\n```\n~~~',
       markup: {
