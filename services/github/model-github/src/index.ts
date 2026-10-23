@@ -940,7 +940,11 @@ export function createModel (builder: Builder): void {
       description: github.string.GithubDesc,
       icon: github.icon.Github,
       name: github.string.Github,
-      availablePermissions: [core.permission.ForbidDeleteObject]
+      availablePermissions: [
+        core.permission.ForbidDeleteObject,
+        core.permission.ForbidCreateObject,
+        core.permission.ForbidUpdateObject
+      ]
     },
     github.descriptors.GithubProject
   )

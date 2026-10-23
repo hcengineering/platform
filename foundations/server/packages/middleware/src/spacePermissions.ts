@@ -182,8 +182,12 @@ export class SpacePermissionsMiddleware extends BaseMiddleware implements Middle
       ) {
         continue
       }
+      if (isSpace && isObjectOnlyPermission(permission)) continue
       if (permission.txMatch === undefined) {
-        withoutMatch = permission
+        // A forbidding permission wins over an allowing one, independent of the role/permission order
+        if (withoutMatch === undefined || permission.forbid === true) {
+          withoutMatch = permission
+        }
         continue
       } else {
         const checkMatch = matchQuery([tx], permission.txMatch, tx._class, this.context.hierarchy, true)
@@ -488,6 +492,19 @@ function isTxClassMatched (tx: Tx, permission: Permission): boolean {
     return permission.txClass === core.class.TxUpdateDoc
   }
   return false
+}
+
+/**
+ * Generic (no objectClass) forbid create/update permissions restrict objects inside a space,
+ * but not the space document itself: otherwise the role holders could not manage the space
+ * (members, roles assignment, archiving) anymore.
+ */
+function isObjectOnlyPermission (permission: Permission): boolean {
+  return (
+    permission.forbid === true &&
+    permission.objectClass === undefined &&
+    (permission.txClass === core.class.TxCreateDoc || permission.txClass === core.class.TxUpdateDoc)
+  )
 }
 
 function getTxObjectClass (tx: TxCUD<Doc>): Ref<Class<Doc>> {
