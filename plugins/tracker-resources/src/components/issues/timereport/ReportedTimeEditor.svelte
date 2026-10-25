@@ -55,7 +55,7 @@
   }
   function showReports (event: MouseEvent): void {
     if (readonly) return
-    showPopup(ReportsPopup, { issue: object }, eventToHTMLElement(event))
+    showPopup(ReportsPopup, { issue: object, currentProject }, 'centered')
   }
   $: childTime = floorFractionDigits(
     (object.childInfo ?? []).map((it) => it.reportedTime).reduce((a, b) => a + b, 0),
