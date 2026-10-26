@@ -228,6 +228,7 @@
     "TimeSpendHours": "{value}h",
     "TimeSpendMinutes": "{value}m",
     "ChildEstimation": "Estimativa de sub-tarefas",
+    "ShowEstimationSum": "Mostrar a soma das estimativas nos grupos",
     "ChildReportedTime": "Tempo de sub-tarefas",
     "CapacityValue": "de {value}d",
     "NewRelatedIssue": "Nova tarefa relacionada",
