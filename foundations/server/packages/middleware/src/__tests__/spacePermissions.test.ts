@@ -211,16 +211,16 @@ describe('SpacePermissionsMiddleware forbid create/update object', () => {
     const childTx =
       operation === 'create'
         ? factory.createTxCreateDoc(
-            COMMENT_CLASS,
-            SPACE,
-            {
-              attachedTo: objectId,
-              attachedToClass: OBJECT_CLASS,
-              collection: 'comments',
-              message: 'x'
-            },
-            commentId
-          )
+          COMMENT_CLASS,
+          SPACE,
+          {
+            attachedTo: objectId,
+            attachedToClass: OBJECT_CLASS,
+            collection: 'comments',
+            message: 'x'
+          },
+          commentId
+        )
         : factory.createTxUpdateDoc(COMMENT_CLASS, SPACE, commentId, { message: 'y' })
     const tx = factory.createTxCollectionCUD(OBJECT_CLASS, objectId, SPACE, 'comments', childTx)
 
@@ -292,7 +292,11 @@ describe('SpacePermissionsMiddleware forbid create/update object', () => {
     } as unknown as Middleware
     const pipeline = await createPipeline(
       ctx,
-      [SpacePermissionsMiddleware.create, MarkDerivedEntryMiddleware.create, async () => next],
+      [
+        (ctx, context, next) => SpacePermissionsMiddleware.create(ctx, context, next),
+        (ctx, context, next) => MarkDerivedEntryMiddleware.create(ctx, context, next),
+        async () => next
+      ],
       mw.context
     )
     const derived = pipeline.context.derived
