@@ -22,6 +22,7 @@ import type { Issue, IssueTemplate, IssueTemplateData, Project } from '@hcengine
  *
  * Components and milestones belong to the source project, so they are cleared when the
  * target project differs. A task type is kept only if the target project type provides it.
+ * Assignees are preserved, matching the template editor which also offers non-members.
  * Child templates get fresh ids, comments and attachments are not copied.
  */
 export function makeIssueTemplateCopy (
