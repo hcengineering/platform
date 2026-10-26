@@ -14,13 +14,14 @@
 //
 
 import { getMetadata, getResource, type Resource, setMetadata } from '@hcengineering/platform'
+import type * as Platform from '@hcengineering/platform'
 import uiPlugin, { type AnyComponent, type Location, parseLocation } from '@hcengineering/ui'
 import { hasResource } from '../configuration'
 import { handleNewTabClick } from '../navLink'
 import presentation from '../plugin'
 
 jest.mock('@hcengineering/platform', () => ({
-  ...jest.requireActual<typeof import('@hcengineering/platform')>('@hcengineering/platform'),
+  ...jest.requireActual<typeof Platform>('@hcengineering/platform'),
   getMetadata: jest.fn(),
   getResource: jest.fn()
 }))
@@ -51,9 +52,11 @@ describe('handleNewTabClick', () => {
 
   beforeEach(() => {
     jest.resetAllMocks()
-    jest.mocked(getMetadata).mockImplementation(
-      jest.requireActual<typeof import('@hcengineering/platform')>('@hcengineering/platform').getMetadata
-    )
+    jest
+      .mocked(getMetadata)
+      .mockImplementation(
+        jest.requireActual<typeof Platform>('@hcengineering/platform').getMetadata
+      )
     setMetadata(presentation.metadata.FrontUrl, 'https://huly.example')
     setMetadata(presentation.metadata.OpenInNewTab, resource)
     setMetadata(uiPlugin.metadata.Routes, new Map([['workbench', 'workbench:component:WorkbenchApp' as AnyComponent]]))
@@ -71,11 +74,11 @@ describe('handleNewTabClick', () => {
     const event = clickEvent(init)
     const preventDefault = jest.spyOn(event, 'preventDefault')
     const stopPropagation = jest.spyOn(event, 'stopPropagation')
-    jest.mocked(getResource).mockImplementationOnce(() => {
+    jest.mocked(getResource).mockImplementationOnce(async () => {
       expect(preventDefault).toHaveBeenCalledTimes(1)
       expect(stopPropagation).toHaveBeenCalledTimes(1)
       expect(event.defaultPrevented).toBe(true)
-      return Promise.resolve(openInNewTab)
+      return await Promise.resolve(openInNewTab)
     })
 
     const handled = handleNewTabClick(event, { href, disabled: false })
@@ -163,7 +166,10 @@ describe('handleNewTabClick', () => {
   )
 
   it('ignores disabled links and missing hrefs', async () => {
-    for (const options of [{ href, disabled: true }, { href: undefined, disabled: false }]) {
+    for (const options of [
+      { href, disabled: true },
+      { href: undefined, disabled: false }
+    ]) {
       const event = clickEvent({ button: 1 })
 
       await handleNewTabClick(event, options)
