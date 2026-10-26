@@ -138,6 +138,8 @@
     "WorkingDaysDepartment": "Holiday calendar",
     "WorkingDaysCompanyWide": "Company-wide",
     "WorkingDaysAtLeastOneDay": "At least one working day must stay active",
+    "HoursPerDay": "Hours per working day",
+    "HoursPerDayDescription": "Used to show estimation and reported time in days. Empty means 8 hours.",
     "WorkingDayMon": "Mon",
     "WorkingDayTue": "Tue",
     "WorkingDayWed": "Wed",

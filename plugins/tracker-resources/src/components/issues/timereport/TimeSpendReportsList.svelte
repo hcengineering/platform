@@ -103,7 +103,7 @@
           />
         </FixedColumn>
         <FixedColumn key={'timespend_reported'} justify={'center'}>
-          <TimePresenter value={report.value} />
+          <TimePresenter value={report.value} space={report.space} />
         </FixedColumn>
         <FixedColumn key={'timespend_date'} justify={'left'}>
           <DatePresenter value={report.date} kind={'ghost'} size={'small'} />

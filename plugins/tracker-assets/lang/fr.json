@@ -225,6 +225,8 @@
     "TimeSpendReportValueTooltip": "Temps passé en heures",
     "TimeSpendReportDescription": "Description",
     "TimeSpendDays": "{value}j",
+    "HoursPerDay": "Heures par jour ouvré",
+    "HoursPerDayDescription": "Utilisé pour afficher l'estimation et le temps déclaré en jours. Vide signifie 8 heures.",
     "TimeSpendHours": "{value}h",
     "TimeSpendMinutes": "{value}m",
     "ChildEstimation": "Estimation des sous-problèmes",
