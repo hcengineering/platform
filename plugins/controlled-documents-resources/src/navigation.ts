@@ -25,6 +25,10 @@ import view, { type ObjectPanel } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import slugify from 'slugify'
 
+// Navigator specials of the documents application (see the application model).
+// Their ids share the path position of document short links and must not be resolved as documents.
+const navigatorSpecialIds = new Set(['my-documents', 'library', 'templates', 'categories', 'space-browser'])
+
 export function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id'>): string {
   const hierarchy = getClient().getHierarchy()
   const objectPanelMixin = hierarchy.classHierarchyMixin<Doc, ObjectPanel>(object._class, view.mixin.ObjectPanel)
@@ -147,6 +151,10 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   const shortLink = loc.path[3]
+  if (shortLink !== undefined && navigatorSpecialIds.has(shortLink)) {
+    return undefined
+  }
+
   const id = parseDocumentId(shortLink)
   const projectId = loc.path[4] as Ref<Project>
 
