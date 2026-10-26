@@ -19,7 +19,7 @@ export const deselectAllItemsLabel = 'view:string:SelectItemNone' as IntlString
  * are removed from the selection; otherwise the group items (up to `limit`) are
  * appended. Items of other groups are always kept.
  */
-export function toggleGroupSelection<T extends { _id: string }>(selection: T[], groupItems: T[], limit: number): T[] {
+export function toggleGroupSelection<T extends { _id: string }> (selection: T[], groupItems: T[], limit: number): T[] {
   const groupIds = new Set(groupItems.map((it) => it._id))
   if (selection.some((it) => groupIds.has(it._id))) {
     return selection.filter((it) => !groupIds.has(it._id))
