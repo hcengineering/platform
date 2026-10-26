@@ -1,12 +1,14 @@
 <script lang="ts">
   import { getClient } from '@hcengineering/presentation'
-  import { DropdownIntlItem, DropdownLabelsIntl, Label, Toggle } from '@hcengineering/ui'
-  import { Viewlet, ViewOptions, ViewOptionsModel, ViewOptionModel } from '@hcengineering/view'
+  import { ButtonIcon, DropdownIntlItem, DropdownLabelsIntl, Label, Toggle } from '@hcengineering/ui'
+  import { OrderOption, Viewlet, ViewOptions, ViewOptionsModel, ViewOptionModel } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
   import { buildConfigLookup, canResolveAttribute, getKeyLabel } from '../utils'
   import { isDropdownType, isToggleType, noCategory } from '../viewOptions'
   import { SortingOrder } from '@hcengineering/core'
+  import { hasOrderDirection, reverseOrder, selectOrder } from '../orderDirection'
+  import IconUpDown from './icons/UpDown.svelte'
 
   export let viewlet: Viewlet
   export let config: ViewOptionsModel
@@ -77,6 +79,14 @@
     return groupBy.filter((p) => !notAllowed.includes(p.id as string))
   }
 
+  function setOrder (value: OrderOption | undefined): void {
+    if (value === undefined) return
+    viewOptions.orderBy = value
+    dispatch('update', { key: 'orderBy', value })
+  }
+
+  $: descending = viewOptions.orderBy?.[1] === SortingOrder.Descending
+
   const changeToggle = (model: ViewOptionModel) => {
     const value = !(viewOptions[model.key] ?? model.defaultValue)
     viewOptions[model.key] = value
@@ -130,28 +140,36 @@
   {#if !hideGroupingAndOrdering && hasMultipleSelections(config.orderBy)}
     <div class="antiCard-menu__item ordering">
       <span class="overflow-label"><Label label={view.string.Ordering} /></span>
-      <DropdownLabelsIntl
-        label={view.string.Ordering}
-        kind={'regular'}
-        size={'medium'}
-        items={orderBy}
-        selected={viewOptions.orderBy?.[0]}
-        width="10rem"
-        justify="left"
-        on:selected={(e) => {
-          const key = e.detail
-          const value = config.orderBy.find((p) => p[0] === key)
-          if (value !== undefined) {
-            if (viewOptions.orderBy[0] === key) {
-              viewOptions.orderBy[1] =
-                viewOptions.orderBy[1] === SortingOrder.Ascending ? SortingOrder.Descending : SortingOrder.Ascending
-            } else {
-              viewOptions.orderBy = value
-            }
-            dispatch('update', { key: 'orderBy', value: viewOptions.orderBy })
-          }
-        }}
-      />
+      <div class="flex-row-center gap-1">
+        <DropdownLabelsIntl
+          label={view.string.Ordering}
+          kind={'regular'}
+          size={'medium'}
+          items={orderBy}
+          selected={viewOptions.orderBy?.[0]}
+          width="8.25rem"
+          justify="left"
+          on:selected={(e) => {
+            setOrder(selectOrder(viewOptions.orderBy, e.detail, config.orderBy))
+          }}
+        />
+        <!-- Keep the button in the layout for manual ordering, so the dropdown does not shift.
+             Dropdown + gap + button together keep the 10rem width of the other rows. -->
+        <div style:visibility={hasOrderDirection(viewOptions.orderBy?.[0]) ? 'visible' : 'hidden'}>
+          <ButtonIcon
+            kind={'tertiary'}
+            size={'small'}
+            icon={IconUpDown}
+            iconProps={{ descending }}
+            dataId={'orderDirection'}
+            tooltip={{ label: descending ? view.string.Descending : view.string.Ascending }}
+            disabled={!hasOrderDirection(viewOptions.orderBy?.[0])}
+            on:click={() => {
+              setOrder(reverseOrder(viewOptions.orderBy))
+            }}
+          />
+        </div>
+      </div>
     </div>
   {/if}
   {#if visibleOthers.length > 0 && !hideGroupingAndOrdering && (hasMultipleSelections(config.groupBy) || hasMultipleSelections(config.orderBy))}
