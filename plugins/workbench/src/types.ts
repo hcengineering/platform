@@ -15,10 +15,10 @@
 //
 
 import type { AccountRole, AccountUuid, Class, Doc, DocumentQuery, Obj, Ref, Space } from '@hcengineering/core'
-import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
+import { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import { AnyComponent, type AnySvelteComponent, Location, ResolvedLocation } from '@hcengineering/ui'
+import { type AnyComponent, type AnySvelteComponent, type Location, type LocationResolver } from '@hcengineering/ui'
 
 /** @public */
 export interface LocationData {
@@ -44,7 +44,7 @@ export interface Application extends Doc {
   // Also attached ApplicationNavModel will be joined after this one main.
   navigatorModel?: NavigatorModel
 
-  locationResolver?: Resource<(loc: Location) => Promise<ResolvedLocation | undefined>>
+  locationResolver?: Resource<LocationResolver>
   locationDataResolver?: Resource<(loc: Location) => Promise<LocationData>>
 
   // Component will be displayed in case navigator model is not defined, or nothing is selected in navigator model

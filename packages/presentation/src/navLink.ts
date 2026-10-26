@@ -47,10 +47,21 @@ export async function handleNewTabClick (
   if (resource === undefined || hasResource(resource) !== true) return
   const loc = getInternalLocation(options.href)
   if (loc === undefined) return
+  // Plugin configuration is not a session capability. Policy belongs to the tab provider.
+  const canOpen = getMetadata(presentation.metadata.CanOpenInNewTab)
+  if (canOpen?.(loc) !== true) return
 
   // Cancel synchronously, before resource loading can yield to the browser.
   e.preventDefault()
   e.stopPropagation()
   const openInNewTab = await getResource(resource)
+  // The original shell must still own this operation after resource loading.
+  if (
+    getMetadata(presentation.metadata.OpenInNewTab) !== resource ||
+    getMetadata(presentation.metadata.CanOpenInNewTab) !== canOpen ||
+    !canOpen(loc)
+  ) {
+    return
+  }
   await openInNewTab(loc)
 }

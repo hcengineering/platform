@@ -15,6 +15,7 @@
 
 import { isNewTabClick } from '../linkClick'
 
+// Synthetic gesture fields only; no DOM dispatch or browser default is exercised.
 function click (
   init: Partial<Pick<MouseEvent, 'button' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey'>> = {}
 ): Pick<MouseEvent, 'button' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey'> {
@@ -40,7 +41,7 @@ describe('isNewTabClick', () => {
     expect(isNewTabClick(click({ button: 2, ctrlKey: true }))).toBe(false)
   })
 
-  it('leaves Shift and Alt combinations to the browser', () => {
+  it('rejects Shift and Alt combinations for the new-tab gesture', () => {
     expect(isNewTabClick(click({ ctrlKey: true, shiftKey: true }))).toBe(false)
     expect(isNewTabClick(click({ metaKey: true, altKey: true }))).toBe(false)
     expect(isNewTabClick(click({ button: 1, shiftKey: true }))).toBe(false)

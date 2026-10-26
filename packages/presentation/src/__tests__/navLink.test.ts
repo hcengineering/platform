@@ -13,12 +13,13 @@
 // limitations under the License.
 //
 
-import { getMetadata, getResource, type Resource, setMetadata } from '@hcengineering/platform'
-import type * as Platform from '@hcengineering/platform'
+import * as Platform from '@hcengineering/platform'
 import uiPlugin, { type AnyComponent, type Location, parseLocation } from '@hcengineering/ui'
 import { hasResource } from '../configuration'
 import { handleNewTabClick } from '../navLink'
 import presentation from '../plugin'
+
+const { getMetadata, getResource, setMetadata } = Platform
 
 jest.mock('@hcengineering/platform', () => ({
   ...jest.requireActual<typeof Platform>('@hcengineering/platform'),
@@ -34,6 +35,9 @@ jest.mock('@hcengineering/ui', () => ({
 
 jest.mock('../configuration', () => ({ hasResource: jest.fn() }))
 
+// Synthetic cancelable Event with assigned mouse fields, not a dispatched MouseEvent.
+// URL parsing and resource execution are mocked. These tests cover helper dispatch,
+// not Svelte bindings, DOM bubbling, native defaults, real tabs or issue resolution.
 function clickEvent (init: MouseEventInit = {}): MouseEvent {
   const event = new Event(init.button === 1 ? 'auxclick' : 'click', { bubbles: true, cancelable: true })
   const mouse = { button: 0, ctrlKey: false, metaKey: false, shiftKey: false, altKey: false, ...init }
@@ -47,18 +51,19 @@ describe('handleNewTabClick', () => {
     query: { filter: 'all' },
     fragment: 'issue'
   }
-  const resource = 'custom:function:OpenInNewTab' as Resource<(loc: Location) => Promise<void>>
+  const resource = 'custom:function:OpenInNewTab' as Platform.Resource<(loc: Location) => Promise<void>>
   const openInNewTab = jest.fn<Promise<void>, [Location]>()
+  const canOpenInNewTab = jest.fn<boolean, [Location]>()
 
   beforeEach(() => {
     jest.resetAllMocks()
     jest
       .mocked(getMetadata)
-      .mockImplementation(
-        jest.requireActual<typeof Platform>('@hcengineering/platform').getMetadata
-      )
+      .mockImplementation(jest.requireActual<typeof Platform>('@hcengineering/platform').getMetadata)
     setMetadata(presentation.metadata.FrontUrl, 'https://huly.example')
     setMetadata(presentation.metadata.OpenInNewTab, resource)
+    setMetadata(presentation.metadata.CanOpenInNewTab, canOpenInNewTab)
+    canOpenInNewTab.mockReturnValue(true)
     setMetadata(uiPlugin.metadata.Routes, new Map([['workbench', 'workbench:component:WorkbenchApp' as AnyComponent]]))
     jest.mocked(parseLocation).mockReturnValue(loc)
     jest.mocked(hasResource).mockReturnValue(true)
@@ -70,7 +75,7 @@ describe('handleNewTabClick', () => {
     { name: 'Ctrl+click', init: { ctrlKey: true } },
     { name: 'Cmd+click', init: { metaKey: true } },
     { name: 'middle auxclick', init: { button: 1 } }
-  ])('cancels $name synchronously and opens exactly one Huly tab', async ({ init }) => {
+  ])('cancels $name synchronously and dispatches the configured provider once', async ({ init }) => {
     const event = clickEvent(init)
     const preventDefault = jest.spyOn(event, 'preventDefault')
     const stopPropagation = jest.spyOn(event, 'stopPropagation')
@@ -93,6 +98,33 @@ describe('handleNewTabClick', () => {
     expect(openInNewTab).toHaveBeenCalledTimes(1)
     expect(openInNewTab).toHaveBeenCalledWith(loc)
   })
+
+  it.each(['teardown', 'replacement registration', 'session invalidation', 'resource replacement'])(
+    'does not dispatch a resource resolved after %s',
+    async (change) => {
+      let completeResource: (opener: typeof openInNewTab) => void = () => {
+        throw new Error('Resource lookup not started')
+      }
+      const loading = new Promise<typeof openInNewTab>((resolve) => {
+        completeResource = resolve
+      })
+      jest.mocked(getResource).mockReturnValueOnce(loading)
+      const event = clickEvent({ button: 1 })
+      const pending = handleNewTabClick(event, { href, disabled: false })
+      expect(getResource).toHaveBeenCalledWith(resource)
+      expect(event.defaultPrevented).toBe(true)
+
+      if (change === 'teardown') setMetadata(presentation.metadata.CanOpenInNewTab, undefined)
+      if (change === 'replacement registration') setMetadata(presentation.metadata.CanOpenInNewTab, () => true)
+      if (change === 'session invalidation') canOpenInNewTab.mockReturnValue(false)
+      if (change === 'resource replacement') setMetadata(presentation.metadata.OpenInNewTab, undefined)
+      completeResource(openInNewTab)
+
+      await pending
+      expect(openInNewTab).not.toHaveBeenCalled()
+      expect(event.defaultPrevented).toBe(true)
+    }
+  )
 
   it.each<{ name: string, init: MouseEventInit }>([
     { name: 'plain click', init: {} },
@@ -164,6 +196,28 @@ describe('handleNewTabClick', () => {
       expect(openInNewTab).not.toHaveBeenCalled()
     }
   )
+
+  describe.each<{ name: string, init: MouseEventInit }>([
+    { name: 'Ctrl+click', init: { ctrlKey: true } },
+    { name: 'Cmd+click', init: { metaKey: true } },
+    { name: 'middle auxclick', init: { button: 1 } }
+  ])('without session capability: $name', ({ init }) => {
+    it.each([false, undefined])('preserves the native default when capability is %s', async (available) => {
+      setMetadata(presentation.metadata.CanOpenInNewTab, available === undefined ? undefined : canOpenInNewTab)
+      canOpenInNewTab.mockReturnValue(false)
+      const event = clickEvent(init)
+      const stopPropagation = jest.spyOn(event, 'stopPropagation')
+
+      await handleNewTabClick(event, { href, disabled: false })
+
+      expect(event.defaultPrevented).toBe(false)
+      expect(stopPropagation).not.toHaveBeenCalled()
+      expect(getResource).not.toHaveBeenCalled()
+      expect(openInNewTab).not.toHaveBeenCalled()
+      if (available === false) expect(canOpenInNewTab).toHaveBeenCalledWith(loc)
+      else expect(canOpenInNewTab).not.toHaveBeenCalled()
+    })
+  })
 
   it('ignores disabled links and missing hrefs', async () => {
     for (const options of [

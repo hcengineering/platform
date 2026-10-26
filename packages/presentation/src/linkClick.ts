@@ -17,8 +17,9 @@
  * Checks whether a mouse click on a link is the usual "open in a new tab" gesture:
  * Ctrl/Cmd + left click or a middle click.
  *
- * Clicks with Shift or Alt are not treated as such, so the browser keeps handling them
- * (e.g. Ctrl+Shift+click still opens a real browser tab).
+ * Shift/Alt combinations are excluded. Callers retain their existing handling:
+ * NavLink leaves Ctrl/Cmd+Shift/Alt and Shift/Alt+middle to the native default,
+ * while Shift-only/Alt-only left clicks still follow ordinary in-app navigation.
  *
  * @public
  */

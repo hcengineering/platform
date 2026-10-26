@@ -20,7 +20,13 @@ import documents, {
 } from '@hcengineering/controlled-documents'
 import { type Doc, type Ref } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
-import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import {
+  getCurrentResolvedLocation,
+  getPanelURI,
+  type Location,
+  type LocationResolutionOptions,
+  type ResolvedLocation
+} from '@hcengineering/ui'
 import view, { type ObjectPanel } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import slugify from 'slugify'
@@ -34,13 +40,14 @@ export function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id
 
 async function generateDocumentLocation (
   loc: Location,
-  document: Ref<ControlledDocument>
+  document: Ref<ControlledDocument>,
+  options?: LocationResolutionOptions
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
   const doc = await client.findOne(documents.class.ControlledDocument, { _id: document }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find document ${document}.`)
     return undefined
   }
@@ -63,20 +70,21 @@ async function generateDocumentLocation (
 async function generateProjectDocumentLocation (
   loc: Location,
   document: Ref<ControlledDocument>,
-  project: Ref<Project>
+  project: Ref<Project>,
+  options?: LocationResolutionOptions
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
   const doc = await client.findOne(documents.class.ControlledDocument, { _id: document }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find document ${document}.`)
     return undefined
   }
 
   const prjdoc = await client.findOne(documents.class.ProjectDocument, { document, project }, { showArchived: true })
   if (prjdoc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find project document ${project} ${document}.`)
     return undefined
   }
@@ -141,7 +149,10 @@ export function getDocumentIdFromFragment (fragment: string): Ref<ProjectDocumen
   return props[1] != null ? (props[1] as Ref<ProjectDocument>) : undefined
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+export async function resolveLocation (
+  loc: Location,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== documentsId) {
     return undefined
   }
@@ -152,8 +163,8 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
 
   if (id !== undefined) {
     return projectId !== undefined
-      ? await generateProjectDocumentLocation(loc, id, projectId)
-      : await generateDocumentLocation(loc, id)
+      ? await generateProjectDocumentLocation(loc, id, projectId, options)
+      : await generateDocumentLocation(loc, id, options)
   }
 
   return undefined

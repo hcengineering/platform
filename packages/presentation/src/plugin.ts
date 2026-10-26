@@ -166,7 +166,13 @@ export default plugin(presentationId, {
     FilePreviewPopupActions: '' as ComponentExtensionId
   },
   metadata: {
+    // The resource alone does not imply that the current shell/session can write tabs.
     OpenInNewTab: '' as Metadata<Resource<(loc: Location) => Promise<void>>>,
+    // Installed by the mounted tab shell, removed on teardown. Must synchronously
+    // validate the live session, role, target route and workspace before cancellation.
+    // Consumers must retain and recheck this registration after resource loading;
+    // the provider must also validate its lifetime before writing a tab.
+    CanOpenInNewTab: '' as Metadata<(loc: Location) => boolean>,
     ModelVersion: '' as Metadata<string>,
     FrontVersion: '' as Metadata<string>,
     Draft: '' as Metadata<Record<string, any>>,

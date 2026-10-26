@@ -33,8 +33,9 @@
   export let noSelect: boolean = true
   export let maxWidth: string | undefined = undefined
 
-  // Ctrl/Cmd + click and middle click open internal links in a new Huly tab,
-  // other links (and Shift/Alt combinations) are left to the browser.
+  // Eligible Ctrl/Cmd + left clicks and middle clicks open a background Huly tab.
+  // Ctrl/Cmd + Shift/Alt and Shift/Alt + middle clicks retain the native default.
+  // Shift-only/Alt-only left clicks still follow the ordinary click handler below.
   function newTabHandler (e: MouseEvent): void {
     void handleNewTabClick(e, { href, disabled, onClick }).catch((err) => {
       Analytics.handleError(err)
