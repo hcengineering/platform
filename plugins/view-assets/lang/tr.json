@@ -156,6 +156,8 @@
     "AllowAttributeChanges": "Özellik izin ver: ",
     "RelationshipTable": "İlişki tablosu",
     "FilterOverflowBadge": "+{count}",
+    "PreviousItem": "Önceki öğe",
+    "NextItem": "Sonraki öğe",
     "AddFilter": "Filtre ekle",
     "HiddenFilters": "Gizli filtreler"
   }

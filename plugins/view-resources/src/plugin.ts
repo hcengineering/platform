@@ -22,9 +22,7 @@ import view, { viewId } from '@hcengineering/view'
 // Keep standalone package checks independent of generated dependency declarations.
 // ConfigureColumns is already registered by the current @hcengineering/view
 // runtime; an older ignored `view/types` directory may not describe it yet.
-const typedView = view as typeof view & {
-  string: typeof view.string & { ConfigureColumns: IntlString }
-}
+const typedView = view
 
 export default mergeIds(viewId, typedView, {
   component: {
@@ -114,7 +112,9 @@ export default mergeIds(viewId, typedView, {
     NumberItems: '' as IntlString,
     ToViewCommands: '' as IntlString,
     NoRelations: '' as IntlString,
-    FilterOverflowBadge: '' as IntlString
+    FilterOverflowBadge: '' as IntlString,
+    PreviousItem: '' as IntlString,
+    NextItem: '' as IntlString
   },
   function: {
     CreateDocMiddleware: '' as Resource<PresentationMiddlewareCreator>,

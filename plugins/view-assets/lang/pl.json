@@ -158,6 +158,8 @@
     "RoleLabel": "Rola: {role}",
     "ForbidAttributeChanges": "Zablokuj zmiany: ",
     "AllowAttributeChanges": "Zezwól na zmiany: ",
-    "RelationshipTable": "Macierz powiązań"
+    "RelationshipTable": "Macierz powiązań",
+    "PreviousItem": "Poprzedni element",
+    "NextItem": "Następny element"
   }
 }

@@ -156,6 +156,8 @@
         "AllowAttributeChanges": "변경 허용: ",
         "RelationshipTable": "추적 매트릭스",
         "FilterOverflowBadge": "+{count}",
+        "PreviousItem": "이전 항목",
+        "NextItem": "다음 항목",
         "AddFilter": "필터 추가",
         "HiddenFilters": "숨겨진 필터"
     }

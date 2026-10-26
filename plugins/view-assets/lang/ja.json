@@ -156,6 +156,8 @@
     "AllowAttributeChanges": "属性の変更を許可: ",
     "RelationshipTable": "関係テーブル",
     "FilterOverflowBadge": "+{count}",
+    "PreviousItem": "前の項目",
+    "NextItem": "次の項目",
     "AddFilter": "フィルターを追加",
     "HiddenFilters": "非表示のフィルター"
   }
