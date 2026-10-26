@@ -21,6 +21,7 @@ import {
   type AccountRole,
   type WorkspaceUuid,
   type AccountUuid,
+  type PersonId,
   type PersonUuid
 } from '@hcengineering/core'
 
@@ -554,7 +555,7 @@ export class PostgresAccountDB implements AccountDB {
     this.socialId = new PostgresDbCollection<SocialId, '_id'>('social_id', client, {
       ns,
       idKey: '_id',
-      timestampFields: ['createdOn', 'verifiedOn'],
+      timestampFields: ['createdOn', 'verifiedOn', 'otpRetryOn'],
       withRetryClient
     })
     this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client, {
@@ -809,6 +810,17 @@ export class PostgresAccountDB implements AccountDB {
       err.code === 'CONNECTION_DESTROYED' || // This error is thrown for any queries that were pending when the timeout to sql.end({ timeout: X }) was reached. If the DB client is being closed completely retry will result in CONNECTION_ENDED which is not retried so should be fine.
       msg.includes('RETRY_SERIALIZABLE')
     )
+  }
+
+  async reserveOtpSend (socialId: PersonId, now: number, retryOn: number): Promise<boolean> {
+    return await this.withRetry(async (client) => {
+      const result = await client.unsafe(
+        `UPDATE ${this.socialId.getTableName()} SET otp_retry_on = $2
+         WHERE _id = $1 AND (otp_retry_on IS NULL OR otp_retry_on <= $3) RETURNING _id`,
+        [socialId, retryOn, now]
+      )
+      return result.length === 1
+    })
   }
 
   async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {

@@ -52,6 +52,7 @@ import {
   signUpOtp,
   restorePassword,
   requestPasswordReset,
+  checkHasPassword,
   changePassword,
   getPerson,
   getSocialIds,
@@ -1693,6 +1694,20 @@ describe('account operations', () => {
       const mockEmail = 'test@example.com'
       const mockAccountId = 'account-uuid' as AccountUuid
 
+      test.each([{ email: null }, { email: 123 }, { email: {} }, { email: ' ' }])(
+        'should reject malformed email input before requesting an OTP (%j)',
+        async ({ email }) => {
+          const lookup = jest.spyOn(utils, 'getEmailSocialId')
+          const send = jest.spyOn(utils, 'sendOtp')
+
+          await expect(
+            loginOtp(mockCtx, mockDb, mockBranding, mockToken, { email: email as unknown as string })
+          ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {})))
+          expect(lookup).not.toHaveBeenCalled()
+          expect(send).not.toHaveBeenCalled()
+        }
+      )
+
       test('should successfully initiate OTP login for existing account', async () => {
         const mockSocialId: SocialId = {
           _id: 'social-id' as PersonId,
@@ -2393,6 +2408,44 @@ describe('account operations', () => {
         jest.spyOn(utils, 'setPassword').mockResolvedValue()
       })
 
+      test.each([
+        { code: null },
+        { code: undefined },
+        { code: 123456 },
+        { code: { $ne: '' } },
+        { code: ['123456'] },
+        { code: '' },
+        { code: '12345' },
+        { code: '1234567' },
+        { code: '123456\n' },
+        { code: 'abcdef' }
+      ])('should reject malformed OTP input before querying the database (%j)', async ({ code }) => {
+        const lookup = jest.spyOn(utils, 'getEmailSocialId')
+
+        await expect(
+          validateOtp(mockCtx, mockDb, mockBranding, mockToken, {
+            email: mockEmail,
+            code: code as unknown as string
+          })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {})))
+        expect(lookup).not.toHaveBeenCalled()
+      })
+
+      test.each([{ email: null }, { email: 123 }, { email: {} }, { email: ' ' }])(
+        'should reject malformed email input before querying the database (%j)',
+        async ({ email }) => {
+          const lookup = jest.spyOn(utils, 'getEmailSocialId')
+
+          await expect(
+            validateOtp(mockCtx, mockDb, mockBranding, mockToken, {
+              email: email as unknown as string,
+              code: '123456'
+            })
+          ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {})))
+          expect(lookup).not.toHaveBeenCalled()
+        }
+      )
+
       test('should validate OTP and create account for signup', async () => {
         const personId = 'social-id' as PersonId
         const mockSocialId: SocialId = {
@@ -2858,6 +2911,39 @@ describe('account operations', () => {
     beforeEach(() => {
       jest.clearAllMocks()
       global.fetch = jest.fn().mockResolvedValue({ ok: true })
+    })
+
+    describe('checkHasPassword', () => {
+      test.each([
+        { hash: Buffer.from('hash'), salt: Buffer.from('salt'), expected: true },
+        { hash: undefined, salt: undefined, expected: false },
+        { hash: Buffer.from('hash'), salt: undefined, expected: false },
+        { hash: undefined, salt: Buffer.from('salt'), expected: false }
+      ])('checks the authenticated account for both password fields (%j)', async ({ hash, salt, expected }) => {
+        jest.mocked(decodeTokenVerbose).mockReturnValue({
+          account: mockAccountId,
+          workspace: mockWorkspace.uuid,
+          extra: {}
+        })
+        const lookup = jest.spyOn(mockDb.account, 'findOne').mockResolvedValue({ uuid: mockAccountId, hash, salt })
+
+        await expect(checkHasPassword(mockCtx, mockDb, mockBranding, mockToken)).resolves.toBe(expected)
+        expect(decodeTokenVerbose).toHaveBeenCalledWith(mockCtx, mockToken)
+        expect(lookup).toHaveBeenCalledWith({ uuid: mockAccountId })
+      })
+
+      test('rejects mode selection when the authenticated account does not exist', async () => {
+        jest.mocked(decodeTokenVerbose).mockReturnValue({
+          account: mockAccountId,
+          workspace: mockWorkspace.uuid,
+          extra: {}
+        })
+        jest.spyOn(mockDb.account, 'findOne').mockResolvedValue(null)
+
+        await expect(checkHasPassword(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, { account: mockAccountId }))
+        )
+      })
     })
 
     describe('changePassword', () => {

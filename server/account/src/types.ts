@@ -55,6 +55,7 @@ export interface SocialId extends SocialIdBase {
   personUuid: PersonUuid
   createdOn?: Timestamp
   verifiedOn?: Timestamp
+  otpRetryOn?: Timestamp
 }
 
 export interface Account {
@@ -133,6 +134,7 @@ export interface OTP {
   code: string
   expiresOn: Timestamp
   createdOn: Timestamp
+  attempts?: number
 }
 
 export interface WorkspaceInvite {
@@ -352,6 +354,7 @@ export interface AccountDB {
   apiToken: DbCollection<ApiToken>
 
   init: () => Promise<void>
+  reserveOtpSend: (socialId: PersonId, now: Timestamp, retryOn: Timestamp) => Promise<boolean>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
   updateAllowReadOnlyGuests: (workspaceId: WorkspaceUuid, readOnlyGuestsAllowed: boolean) => Promise<void>
   updateAllowGuestSignUp: (workspaceId: WorkspaceUuid, guestSignUpAllowed: boolean) => Promise<void>

@@ -640,7 +640,7 @@ export async function sendOtp (
   const otpData = (await db.otp.find({ socialId: socialId._id }, { createdOn: 'descending' }, 1))[0]
   const retryDelay = getMetadata(accountPlugin.metadata.OtpRetryDelaySec) ?? 30
 
-  if (otpData !== undefined && otpData.expiresOn > ts && otpData.createdOn + retryDelay * 1000 > ts) {
+  if (otpData !== undefined && otpData.createdOn + retryDelay * 1000 > ts) {
     return { sent: true, retryOn: otpData.createdOn + retryDelay * 1000 }
   }
 
@@ -657,10 +657,16 @@ export async function sendOtp (
 
   const retryDelayMs = (getMetadata(accountPlugin.metadata.OtpRetryDelaySec) ?? 30) * 1000
   const ttlMs = (getMetadata(accountPlugin.metadata.OtpTimeToLiveSec) ?? 60) * 1000
+  // Reserve the cooldown before delivery, across replicas. Keep it even if sending fails or the OTP is consumed.
+  if (!(await db.reserveOtpSend(socialId._id, ts, ts + retryDelayMs))) {
+    const currentSocialId = await db.socialId.findOne({ _id: socialId._id })
+    return { sent: true, retryOn: currentSocialId?.otpRetryOn ?? ts + retryDelayMs }
+  }
+
   const code = await generateUniqueOtp(db)
 
   await sendMethod(ctx, branding, code, socialId.value)
-  await db.otp.insertOne({ socialId: socialId._id, code, expiresOn: ts + ttlMs, createdOn: ts })
+  await db.otp.insertOne({ socialId: socialId._id, code, expiresOn: ts + ttlMs, createdOn: ts, attempts: 0 })
 
   return { sent: true, retryOn: ts + retryDelayMs }
 }
@@ -705,7 +711,10 @@ export async function sendOtpEmail (
 }
 
 export async function isOtpValid (db: AccountDB, socialId: PersonId, code: string): Promise<boolean> {
-  const otpData = await db.otp.findOne({ socialId, code })
+  // Count every guess, including incorrect codes, in the shared database before checking the code.
+  // $inc also initializes the counter on legacy MongoDB records. Concurrent requests can fail closed.
+  await db.otp.update({ socialId, expiresOn: { $gt: Date.now() } }, { $inc: { attempts: 1 } })
+  const otpData = await db.otp.findOne({ socialId, code, attempts: { $lte: 5 } })
 
   return (otpData?.expiresOn ?? 0) > Date.now()
 }

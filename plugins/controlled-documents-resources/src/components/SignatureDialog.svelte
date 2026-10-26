@@ -26,18 +26,21 @@
     Severity,
     Status,
     getMetadata,
-    getResource,
     translate
   } from '@hcengineering/platform'
   import { Button, EditBox, Label, Spinner, StylishEdit, ModernDialog } from '@hcengineering/ui'
-  import { getCurrentAccount, SocialIdType } from '@hcengineering/core'
-  import { getClient } from '@hcengineering/presentation'
-  import contact, { SocialIdentityRef } from '@hcengineering/contact'
+  import { getCurrentAccount } from '@hcengineering/core'
+  import presentation from '@hcengineering/presentation'
 
   import documents from '../plugin'
   import StatusControl from './requests/StatusControl.svelte'
   import { LoginInfo, loginIntlFieldNames } from '../utils'
-  import { SignatureCredentials, verifySignatureCredentials } from '../signature'
+  import {
+    SignatureConfirmation,
+    SignatureCredentials,
+    loadSignatureConfirmation,
+    verifySignatureCredentials
+  } from '../signature'
 
   export let confirmationTitle: IntlString = documents.string.ConfirmApproval
   export let rejectionTitle: IntlString = documents.string.ConfirmRejection
@@ -45,7 +48,8 @@
 
   const dispatch = createEventDispatcher()
   const account = getCurrentAccount()
-  const client = getClient()
+  const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
+  const accountClient = getAccountClient(accountsUrl, getMetadata(presentation.metadata.Token))
 
   let rejectionNote = ''
   const object: LoginInfo = {
@@ -54,46 +58,32 @@
   }
 
   // Accounts without a password (e.g. SSO-only) confirm their signature with a one-time code sent to their email
-  let hasPassword: boolean | undefined = undefined
-  let emailLoaded = false
+  let confirmation: SignatureConfirmation | undefined
+  let loading = true
   let code = ''
   let codeSent = false
   let sendingCode = false
+  let status = OK
 
-  void client
-    .findOne(contact.class.SocialIdentity, {
-      _id: { $in: account.socialIds as SocialIdentityRef[] },
-      type: SocialIdType.EMAIL
-    })
-    .then((si) => {
-      if (si != null) {
-        object.email = si.value
-      }
-    })
-    .finally(() => {
-      emailLoaded = true
-    })
-
-  async function checkPassword (): Promise<void> {
+  async function loadConfirmation (): Promise<void> {
     try {
-      const check = await getResource(login.function.CheckHasPassword)
-      hasPassword = await check()
-    } catch {
-      hasPassword = true // fall back to the password confirmation
+      confirmation = await loadSignatureConfirmation(accountClient, account.uuid)
+      object.email = confirmation.email
+    } catch (err: any) {
+      status = err instanceof PlatformError ? err.status : ERROR
+    } finally {
+      loading = false
     }
   }
-  void checkPassword()
+  void loadConfirmation()
 
-  const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
-  $: useOtp = hasPassword === false
-  $: disableEmailField = object.email !== '' || useOtp
+  $: useOtp = confirmation?.method === 'otp'
+  $: canEditEmail = confirmation?.method === 'password' && confirmation.email === ''
   $: canSubmit =
-    hasPassword !== undefined &&
+    confirmation !== undefined &&
     object.email !== '' &&
     (useOtp ? codeSent && code.trim() !== '' : object.password !== '') &&
     (!isRejection || rejectionNote.trim().length > 0)
-
-  let status = OK
 
   async function submit (): Promise<void> {
     if (!canSubmit) {
@@ -101,10 +91,10 @@
     }
 
     const credentials: SignatureCredentials = useOtp
-      ? { method: 'otp', email: object.email, code: code.trim() }
+      ? { method: 'otp', email: confirmation?.email ?? '', code: code.trim() }
       : { method: 'password', email: object.email, password: object.password }
 
-    status = await verifySignatureCredentials(getAccountClient(accountsUrl), credentials, account.uuid)
+    status = await verifySignatureCredentials(accountClient, credentials, account.uuid)
 
     if (status === OK) {
       dispatch('close', { rejectionNote: isRejection ? rejectionNote : undefined })
@@ -112,13 +102,13 @@
   }
 
   async function sendCode (): Promise<void> {
-    if (object.email === '') {
+    if (!useOtp || sendingCode || confirmation?.email === undefined || confirmation.email === '') {
       return
     }
 
     sendingCode = true
     try {
-      await getAccountClient(accountsUrl).loginOtp(object.email)
+      await accountClient.loginOtp(confirmation.email)
       codeSent = true
       status = OK
     } catch (err: any) {
@@ -174,48 +164,44 @@
       name={documents.string.Email}
       password={false}
       bind:value={object.email}
+      disabled={!canEditEmail}
       on:input={validate}
-      on:blur={() => object.email.trim()}
-      disabled={disableEmailField}
     />
-    {#if hasPassword === undefined}
+    {#if loading}
       <Spinner size={'small'} />
+    {:else if useOtp && object.email === ''}
+      <div class="signature-hint">
+        <Label label={documents.string.SignatureNoEmail} />
+      </div>
     {:else if useOtp}
-      {#if emailLoaded && object.email === ''}
-        <div class="signature-hint">
-          <Label label={documents.string.SignatureNoEmail} />
-        </div>
-      {:else}
-        <div class="signature-hint">
-          <Label label={codeSent ? documents.string.SignatureOtpSent : documents.string.SignatureOtpHint} />
-        </div>
-        <div class="flex-row-center flex-gap-2">
-          <div class="flex-grow">
-            <StylishEdit
-              label={documents.string.VerificationCode}
-              name={documents.string.VerificationCode}
-              password={false}
-              bind:value={code}
-              on:input={validate}
-              disabled={!codeSent}
-            />
-          </div>
-          <Button
-            label={documents.string.SendVerificationCode}
-            kind={'regular'}
-            disabled={sendingCode || object.email === ''}
-            on:click={sendCode}
+      <div class="signature-hint">
+        <Label label={codeSent ? documents.string.SignatureOtpSent : documents.string.SignatureOtpHint} />
+      </div>
+      <div class="flex-row-center flex-gap-2">
+        <div class="flex-grow">
+          <StylishEdit
+            label={documents.string.VerificationCode}
+            name={documents.string.VerificationCode}
+            password={false}
+            bind:value={code}
+            on:input={validate}
+            disabled={!codeSent}
           />
         </div>
-      {/if}
-    {:else}
+        <Button
+          label={documents.string.SendVerificationCode}
+          kind={'regular'}
+          disabled={sendingCode || object.email === ''}
+          on:click={sendCode}
+        />
+      </div>
+    {:else if confirmation?.method === 'password'}
       <StylishEdit
         label={documents.string.Password}
         name={documents.string.Password}
         password={true}
         bind:value={object.password}
         on:input={validate}
-        on:blur={() => object.email.trim()}
       />
     {/if}
     {#if isRejection}

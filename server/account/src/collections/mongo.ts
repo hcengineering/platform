@@ -22,6 +22,7 @@ import {
   type AccountUuid,
   buildSocialIdString,
   type SocialKey,
+  type PersonId,
   type PersonUuid
 } from '@hcengineering/core'
 import type {
@@ -434,6 +435,14 @@ export class MongoAccountDB implements AccountDB {
     this.workspaceMembers = new MongoDbCollection<WorkspaceMember>('workspaceMembers', db)
     this.workspacePermission = new MongoDbCollection<WorkspacePermission>('workspacePermissions', db)
     this.apiToken = new MongoDbCollection<ApiToken, 'id'>('apiTokens', db, 'id')
+  }
+
+  async reserveOtpSend (socialId: PersonId, now: number, retryOn: number): Promise<boolean> {
+    const result = await this.socialId.collection.updateOne(
+      { _id: socialId, $or: [{ otpRetryOn: { $exists: false } }, { otpRetryOn: { $lte: now } }] },
+      { $set: { otpRetryOn: retryOn } }
+    )
+    return result.matchedCount === 1
   }
 
   async init (): Promise<void> {

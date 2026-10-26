@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import type { AccountClient } from '@hcengineering/account-client'
-import type { AccountUuid } from '@hcengineering/core'
+import { type AccountUuid, SocialIdType } from '@hcengineering/core'
 import { ERROR, OK, PlatformError, Severity, Status } from '@hcengineering/platform'
 
 import documents from './plugin'
@@ -25,6 +25,38 @@ import documents from './plugin'
 export type SignatureCredentials =
   | { method: 'password', email: string, password: string }
   | { method: 'otp', email: string, code: string }
+
+export interface SignatureConfirmation {
+  method: SignatureCredentials['method']
+  email: string
+}
+
+/** Loads the dialog's confirmation mode and a verified email from the authenticated account service. */
+export async function loadSignatureConfirmation (
+  accountClient: Pick<AccountClient, 'checkHasPassword' | 'getSocialIds'>,
+  currentAccount: AccountUuid
+): Promise<SignatureConfirmation> {
+  let hasPassword = true
+  try {
+    hasPassword = await accountClient.checkHasPassword()
+  } catch {
+    // Keep password confirmation if the account service cannot determine the mode.
+  }
+
+  const socialIds = await accountClient.getSocialIds()
+  const email =
+    socialIds.find(
+      (si) =>
+        si.personUuid === currentAccount &&
+        si.type === SocialIdType.EMAIL &&
+        si.verifiedOn != null &&
+        si.verifiedOn > 0 &&
+        si.isDeleted !== true &&
+        si.value.trim().length > 0
+    )?.value ?? ''
+
+  return { method: hasPassword === false ? 'otp' : 'password', email }
+}
 
 /**
  * Re-authenticates the signer and checks that the credentials belong to the current account.
