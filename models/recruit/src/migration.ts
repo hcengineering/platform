@@ -97,7 +97,7 @@ export const recruitOperation: MigrateOperation = {
         func: async (client) => {
           const tx = new TxOperations(client, core.account.System)
           const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.class.Vacancy })
-          if (categories.some((category) => category.default === true)) return
+          if (categories.some((category) => category.default)) return
 
           const other = categories.find((category) => category.label === 'Other')
           if (other !== undefined) {

@@ -1,7 +1,16 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 // Licensed under the Eclipse Public License, Version 2.0
 
-import core, { ModelDb, type Client, type PersonId, type Ref, type Tx, type TxResult } from '@hcengineering/core'
+import core, {
+  ModelDb,
+  type Client,
+  type Doc,
+  type PersonId,
+  type Ref,
+  type Tx,
+  type TxCUD,
+  type TxResult
+} from '@hcengineering/core'
 import { Builder } from '@hcengineering/model'
 import { createModel as createCoreModel } from '@hcengineering/model-core'
 import tags, { TTagCategory, type TagCategory } from '@hcengineering/model-tags'
@@ -83,7 +92,11 @@ describe('create-vacancy-tag-category upgrade', () => {
     await recruitOperation.upgrade(initialState(), async () => client, 'upgrade')
 
     expect(await model.findAll(tags.class.TagCategory, {})).toHaveLength(1)
-    const categoryWrites = tx.mock.calls.filter(([transaction]) => transaction.objectClass === tags.class.TagCategory)
+    const categoryWrites = tx.mock.calls.filter(([transaction]) => {
+      if (!client.getHierarchy().isDerived(transaction._class, core.class.TxCUD)) return false
+      const cud = transaction as TxCUD<Doc>
+      return cud.objectClass === tags.class.TagCategory
+    })
     expect(categoryWrites).toHaveLength(1)
   })
 
