@@ -109,4 +109,12 @@ describe('workingDaysUpdate (host dialog persistence)', () => {
     const next = { ...cfg, holidayDepartment: 'team' } as unknown as WorkingDaysConfig
     expect(workingDaysUpdate(next, cfg)).toEqual({ workingDaysConfig: next })
   })
+
+  it('stored null counts as not configured: no update while disabled', () => {
+    expect(workingDaysUpdate(undefined, null)).toBeUndefined()
+  })
+
+  it('stored null: enabling writes the full config', () => {
+    expect(workingDaysUpdate(cfg, null)).toEqual({ workingDaysConfig: cfg })
+  })
 })
