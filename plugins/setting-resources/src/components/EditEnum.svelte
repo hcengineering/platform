@@ -14,6 +14,8 @@
 -->
 <script lang="ts">
   import core, { Enum } from '@hcengineering/core'
+  import { Analytics } from '@hcengineering/analytics'
+  import type { IntlString } from '@hcengineering/platform'
   import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
   import {
     IconAdd,
@@ -32,14 +34,14 @@
   import type { DropdownIntlItem } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import setting from '../plugin'
+  import { canChangeEnumValues } from '../enumValuesPolicy'
   import EnumValuesList from './EnumValuesList.svelte'
   import IconBulletList from './icons/BulletList.svelte'
   import Report from './icons/Report.svelte'
-  import { IntlString } from '@hcengineering/platform'
 
   export let value: Enum | undefined
   export let name: string = value?.name ?? ''
-  export let values: string[] = value?.enumValues ?? []
+  export let values: string[] = [...(value?.enumValues ?? [])]
   export let title: IntlString = setting.string.EditEnum
 
   const client = getClient()
@@ -47,8 +49,13 @@
 
   let matched = false
   let newValue = ''
+  let protectedOptions = false
 
   $: matched = values.includes(newValue.trim())
+
+  function handleError (error: unknown): void {
+    Analytics.handleError(error)
+  }
 
   async function save (): Promise<void> {
     if (value === undefined) {
@@ -58,6 +65,17 @@
       })
       dispatch('close', _id)
     } else {
+      if (
+        !canChangeEnumValues(
+          client.getModel().findObject(value._id) ?? value,
+          values,
+          client.getModel().findAllSync(core.class.Attribute, {}),
+          client.getHierarchy()
+        )
+      ) {
+        protectedOptions = true
+        return
+      }
       await client.update(value, {
         name,
         enumValues: values
@@ -115,7 +133,7 @@
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        processFile(file)
+        void processFile(file).catch(handleError)
       }
     }
     inputFile.value = ''
@@ -128,7 +146,7 @@
     for (let index = 0; index < list.length; index++) {
       const file = list.item(index)
       if (file !== null) {
-        processFile(file)
+        void processFile(file).catch(handleError)
       }
     }
   }
@@ -139,7 +157,7 @@
       if (item.kind === 'file') {
         const blob = item.getAsFile()
         if (blob !== null) {
-          processFile(blob)
+          void processFile(blob).catch(handleError)
         }
       }
     }
@@ -164,7 +182,7 @@
       icon: Report,
       label: setting.string.ImportEnumCopy,
       action: () => {
-        handleClipboard()
+        void handleClipboard().catch(handleError)
       }
     }
   ]
@@ -173,7 +191,7 @@
     if (!opened) {
       opened = true
       showPopup(ModernPopup, { items }, eventToHTMLElement(ev), (result) => {
-        if (result) items.find((it) => it.id === result)?.action()
+        if (typeof result === 'string') items.find((it) => it.id === result)?.action()
         opened = false
       })
     }
@@ -225,6 +243,16 @@
 >
   <div class="flex-col">
     <ModernEditbox bind:value={name} label={setting.string.EnumTitle} kind={'ghost'} size={'large'} width={'100%'} />
+    {#if value !== undefined}
+      <div class="font-regular-12 secondary-textColor mt-2">
+        <Label label={setting.string.EnumRenameHint} />
+      </div>
+    {/if}
+    {#if protectedOptions}
+      <div class="error font-regular-12 mt-2" role="alert">
+        <Label label={setting.string.ReferencedEnumValue} />
+      </div>
+    {/if}
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div
       class="hulyTableAttr-container mt-6"

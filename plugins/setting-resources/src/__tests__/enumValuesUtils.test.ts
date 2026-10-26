@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import type { Enum } from '@hcengineering/core'
 import {
   EnumValuesDraft,
   isSameEnumValues,
@@ -202,5 +203,182 @@ describe('EnumValuesDraft', () => {
     expect(draft.values).toEqual(['a', 'remote'])
     draft.sync(['a', 'new'])
     expect(draft.values).toEqual(['a', 'new'])
+  })
+
+  it('discards a canceled reorder when stored options are unchanged', () => {
+    const draft = new EnumValuesDraft()
+    draft.sync(['a', 'b'])
+    draft.beginEdit()
+    draft.values = ['b', 'a']
+    draft.endEdit(['a', 'b'])
+    expect(draft.values).toEqual(['a', 'b'])
+
+    draft.beginEdit()
+    draft.values[1] = 'b2'
+    expect(draft.finishEdit(['a', 'b'])).toEqual({ values: ['a', 'b2'] })
+  })
+
+  it('keeps a submitted drop if dragend occurs before acknowledgement', () => {
+    const draft = new EnumValuesDraft()
+    draft.sync(['a', 'b'])
+    draft.beginEdit()
+    draft.values = ['b', 'a']
+    expect(draft.finishEdit(['a', 'b'], false)).toEqual({ values: ['b', 'a'] })
+    draft.endEdit(['a', 'b'])
+    expect(draft.values).toEqual(['b', 'a'])
+    draft.sync(['b', 'a'])
+    expect(draft.values).toEqual(['b', 'a'])
+  })
+})
+
+function deferred (): { promise: Promise<void>, resolve: () => void } {
+  let complete: (() => void) | undefined
+  const promise = new Promise<void>((resolve) => {
+    complete = resolve
+  })
+  return {
+    promise,
+    resolve: () => {
+      if (complete === undefined) throw new Error('Missing deferred resolver')
+      complete()
+    }
+  }
+}
+
+function enumDocument (): Enum {
+  // Synthetic document with the same fields and string-array payload as a live Enum.
+  return {
+    _id: 'enum' as Enum['_id'],
+    _class: 'core:class:Enum' as Enum['_class'],
+    space: 'core:space:Model' as Enum['space'],
+    modifiedBy: 'person' as Enum['modifiedBy'],
+    modifiedOn: 0,
+    name: 'Example',
+    enumValues: ['a', 'b']
+  }
+}
+
+describe('EnumValuesDraft.save', () => {
+  it('sends one client.update for Enter followed by blur before acknowledgement', async () => {
+    const pending = deferred()
+    const update = jest.fn(async () => {
+      await pending.promise
+    })
+    const value = enumDocument()
+    const draft = new EnumValuesDraft()
+    draft.sync(value.enumValues)
+    draft.beginEdit()
+    draft.values[1] = ' first '
+    const enter = draft.save({ update }, value)
+    const blur = draft.save({ update }, value)
+
+    expect(update).toHaveBeenCalledTimes(1)
+    expect(update).toHaveBeenCalledWith(value, { enumValues: ['a', 'first'] })
+    expect(draft.values).toEqual(['a', 'first'])
+    pending.resolve()
+    await Promise.all([enter, blur])
+  })
+
+  it.each([false, true])('keeps two pending saves across an earlier acknowledgement with typing=%s', async (typing) => {
+    const firstUpdate = deferred()
+    const secondUpdate = deferred()
+    const thirdUpdate = deferred()
+    const update = jest
+      .fn()
+      .mockReturnValueOnce(firstUpdate.promise)
+      .mockReturnValueOnce(secondUpdate.promise)
+      .mockReturnValueOnce(thirdUpdate.promise)
+    const value = enumDocument()
+    const draft = new EnumValuesDraft()
+    draft.sync(value.enumValues)
+    draft.beginEdit()
+    draft.values[1] = 'first'
+    const first = draft.save({ update }, value)
+    draft.beginEdit()
+    draft.values[1] = 'second'
+    const second = draft.save({ update }, value)
+    if (typing) {
+      draft.beginEdit()
+      draft.values[0] = 'third'
+    }
+
+    value.enumValues = ['a', 'first']
+    draft.sync(value.enumValues)
+    firstUpdate.resolve()
+    await first
+    expect(draft.values).toEqual([typing ? 'third' : 'a', 'second'])
+    const third = draft.save({ update }, value)
+    expect(update).toHaveBeenCalledTimes(typing ? 3 : 2)
+    expect(update).toHaveBeenNthCalledWith(1, value, { enumValues: ['a', 'first'] })
+    expect(update).toHaveBeenNthCalledWith(2, value, { enumValues: ['a', 'second'] })
+    if (typing) {
+      expect(update).toHaveBeenNthCalledWith(3, value, { enumValues: ['third', 'second'] })
+    }
+
+    value.enumValues = ['a', 'second']
+    draft.sync(value.enumValues)
+    expect(draft.values).toEqual([typing ? 'third' : 'a', 'second'])
+    secondUpdate.resolve()
+    thirdUpdate.resolve()
+    await Promise.all([first, second, third])
+  })
+
+  it('keeps a newer draft when update promises complete in reverse order', async () => {
+    const firstUpdate = deferred()
+    const secondUpdate = deferred()
+    const update = jest.fn().mockReturnValueOnce(firstUpdate.promise).mockReturnValueOnce(secondUpdate.promise)
+    const value = enumDocument()
+    const draft = new EnumValuesDraft()
+    draft.sync(value.enumValues)
+    draft.beginEdit()
+    draft.values[1] = 'first'
+    const first = draft.save({ update }, value)
+    draft.beginEdit()
+    draft.values[1] = 'second'
+    const second = draft.save({ update }, value)
+    secondUpdate.resolve()
+    await second
+    draft.beginEdit()
+    draft.values[0] = 'typing'
+    firstUpdate.resolve()
+    await first
+
+    expect(draft.values).toEqual(['typing', 'second'])
+    expect(update).toHaveBeenNthCalledWith(1, value, { enumValues: ['a', 'first'] })
+    expect(update).toHaveBeenNthCalledWith(2, value, { enumValues: ['a', 'second'] })
+  })
+
+  it('restores the last accepted local list when validation fails with a pending save', async () => {
+    const pending = deferred()
+    const update = jest.fn(async () => {
+      await pending.promise
+    })
+    const value = enumDocument()
+    const draft = new EnumValuesDraft()
+    draft.sync(value.enumValues)
+    draft.beginEdit()
+    draft.values[1] = 'first'
+    const first = draft.save({ update }, value)
+    draft.beginEdit()
+    draft.values[0] = ' '
+    expect(await draft.save({ update }, value)).toEqual({ error: 'empty' })
+    expect(draft.values).toEqual(['a', 'first'])
+    expect(update).toHaveBeenCalledTimes(1)
+    pending.resolve()
+    await first
+  })
+
+  it('allows retrying a failed write instead of deduplicating it as a pending save', async () => {
+    const update = jest.fn().mockRejectedValueOnce(new Error('Save failed')).mockResolvedValue(undefined)
+    const value = enumDocument()
+    const draft = new EnumValuesDraft()
+    draft.sync(value.enumValues)
+    draft.beginEdit()
+    draft.values[1] = 'first'
+    await expect(draft.save({ update }, value)).rejects.toThrow('Save failed')
+    expect(draft.values).toEqual(['a', 'first'])
+    await draft.save({ update }, value)
+    expect(update).toHaveBeenCalledTimes(2)
+    expect(update).toHaveBeenLastCalledWith(value, { enumValues: ['a', 'first'] })
   })
 })

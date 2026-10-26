@@ -66,6 +66,8 @@ export default mergeIds(settingId, setting, {
     EmptyEnumValue: '' as IntlString,
     DuplicateEnumValue: '' as IntlString,
     EnumValuesChanged: '' as IntlString,
+    EnumValuesSaveFailed: '' as IntlString,
+    ReferencedEnumValue: '' as IntlString,
     EnumRenameHint: '' as IntlString,
     NewEnumDialogClose: '' as IntlString,
     NewEnumDialogCloseNote: '' as IntlString,
