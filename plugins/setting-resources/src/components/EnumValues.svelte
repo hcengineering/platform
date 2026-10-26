@@ -14,7 +14,7 @@
 -->
 <script lang="ts">
   import { Enum } from '@hcengineering/core'
-  import presentation, { getClient, MessageBox } from '@hcengineering/presentation'
+  import presentation, { getClient } from '@hcengineering/presentation'
   import {
     ModernEditbox,
     IconAdd,
@@ -31,7 +31,7 @@
   } from '@hcengineering/ui'
   import type { DropdownIntlItem } from '@hcengineering/ui'
   import setting from '../plugin'
-  import { isSameEnumValues, normalizeEditedEnumValues } from '../enumValuesUtils'
+  import { EnumValuesDraft, isSameEnumValues, type EnumValuesError } from '../enumValuesUtils'
   import EnumValuesList from './EnumValuesList.svelte'
   import IconCrossedArrows from './icons/CrossedArrows.svelte'
   import IconBulletList from './icons/BulletList.svelte'
@@ -45,16 +45,17 @@
   let newItem: boolean = false
   let opened: boolean = false
 
-  // Local copy, so an invalid inline edit can be reverted to the stored values.
-  // It is a plain variable (not a `$:` declaration): a child binding write to a reactive
-  // declaration also invalidates its dependencies and would reset the edit in progress.
-  let values: string[] = []
-  let syncedValues: string[] | undefined
+  let draft = new EnumValuesDraft()
+  let validationError: EnumValuesError | undefined
+  const validationLabels = {
+    empty: setting.string.EmptyEnumValue,
+    duplicate: setting.string.DuplicateEnumValue,
+    conflict: setting.string.EnumValuesChanged
+  }
 
   function syncFromDoc (enumValues: string[]): void {
-    if (syncedValues !== undefined && isSameEnumValues(syncedValues, enumValues)) return
-    syncedValues = [...enumValues]
-    values = [...enumValues]
+    draft.sync(enumValues)
+    draft = draft
   }
 
   $: syncFromDoc(value.enumValues)
@@ -145,19 +146,34 @@
     })
   }
 
-  async function onDrop () {
-    await client.update(value, { enumValues: values })
+  function beginEdit (): void {
+    validationError = undefined
+    draft.beginEdit()
+  }
+
+  function endEdit (): void {
+    draft.endEdit(value.enumValues)
+    draft = draft
+  }
+
+  async function saveValues (normalize: boolean): Promise<void> {
+    const result = draft.finishEdit(value.enumValues, normalize)
+    draft = draft
+    if ('error' in result) {
+      validationError = result.error
+      return
+    }
+    const enumValues = result.values
+    if (isSameEnumValues(enumValues, value.enumValues)) return
+    await client.update(value, { enumValues })
+  }
+
+  async function onDrop (): Promise<void> {
+    await saveValues(false)
   }
 
   async function onValuesUpdate (): Promise<void> {
-    const enumValues = normalizeEditedEnumValues(value.enumValues, values)
-    if (enumValues === undefined) {
-      values = [...value.enumValues]
-      return
-    }
-    values = enumValues
-    if (isSameEnumValues(enumValues, value.enumValues)) return
-    await client.update(value, { enumValues })
+    await saveValues(true)
   }
 
   const items: (DropdownIntlItem & { action: () => void })[] = [
@@ -208,6 +224,9 @@
     hasMenu
   />
 </div>
+<div class="font-regular-12 secondary-textColor mt-2">
+  <Label label={setting.string.EnumRenameHint} />
+</div>
 <input
   bind:this={inputFile}
   disabled={inputFile == null}
@@ -246,11 +265,13 @@
       />
     </div>
   </div>
-  {#if value.enumValues.length > 0 || newItem}
+  {#if draft.values.length > 0 || newItem}
     <div class="hulyTableAttr-content options">
       <EnumValuesList
-        bind:values
+        bind:values={draft.values}
         disableMouseOver={newItem}
+        on:editstart={beginEdit}
+        on:editend={endEdit}
         on:remove={(e) => remove(e.detail)}
         on:drop={onDrop}
         on:update={onValuesUpdate}
@@ -291,6 +312,11 @@
           />
         </div>
       {/if}
+    </div>
+  {/if}
+  {#if validationError !== undefined}
+    <div class="error font-regular-12 mt-2" role="alert">
+      <Label label={validationLabels[validationError]} />
     </div>
   {/if}
 </div>

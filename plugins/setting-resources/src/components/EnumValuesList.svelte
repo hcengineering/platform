@@ -120,21 +120,31 @@
     }}
     on:drop|preventDefault={onDrop}
     on:dragstart={() => {
+      dispatch('editstart')
       selected = item
     }}
     on:dragend={() => {
       selected = undefined
+      dispatch('editend')
     }}
   >
     <button class="hulyTableAttr-content__row-dragMenu" class:drag={!disableMouseOver}>
       <IconMoreV2 size={'small'} />
     </button>
-    <div class="hulyTableAttr-content__row-label font-regular-14 accent">
+    <div
+      class="hulyTableAttr-content__row-label font-regular-14 accent"
+      on:focusin={() => {
+        dispatch('editstart')
+      }}
+    >
       <ModernEditbox
         kind={'ghost'}
         size={'small'}
         label={setting.string.EnterOptionTitle}
         on:keydown={handleKeydown}
+        on:input={() => {
+          dispatch('editstart')
+        }}
         on:blur={() => {
           update()
         }}
