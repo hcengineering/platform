@@ -170,7 +170,7 @@
     "VerificationCode": "Code de vérification",
     "SendVerificationCode": "Envoyer le code",
     "SignatureOtpHint": "Votre compte n'a pas de mot de passe. Confirmez votre signature avec un code de vérification envoyé à votre adresse e-mail.",
-    "SignatureOtpSent": "Un code de vérification a été envoyé à votre adresse e-mail.",
+    "SignatureOtpSent": "Utilisez le dernier code reçu par e-mail. S'il a déjà été utilisé ou ne fonctionne plus, attendez la fin du compte à rebours et demandez-en un autre.",
     "SignatureNoEmail": "Aucune adresse e-mail n'est liée à votre compte, la signature ne peut donc pas être confirmée.",
     "SignatureAccountMismatch": "Les identifiants n'appartiennent pas à l'utilisateur actuel.",
     "GeneralDocumentation": "Documentation générale",

@@ -24,7 +24,7 @@
     "Proceed": "계속",
     "NewEmail": "새 이메일",
     "SendConfirmation": "인증 코드 전송",
-    "CodeSent": "코드를 전송했습니다. 아래 입력란에 입력하세요.",
+    "CodeSent": "이메일의 최신 코드를 사용하세요. 이미 사용했거나 작동하지 않으면 타이머가 끝난 후 새 코드를 요청하세요.",
     "SendAgain": "다시 보내기",
     "SendAgainIn": "재전송 가능 시간",
     "Value": "값",

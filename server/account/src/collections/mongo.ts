@@ -48,6 +48,7 @@ import type {
   MailboxSecret,
   Operations,
   OTP,
+  OtpSendReservation,
   Query,
   SocialId,
   Sort,
@@ -437,12 +438,52 @@ export class MongoAccountDB implements AccountDB {
     this.apiToken = new MongoDbCollection<ApiToken, 'id'>('apiTokens', db, 'id')
   }
 
-  async reserveOtpSend (socialId: PersonId, now: number, retryOn: number): Promise<boolean> {
-    const result = await this.socialId.collection.updateOne(
-      { _id: socialId, $or: [{ otpRetryOn: { $exists: false } }, { otpRetryOn: { $lte: now } }] },
-      { $set: { otpRetryOn: retryOn } }
+  async advanceOtpAttempts (socialId: PersonId): Promise<string[]> {
+    const active = {
+      socialId,
+      $expr: {
+        $and: [{ $gt: ['$expiresOn', { $toLong: '$$NOW' }] }, { $lt: [{ $ifNull: ['$attempts', 0] }, 5] }]
+      }
+    }
+    // Snapshot record IDs before incrementing. New insertions cannot join a later code lookup.
+    const candidates = await this.otp.collection.find(active, { projection: { _id: 1 } }).toArray()
+    const codes: string[] = []
+    for (const candidate of candidates) {
+      const advanced = await this.otp.collection.findOneAndUpdate(
+        { ...active, _id: candidate._id },
+        { $inc: { attempts: 1 } },
+        { returnDocument: 'after', includeResultMetadata: false }
+      )
+      // $inc initializes legacy counters. Recheck expiry/budget in each atomic write.
+      if (advanced !== null) codes.push(advanced.code)
+    }
+    return codes
+  }
+
+  async cleanExpiredOtp (): Promise<void> {
+    await this.otp.collection.deleteMany({ $expr: { $lte: ['$expiresOn', { $toLong: '$$NOW' }] } })
+  }
+
+  async reserveOtpSend (socialId: PersonId, retryDelayMs: number): Promise<OtpSendReservation> {
+    // Both the predicate and deadline use MongoDB's clock, including across service replicas.
+    const reserved = await this.socialId.collection.findOneAndUpdate(
+      { _id: socialId, $expr: { $lte: [{ $ifNull: ['$otpRetryOn', 0] }, { $toLong: '$$NOW' }] } },
+      [{ $set: { otpRetryOn: { $add: [{ $toLong: '$$NOW' }, retryDelayMs] } } }],
+      { returnDocument: 'after', includeResultMetadata: false }
     )
-    return result.matchedCount === 1
+    if (reserved?.otpRetryOn !== undefined) {
+      return { reserved: true, now: reserved.otpRetryOn - retryDelayMs, retryOn: reserved.otpRetryOn }
+    }
+
+    const reservations = this.socialId.collection.aggregate<Pick<OtpSendReservation, 'now' | 'retryOn'>>([
+      { $match: { _id: socialId } },
+      { $project: { now: { $toLong: '$$NOW' }, retryOn: '$otpRetryOn' } }
+    ])
+    const current = await reservations.next()
+    if (current?.retryOn == null) {
+      throw new Error('OTP identity or reservation is missing')
+    }
+    return { reserved: false, now: current.now, retryOn: current.retryOn }
   }
 
   async init (): Promise<void> {

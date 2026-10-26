@@ -191,7 +191,7 @@
     "VerificationCode": "Ověřovací kód",
     "SendVerificationCode": "Odeslat kód",
     "SignatureOtpHint": "Váš účet nemá heslo. Potvrďte svůj podpis ověřovacím kódem zaslaným na váš e-mail.",
-    "SignatureOtpSent": "Ověřovací kód byl odeslán na váš e-mail.",
+    "SignatureOtpSent": "Použijte nejnovější kód z e-mailu. Pokud byl již použit nebo nefunguje, počkejte na konec odpočtu a vyžádejte si další.",
     "SignatureNoEmail": "K vašemu účtu není připojena žádná e-mailová adresa, proto nelze podpis potvrdit.",
     "SignatureAccountMismatch": "Přihlašovací údaje nepatří aktuálnímu uživateli.",
 

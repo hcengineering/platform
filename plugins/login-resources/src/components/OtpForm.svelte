@@ -18,7 +18,7 @@
   import { OK, Severity, Status } from '@hcengineering/platform'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import { Timestamp } from '@hcengineering/core'
-  import { LoginInfo } from '@hcengineering/account-client'
+  import { LoginInfo, OtpInfo } from '@hcengineering/account-client'
 
   import Tabs from './Tabs.svelte'
   import { loginFormMinHeight, loginFormPadding } from '../loginFormLayout'
@@ -34,6 +34,8 @@
   export let loginState: 'login' | 'signup' | 'none' = 'none'
   export let canChangeEmail = true
   export let password: string | undefined = undefined
+  // Pending signups have no account yet and must resend through signUpOtp.
+  export let onResend: () => Promise<[Status, OtpInfo | null]> = async () => await loginOtp(email)
   export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -205,7 +207,7 @@
 
   async function resendCode (): Promise<void> {
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-    const [otpStatus, result] = await loginOtp(email)
+    const [otpStatus, result] = await onResend()
     status = otpStatus
 
     if (result?.sent === true && otpStatus === OK) {

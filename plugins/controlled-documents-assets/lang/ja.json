@@ -173,7 +173,7 @@
     "VerificationCode": "確認コード",
     "SendVerificationCode": "コードを送信",
     "SignatureOtpHint": "アカウントにパスワードが設定されていません。メールに送信される確認コードで署名を確認してください。",
-    "SignatureOtpSent": "確認コードをメールに送信しました。",
+    "SignatureOtpSent": "メールの最新のコードを使用してください。使用済み、または無効な場合は、カウントダウン終了後に新しいコードをリクエストしてください。",
     "SignatureNoEmail": "アカウントにメールアドレスが関連付けられていないため、署名を確認できません。",
     "SignatureAccountMismatch": "資格情報は現在のユーザーのものではありません。",
     "GeneralDocumentation": "一般ドキュメント",

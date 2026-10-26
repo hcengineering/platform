@@ -143,6 +143,7 @@
     loginState="signup"
     password={object.password}
     retryOn={otpRetryOn}
+    onResend={() => signUpOtp(object.username, object.first, object.last)}
     on:step={handleStep}
   />
 {/if}

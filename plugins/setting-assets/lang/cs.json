@@ -157,7 +157,7 @@
     "Proceed": "Pokračovat",
     "NewEmail": "Nový email",
     "SendConfirmation": "Odeslat potvrzovací kód",
-    "CodeSent": "Kód byl odeslán. Zadejte jej prosím do pole níže.",
+    "CodeSent": "Použijte nejnovější kód z e-mailu. Pokud byl již použit nebo nefunguje, počkejte na konec odpočtu a vyžádejte si další.",
     "SendAgain": "Odeslat znovu",
     "SendAgainIn": "Odeslat znovu lze za",
     "WorkspaceNamePattern": "Název musí být 40 znaků nebo méně, není prázdný a nesmí obsahovat speciální znaky (<, >, /)",

@@ -636,14 +636,6 @@ export async function sendOtp (
   branding: Branding | null,
   socialId: SocialId
 ): Promise<OtpInfo> {
-  const ts = Date.now()
-  const otpData = (await db.otp.find({ socialId: socialId._id }, { createdOn: 'descending' }, 1))[0]
-  const retryDelay = getMetadata(accountPlugin.metadata.OtpRetryDelaySec) ?? 30
-
-  if (otpData !== undefined && otpData.createdOn + retryDelay * 1000 > ts) {
-    return { sent: true, retryOn: otpData.createdOn + retryDelay * 1000 }
-  }
-
   let sendMethod: (ctx: MeasureContext, branding: Branding | null, code: string, target: string) => Promise<void>
 
   switch (socialId.type) {
@@ -658,17 +650,19 @@ export async function sendOtp (
   const retryDelayMs = (getMetadata(accountPlugin.metadata.OtpRetryDelaySec) ?? 30) * 1000
   const ttlMs = (getMetadata(accountPlugin.metadata.OtpTimeToLiveSec) ?? 60) * 1000
   // Reserve the cooldown before delivery, across replicas. Keep it even if sending fails or the OTP is consumed.
-  if (!(await db.reserveOtpSend(socialId._id, ts, ts + retryDelayMs))) {
-    const currentSocialId = await db.socialId.findOne({ _id: socialId._id })
-    return { sent: true, retryOn: currentSocialId?.otpRetryOn ?? ts + retryDelayMs }
+  const reservation = await db.reserveOtpSend(socialId._id, retryDelayMs)
+  if (!reservation.reserved) {
+    // `sent` is the existing request-accepted contract; it does not promise a fresh delivery.
+    return { sent: true, retryOn: reservation.retryOn }
   }
+  const ts = reservation.now
 
   const code = await generateUniqueOtp(db)
 
   await sendMethod(ctx, branding, code, socialId.value)
   await db.otp.insertOne({ socialId: socialId._id, code, expiresOn: ts + ttlMs, createdOn: ts, attempts: 0 })
 
-  return { sent: true, retryOn: ts + retryDelayMs }
+  return { sent: true, retryOn: reservation.retryOn }
 }
 
 export async function sendOtpEmail (
@@ -711,12 +705,10 @@ export async function sendOtpEmail (
 }
 
 export async function isOtpValid (db: AccountDB, socialId: PersonId, code: string): Promise<boolean> {
-  // Count every guess, including incorrect codes, in the shared database before checking the code.
-  // $inc also initializes the counter on legacy MongoDB records. Concurrent requests can fail closed.
-  await db.otp.update({ socialId, expiresOn: { $gt: Date.now() } }, { $inc: { attempts: 1 } })
-  const otpData = await db.otp.findOne({ socialId, code, attempts: { $lte: 5 } })
-
-  return (otpData?.expiresOn ?? 0) > Date.now()
+  // Compare only the records returned by the atomic attempt writes. A code issued concurrently
+  // must never enter this comparison through a separate lookup without spending its own budget.
+  const codes = await db.advanceOtpAttempts(socialId)
+  return codes.includes(code)
 }
 
 /**
@@ -1800,7 +1792,7 @@ export function flattenStatus (ws: WorkspaceInfoWithStatus): WorkspaceInfoWithSt
 }
 
 export async function cleanExpiredOtp (db: AccountDB): Promise<void> {
-  await db.otp.deleteMany({ expiresOn: { $lte: Date.now() } })
+  await db.cleanExpiredOtp()
 }
 
 export async function getWorkspaces (

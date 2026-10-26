@@ -16,6 +16,7 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
+  import { Analytics } from '@hcengineering/analytics'
   import login from '@hcengineering/login'
   import { getClient as getAccountClient } from '@hcengineering/account-client'
   import {
@@ -28,8 +29,8 @@
     getMetadata,
     translate
   } from '@hcengineering/platform'
-  import { Button, EditBox, Label, Spinner, StylishEdit, ModernDialog } from '@hcengineering/ui'
-  import { getCurrentAccount } from '@hcengineering/core'
+  import { Button, EditBox, Label, Spinner, StylishEdit, ModernDialog, TimeLeft } from '@hcengineering/ui'
+  import { generateId, getCurrentAccount } from '@hcengineering/core'
   import presentation from '@hcengineering/presentation'
 
   import documents from '../plugin'
@@ -39,7 +40,7 @@
     SignatureConfirmation,
     SignatureCredentials,
     loadSignatureConfirmation,
-    verifySignatureCredentials
+    SignatureRequests
   } from '../signature'
 
   export let confirmationTitle: IntlString = documents.string.ConfirmApproval
@@ -50,6 +51,7 @@
   const account = getCurrentAccount()
   const accountsUrl = getMetadata(login.metadata.AccountsUrl) ?? ''
   const accountClient = getAccountClient(accountsUrl, getMetadata(presentation.metadata.Token))
+  const labelPrefix = generateId()
 
   let rejectionNote = ''
   const object: LoginInfo = {
@@ -61,15 +63,22 @@
   let confirmation: SignatureConfirmation | undefined
   let loading = true
   let code = ''
-  let codeSent = false
-  let sendingCode = false
+  let canResend = true
   let status = OK
+  let validationRequest = 0
+  let requests = new SignatureRequests(accountClient, account.uuid, (state) => {
+    validationRequest++
+    requests = state
+    status = requests.status
+    canResend = requests.retryOn <= Date.now()
+  })
 
   async function loadConfirmation (): Promise<void> {
     try {
       confirmation = await loadSignatureConfirmation(accountClient, account.uuid)
       object.email = confirmation.email
     } catch (err: any) {
+      Analytics.handleError(err)
       status = err instanceof PlatformError ? err.status : ERROR
     } finally {
       loading = false
@@ -80,13 +89,14 @@
   $: useOtp = confirmation?.method === 'otp'
   $: canEditEmail = confirmation?.method === 'password' && confirmation.email === ''
   $: canSubmit =
+    requests.pending === undefined &&
     confirmation !== undefined &&
     object.email !== '' &&
-    (useOtp ? codeSent && code.trim() !== '' : object.password !== '') &&
+    (useOtp ? requests.codeRequested && code.trim() !== '' : object.password !== '') &&
     (!isRejection || rejectionNote.trim().length > 0)
 
   async function submit (): Promise<void> {
-    if (!canSubmit) {
+    if (requests.pending !== undefined || !canSubmit) {
       return
     }
 
@@ -94,54 +104,45 @@
       ? { method: 'otp', email: confirmation?.email ?? '', code: code.trim() }
       : { method: 'password', email: object.email, password: object.password }
 
-    status = await verifySignatureCredentials(accountClient, credentials, account.uuid)
-
-    if (status === OK) {
+    if (await requests.verify(credentials)) {
       dispatch('close', { rejectionNote: isRejection ? rejectionNote : undefined })
     }
   }
 
   async function sendCode (): Promise<void> {
-    if (!useOtp || sendingCode || confirmation?.email === undefined || confirmation.email === '') {
-      return
-    }
-
-    sendingCode = true
-    try {
-      await accountClient.loginOtp(confirmation.email)
-      codeSent = true
-      status = OK
-    } catch (err: any) {
-      status = err instanceof PlatformError ? err.status : ERROR
-    } finally {
-      sendingCode = false
-    }
+    if (!useOtp || !canResend || confirmation?.email === undefined) return
+    await requests.sendCode(confirmation.email)
   }
 
   async function validate (): Promise<void> {
+    const request = ++validationRequest
+    if (requests.pending !== undefined) return
     if (useOtp) {
       if (code.trim() === '') {
-        status = new Status(Severity.INFO, documents.string.FieldIsEmpty, {
-          field: await translate(documents.string.VerificationCode, {})
-        })
+        const field = await translate(documents.string.VerificationCode, {})
+        if (request === validationRequest) {
+          status = new Status(Severity.INFO, documents.string.FieldIsEmpty, { field })
+        }
         return
       }
     } else {
       for (const field of Object.keys(object)) {
         const k = field as keyof LoginInfo
         if (object[k] === '') {
-          status = new Status(Severity.INFO, documents.string.FieldIsEmpty, {
-            field: await translate(loginIntlFieldNames[k], {})
-          })
+          const field = await translate(loginIntlFieldNames[k], {})
+          if (request === validationRequest) {
+            status = new Status(Severity.INFO, documents.string.FieldIsEmpty, { field })
+          }
           return
         }
       }
     }
 
     if (isRejection && rejectionNote.trim().length === 0) {
-      status = new Status(Severity.INFO, documents.string.FieldIsEmpty, {
-        field: await translate(documents.string.RejectionReason, {})
-      })
+      const field = await translate(documents.string.RejectionReason, {})
+      if (request === validationRequest) {
+        status = new Status(Severity.INFO, documents.string.FieldIsEmpty, { field })
+      }
       return
     }
 
@@ -152,6 +153,7 @@
 <ModernDialog
   label={isRejection ? rejectionTitle : confirmationTitle}
   {canSubmit}
+  loading={requests.pending !== undefined}
   on:submit={submit}
   on:close
   width="32rem"
@@ -161,10 +163,11 @@
   <div class="flex-col flex-gap-2">
     <StylishEdit
       label={documents.string.Email}
+      labelId={`${labelPrefix}-email-label`}
       name={documents.string.Email}
       password={false}
       bind:value={object.email}
-      disabled={!canEditEmail}
+      disabled={!canEditEmail || requests.pending !== undefined}
       on:input={validate}
     />
     {#if loading}
@@ -175,29 +178,43 @@
       </div>
     {:else if useOtp}
       <div class="signature-hint">
-        <Label label={codeSent ? documents.string.SignatureOtpSent : documents.string.SignatureOtpHint} />
+        <Label label={requests.codeRequested ? documents.string.SignatureOtpSent : documents.string.SignatureOtpHint} />
       </div>
       <div class="flex-row-center flex-gap-2">
         <div class="flex-grow">
           <StylishEdit
             label={documents.string.VerificationCode}
+            labelId={`${labelPrefix}-code-label`}
             name={documents.string.VerificationCode}
             password={false}
             bind:value={code}
             on:input={validate}
-            disabled={!codeSent}
+            disabled={!requests.codeRequested || requests.pending !== undefined}
           />
         </div>
         <Button
           label={documents.string.SendVerificationCode}
           kind={'regular'}
-          disabled={sendingCode || object.email === ''}
+          disabled={requests.pending !== undefined || !canResend || object.email === ''}
           on:click={sendCode}
         />
       </div>
+      {#if requests.retryOn > 0 && !canResend}
+        <div class="signature-hint" role="status">
+          <Label label={login.string.HaventReceivedCode} />
+          <TimeLeft
+            time={requests.retryOn}
+            on:timeout={() => {
+              canResend = true
+            }}
+          />
+        </div>
+      {/if}
     {:else if confirmation?.method === 'password'}
       <StylishEdit
         label={documents.string.Password}
+        labelId={`${labelPrefix}-password-label`}
+        disabled={requests.pending !== undefined}
         name={documents.string.Password}
         password={true}
         bind:value={object.password}
@@ -208,6 +225,7 @@
       <div class="mt-2">
         <EditBox
           id="rejection-reason"
+          disabled={requests.pending !== undefined}
           label={documents.string.RejectionReason}
           value={rejectionNote}
           placeholder={documents.string.ProvideRejectionReason}

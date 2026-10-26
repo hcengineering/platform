@@ -24,7 +24,7 @@
     "Proceed": "Kontynuuj",
     "NewEmail": "Nowy email",
     "SendConfirmation": "Wyślij kod potwierdzający",
-    "CodeSent": "Kod został wysłany. Wpisz go poniżej.",
+    "CodeSent": "Użyj najnowszego kodu z e-maila. Jeśli został już użyty lub nie działa, poczekaj na koniec odliczania i poproś o kolejny.",
     "SendAgain": "Wyślij ponownie",
     "SendAgainIn": "Możesz wysłać ponownie za",
     "Value": "Wartość",

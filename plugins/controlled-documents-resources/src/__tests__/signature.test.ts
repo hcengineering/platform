@@ -13,10 +13,13 @@
 // limitations under the License.
 
 import { getClient, type SocialId } from '@hcengineering/account-client'
+import { Analytics } from '@hcengineering/analytics'
 import { type AccountUuid, type PersonId, SocialIdType } from '@hcengineering/core'
 import platform, { ERROR, OK, PlatformError, Severity, Status } from '@hcengineering/platform'
 
-import { loadSignatureConfirmation, verifySignatureCredentials } from '../signature'
+import { SignatureRequests, loadSignatureConfirmation, verifySignatureCredentials } from '../signature'
+
+jest.mock('@hcengineering/analytics', () => ({ Analytics: { handleError: jest.fn() } }))
 
 jest.mock('../plugin', () => ({
   __esModule: true,
@@ -25,6 +28,11 @@ jest.mock('../plugin', () => ({
 
 const me = 'me-uuid' as AccountUuid
 const other = 'other-uuid' as AccountUuid
+const handleError = jest.spyOn(Analytics, 'handleError')
+
+beforeEach(() => {
+  jest.clearAllMocks()
+})
 
 function mockClient (account: AccountUuid | Error): { login: jest.Mock, validateOtp: jest.Mock } {
   const impl = async (): Promise<any> => {
@@ -57,12 +65,14 @@ describe('loadSignatureConfirmation', () => {
   })
 
   it('falls back to password confirmation when the password check fails', async () => {
+    const error = new Error('network')
     const client = {
-      checkHasPassword: jest.fn().mockRejectedValue(new Error('network')),
+      checkHasPassword: jest.fn().mockRejectedValue(error),
       getSocialIds: jest.fn().mockResolvedValue([email])
     }
 
     await expect(loadSignatureConfirmation(client, me)).resolves.toEqual({ method: 'password', email: email.value })
+    expect(handleError).toHaveBeenCalledWith(error)
   })
 
   it('waits for the authenticated password check before selecting OTP mode', async () => {
@@ -76,7 +86,6 @@ describe('loadSignatureConfirmation', () => {
     const getSocialIds = jest.fn().mockResolvedValue([email])
     const confirmation = loadSignatureConfirmation({ checkHasPassword, getSocialIds }, me)
 
-    await Promise.resolve()
     expect(getSocialIds).not.toHaveBeenCalled()
     resolvePasswordCheck(false)
     await expect(confirmation).resolves.toEqual({ method: 'otp', email: email.value })
@@ -226,8 +235,141 @@ describe('verifySignatureCredentials', () => {
   })
 
   it('returns a generic error on unexpected failure', async () => {
-    const client = mockClient(new Error('network'))
+    const error = new Error('network')
+    const client = mockClient(error)
     const res = await verifySignatureCredentials(client, { method: 'password', email: 'a@b.c', password: 'p' }, me)
     expect(res).toBe(ERROR)
+    expect(handleError).toHaveBeenCalledWith(error)
+  })
+})
+
+function deferred<T> (): { promise: Promise<T>, resolve: (value: T) => void } {
+  const control: { resolve: (value: T) => void } = {
+    resolve: () => {
+      throw new Error('Deferred not initialized')
+    }
+  }
+  const promise = new Promise<T>((resolve) => {
+    control.resolve = resolve
+  })
+  return { promise, resolve: control.resolve }
+}
+
+describe('SignatureRequests', () => {
+  const credentials = { method: 'otp', email: 'a@b.c', code: '123456' } as const
+
+  it.each(['password', 'otp'] as const)('serializes repeated %s verification and conflicting sends', async (method) => {
+    const response = deferred<{ account: AccountUuid }>()
+    const login = jest.fn().mockReturnValue(response.promise)
+    const validateOtp = jest.fn().mockReturnValue(response.promise)
+    const loginOtp = jest.fn()
+    const changed = jest.fn()
+    const requests = new SignatureRequests({ login, validateOtp, loginOtp }, me, changed)
+    const input = method === 'otp' ? credentials : { method, email: 'a@b.c', password: 'p' }
+    const first = requests.verify(input)
+    expect(requests.pending).toBe('verify')
+    await expect(requests.verify(input)).resolves.toBe(false)
+    await requests.sendCode('a@b.c')
+    expect(loginOtp).not.toHaveBeenCalled()
+    expect(method === 'otp' ? validateOtp : login).toHaveBeenCalledTimes(1)
+    response.resolve({ account: me })
+    await expect(first).resolves.toBe(true)
+    expect(requests.pending).toBeUndefined()
+    expect(changed).toHaveBeenCalledTimes(2)
+  })
+
+  it('blocks resend and verification while a send is pending', async () => {
+    const response = deferred<{ sent: boolean, retryOn: number }>()
+    const loginOtp = jest.fn().mockReturnValue(response.promise)
+    const validateOtp = jest.fn()
+    const requests = new SignatureRequests({ ...mockClient(me), loginOtp, validateOtp }, me, () => {})
+    const first = requests.sendCode('a@b.c')
+    expect(requests.pending).toBe('send')
+    await requests.sendCode('a@b.c')
+    await expect(requests.verify(credentials)).resolves.toBe(false)
+    expect(validateOtp).not.toHaveBeenCalled()
+    expect(loginOtp).toHaveBeenCalledTimes(1)
+    expect(loginOtp).toHaveBeenCalledWith('a@b.c')
+    response.resolve({ sent: true, retryOn: Date.now() + 30000 })
+    await first
+    expect(requests.pending).toBeUndefined()
+    expect(requests.codeRequested).toBe(true)
+  })
+
+  it('retains suppression after consumption in another dialog and permits recovery after cooldown', async () => {
+    const now = jest.spyOn(Date, 'now').mockReturnValue(1000)
+    const loginOtp = jest.fn().mockResolvedValue({ sent: true, retryOn: 31000 })
+    const validateOtp = jest
+      .fn()
+      .mockResolvedValueOnce({ account: me })
+      .mockRejectedValueOnce(new PlatformError(new Status(Severity.ERROR, platform.status.InvalidOtp, {})))
+      .mockResolvedValueOnce({ account: me })
+    const client = { ...mockClient(me), validateOtp, loginOtp }
+    try {
+      const first = new SignatureRequests(client, me, () => {})
+      await first.sendCode('a@b.c')
+      await expect(first.verify(credentials)).resolves.toBe(true)
+      const next = new SignatureRequests(client, me, () => {})
+      // The shared server cooldown survives consumption; `sent` also acknowledges suppression.
+      await next.sendCode('a@b.c')
+      expect(next.retryOn).toBe(31000)
+      await next.sendCode('a@b.c')
+      expect(loginOtp).toHaveBeenCalledTimes(2)
+      await expect(next.verify(credentials)).resolves.toBe(false)
+      expect(next.status.code).toBe(platform.status.InvalidOtp)
+      now.mockReturnValue(31000)
+      loginOtp.mockResolvedValue({ sent: true, retryOn: 61000 })
+      await next.sendCode('a@b.c')
+      expect(loginOtp).toHaveBeenCalledTimes(3)
+      expect(next.retryOn).toBe(61000)
+      await expect(next.verify(credentials)).resolves.toBe(true)
+    } finally {
+      now.mockRestore()
+    }
+  })
+
+  it('reports a send failure and releases the request guard', async () => {
+    const error = new Error('network')
+    const loginOtp = jest.fn().mockRejectedValue(error)
+    const requests = new SignatureRequests({ ...mockClient(me), loginOtp }, me, () => {})
+    await requests.sendCode('a@b.c')
+    expect(requests.status).toBe(ERROR)
+    expect(requests.pending).toBeUndefined()
+    expect(requests.codeRequested).toBe(false)
+    expect(handleError).toHaveBeenCalledWith(error)
+  })
+
+  it('recovers from an exhausted code only after requesting a new code after cooldown', async () => {
+    const now = jest.spyOn(Date, 'now').mockReturnValue(1000)
+    const exhausted = new Status(Severity.ERROR, platform.status.InvalidOtp, {})
+    const loginOtp = jest
+      .fn()
+      .mockResolvedValueOnce({ sent: true, retryOn: 31000 })
+      .mockResolvedValueOnce({ sent: true, retryOn: 61000 })
+    // The server budget is covered by the account tests; these responses model the dialog's recovery path.
+    const validateOtp = jest
+      .fn()
+      .mockRejectedValueOnce(new PlatformError(exhausted))
+      .mockRejectedValueOnce(new PlatformError(exhausted))
+      .mockResolvedValueOnce({ account: me })
+    const requests = new SignatureRequests({ ...mockClient(me), loginOtp, validateOtp }, me, () => {})
+    try {
+      await requests.sendCode('a@b.c')
+      await expect(requests.verify(credentials)).resolves.toBe(false)
+      expect(requests.status).toBe(exhausted)
+      expect(requests.pending).toBeUndefined()
+      await requests.sendCode('a@b.c')
+      expect(loginOtp).toHaveBeenCalledTimes(1)
+
+      now.mockReturnValue(31000)
+      await expect(requests.verify(credentials)).resolves.toBe(false)
+      await requests.sendCode('a@b.c')
+      expect(loginOtp).toHaveBeenCalledTimes(2)
+      expect(requests.status).toBe(OK)
+      await expect(requests.verify({ ...credentials, code: '654321' })).resolves.toBe(true)
+      expect(validateOtp).toHaveBeenLastCalledWith('a@b.c', '654321')
+    } finally {
+      now.mockRestore()
+    }
   })
 })

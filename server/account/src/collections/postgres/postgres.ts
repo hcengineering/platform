@@ -35,6 +35,7 @@ import type {
   AccountDB,
   Account,
   OTP,
+  OtpSendReservation,
   WorkspaceInvite,
   AccountEvent,
   SocialId,
@@ -812,14 +813,46 @@ export class PostgresAccountDB implements AccountDB {
     )
   }
 
-  async reserveOtpSend (socialId: PersonId, now: number, retryOn: number): Promise<boolean> {
+  async advanceOtpAttempts (socialId: PersonId): Promise<string[]> {
     return await this.withRetry(async (client) => {
-      const result = await client.unsafe(
-        `UPDATE ${this.socialId.getTableName()} SET otp_retry_on = $2
-         WHERE _id = $1 AND (otp_retry_on IS NULL OR otp_retry_on <= $3) RETURNING _id`,
-        [socialId, retryOn, now]
+      const result = await client.unsafe<{ code: string }[]>(
+        `UPDATE ${this.otp.getTableName()} SET attempts = COALESCE(attempts, 0) + 1
+         WHERE social_id = $1 AND expires_on > FLOOR(EXTRACT(EPOCH FROM statement_timestamp()) * 1000)::BIGINT
+         AND COALESCE(attempts, 0) < 5 RETURNING code`,
+        [socialId]
       )
-      return result.length === 1
+      return result.map((row) => row.code)
+    })
+  }
+
+  async cleanExpiredOtp (): Promise<void> {
+    await this.client.unsafe(
+      `DELETE FROM ${this.otp.getTableName()}
+       WHERE expires_on <= FLOOR(EXTRACT(EPOCH FROM statement_timestamp()) * 1000)::BIGINT`
+    )
+  }
+
+  async reserveOtpSend (socialId: PersonId, retryDelayMs: number): Promise<OtpSendReservation> {
+    return await this.withRetry(async (client) => {
+      // statement_timestamp is database time and is stable throughout each conditional write.
+      const now = 'FLOOR(EXTRACT(EPOCH FROM statement_timestamp()) * 1000)::BIGINT'
+      const result = await client.unsafe(
+        `UPDATE ${this.socialId.getTableName()} SET otp_retry_on = ${now} + $2
+         WHERE _id = $1 AND (otp_retry_on IS NULL OR otp_retry_on <= ${now})
+         RETURNING otp_retry_on - $2 AS now, otp_retry_on`,
+        [socialId, retryDelayMs]
+      )
+      if (result.length === 1) {
+        return { reserved: true, now: Number(result[0].now), retryOn: Number(result[0].otp_retry_on) }
+      }
+      const current = await client.unsafe(
+        `SELECT ${now} AS now, otp_retry_on FROM ${this.socialId.getTableName()} WHERE _id = $1`,
+        [socialId]
+      )
+      if (current.length !== 1 || current[0].otp_retry_on == null) {
+        throw new Error('OTP identity or reservation is missing')
+      }
+      return { reserved: false, now: Number(current[0].now), retryOn: Number(current[0].otp_retry_on) }
     })
   }
 

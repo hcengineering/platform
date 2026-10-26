@@ -197,7 +197,7 @@
     "VerificationCode": "Kod weryfikacyjny",
     "SendVerificationCode": "Wyślij kod",
     "SignatureOtpHint": "Twoje konto nie ma hasła. Potwierdź swój podpis kodem weryfikacyjnym wysłanym na Twój adres e-mail.",
-    "SignatureOtpSent": "Kod weryfikacyjny został wysłany na Twój adres e-mail.",
+    "SignatureOtpSent": "Użyj najnowszego kodu z e-maila. Jeśli został już użyty lub nie działa, poczekaj na koniec odliczania i poproś o kolejny.",
     "SignatureNoEmail": "Z Twoim kontem nie jest powiązany żaden adres e-mail, więc nie można potwierdzić podpisu.",
     "SignatureAccountMismatch": "Dane uwierzytelniające nie należą do bieżącego użytkownika.",
 

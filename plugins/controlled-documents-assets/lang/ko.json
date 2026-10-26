@@ -174,7 +174,7 @@
         "VerificationCode": "인증 코드",
         "SendVerificationCode": "코드 보내기",
         "SignatureOtpHint": "계정에 비밀번호가 없습니다. 이메일로 전송된 인증 코드로 서명을 확인하세요.",
-        "SignatureOtpSent": "인증 코드가 이메일로 전송되었습니다.",
+        "SignatureOtpSent": "이메일의 최신 코드를 사용하세요. 이미 사용했거나 작동하지 않으면 타이머가 끝난 후 새 코드를 요청하세요.",
         "SignatureNoEmail": "계정에 연결된 이메일 주소가 없어 서명을 확인할 수 없습니다.",
         "SignatureAccountMismatch": "자격 증명이 현재 사용자의 것이 아닙니다.",
         "GeneralDocumentation": "사내 문서",

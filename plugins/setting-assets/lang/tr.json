@@ -24,7 +24,7 @@
     "Proceed": "Devam et",
     "NewEmail": "Yeni e-posta",
     "SendConfirmation": "Onay kodu gönder",
-    "CodeSent": "Kod gönderildi. Lütfen aşağıdaki alana girin.",
+    "CodeSent": "E-postanızdaki en son kodu kullanın. Kod kullanıldıysa veya çalışmıyorsa süre dolduktan sonra yeni bir kod isteyin.",
     "SendAgain": "Tekrar gönder",
     "SendAgainIn": "Tekrar gönderilebilir:",
     "Value": "Değer",

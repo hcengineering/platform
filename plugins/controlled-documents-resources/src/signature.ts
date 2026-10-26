@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { Analytics } from '@hcengineering/analytics'
 import type { AccountClient } from '@hcengineering/account-client'
 import { type AccountUuid, SocialIdType } from '@hcengineering/core'
 import { ERROR, OK, PlatformError, Severity, Status } from '@hcengineering/platform'
@@ -39,7 +40,8 @@ export async function loadSignatureConfirmation (
   let hasPassword = true
   try {
     hasPassword = await accountClient.checkHasPassword()
-  } catch {
+  } catch (err: any) {
+    Analytics.handleError(err)
     // Keep password confirmation if the account service cannot determine the mode.
   }
 
@@ -55,7 +57,12 @@ export async function loadSignatureConfirmation (
         si.value.trim().length > 0
     )?.value ?? ''
 
-  return { method: hasPassword === false ? 'otp' : 'password', email }
+  switch (hasPassword) {
+    case false:
+      return { method: 'otp', email }
+    default:
+      return { method: 'password', email }
+  }
 }
 
 /**
@@ -78,10 +85,56 @@ export async function verifySignatureCredentials (
 
     return OK
   } catch (err: any) {
+    Analytics.handleError(err)
     if (err instanceof PlatformError) {
       return err.status
     } else {
       return ERROR
+    }
+  }
+}
+
+/** Shared by send and verify so a slow RPC cannot consume guesses through repeated dialog submissions. */
+export class SignatureRequests {
+  pending: 'send' | 'verify' | undefined
+  retryOn = 0
+  codeRequested = false
+  status = OK
+
+  constructor (
+    private readonly client: Pick<AccountClient, 'login' | 'validateOtp' | 'loginOtp'>,
+    private readonly account: AccountUuid,
+    private readonly onChange: (state: SignatureRequests) => void
+  ) {}
+
+  async sendCode (email: string): Promise<void> {
+    if (this.pending !== undefined || email.trim() === '' || this.retryOn > Date.now()) return
+    this.pending = 'send'
+    this.onChange(this)
+    try {
+      const info = await this.client.loginOtp(email)
+      this.retryOn = info.retryOn
+      this.codeRequested = info.sent
+      this.status = OK
+    } catch (err: any) {
+      Analytics.handleError(err)
+      this.status = err instanceof PlatformError ? err.status : ERROR
+    } finally {
+      this.pending = undefined
+      this.onChange(this)
+    }
+  }
+
+  async verify (credentials: SignatureCredentials): Promise<boolean> {
+    if (this.pending !== undefined) return false
+    this.pending = 'verify'
+    this.onChange(this)
+    try {
+      this.status = await verifySignatureCredentials(this.client, credentials, this.account)
+      return this.status === OK
+    } finally {
+      this.pending = undefined
+      this.onChange(this)
     }
   }
 }

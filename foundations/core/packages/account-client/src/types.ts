@@ -90,6 +90,7 @@ export interface InviteInfo {
 }
 
 export interface OtpInfo {
+  /** Request accepted, including resend suppression; this does not guarantee a fresh delivery. */
   sent: boolean
   retryOn: Timestamp
 }
