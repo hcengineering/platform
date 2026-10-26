@@ -61,6 +61,7 @@ import { ImageUploadExtension } from '../components/extension/shortcuts/imageUpl
 import { IndentExtension, indentExtensionOptions } from '../components/extension/shortcuts/indent'
 import { LinkKeymapExtension } from '../components/extension/shortcuts/linkKeymap'
 import { ParagraphKeymapExtension } from '../components/extension/shortcuts/paragraphKeymap'
+import { SelectAllExtension } from '../components/extension/shortcuts/selectAll'
 import { SmartPasteExtension } from '../components/extension/shortcuts/smartPaste'
 import { TableMetadataPasteExtension } from '../components/extension/shortcuts/tablePaste'
 import { HandleSubmitExtension } from '../components/extension/shortcuts/handleSubmit'
@@ -197,6 +198,7 @@ const subKits = {
         tableMetadataPaste: e(TableMetadataPasteExtension),
         paragraphKeymap: e(ParagraphKeymapExtension, context.mode === 'compact'),
         linkKeymap: e(LinkKeymapExtension),
+        selectAll: e(SelectAllExtension),
         listKeymap: e(ListKeymapExtension, {
           listTypes: [
             { itemName: 'listItem', wrapperNames: ['bulletList', 'orderedList'] },
