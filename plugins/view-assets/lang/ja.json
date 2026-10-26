@@ -116,6 +116,7 @@
     "TableCopiedToClipboard": "テーブルをクリップボードにコピーしました",
     "TableCopyFailed": "テーブルをクリップボードにコピーできませんでした",
     "PublicView": "公開",
+    "OverwriteWithCurrentFilters": "現在のフィルターで上書き",
     "ChooseIcon": "アイコンを選択",
     "IconColor": "アイコンの色を選択",
     "IconCategory": "アイコン",

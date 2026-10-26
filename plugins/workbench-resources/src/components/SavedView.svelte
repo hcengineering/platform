@@ -23,7 +23,9 @@
     TreeItem,
     TreeNode,
     activeViewlet,
+    defaultOptions,
     filterStore,
+    getActiveViewletId,
     getViewOptions,
     makeViewletKey,
     selectedFilterStore,
@@ -34,6 +36,7 @@
   } from '@hcengineering/view-resources'
   import copy from 'fast-copy'
   import { createEventDispatcher } from 'svelte'
+  import { canOverwriteFilteredView } from '../savedView'
   import TodoCheck from './icons/TodoCheck.svelte'
   import TodoUncheck from './icons/TodoUncheck.svelte'
 
@@ -111,6 +114,30 @@
     ]
   }
 
+  async function overwriteAction (filteredView: FilteredView): Promise<Action[]> {
+    if (!canOverwriteFilteredView(filteredView, myAcc.socialIds, $location.path, $filterStore.length)) return []
+    return [
+      {
+        icon: view.icon.Views,
+        label: view.string.OverwriteWithCurrentFilters,
+        action: async (ctx: any, evt: Event) => {
+          const filters = JSON.stringify($filterStore)
+          const viewletId = getActiveViewletId()
+          const viewlet =
+            viewletId !== null ? await client.findOne<Viewlet>(view.class.Viewlet, { _id: viewletId }) : undefined
+          // getViewOptions returns the passed defaults object itself when nothing is stored for the viewlet,
+          // keep the saved options in that case instead of storing generic defaults
+          const unset: ViewOptions = { ...defaultOptions }
+          const current = viewlet !== undefined ? getViewOptions(viewlet, $viewOptionStore, unset) : unset
+          const viewOptions = current !== unset ? current : filteredView.viewOptions
+          await client.update(filteredView, { filters, viewOptions, viewletId })
+          selectedFilterStore.set({ ...filteredView, filters, viewOptions, viewletId })
+          selectedId = filteredView._id
+        }
+      }
+    ]
+  }
+
   async function copyUrlAction (filteredView: FilteredView): Promise<Action[]> {
     return [
       {
@@ -141,8 +168,9 @@
     const hide = await hideAction(filteredView)
 
     if (filteredView.createdBy !== undefined && myAcc.socialIds.includes(filteredView.createdBy)) {
+      const overwrite = await overwriteAction(filteredView)
       const remove = await removeAction(filteredView)
-      return [...setPublic, ...rename, ...remove, ...copyUrl]
+      return [...overwrite, ...setPublic, ...rename, ...remove, ...copyUrl]
     }
     return [...hide, ...copyUrl]
   }
