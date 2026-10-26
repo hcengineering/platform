@@ -14,9 +14,10 @@
 -->
 <script lang="ts">
   import { ButtonIcon, showPopup, closeTooltip } from '@hcengineering/ui'
-  import { ViewOptionModel, ViewOptions, Viewlet, type ViewOptionsModel, BuildModelKey } from '@hcengineering/view'
+  import { ViewOptionModel, ViewOptions, Viewlet, BuildModelKey } from '@hcengineering/view'
   import view from '../plugin'
   import { getViewOptions, viewOptionStore, defaultOptions } from '../viewOptions'
+  import { getViewletDefaultOptions } from '../viewletDefaultOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
   import { restrictionStore } from '../utils'
@@ -73,21 +74,10 @@
     })
   }
 
-  function getDefaults (viewOptions: ViewOptionsModel): ViewOptions {
-    const res: ViewOptions = {
-      groupBy: [viewOptions.groupBy[0] ?? defaultOptions.groupBy[0]],
-      orderBy: viewOptions.orderBy?.[0] ?? defaultOptions.orderBy
-    }
-    for (const opt of viewOptions.other) {
-      res[opt.key] = opt.defaultValue
-    }
-    return res
-  }
-
   function getDefaultOptions (): ViewOptions {
     if (defaultViewOptions != null) return defaultViewOptions
 
-    return viewlet?.viewOptions != null ? getDefaults(viewlet.viewOptions) : defaultOptions
+    return viewlet?.viewOptions != null ? getViewletDefaultOptions(viewlet.viewOptions, defaultOptions) : defaultOptions
   }
 
   $: viewOptions = getViewOptions(viewlet, $viewOptionStore, getDefaultOptions())
