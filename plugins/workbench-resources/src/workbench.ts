@@ -44,6 +44,9 @@ import setting from '@hcengineering/setting'
 import workbench from './plugin'
 import { locationWorkspaceStore } from './utils'
 
+// Let presentation resolve tab navigation without depending on workbench.
+setMetadata(presentation.metadata.OpenInNewTab, workbench.function.OpenInNewTab)
+
 export const tabIdStore = writable<Ref<WorkbenchTab> | undefined>()
 export const prevTabIdStore = writable<Ref<WorkbenchTab> | undefined>()
 export const tabsStore = writable<WorkbenchTab[]>([])

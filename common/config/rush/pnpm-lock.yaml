@@ -14799,9 +14799,6 @@ importers:
       '@hcengineering/view':
         specifier: workspace:^0.7.0
         version: link:../../plugins/view
-      '@hcengineering/workbench':
-        specifier: workspace:^0.7.0
-        version: link:../../plugins/workbench
       fast-equals:
         specifier: ^5.2.2
         version: 5.3.2

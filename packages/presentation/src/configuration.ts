@@ -24,6 +24,8 @@ import core, {
 } from '@hcengineering/core'
 import { getResourcePlugin, type Plugin, type Resource } from '@hcengineering/platform'
 import { writable } from 'svelte/store'
+// Import directly: NavLink loads this module while the package index is still
+// initializing. The queries below must not use the index's unfinished exports.
 import { addTxListener, createQuery } from './utils'
 
 /**

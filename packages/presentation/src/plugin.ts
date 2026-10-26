@@ -36,10 +36,10 @@ import {
   type WorkspaceDataId,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import type { Asset, IntlString, Metadata, Plugin, StatusCode } from '@hcengineering/platform'
+import type { Asset, IntlString, Metadata, Plugin, Resource, StatusCode } from '@hcengineering/platform'
 import { plugin } from '@hcengineering/platform'
 import { type FileStorage } from '@hcengineering/storage-client'
-import { type ComponentExtensionId } from '@hcengineering/ui/src/types'
+import { type ComponentExtensionId, type Location } from '@hcengineering/ui/src/types'
 import { type PresentationMiddlewareFactory } from './pipeline'
 import {
   type ComponentPointExtension,
@@ -166,6 +166,7 @@ export default plugin(presentationId, {
     FilePreviewPopupActions: '' as ComponentExtensionId
   },
   metadata: {
+    OpenInNewTab: '' as Metadata<Resource<(loc: Location) => Promise<void>>>,
     ModelVersion: '' as Metadata<string>,
     FrontVersion: '' as Metadata<string>,
     Draft: '' as Metadata<Record<string, any>>,

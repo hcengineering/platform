@@ -13,12 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata, getResource } from '@hcengineering/platform'
-  import uiPlugin, { closePopup, closeTooltip, navigate, parseLocation, type Location } from '@hcengineering/ui'
-  import workbench from '@hcengineering/workbench'
-  import presentation from '../plugin'
-  import { hasResource } from '../configuration'
-  import { isNewTabClick } from '../linkClick'
+  import { Analytics } from '@hcengineering/analytics'
+  import { closePopup, closeTooltip, navigate } from '@hcengineering/ui'
+  import { getInternalLocation, handleNewTabClick } from '../navLink'
 
   export let href: string | undefined
   export let title: string | undefined = undefined
@@ -36,35 +33,11 @@
   export let noSelect: boolean = true
   export let maxWidth: string | undefined = undefined
 
-  function getInternalLocation (link: string): Location | undefined {
-    try {
-      const url = new URL(link)
-      const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-      if (url.origin === frontUrl) {
-        const loc = parseLocation(url)
-        const routes = getMetadata(uiPlugin.metadata.Routes)
-        const app = routes?.get(loc.path[0])
-
-        if (app !== undefined) {
-          return loc
-        }
-      }
-    } catch {}
-    return undefined
-  }
-
   // Ctrl/Cmd + click and middle click open internal links in a new Huly tab,
   // other links (and Shift/Alt combinations) are left to the browser.
   function newTabHandler (e: MouseEvent): void {
-    if (disabled || href === undefined || !isNewTabClick(e)) return
-    if (hasResource(workbench.function.OpenInNewTab) !== true) return
-    const loc = getInternalLocation(href)
-    if (loc === undefined) return
-
-    e.preventDefault()
-    e.stopPropagation()
-    void getResource(workbench.function.OpenInNewTab).then(async (openInNewTab) => {
-      await openInNewTab(loc)
+    void handleNewTabClick(e, { href, disabled, onClick }).catch((err) => {
+      Analytics.handleError(err)
     })
   }
 
