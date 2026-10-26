@@ -218,6 +218,15 @@ export function issueConfig (
         ]
       : []),
     {
+      // Hidden until enabled in the view settings: it is mostly useful in
+      // cross-project views like "All issues" or "My issues".
+      key: 'space',
+      label: tracker.string.Project,
+      presenter: tracker.component.ProjectPresenter,
+      props: { openIssues: true },
+      displayProps: { key: key + 'project', excludeByKey: 'space', compression: true, defaultHidden: true }
+    },
+    {
       key: '',
       label: tracker.string.DueDate,
       presenter: tracker.component.DueDatePresenter,

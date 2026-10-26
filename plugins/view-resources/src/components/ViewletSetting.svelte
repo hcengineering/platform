@@ -31,6 +31,7 @@
   import { deepEqual } from 'fast-equals'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
+  import { isDefaultHidden, withoutDefaultHidden } from '../defaultHidden'
   import { buildConfigLookup, canResolveAttribute, getKeyLabel } from '../utils'
   import ViewletClassSettings from './ViewletClassSettings.svelte'
 
@@ -164,9 +165,10 @@
           if (!canResolveAttribute(hierarchy, viewlet.attachTo, param.key, lookup)) continue
           const attrCfg: AttributeConfig = {
             type: 'attribute',
-            value: param,
+            // Saved without the flag, so an enabled entry is displayed and matched against the preference.
+            value: withoutDefaultHidden(param),
             label: param.label ?? getKeyLabel(client, viewlet.attachTo, param.key, lookup),
-            enabled: true,
+            enabled: !isDefaultHidden(param),
             _class: viewlet.attachTo,
             icon: clazz.icon
           }
