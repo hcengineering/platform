@@ -163,6 +163,8 @@
     "ComponentMembersSearchPlaceholder": "Change component members\u2026",
     "MoveToProject": "Move to project",
     "CopyToProject": "Copy to project…",
+    "CopyTargetUnavailable": "This project is no longer available for copying. Select another active project you belong to.",
+    "CopyTemplateFailed": "Could not copy the template. Try again.",
     "Duplicate": "Duplicate",
 
     "GotoIssues": "Go to issues",

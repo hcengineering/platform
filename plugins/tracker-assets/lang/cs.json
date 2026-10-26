@@ -136,6 +136,8 @@
     "ComponentMembersSearchPlaceholder": "Změnit členy komponenty…",
     "MoveToProject": "Přesunout do projektu",
     "CopyToProject": "Kopírovat do projektu…",
+    "CopyTargetUnavailable": "Do tohoto projektu již nelze kopírovat. Vyberte jiný aktivní projekt, jehož jste členem.",
+    "CopyTemplateFailed": "Šablonu se nepodařilo zkopírovat. Zkuste to znovu.",
     "Duplicate": "Duplikovat",
 
      "GotoIssues": "Přejít na úkoly",

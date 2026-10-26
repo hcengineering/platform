@@ -144,6 +144,8 @@
     "ComponentMembersSearchPlaceholder": "コンポーネントメンバーを変更\u2026",
     "MoveToProject": "プロジェクトに移動",
     "CopyToProject": "プロジェクトにコピー…",
+    "CopyTargetUnavailable": "このプロジェクトにはコピーできなくなりました。参加している別のアクティブなプロジェクトを選択してください。",
+    "CopyTemplateFailed": "テンプレートをコピーできませんでした。もう一度お試しください。",
     "Duplicate": "複製",
     "GotoIssues": "イシューへ移動",
     "GotoActive": "アクティブなイシューへ移動",

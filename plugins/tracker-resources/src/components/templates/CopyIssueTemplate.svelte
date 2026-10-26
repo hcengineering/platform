@@ -13,15 +13,17 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import { Ref, generateId, getCurrentAccount } from '@hcengineering/core'
+  import type { IntlString } from '@hcengineering/platform'
   import presentation, { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
-  import task from '@hcengineering/task'
   import { IssueTemplate, Project } from '@hcengineering/tracker'
+  import { Label } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import ProjectPresenter from '../projects/ProjectPresenter.svelte'
   import IssueTemplatePresenter from './IssueTemplatePresenter.svelte'
-  import { makeIssueTemplateCopy } from './copy'
+  import { submitIssueTemplateCopy } from './submitCopy'
 
   export let value: IssueTemplate
 
@@ -30,25 +32,38 @@
   const me = getCurrentAccount()
 
   let space: Ref<Project> | undefined = undefined
+  let error: IntlString | undefined
+
+  function handleProjectChange (event: CustomEvent<Ref<Project> | null | undefined>): void {
+    // SpaceSelector also reports the unavailable-target reset; keep that error visible.
+    if (event.detail != null) error = undefined
+  }
 
   async function copy (): Promise<void> {
-    if (space === undefined) return
-    const project = await client.findOne(tracker.class.Project, { _id: space, members: me.uuid })
-    if (project === undefined) return
-    const taskTypes = await client.findAll(task.class.TaskType, { parent: project.type })
-    const data = makeIssueTemplateCopy(
-      value,
-      project._id,
-      taskTypes.map((it) => it._id),
-      generateId
-    )
-    await client.createDoc(tracker.class.IssueTemplate, project._id, data)
+    const target = space
+    error = undefined
+    try {
+      const copied = await submitIssueTemplateCopy(client, value, target, me.uuid, generateId)
+      // The selector stays usable during submission. A result belongs to its captured target;
+      // a successful copy to an older target must also leave the newer selection open.
+      if (space !== target) return
+      if (!copied) {
+        error = tracker.string.CopyTargetUnavailable
+        space = undefined
+        return
+      }
+      dispatch('close')
+    } catch (err) {
+      Analytics.handleError(err)
+      if (space === target) error = tracker.string.CopyTemplateFailed
+    }
   }
 </script>
 
 <Card
   label={tracker.string.CopyToProject}
   okAction={copy}
+  closeOnSave={false}
   canSave={space !== undefined}
   okLabel={presentation.string.Copy}
   on:close={() => dispatch('close')}
@@ -60,6 +75,7 @@
       query={{ archived: false, members: me.uuid, _id: { $ne: value.space } }}
       label={tracker.string.Project}
       bind:space
+      on:change={handleProjectChange}
       autoSelect={false}
       kind={'regular'}
       size={'large'}
@@ -68,4 +84,11 @@
     />
   </svelte:fragment>
   <IssueTemplatePresenter {value} disabled />
+  <svelte:fragment slot="error">
+    <span role="alert">
+      {#if error !== undefined}
+        <Label label={error} />
+      {/if}
+    </span>
+  </svelte:fragment>
 </Card>

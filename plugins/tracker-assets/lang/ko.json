@@ -144,6 +144,8 @@
         "ComponentMembersSearchPlaceholder": "컴포넌트 멤버 변경…",
         "MoveToProject": "프로젝트로 이동",
         "CopyToProject": "프로젝트로 복사…",
+        "CopyTargetUnavailable": "이 프로젝트에는 더 이상 복사할 수 없습니다. 멤버로 참여 중인 다른 활성 프로젝트를 선택하세요.",
+        "CopyTemplateFailed": "템플릿을 복사하지 못했습니다. 다시 시도하세요.",
         "Duplicate": "복제",
         "GotoIssues": "이슈로 이동",
         "GotoActive": "활성 이슈로 이동",

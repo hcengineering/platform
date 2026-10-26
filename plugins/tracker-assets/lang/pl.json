@@ -143,6 +143,8 @@
     "ComponentMembersSearchPlaceholder": "Zmień elementy komponentu\u2026",
     "MoveToProject": "Przenieś do projektu",
     "CopyToProject": "Kopiuj do projektu…",
+    "CopyTargetUnavailable": "Ten projekt nie jest już dostępny do kopiowania. Wybierz inny aktywny projekt, którego jesteś członkiem.",
+    "CopyTemplateFailed": "Nie udało się skopiować szablonu. Spróbuj ponownie.",
     "Duplicate": "Duplikuj",
 
     "GotoIssues": "Przejdź do zadań",

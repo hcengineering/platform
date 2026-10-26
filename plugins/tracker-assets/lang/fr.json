@@ -144,6 +144,8 @@
     "ComponentMembersSearchPlaceholder": "Modifier les membres du composant...",
     "MoveToProject": "Déplacer vers le projet",
     "CopyToProject": "Copier vers le projet…",
+    "CopyTargetUnavailable": "Ce projet n’est plus disponible pour la copie. Sélectionnez un autre projet actif dont vous êtes membre.",
+    "CopyTemplateFailed": "Impossible de copier le modèle. Réessayez.",
     "Duplicate": "Dupliquer",
     "GotoIssues": "Aller aux issues",
     "GotoActive": "Aller aux problèmes actifs",
