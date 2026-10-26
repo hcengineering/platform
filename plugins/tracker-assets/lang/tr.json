@@ -107,6 +107,7 @@
     "DocumentColor": "",
     "Rank": "Sıra",
     "TypeIssuePriority": "Sorun önceliği",
+    "TypeMilestoneStatus": "Kilometre taşı durumu",
     "IssueTitlePlaceholder": "Sorun başlığı",
     "SubIssueTitlePlaceholder": "Alt sorun başlığı",
     "IssueDescriptionPlaceholder": "Açıklama ekle…",

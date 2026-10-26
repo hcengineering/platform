@@ -103,6 +103,7 @@
     "SubIssue": "Podúkol",
     "Rank": "Hodnost",
     "TypeIssuePriority": "Priorita úkolu",
+    "TypeMilestoneStatus": "Stav milníku",
     "IssueTitlePlaceholder": "Název úkolu",
     "SubIssueTitlePlaceholder": "Název podúkolu",
     "IssueDescriptionPlaceholder": "Přidat popis…",
