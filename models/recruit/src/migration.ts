@@ -96,6 +96,15 @@ export const recruitOperation: MigrateOperation = {
         state: 'create-vacancy-tag-category',
         func: async (client) => {
           const tx = new TxOperations(client, core.account.System)
+          const categories = await client.findAll(tags.class.TagCategory, { targetClass: recruit.class.Vacancy })
+          if (categories.some((category) => category.default === true)) return
+
+          const other = categories.find((category) => category.label === 'Other')
+          if (other !== undefined) {
+            await tx.update(other, { default: true })
+            return
+          }
+
           await createOrUpdate(
             tx,
             tags.class.TagCategory,
