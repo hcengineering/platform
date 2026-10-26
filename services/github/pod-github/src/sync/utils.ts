@@ -177,6 +177,23 @@ export function hashCode (str: string): number {
   return str.split('').reduce((prevHash, currVal) => ((prevHash << 5) - prevHash + currVal.charCodeAt(0)) | 0, 0)
 }
 
+/**
+ * Map a webhook (REST) `state_reason` value to the GraphQL state reason enum.
+ * @public
+ */
+export function toGithubStateReason (stateReason: string | null | undefined): GithubIssueStateReason | undefined {
+  switch (stateReason) {
+    case 'completed':
+      return GithubIssueStateReason.Completed
+    case 'reopened':
+      return GithubIssueStateReason.Reopened
+    case 'not_planned':
+      return GithubIssueStateReason.NotPlanned
+    default:
+      return undefined
+  }
+}
+
 export async function guessStatus (
   pr: { state: 'OPEN' | 'CLOSED' | 'MERGED', stateReason?: GithubIssueStateReason | null },
   statuses: Status[]
