@@ -219,6 +219,7 @@
     "AllFilters": "all filters",
     "NoDescription": "No description",
     "SearchIssue": "Search for task...",
+    "SearchMilestone": "Search for milestone...",
 
     "StatusHistory": "State History",
     "NewSubIssue": "Add sub-issue...",

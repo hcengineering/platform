@@ -195,6 +195,7 @@
     "AllFilters": "todos os filtros",
     "NoDescription": "Sem descrição",
     "SearchIssue": "Procurar tarefa...",
+    "SearchMilestone": "Procurar objetivo...",
     "StatusHistory": "Histórico de estado",
     "NewSubIssue": "Adicionar sub-tarefa...",
     "AddLabel": "Adicionar etiqueta",
