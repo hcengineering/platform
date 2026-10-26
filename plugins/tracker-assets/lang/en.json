@@ -330,6 +330,7 @@
     "DependencyShiftedSubject": "Dependency shift",
     "Color": "Color",
     "AllowCreatingIssues": "Allow creating issues",
+    "SharedWithYouTooltip": "You have access to specific issues only; you are not a member of this project",
     "Day": "Day",
     "Week": "Week",
     "Month": "Month",

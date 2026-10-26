@@ -309,6 +309,7 @@ export default mergeIds(trackerId, tracker, {
     PreviousAssigned: '' as IntlString,
     EditRelatedTargets: '' as IntlString,
     RelatedIssueTargetDescription: '' as IntlString,
+    SharedWithYouTooltip: '' as IntlString,
 
     Day: '' as IntlString,
     Gantt: '' as IntlString,
