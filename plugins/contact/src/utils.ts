@@ -26,6 +26,7 @@ import {
   generateId,
   Hierarchy,
   MeasureContext,
+  normalizeExternalAvatarUrl,
   notEmpty,
   Person as GlobalPerson,
   PersonId,
@@ -39,6 +40,7 @@ import {
 import platform, { getMetadata, PlatformError } from '@hcengineering/platform'
 import { ColorDefinition } from '@hcengineering/ui'
 import contact, {
+  AvatarInfo,
   AvatarProvider,
   AvatarType,
   Channel,
@@ -137,6 +139,8 @@ export function getAvatarProviderId (kind: AvatarType): Ref<AvatarProvider> | un
       return contact.avatarProvider.Gravatar
     case AvatarType.COLOR:
       return contact.avatarProvider.Color
+    case AvatarType.EXTERNAL:
+      return contact.avatarProvider.External
   }
   return contact.avatarProvider.Image
 }
@@ -415,6 +419,40 @@ export async function getAllUserAccounts (client: Client): Promise<AccountUuid[]
   return employees.map((it) => it.personUuid).filter(notEmpty)
 }
 
+/**
+ * Returns the image URL of an external avatar, or undefined when the stored value is not
+ * an absolute http(s) URL (so e.g. javascript: or data: values are never used as image source).
+ */
+export function getExternalAvatarUrl (person: Pick<AvatarInfo, 'avatarProps'>): string | undefined {
+  return normalizeExternalAvatarUrl(person.avatarProps?.url)
+}
+
+/**
+ * Returns the avatar fields to apply for an avatar URL provided by an identity provider
+ * (OIDC/OAuth), or undefined when nothing should change. Only the default color avatar and a
+ * previously synced external avatar are replaced; an uploaded image, Gravatar or an explicitly
+ * chosen color are kept. Pass undefined as person for a person that is about to be created.
+ */
+export function getProviderAvatarUpdate (
+  person: Pick<AvatarInfo, 'avatarType' | 'avatar' | 'avatarProps'> | undefined,
+  avatarUrl: string | undefined
+): Pick<AvatarInfo, 'avatarType' | 'avatarProps'> | undefined {
+  const url = normalizeExternalAvatarUrl(avatarUrl)
+  if (url === undefined) return undefined
+  const update = { avatarType: AvatarType.EXTERNAL, avatarProps: { url } }
+  if (person === undefined) return update
+
+  if (person.avatarType === AvatarType.EXTERNAL) {
+    return person.avatarProps?.url === url ? undefined : update
+  }
+
+  const isDefaultColor =
+    (person.avatarType ?? AvatarType.COLOR) === AvatarType.COLOR &&
+    person.avatar == null &&
+    (person.avatarProps?.color ?? '') === ''
+  return isDefaultColor ? update : undefined
+}
+
 export async function ensureEmployee (
   ctx: MeasureContext,
   me: Account,
@@ -462,7 +500,8 @@ export async function ensureEmployeeForPerson (
           personUuid: person.uuid,
           name: combineName(globalPerson.firstName, globalPerson.lastName),
           city: '',
-          avatarType: AvatarType.COLOR
+          avatarType: AvatarType.COLOR,
+          ...getProviderAvatarUpdate(undefined, globalPerson.avatarUrl)
         }
         personRef = generateId()
 
@@ -480,6 +519,14 @@ export async function ensureEmployeeForPerson (
         personUuid: person.uuid
       })
       await client.tx(updatePersonTx)
+    } else {
+      // Keep the avatar in sync with the identity provider unless the user has chosen one
+      const avatarUpdate = getProviderAvatarUpdate(personByUuid, globalPerson?.avatarUrl)
+      if (avatarUpdate !== undefined) {
+        await client.tx(
+          txFactory.createTxUpdateDoc(contact.class.Person, contact.space.Contacts, personByUuid._id, avatarUpdate)
+        )
+      }
     }
 
     const existingIdentifiers = toIdMap(
