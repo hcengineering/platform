@@ -20,18 +20,13 @@ import { withWorkbenchSession } from '../session'
 import { openWorkbenchTab, registerWorkbenchTabNavigation } from '../tabNavigation'
 import { OpenInNewTab } from '../workbench'
 
-const { AccountRole, getCurrentAccount } = Core
+const { AccountRole, getCurrentAccount, setCurrentAccount } = Core
 const { getMetadata, getResource, setMetadata, translate } = Platform
 
 jest.mock('@hcengineering/platform', () => ({
   ...jest.requireActual<typeof Platform>('@hcengineering/platform'),
   getResource: jest.fn(),
   translate: jest.fn()
-}))
-
-jest.mock('@hcengineering/core', () => ({
-  ...jest.requireActual<typeof Core>('@hcengineering/core'),
-  getCurrentAccount: jest.fn()
 }))
 
 jest.mock('@hcengineering/presentation', () => ({
@@ -106,6 +101,7 @@ describe('workbench tab capability', () => {
   const onConnect = withWorkbenchSession(async () => {})
   let unregister: () => void
   let account: Core.Account
+  let previousAccount: Core.Account
 
   function canOpen (target: Location = loc): boolean | undefined {
     return getMetadata(presentation.metadata.CanOpenInNewTab)?.(target)
@@ -113,12 +109,15 @@ describe('workbench tab capability', () => {
 
   beforeEach(async () => {
     jest.resetAllMocks()
+    previousAccount = getCurrentAccount()
+    // Use the public account setter: mocking the core barrel re-enters its
+    // circular imports and reads export getters before initialization finishes.
     // Only identity and role are used by the production policy.
     account = { uuid: 'account', role: Core.AccountRole.User } as unknown as Core.Account
     const model = { findAllSync }
     const client = { getModel: () => model, createDoc }
     jest.mocked(getClient).mockReturnValue(client as unknown as ReturnType<typeof getClient>)
-    jest.mocked(getCurrentAccount).mockReturnValue(account)
+    setCurrentAccount(account)
     jest.mocked(getCurrentLocation).mockReturnValue(loc)
     const app = { alias: 'tracker' } as unknown as Application
     findAllSync.mockReturnValue([app])
@@ -135,6 +134,7 @@ describe('workbench tab capability', () => {
 
   afterEach(() => {
     unregister()
+    setCurrentAccount(previousAccount)
   })
 
   it.each([AccountRole.Guest, AccountRole.User, AccountRole.Owner])('allows writable role %s', (role) => {
@@ -231,16 +231,16 @@ describe('workbench tab capability', () => {
   })
 
   it('invalidates the capability when the account UUID or client model changes', () => {
-    jest.mocked(getCurrentAccount).mockReturnValue({ ...account, uuid: 'other-account' as Core.AccountUuid })
+    setCurrentAccount({ ...account, uuid: 'other-account' as Core.AccountUuid })
     expect(canOpen()).toBe(false)
-    jest.mocked(getCurrentAccount).mockReturnValue(account)
+    setCurrentAccount(account)
     const client = { getModel: () => ({ findAllSync }) }
     jest.mocked(getClient).mockReturnValue(client as unknown as ReturnType<typeof getClient>)
     expect(canOpen()).toBe(false)
   })
 
   it('allows a fresh modified gesture after a same-UUID profile replacement', async () => {
-    jest.mocked(getCurrentAccount).mockReturnValue({ ...account })
+    setCurrentAccount({ ...account })
     const href = 'https://huly.example/workbench/workspace/tracker/PROJ-123'
     setMetadata(presentation.metadata.FrontUrl, 'https://huly.example')
     setMetadata(uiPlugin.metadata.Routes, new Map([['workbench', 'workbench:component:WorkbenchApp' as AnyComponent]]))
@@ -272,7 +272,7 @@ describe('workbench tab capability', () => {
   })
 
   it('keeps the provider used by the existing OpenInNewTab action usable after a same-UUID profile replacement', async () => {
-    jest.mocked(getCurrentAccount).mockReturnValue({ ...account })
+    setCurrentAccount({ ...account })
 
     // Call the actual resource resolved by the existing action, including its
     // metadata helper and opener. This checks the resource, not the menu UI.
@@ -354,7 +354,7 @@ describe('workbench tab capability', () => {
       jest.mocked(getCurrentLocation).mockReturnValue({ path: ['workbench', 'new-workspace', 'tracker'] })
     }
     if (change === 'account') {
-      jest.mocked(getCurrentAccount).mockReturnValue({ ...account, uuid: 'replacement-account' as Core.AccountUuid })
+      setCurrentAccount({ ...account, uuid: 'replacement-account' as Core.AccountUuid })
     }
     if (change === 'client') {
       const oldClient = getClient()
@@ -436,7 +436,7 @@ describe('workbench tab capability', () => {
         const pending = openWorkbenchTab(loc, loadData)
         await started.promise
         if (change === 'profile replacement') {
-          jest.mocked(getCurrentAccount).mockReturnValue({ ...account })
+          setCurrentAccount({ ...account })
         } else {
           await onConnect(Core.ClientConnectEvent.Reconnected, 'later-tx', 'session')
         }
