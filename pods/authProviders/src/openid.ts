@@ -19,6 +19,7 @@ import Router from 'koa-router'
 import { Issuer, Strategy } from 'openid-client'
 
 import { Passport } from '.'
+import { splitOidcName } from './oidcNameSplit'
 import { encodeState, handleProviderAuth, safeParseAuthState } from './utils'
 
 const DISCOVERY_INITIAL_DELAY_MS = 5_000
@@ -350,9 +351,12 @@ export function registerOpenid (
 
       const email = ctx.state.user.email
       const verifiedEmail = (ctx.state.user.email_verified as boolean) ? email : ''
-      const nameParts = (ctx.state.user.name ?? ctx.state.user.username ?? '').split(' ')
-      const first: string = ctx.state.user.given_name ?? nameParts[0] ?? ''
-      const last: string = ctx.state.user.family_name ?? nameParts.slice(1).join(' ')
+      const { first, last } = splitOidcName({
+        name: ctx.state.user.name,
+        username: ctx.state.user.username,
+        given_name: ctx.state.user.given_name,
+        family_name: ctx.state.user.family_name
+      })
 
       const db = await dbPromise
       const redirectUrl = await handleProviderAuth(
