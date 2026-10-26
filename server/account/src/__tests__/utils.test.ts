@@ -63,6 +63,7 @@ import {
   getSocialIdByKey,
   getWorkspaceInvite,
   loginOrSignUpWithProvider,
+  isProviderSignUpDisabled,
   sendEmail,
   addSocialIdBase,
   doReleaseSocialId,
@@ -1909,6 +1910,39 @@ describe('account utils', () => {
       )
 
       expect(result).toBeNull()
+    })
+  })
+
+  describe('isProviderSignUpDisabled', () => {
+    test('should allow provider sign-up when DISABLE_SIGNUP is not set', () => {
+      expect(isProviderSignUpDisabled({})).toBe(false)
+      expect(isProviderSignUpDisabled({ DISABLE_SIGNUP: 'false' })).toBe(false)
+    })
+
+    test('should follow DISABLE_SIGNUP by default', () => {
+      expect(isProviderSignUpDisabled({ DISABLE_SIGNUP: 'true' })).toBe(true)
+      expect(isProviderSignUpDisabled({ DISABLE_SIGNUP: 'true', ALLOW_PROVIDER_SIGNUP: 'false' })).toBe(true)
+    })
+
+    test('should allow provider sign-up when ALLOW_PROVIDER_SIGNUP=true overrides DISABLE_SIGNUP', () => {
+      expect(isProviderSignUpDisabled({ DISABLE_SIGNUP: 'true', ALLOW_PROVIDER_SIGNUP: 'true' })).toBe(false)
+    })
+
+    test('should read process.env when no env is passed', () => {
+      const prevSignup = process.env.DISABLE_SIGNUP
+      const prevProvider = process.env.ALLOW_PROVIDER_SIGNUP
+      try {
+        process.env.DISABLE_SIGNUP = 'true'
+        delete process.env.ALLOW_PROVIDER_SIGNUP
+        expect(isProviderSignUpDisabled()).toBe(true)
+        process.env.ALLOW_PROVIDER_SIGNUP = 'true'
+        expect(isProviderSignUpDisabled()).toBe(false)
+      } finally {
+        if (prevSignup === undefined) delete process.env.DISABLE_SIGNUP
+        else process.env.DISABLE_SIGNUP = prevSignup
+        if (prevProvider === undefined) delete process.env.ALLOW_PROVIDER_SIGNUP
+        else process.env.ALLOW_PROVIDER_SIGNUP = prevProvider
+      }
     })
   })
 

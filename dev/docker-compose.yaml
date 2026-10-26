@@ -195,6 +195,8 @@ services:
       - ACCOUNTS_URL=http://huly.local:3000
       - BRANDING_PATH=/var/cfg/branding.json
       # - DISABLE_SIGNUP=true
+      # Keep sign-up via Google/GitHub/OpenID Connect enabled when DISABLE_SIGNUP=true
+      # - ALLOW_PROVIDER_SIGNUP=true
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - MAILBOX_DOMAINS=huly.dev.local
       - MAILBOX_MAX_COUNT_PER_ACCOUNT=2
