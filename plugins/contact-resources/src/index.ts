@@ -22,6 +22,7 @@ import {
   type AvatarInfo,
   type Channel,
   type Contact,
+  type Employee,
   type Person
 } from '@hcengineering/contact'
 import {
@@ -258,7 +259,8 @@ async function queryEmployee (
       nin: [...(filter?.nin ?? []), ...Array.from(q1.map((it) => ({ _id: it.doc._id, _class: it.doc._class })))]
     },
     client,
-    (it) => nameSearch.matches(it.displayName)
+    // `displayName` is a legacy Employee field which is no longer part of the type.
+    (it) => nameSearch.matches((it as Employee & { displayName?: string }).displayName)
   )
 
   return q1.concat(q2)
