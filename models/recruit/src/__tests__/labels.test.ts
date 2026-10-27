@@ -1,7 +1,7 @@
 // Copyright © 2026 Hardcore Engineering Inc.
 // Licensed under the Eclipse Public License, Version 2.0
 
-import core from '@hcengineering/core'
+import core, { type Class, type Doc, type Ref } from '@hcengineering/core'
 import { Builder } from '@hcengineering/model'
 import { createModel as createCoreModel } from '@hcengineering/model-core'
 import task, { TProject, TTask } from '@hcengineering/model-task'
@@ -38,16 +38,16 @@ describe('vacancy labels model', () => {
     expect(hierarchy.getOwnAttributes(recruit.class.Applicant).has('labels')).toBe(false)
   })
 
-  it('exposes one labels attribute per class and keeps applicants outside the vacancy hierarchy', () => {
-    for (const clazz of [recruit.class.Applicant, recruit.class.Vacancy]) {
-      const labels = Array.from(hierarchy.getAllAttributes(clazz).values()).filter((attr) => attr.name === 'labels')
+  it('keeps vacancy labels out of applicant attributes and applicant labels out of vacancy attributes', () => {
+    const vacancyLabels = hierarchy.getAttribute(recruit.class.Vacancy, 'labels')
+    const applicantLabels = hierarchy.getAttribute(recruit.class.Applicant, 'labels')
+    const attributeIds = (clazz: Ref<Class<Doc>>): string[] =>
+      Array.from(hierarchy.getAllAttributes(clazz).values()).map((attr) => attr._id)
 
-      expect(labels).toHaveLength(1)
-    }
+    expect(vacancyLabels._id).not.toBe(applicantLabels._id)
+    expect(attributeIds(recruit.class.Applicant)).not.toContain(vacancyLabels._id)
+    expect(attributeIds(recruit.class.Vacancy)).not.toContain(applicantLabels._id)
     expect(hierarchy.getDescendants(recruit.class.Vacancy)).not.toContain(recruit.class.Applicant)
     expect(hierarchy.getDescendants(recruit.class.Applicant)).not.toContain(recruit.class.Vacancy)
-    expect(hierarchy.getAttribute(recruit.class.Vacancy, 'labels')._id).not.toBe(
-      hierarchy.getAttribute(recruit.class.Applicant, 'labels')._id
-    )
   })
 })
