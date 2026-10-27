@@ -85,7 +85,8 @@ function deferred<T> (): { promise: Promise<T>, resolve: (value: T) => void } {
 
 // Synthetic account/model/session fixtures. The real provider policy and metadata
 // lifecycle, connection-session producer, gesture helper and tab-write orchestration
-// run here, including the existing OpenInNewTab resource used by the menu action.
+// run here, including the existing OpenInNewTab resource used by the menu action
+// and its browser-tab fallback.
 // Route parsing/resources, store subscriptions/reads, translation, persistence and
 // (except in that resource case) metadata/title loading are mocked. No mounted
 // shell, context-menu UI, server or browser runs.
@@ -286,6 +287,28 @@ describe('workbench tab capability', () => {
       isPinned: false,
       name: 'Translated tab'
     })
+  })
+
+  it('opens a browser tab from the existing OpenInNewTab action without a live shell capability', async () => {
+    unregister()
+    // Node test environment: provide only the window.open used by the fallback.
+    const open = jest.fn()
+    const globals = globalThis as unknown as { window?: unknown }
+    const previousWindow = globals.window
+    globals.window = { open }
+    try {
+      await OpenInNewTab(loc)
+    } finally {
+      if (previousWindow === undefined) {
+        delete globals.window
+      } else {
+        globals.window = previousWindow
+      }
+    }
+
+    expect(open).toHaveBeenCalledTimes(1)
+    expect(open).toHaveBeenCalledWith('workbench/workspace/tracker/PROJ-123', '_blank')
+    expect(createDoc).not.toHaveBeenCalled()
   })
 
   it('removes and invalidates the capability when the workbench unmounts', () => {
