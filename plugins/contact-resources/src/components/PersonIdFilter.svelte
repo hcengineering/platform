@@ -89,9 +89,7 @@
     socialIdentitiesPromise = client.findAll(contact.class.SocialIdentity, resultQuery, {
       lookup: { attachedTo: contact.class.Person }
     })
-    socialIdentities = (await socialIdentitiesPromise).filter((it) =>
-      nameSearch.matches(it.$lookup?.attachedTo?.name)
-    )
+    socialIdentities = (await socialIdentitiesPromise).filter((it) => nameSearch.matches(it.$lookup?.attachedTo?.name))
     if (targets.has(undefined)) {
       socialIdentities.unshift(undefined)
     }
