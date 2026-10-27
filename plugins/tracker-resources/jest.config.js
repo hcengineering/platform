@@ -32,7 +32,6 @@ module.exports = {
       moduleNameMapper: {
         '^@hcengineering/ui$': `${fixtures}/ui.ts`,
         '^@hcengineering/presentation$': `${fixtures}/presentation.ts`,
-        '^@hcengineering/platform$': `${fixtures}/platform.ts`,
         '^@hcengineering/analytics$': `${fixtures}/analytics.ts`,
         '^@hcengineering/core$': `${fixtures}/core.ts`,
         '^@hcengineering/tracker$': `${fixtures}/tracker.ts`,

@@ -15,7 +15,7 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { translateCB, type IntlString } from '@hcengineering/platform'
+  import type { IntlString } from '@hcengineering/platform'
   import {
     Button,
     IconClose,
@@ -24,8 +24,7 @@
     deviceOptionsStore as deviceInfo,
     resizeObserver,
     IconBack,
-    getFocusManager,
-    themeStore
+    getFocusManager
   } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation from '..'
@@ -60,27 +59,16 @@
   const focusManager = getFocusManager()
 
   let okProcessing = false
-  let closeTitle: string | undefined
-  let closeTitleGeneration = 0
-  $: updateCloseTitle($themeStore.language)
   $: headerDivide = hideContent && numberOfBlocks > 1
 
-  function updateCloseTitle (language: string | undefined): void {
-    const generation = ++closeTitleGeneration
-    translateCB(presentation.string.Close, {}, language, (title) => {
-      // A cold translation load can finish after the language changes.
-      if (generation === closeTitleGeneration) closeTitle = title
-    })
-  }
+  function handleKeyDown (event: KeyboardEvent) {
+    const target = event.target as HTMLInputElement
 
-  function handleKeyDown (event: KeyboardEvent): void {
-    const target = event.target as HTMLElement | null
-
-    if (target !== null) {
+    if (target) {
       if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
         event.preventDefault()
         handleOkClick()
-      } else if (event.key === 'Enter' && target.nodeName !== 'BUTTON') {
+      } else if (event.key === 'Enter') {
         // ignore customized editable divs to not interrupt multiline behavior
         if (!target.isContentEditable && target.nodeName !== 'TEXTAREA') {
           event.preventDefault()
@@ -159,7 +147,6 @@
       <div class="ml-4 buttons-group small-gap content-dark-color">
         <Button
           id="card-close"
-          title={closeTitle}
           focusIndex={10002}
           icon={IconClose}
           iconProps={{ size: 'medium', fill: 'var(--theme-dark-color)' }}

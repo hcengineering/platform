@@ -9,14 +9,13 @@ import GanttSaveViewPopup from '../../gantt/GanttSaveViewPopup.svelte'
 import CopyIssueTemplate from '../CopyIssueTemplate.svelte'
 import { handleError } from './fixtures/analytics'
 import CustomButtons from './fixtures/CustomButtons.svelte'
-import { translateCB } from './fixtures/platform'
 import { createDoc, findAll, findOne } from './fixtures/presentation'
-import { nextFocus, themeStore } from './fixtures/ui'
+import { nextFocus } from './fixtures/ui'
 
 jest.mock('../../../plugin', () => jest.requireActual('./fixtures/tracker'))
 jest.mock('@hcengineering/presentation/src', () => ({
   __esModule: true,
-  default: { string: { Close: 'Close', Create: 'Create' } }
+  default: { string: { Create: 'Create' } }
 }))
 
 // Mount the actual popup, submission helper and Card. UI controls, translated text and backend
@@ -116,11 +115,6 @@ function template (): IssueTemplate {
 
 beforeEach(() => {
   jest.clearAllMocks()
-  themeStore.set({ language: 'en' })
-  translateCB.mockReset()
-  translateCB.mockImplementation((label, params, language, onTranslated) => {
-    onTranslated(`Localized ${label}`)
-  })
   // Synthetic project/model results: only the fields consumed by submission are returned.
   findOne.mockImplementation(async (objectClass, query) => ({ _id: query._id, type: 'target-type' }))
   findAll.mockResolvedValue([])
@@ -216,28 +210,6 @@ describe('copy dialog selection during submission', () => {
 })
 
 describe('shared Card contracts', () => {
-  it('keeps the latest locale Close title when an older translation finishes last', async () => {
-    const translations: Array<(title: string) => void> = []
-    translateCB.mockImplementation((label, params, language, onTranslated) => {
-      translations.push(onTranslated)
-    })
-    mount(Card, { label: 'Create', okAction: jest.fn() })
-    themeStore.set({ language: 'fr' })
-    await tick()
-
-    expect(translateCB).toHaveBeenNthCalledWith(1, 'Close', {}, 'en', expect.any(Function))
-    expect(translateCB).toHaveBeenNthCalledWith(2, 'Close', {}, 'fr', expect.any(Function))
-    expect(translations).toHaveLength(2)
-    const [english, french] = translations
-    french('Fermer')
-    await tick()
-    expect(element<HTMLButtonElement>('#card-close').title).toBe('Fermer')
-
-    english('Close')
-    await tick()
-    expect(element<HTMLButtonElement>('#card-close').title).toBe('Fermer')
-  })
-
   it.each([false, true])(
     'recovers from an action failure (async: %s) and closes after a successful retry',
     async (asynchronous) => {
@@ -277,16 +249,9 @@ describe('shared Card contracts', () => {
     expect(close).toHaveBeenCalledTimes(1)
   })
 
-  it('does not prevent native button Enter/Space, advances input Enter and handles Ctrl/Meta Enter', async () => {
+  it('keeps Enter advancing focus from an input and Ctrl/Meta Enter submitting', async () => {
     const action = jest.fn()
     mount(Card, { label: 'Create', canSave: true, okAction: action })
-    const button = element<HTMLButtonElement>('#card-close')
-    expect(button.title).toBe('Localized Close')
-    for (const key of ['Enter', ' ']) {
-      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
-      button.dispatchEvent(event)
-      expect(event.defaultPrevented).toBe(false)
-    }
     const input = document.createElement('input')
     element('form').appendChild(input)
     const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })
