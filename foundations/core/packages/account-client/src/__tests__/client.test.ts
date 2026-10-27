@@ -17,16 +17,16 @@ import platform, { PlatformError, Severity, Status } from '@hcengineering/platfo
 import { getClient } from '../client'
 
 describe('AccountClient response handling', () => {
-  const originalFetch = global.fetch
+  const originalFetch = globalThis.fetch
   let fetchMock: jest.Mock
 
   beforeEach(() => {
     fetchMock = jest.fn()
-    global.fetch = fetchMock as any
+    globalThis.fetch = fetchMock as any
   })
 
   afterEach(() => {
-    global.fetch = originalFetch
+    globalThis.fetch = originalFetch
   })
 
   async function getError (promise: Promise<any>): Promise<PlatformError<any>> {
