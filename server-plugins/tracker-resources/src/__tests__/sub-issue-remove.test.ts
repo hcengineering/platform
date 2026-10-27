@@ -10,8 +10,8 @@
 // adapter, it cannot match a field nested in a JSON array such as
 // `childInfo.childId`), so the trigger has to use the removed issue itself.
 
-import core from '@hcengineering/core'
-import tracker from '@hcengineering/tracker'
+import core, { type Tx, type TxUpdateDoc } from '@hcengineering/core'
+import tracker, { type Issue } from '@hcengineering/tracker'
 import { OnIssueUpdate } from '../index'
 
 const SPACE = 'project'
@@ -92,7 +92,8 @@ describe('OnIssueUpdate: removed sub-issue', () => {
     const res = await OnIssueUpdate([removeTx(child, 'p')], control)
 
     expect(pulled(res)).toEqual(['p:c', 't:c'])
-    expect(res.every((tx) => tx.operations?.$push === undefined)).toBe(true)
+    const updates = res.filter((tx: Tx): tx is TxUpdateDoc<Issue> => tx._class === core.class.TxUpdateDoc)
+    expect(updates.every((tx) => tx.operations.$push === undefined)).toBe(true)
   })
 
   it('falls back to attachedTo when the removed issue is not known', async () => {
