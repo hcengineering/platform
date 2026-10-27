@@ -69,7 +69,7 @@
 
   $: syncFromDoc(value.enumValues)
 
-  function handleError (error: unknown): void {
+  function handleError (error: any): void {
     Analytics.handleError(error)
   }
 

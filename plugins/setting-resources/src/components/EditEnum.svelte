@@ -53,7 +53,7 @@
 
   $: matched = values.includes(newValue.trim())
 
-  function handleError (error: unknown): void {
+  function handleError (error: any): void {
     Analytics.handleError(error)
   }
 

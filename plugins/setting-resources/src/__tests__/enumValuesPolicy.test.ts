@@ -23,6 +23,7 @@ import core, {
   type Type,
   ClassifierKind,
   ModelDb,
+  type Ref,
   TxFactory
 } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
@@ -155,8 +156,9 @@ describe('canChangeEnumValues', () => {
       { ...fieldFixture(scalar, scalarDefault), _id: 'scalar-field' as AnyAttribute['_id'], name: 'scalar' },
       { ...fieldFixture(array, arrayDefault), _id: 'array-field' as AnyAttribute['_id'], name: 'array' }
     ]
-    const object: Doc & { scalar: string, array: string[] } = {
-      _id: 'object' as Doc['_id'],
+    type StoredObject = Doc & { scalar: string, array: string[] }
+    const object: StoredObject = {
+      _id: 'object' as Ref<StoredObject>,
       _class: core.class.Doc,
       space: 'private-space' as Doc['space'],
       modifiedBy: core.account.System,
