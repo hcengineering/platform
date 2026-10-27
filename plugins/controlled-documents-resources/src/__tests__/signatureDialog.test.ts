@@ -17,7 +17,13 @@ jest.mock('@hcengineering/core', () => ({
   ...jest.requireActual('@hcengineering/core'),
   getCurrentAccount: () => ({ uuid: 'me' })
 }))
-jest.mock('@hcengineering/ui', () => jest.requireActual('./fixtures/ui'))
+jest.mock('@hcengineering/ui', () => ({
+  ...jest.requireActual('./fixtures/ui'),
+  // The production countdown imports Label from the ui index, so it is loaded only once this mock exists.
+  get TimeLeft () {
+    return jest.requireActual('@hcengineering/ui/src/components/TimeLeft.svelte').default
+  }
+}))
 // The dialog only reads the token metadata id; the real package index also evaluates its drafts store on load.
 jest.mock('@hcengineering/presentation', () => ({
   __esModule: true,
@@ -227,6 +233,22 @@ it('locks OTP address, requires rejection text, disables pending controls and cl
   expect(close).toHaveBeenCalledTimes(1)
   expect(close.mock.calls[0][0].detail).toEqual({ rejectionNote: 'Needs revision' })
 })
+
+it('counts down the resend delay and allows a new code request when it expires', async () => {
+  client.loginOtp.mockImplementation(async () => ({ sent: true, retryOn: Date.now() + 1500 }))
+  mount()
+  await until(() => document.body.textContent?.includes('SendVerificationCode'))
+  button('SendVerificationCode').click()
+  await until(() => document.querySelector('[role="status"]') !== null)
+  expect(button('SendVerificationCode').disabled).toBe(true)
+  expect(document.querySelector('[role="status"]')?.textContent).toMatch(/ResendCodeIn\s*\d+\D\d+/)
+  // TimeLeft ticks once per second and emits timeout when the remaining time reaches zero.
+  await until(() => !button('SendVerificationCode').disabled)
+  expect(document.querySelector('[role="status"]')).toBeNull()
+  button('SendVerificationCode').click()
+  await tick()
+  expect(client.loginOtp).toHaveBeenCalledTimes(2)
+}, 10000)
 
 it('keeps failed password confirmation open, then closes for the matching account', async () => {
   client.checkHasPassword.mockResolvedValue(true)
