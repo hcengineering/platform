@@ -5,7 +5,14 @@
 
 import { getClient, type AccountClient, type SocialId } from '@hcengineering/account-client'
 import { Analytics } from '@hcengineering/analytics'
-import { type AccountUuid, type PersonId, SocialIdType } from '@hcengineering/core'
+import {
+  type Account,
+  AccountRole,
+  type AccountUuid,
+  type PersonId,
+  SocialIdType,
+  setCurrentAccount
+} from '@hcengineering/core'
 import { tick } from 'svelte'
 
 import SignatureDialog from '../components/SignatureDialog.svelte'
@@ -13,10 +20,6 @@ import documents from '../plugin'
 
 jest.mock('@hcengineering/analytics', () => ({ Analytics: { handleError: jest.fn() } }))
 jest.mock('@hcengineering/account-client', () => ({ getClient: jest.fn() }))
-jest.mock('@hcengineering/core', () => ({
-  ...jest.requireActual('@hcengineering/core'),
-  getCurrentAccount: () => ({ uuid: 'me' })
-}))
 jest.mock('@hcengineering/ui', () => ({
   ...jest.requireActual('./fixtures/ui'),
   // The production countdown imports Label from the ui index, so it is loaded only once this mock exists.
@@ -63,6 +66,14 @@ const identity: SocialId = {
   value: 'signer@example.com',
   key: 'email:signer@example.com',
   verifiedOn: 1
+}
+// Core stays real: a spread mock of it re-enters itself through core's internal `import from '.'` while loading.
+const account: Account = {
+  uuid: 'me' as AccountUuid,
+  role: AccountRole.User,
+  primarySocialId: identity._id,
+  socialIds: [identity._id],
+  fullSocialIds: [identity]
 }
 const client = {
   checkHasPassword: jest.fn(),
@@ -125,6 +136,7 @@ function mount (isRejection = false): jest.Mock {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  setCurrentAccount(account)
   client.checkHasPassword.mockResolvedValue(false)
   client.getSocialIds.mockResolvedValue([identity])
   client.loginOtp.mockResolvedValue({ sent: true, retryOn: Date.now() + 30000 })
