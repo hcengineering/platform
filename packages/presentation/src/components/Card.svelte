@@ -113,7 +113,7 @@
           okProcessing = false
           if (closeOnSave) dispatch('close')
         }
-      } catch (err) {
+      } catch (err: any) {
         okProcessing = false
         Analytics.handleError(err)
       }
