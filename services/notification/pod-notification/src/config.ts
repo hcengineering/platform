@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import { parsePushTtl } from './push'
+
 interface Config {
   Port: number
   Source: string
@@ -20,6 +22,7 @@ interface Config {
   PushSubject?: string
   PushPublicKey?: string
   PushPrivateKey?: string
+  PushTtl: number
 }
 
 const envMap: { [key in keyof Required<Config>]: string } = {
@@ -28,7 +31,8 @@ const envMap: { [key in keyof Required<Config>]: string } = {
   AuthToken: 'AUTH_TOKEN',
   PushPublicKey: 'PUSH_PUBLIC_KEY',
   PushPrivateKey: 'PUSH_PRIVATE_KEY',
-  PushSubject: 'PUSH_SUBJECT'
+  PushSubject: 'PUSH_SUBJECT',
+  PushTtl: 'PUSH_TTL'
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -40,7 +44,8 @@ const config: Config = (() => {
     AuthToken: process.env[envMap.AuthToken],
     PushPublicKey: process.env[envMap.PushPublicKey],
     PushPrivateKey: process.env[envMap.PushPrivateKey],
-    PushSubject: process.env[envMap.PushSubject]
+    PushSubject: process.env[envMap.PushSubject],
+    PushTtl: parsePushTtl(process.env[envMap.PushTtl])
   }
 
   const required: Array<keyof Config> = ['Port', 'Source']
