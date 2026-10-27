@@ -290,7 +290,8 @@ it('forwards cancellation without verifying credentials', async () => {
   await until(() => document.body.textContent?.includes('SendVerificationCode'))
   button('Cancel').click()
   expect(close).toHaveBeenCalledTimes(1)
-  expect(close.mock.calls[0][0].detail).toBeUndefined()
+  // A payload-free dispatch('close') is a CustomEvent whose detail defaults to null; callers treat it as cancel.
+  expect(close.mock.calls[0][0].detail).toBeNull()
   expect(client.login).not.toHaveBeenCalled()
   expect(client.validateOtp).not.toHaveBeenCalled()
 })
