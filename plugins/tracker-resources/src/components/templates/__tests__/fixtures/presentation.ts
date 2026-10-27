@@ -1,4 +1,4 @@
-export { default as Card } from '../../../../../../../packages/presentation/src/components/Card.svelte'
+export { default as Card } from '@hcengineering/presentation/src/components/Card.svelte'
 export { default as SpaceSelector } from './SpaceSelector.svelte'
 export const findOne = jest.fn()
 export const findAll = jest.fn()

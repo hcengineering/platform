@@ -53,7 +53,7 @@
         return
       }
       dispatch('close')
-    } catch (err) {
+    } catch (err: any) {
       Analytics.handleError(err)
       if (space === target) error = tracker.string.CopyTemplateFailed
     }

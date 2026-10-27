@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Card from '../../../../../../../packages/presentation/src/components/Card.svelte'
+  import Card from '@hcengineering/presentation/src/components/Card.svelte'
   import Button from './Button.svelte'
 
   export let okAction: () => Promise<void> | void

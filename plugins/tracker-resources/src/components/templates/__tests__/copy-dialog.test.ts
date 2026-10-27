@@ -4,7 +4,7 @@
 import type { PersonId, Ref } from '@hcengineering/core'
 import type { IssueTemplate, Project } from '@hcengineering/tracker'
 import { tick, type ComponentType, type SvelteComponent } from 'svelte'
-import Card from '../../../../../../packages/presentation/src/components/Card.svelte'
+import Card from '@hcengineering/presentation/src/components/Card.svelte'
 import GanttSaveViewPopup from '../../gantt/GanttSaveViewPopup.svelte'
 import CopyIssueTemplate from '../CopyIssueTemplate.svelte'
 import { handleError } from './fixtures/analytics'
@@ -14,7 +14,7 @@ import { createDoc, findAll, findOne } from './fixtures/presentation'
 import { nextFocus, themeStore } from './fixtures/ui'
 
 jest.mock('../../../plugin', () => jest.requireActual('./fixtures/tracker'))
-jest.mock('../../../../../../packages/presentation/src', () => ({
+jest.mock('@hcengineering/presentation/src', () => ({
   __esModule: true,
   default: { string: { Close: 'Close', Create: 'Create' } }
 }))
