@@ -15,10 +15,10 @@
 //
 
 import type { AccountRole, AccountUuid, Class, Doc, DocumentQuery, Obj, Ref, Space } from '@hcengineering/core'
-import { type DocNotifyContext, type InboxNotification } from '@hcengineering/notification'
+import { DocNotifyContext, InboxNotification } from '@hcengineering/notification'
 import type { Asset, IntlString, Resource } from '@hcengineering/platform'
 import type { Preference } from '@hcengineering/preference'
-import { type AnyComponent, type AnySvelteComponent, type Location, type LocationResolver } from '@hcengineering/ui'
+import { AnyComponent, type AnySvelteComponent, Location, LocationResolver } from '@hcengineering/ui'
 
 /** @public */
 export interface LocationData {

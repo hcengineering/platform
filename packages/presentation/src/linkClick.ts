@@ -20,8 +20,6 @@
  * Shift/Alt combinations are excluded. Callers retain their existing handling:
  * NavLink leaves Ctrl/Cmd+Shift/Alt and Shift/Alt+middle to the native default,
  * while Shift-only/Alt-only left clicks still follow ordinary in-app navigation.
- *
- * @public
  */
 export function isNewTabClick (e: Pick<MouseEvent, 'button' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey'>): boolean {
   if (e.shiftKey || e.altKey) return false
