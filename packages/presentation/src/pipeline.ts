@@ -29,12 +29,18 @@ import platform, { PlatformError, setPlatformStatus, unknownError, type Resource
 // including ConnectionClosed. Ordinary presentation transactions still report and resolve.
 const propagateTxError = 'presentation:propagateTxError'
 
-/** Permission middleware must also reject flagged writes after showing its notification. */
+/**
+ * Permission middleware must also reject flagged writes after showing its notification.
+ * @public
+ */
 export function shouldPropagateTxError (tx: Tx): boolean {
   return tx.meta?.[propagateTxError] === true
 }
 
-/** Updates a standalone document through the normal UI/middleware path, propagating write failures. */
+/**
+ * Updates a standalone document through the normal UI/middleware path, propagating write failures.
+ * @public
+ */
 export async function updateDocWithError<T extends Doc> (
   client: Pick<TxOperations, 'txFactory' | 'tx'>,
   doc: T,
@@ -228,6 +234,8 @@ export class PresentationPipelineImpl implements PresentationPipeline {
           if (shouldPropagateTxError(tx)) throw err
           return {}
         }
+        // Permission middleware already notified; opted-in editors report the failure inline.
+        if (err.status.code === platform.status.Forbidden && shouldPropagateTxError(tx)) throw err
       }
       const status = unknownError(err)
       await setPlatformStatus(status)
