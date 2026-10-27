@@ -453,6 +453,7 @@
     <Component
       is={tags.component.TagsDropdownEditor}
       props={{
+        focusIndex: 5,
         items: labels,
         key: labelsKey,
         targetClass: recruit.class.Vacancy,
