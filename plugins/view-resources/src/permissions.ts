@@ -93,6 +93,9 @@ export function canRemoveDoc (_class: Ref<Class<Doc>>, space: Ref<Space>, store:
   if (arePermissionsDisabled) return true
   if (store.whitelist.has(space)) return true
   if (store.ps[space] !== undefined) {
+    if (store.ps[space]?.has(core.permission.ForbidDeleteObject)) {
+      return false
+    }
     const client = getClient()
     const h = client.getHierarchy()
     const ancestors = h.getAncestors(_class)
