@@ -177,6 +177,7 @@
     "SignatureOtpSent": "E-postanızdaki en son kodu kullanın. Kod kullanıldıysa veya çalışmıyorsa süre dolduktan sonra yeni bir kod isteyin.",
     "SignatureNoEmail": "Hesabınıza bağlı bir e-posta adresi yok, bu nedenle imza onaylanamıyor.",
     "SignatureAccountMismatch": "Kimlik bilgileri mevcut kullanıcıya ait değil.",
+    "ResendCodeIn": "Yeni kod için kalan süre:",
     "GeneralDocumentation": "Genel dokümantasyon",
     "TechnicalDocumentation": "Teknik dokümantasyon",
     "UnsortedTemplates": "Sıralanmamış şablonlar",

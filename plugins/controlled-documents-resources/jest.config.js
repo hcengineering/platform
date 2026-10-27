@@ -10,6 +10,6 @@ module.exports = {
   transformIgnorePatterns: ['/node_modules/(?!.*svelte/)'],
   moduleFileExtensions: ['js', 'mjs', 'cjs', 'jsx', 'ts', 'tsx', 'json', 'node', 'svelte'],
   testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)'],
-  roots: ['./src'],
-  coverageReporters: ['text-summary', 'html']
+  roots: ["./src"],
+  coverageReporters: ["text-summary", "html"]
 }

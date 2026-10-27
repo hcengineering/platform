@@ -193,6 +193,7 @@
     "SignatureOtpSent": "请使用邮件中的最新验证码。如果已使用或已失效，请等待倒计时结束后重新请求。",
     "SignatureNoEmail": "您的账户未关联电子邮件地址，因此无法确认签名。",
     "SignatureAccountMismatch": "凭据不属于当前用户。",
+    "ResendCodeIn": "重新获取验证码还需等待",
 
     "GeneralDocumentation": "常规文档",
     "TechnicalDocumentation": "技术文档",

@@ -107,7 +107,8 @@
     "SignatureOtpHint": "A sua conta não tem palavra-passe. Confirme a sua assinatura com um código de verificação enviado para o seu e-mail.",
     "SignatureOtpSent": "Use o código mais recente do seu e-mail. Se já foi usado ou não funciona, aguarde o fim da contagem e solicite outro.",
     "SignatureNoEmail": "Nenhum endereço de e-mail está associado à sua conta, pelo que a assinatura não pode ser confirmada.",
-    "SignatureAccountMismatch": "As credenciais não pertencem ao utilizador atual."
+    "SignatureAccountMismatch": "As credenciais não pertencem ao utilizador atual.",
+    "ResendCodeIn": "Solicitar um novo código em"
   },
   "controlledDocStates": {
     "Empty": "",

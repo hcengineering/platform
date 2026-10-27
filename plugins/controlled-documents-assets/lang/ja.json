@@ -176,6 +176,7 @@
     "SignatureOtpSent": "メールの最新のコードを使用してください。使用済み、または無効な場合は、カウントダウン終了後に新しいコードをリクエストしてください。",
     "SignatureNoEmail": "アカウントにメールアドレスが関連付けられていないため、署名を確認できません。",
     "SignatureAccountMismatch": "資格情報は現在のユーザーのものではありません。",
+    "ResendCodeIn": "新しいコードをリクエストできるまで",
     "GeneralDocumentation": "一般ドキュメント",
     "TechnicalDocumentation": "技術ドキュメント",
     "UnsortedTemplates": "未分類のテンプレート",

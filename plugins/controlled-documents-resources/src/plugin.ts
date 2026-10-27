@@ -161,6 +161,7 @@ export default mergeIds(documentsId, documents, {
     SignatureOtpSent: '' as IntlString,
     SignatureNoEmail: '' as IntlString,
     SignatureAccountMismatch: '' as IntlString,
+    ResendCodeIn: '' as IntlString,
 
     EffectiveImmediately: '' as IntlString,
     EffectiveOn: '' as IntlString,

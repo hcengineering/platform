@@ -201,7 +201,7 @@
       </div>
       {#if requests.retryOn > 0 && !canResend}
         <div class="signature-hint" role="status">
-          <Label label={login.string.HaventReceivedCode} />
+          <Label label={documents.string.ResendCodeIn} />
           <TimeLeft
             time={requests.retryOn}
             on:timeout={() => {

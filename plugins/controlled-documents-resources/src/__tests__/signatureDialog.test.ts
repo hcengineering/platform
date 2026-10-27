@@ -18,7 +18,12 @@ jest.mock('@hcengineering/core', () => ({
   getCurrentAccount: () => ({ uuid: 'me' })
 }))
 jest.mock('@hcengineering/ui', () => jest.requireActual('./fixtures/ui'))
-jest.mock('../../../../packages/ui/src/components/Label.svelte', () => jest.requireActual('./fixtures/Text.svelte'))
+// The dialog only reads the token metadata id; the real package index also evaluates its drafts store on load.
+jest.mock('@hcengineering/presentation', () => ({
+  __esModule: true,
+  default: { metadata: { Token: 'presentation:metadata:Token' } }
+}))
+jest.mock('@hcengineering/ui/src/components/Label.svelte', () => jest.requireActual('./fixtures/Text.svelte'))
 jest.mock('../components/requests/StatusControl.svelte', () => jest.requireActual('./fixtures/Text.svelte'))
 jest.mock('../utils', () => ({ loginIntlFieldNames: { email: 'email', password: 'password' } }))
 jest.mock('../plugin', () => ({
@@ -38,6 +43,7 @@ jest.mock('../plugin', () => ({
         'RejectionReason',
         'ProvideRejectionReason',
         'SignatureAccountMismatch',
+        'ResendCodeIn',
         'FieldIsEmpty'
       ].map((key) => [key, key])
     )
@@ -195,6 +201,7 @@ it('locks OTP address, requires rejection text, disables pending controls and cl
   await until(() => !input(documents.string.VerificationCode).disabled)
   expect(client.loginOtp).toHaveBeenCalledWith(identity.value)
   expect(button('SendVerificationCode').disabled).toBe(true)
+  expect(document.querySelector('[role="status"]')?.textContent).toContain('ResendCodeIn')
   await fill(input(documents.string.VerificationCode), '123456')
   expect(button('Submit').disabled).toBe(true)
   const reason = document.querySelector('label input')
