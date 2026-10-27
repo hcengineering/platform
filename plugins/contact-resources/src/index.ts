@@ -17,9 +17,12 @@
 import {
   getGravatarUrl,
   getName,
+  getFieldSearch,
+  getNameSearch,
   type AvatarInfo,
   type Channel,
   type Contact,
+  type Employee,
   type Person
 } from '@hcengineering/contact'
 import {
@@ -231,8 +234,9 @@ async function queryContact (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
-  const q: DocumentQuery<Contact> = { name: { $like: `%${search}%` } }
-  return await doContactQuery(_class, q, filter, client)
+  const nameSearch = getFieldSearch(client.getHierarchy(), _class, 'name', search)
+  const q: DocumentQuery<Contact> = { name: { $like: nameSearch.like } }
+  return await doContactQuery(_class, q, filter, client, (it) => nameSearch.matches(it.name))
 }
 
 async function queryEmployee (
@@ -240,20 +244,24 @@ async function queryEmployee (
   search: string,
   filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
 ): Promise<ObjectSearchResult[]> {
+  const nameSearch = getNameSearch(search)
   const q1 = await doContactQuery(
     contact.mixin.Employee,
-    { name: { $like: `%${search}%` }, active: true },
+    { name: { $like: nameSearch.like }, active: true },
     filter,
-    client
+    client,
+    (it) => nameSearch.matches(it.name)
   )
   const q2 = await doContactQuery(
     contact.mixin.Employee,
-    { displayName: { $like: `%${search}%` }, active: true },
+    { displayName: { $like: nameSearch.like }, active: true },
     {
       in: filter?.in,
       nin: [...(filter?.nin ?? []), ...Array.from(q1.map((it) => ({ _id: it.doc._id, _class: it.doc._class })))]
     },
-    client
+    client,
+    // `displayName` is a legacy Employee field which is no longer part of the type.
+    (it) => nameSearch.matches((it as Employee & { displayName?: string }).displayName)
   )
 
   return q1.concat(q2)
@@ -263,7 +271,8 @@ async function doContactQuery<T extends Contact> (
   _class: Ref<Class<T>>,
   q: DocumentQuery<T>,
   filter: { in?: RelatedDocument[] | undefined, nin?: RelatedDocument[] | undefined } | undefined,
-  client: Client
+  client: Client,
+  matches: (doc: T) => boolean = () => true
 ): Promise<ObjectSearchResult[]> {
   if (_class === contact.mixin.Employee) {
     q = { ...q, active: true }
@@ -277,7 +286,7 @@ async function doContactQuery<T extends Contact> (
       q._id.$nin = filter.nin?.map((it) => it._id as Ref<T>)
     }
   }
-  return (await client.findAll(_class, q, { limit: 200 })).map(toObjectSearchResult)
+  return (await client.findAll(_class, q, { limit: 200 })).filter(matches).map(toObjectSearchResult)
 }
 
 async function resendInvite (doc: Person): Promise<void> {

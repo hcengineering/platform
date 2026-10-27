@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Person, SocialIdentity } from '@hcengineering/contact'
+  import contact, { getNameSearch, Person, SocialIdentity } from '@hcengineering/contact'
   import core, { FindResult, getObjectValue, includesAny, PersonId, Ref, Space, WithLookup } from '@hcengineering/core'
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, {
@@ -76,10 +76,11 @@
       targets.add(object)
     }
 
+    const nameSearch = getNameSearch(search)
     const resultQuery =
       search !== ''
         ? {
-            '$lookup.attachedTo.name': { $like: '%' + search + '%' },
+            '$lookup.attachedTo.name': { $like: nameSearch.like },
             _id: { $in: Array.from(targets.keys()) }
           }
         : {
@@ -88,7 +89,7 @@
     socialIdentitiesPromise = client.findAll(contact.class.SocialIdentity, resultQuery, {
       lookup: { attachedTo: contact.class.Person }
     })
-    socialIdentities = await socialIdentitiesPromise
+    socialIdentities = (await socialIdentitiesPromise).filter((it) => nameSearch.matches(it.$lookup?.attachedTo?.name))
     if (targets.has(undefined)) {
       socialIdentities.unshift(undefined)
     }

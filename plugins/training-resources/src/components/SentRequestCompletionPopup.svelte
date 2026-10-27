@@ -3,7 +3,7 @@
 -->
 
 <script lang="ts">
-  import contact, { type Employee } from '@hcengineering/contact'
+  import contact, { type Employee, getNameSearch } from '@hcengineering/contact'
   import { UserInfo } from '@hcengineering/contact-resources'
   import { type Ref, SortingOrder } from '@hcengineering/core'
   import { createQuery, DocPopup } from '@hcengineering/presentation'
@@ -29,15 +29,17 @@
     completion: CompletionMapValue
   }
   let items: Array<Item> = []
+  let allItems: Array<Item> = []
 
+  $: nameSearch = getNameSearch(search)
   $: query.query<Employee>(
     _class,
     {
       _id: { $in: [...completionMap.keys()] },
-      ...(search === '' ? {} : { name: { $like: `%${search}%` } })
+      ...(search === '' ? {} : { name: { $like: nameSearch.like } })
     },
     (result) => {
-      items = result
+      allItems = result
         .map((employee) => ({
           ...employee,
           _id: employee._id as Ref<Item>,
@@ -51,6 +53,8 @@
       }
     }
   )
+  // Filter outside of the query callback: the live query is not re-run when only the client side part changes
+  $: items = allItems.filter((it) => nameSearch.matches(it.name))
 </script>
 
 <DocPopup
