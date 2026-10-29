@@ -235,6 +235,8 @@
     "CapacityValue": "z {value}d",
     "NewRelatedIssue": "Nový související úkol",
     "RelatedIssuesNotFound": "Související úkoly nenalezeny",
+    "IssueNotFound": "Úkol {id} nebyl nalezen. Mohl být smazán, nebo nemáte oprávnění jej zobrazit.",
+    "ShowProjectIssues": "Zobrazit všechny úkoly v {project}",
 
     "AddedReference": "Přidán odkaz",
     "AddedAsBlocked": "Označeno jako blokované",

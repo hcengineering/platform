@@ -232,6 +232,8 @@
     "CapacityValue": "de {value}j",
     "NewRelatedIssue": "Nouvelle issue liée",
     "RelatedIssuesNotFound": "Issues liées non trouvés",
+    "IssueNotFound": "L’issue {id} est introuvable. Elle a peut-être été supprimée, ou vous n'avez pas l'autorisation de la consulter.",
+    "ShowProjectIssues": "Afficher toutes les issues de {project}",
     "AddedReference": "Référence ajoutée",
     "AddedAsBlocked": "Marqué comme bloqué",
     "AddedAsBlocking": "Marqué comme bloquant",

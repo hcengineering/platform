@@ -1839,7 +1839,17 @@ function getAttrEditor (key: KeyedAttribute, hierarchy: Hierarchy): AnyComponent
 }
 
 export const allowGuestSignUpStore = writable<boolean>(false)
-export const accessDeniedStore = writable<boolean>(false)
+/**
+ * Optional details for the access denied / not found state.
+ * `label` replaces the generic message, `link` adds a navigation button.
+ */
+export interface AccessDeniedInfo {
+  label?: IntlString
+  params?: Record<string, any>
+  link?: { label: IntlString, params?: Record<string, any>, location: Location }
+}
+
+export const accessDeniedStore = writable<boolean | AccessDeniedInfo>(false)
 
 const spaceSpaceQuery = createQuery(true)
 
