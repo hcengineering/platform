@@ -2,7 +2,7 @@ import type { Resources } from '@hcengineering/platform'
 import EmojiPopup from './components/EmojiPopup.svelte'
 import SettingsEmojiTable from './components/settings/SettingsEmojiTable.svelte'
 import WorkbenchExtension from './components/WorkbenchExtension.svelte'
-import { getCustomEmoji, getEmojiByEmoticon, getEmojiByShortCode, parseTextWithEmojis } from './utils'
+import { getCustomEmoji, getEmojiByEmoticon, getEmojiByShortCode, parseTextWithEmojis, searchEmojis } from './utils'
 
 export { default as EmojiPresenter } from './components/EmojiPresenter.svelte'
 
@@ -18,6 +18,7 @@ export default async (): Promise<Resources> => ({
     GetEmojiByEmoticon: getEmojiByEmoticon,
     GetEmojiByShortCode: getEmojiByShortCode,
     GetCustomEmoji: getCustomEmoji,
-    ParseTextWithEmojis: parseTextWithEmojis
+    ParseTextWithEmojis: parseTextWithEmojis,
+    SearchEmojis: searchEmojis
   }
 })
