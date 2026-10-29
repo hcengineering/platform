@@ -167,6 +167,15 @@ class ElasticAdapter implements FullTextAdapter {
         if (err.meta?.statusCode !== 400 || indexes.length === 0) {
           return false
         }
+        const error = err.meta?.body?.error
+        const analyzerRejected = [error, ...(error?.root_cause ?? [])].some(
+          (cause) =>
+            cause?.type === 'mapper_parsing_exception' ||
+            (cause?.type === 'illegal_argument_exception' && /analyzer/i.test(cause.reason ?? ''))
+        )
+        if (!analyzerRejected) {
+          return false
+        }
         // Prefer the current version, otherwise the most recently created index.
         this.indexName = indexes.includes(indexName)
           ? indexName
@@ -238,6 +247,10 @@ class ElasticAdapter implements FullTextAdapter {
             })
           )
         } catch (err: any) {
+          if (err.meta?.statusCode === 400 && err.meta?.body?.error?.type === 'resource_already_exists_exception') {
+            // Another pod created this index; use it and leave cleanup to that pod.
+            return true
+          }
           if (
             keepExistingIndex(
               err,

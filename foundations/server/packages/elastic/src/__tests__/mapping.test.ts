@@ -66,8 +66,9 @@ function setup (indexes: Record<string, any> = {}): TestSetup {
 }
 
 function rejectedAnalyzer (analyzer: string): Error {
-  return Object.assign(new Error(`analyzer [${analyzer}] has not been configured in mappings`), {
-    meta: { statusCode: 400 }
+  const reason = `analyzer [${analyzer}] has not been configured in mappings`
+  return Object.assign(new Error(reason), {
+    meta: { statusCode: 400, body: { error: { type: 'mapper_parsing_exception', reason } } }
   })
 }
 
@@ -189,6 +190,102 @@ describe('fulltext index initialization', () => {
     await adapter.index(ctx, workspace, doc)
     expect(client.index).toHaveBeenCalledWith(expect.objectContaining({ index: 'storage_index_v2_french' }))
     expect(client.indices.delete).not.toHaveBeenCalled()
+  })
+
+  it.each(['rebuilt_english', 'russian'])(
+    'uses the new %s index when another pod wins concurrent creation without repeating cleanup',
+    async (analyzer) => {
+      process.env.ELASTIC_ANALYZER = analyzer
+      ;(getMetadata as jest.Mock).mockImplementation((key: string) => (key === 'index-version' ? 'v3' : undefined))
+      const indexName = `storage_index_v3${analyzer === 'rebuilt_english' ? '' : `_${analyzer}`}`
+      const { client, context, ctx } = setup({ storage_index_v2: {} })
+      client.indices.create.mockResolvedValueOnce({ body: { acknowledged: true } }).mockRejectedValueOnce(
+        Object.assign(new Error('index already exists'), {
+          meta: { statusCode: 400, body: { error: { type: 'resource_already_exists_exception' } } }
+        })
+      )
+      const first = await createElasticAdapter('http://localhost:9200')
+      const second = await createElasticAdapter('http://localhost:9200')
+      // Both pods discover the old index before either finishes creating the new one.
+      expect(await Promise.all([first.initMapping(ctx), second.initMapping(ctx)])).toEqual([true, true])
+      expect(client.indices.create).toHaveBeenCalledTimes(2)
+      expect(client.indices.create).toHaveBeenNthCalledWith(2, expect.objectContaining({ index: indexName }))
+      expect(client.indices.delete).toHaveBeenCalledTimes(1)
+      expect(client.indices.delete).toHaveBeenCalledWith({ index: ['storage_index_v2'] })
+      expect(context.error).not.toHaveBeenCalled()
+      await second.index(ctx, workspace, doc)
+      await second.updateMany(ctx, workspace, [doc])
+      await second.searchString(ctx, workspace, { query: 'continued' }, {})
+      expect(client.index).toHaveBeenCalledWith(expect.objectContaining({ index: indexName }))
+      expect(client.bulk.mock.calls[0][0].body[0].index._index).toBe(indexName)
+      expect(client.search).toHaveBeenCalledWith(expect.objectContaining({ index: indexName }))
+    }
+  )
+
+  it.each(['mapper_parsing_exception', 'illegal_argument_exception'])(
+    'retains the existing index when the analyzer rejection is reported as a %s root cause',
+    async (type) => {
+      process.env.ELASTIC_ANALYZER = 'icu_analyzer'
+      const { client, context, ctx } = setup({ storage_index_v2: {} })
+      client.indices.create.mockRejectedValue(
+        Object.assign(new Error('failed to create index'), {
+          meta: {
+            statusCode: 400,
+            body: {
+              error: {
+                type: 'index_creation_exception',
+                root_cause: [{ type, reason: 'analyzer [icu_analyzer] has not been configured in mappings' }]
+              }
+            }
+          }
+        })
+      )
+      const adapter = await createElasticAdapter('http://localhost:9200')
+      expect(await adapter.initMapping(ctx)).toBe(true)
+      expect(await adapter.initMapping(ctx)).toBe(true)
+      expect(client.indices.create).toHaveBeenCalledTimes(1)
+      expect(client.indices.delete).not.toHaveBeenCalled()
+      expect(context.error).toHaveBeenCalledTimes(1)
+      await adapter.index(ctx, workspace, doc)
+      expect(client.index).toHaveBeenCalledWith(expect.objectContaining({ index: 'storage_index_v2' }))
+    }
+  )
+
+  it.each(['security_exception', 'illegal_argument_exception', undefined])(
+    'retries an unrelated HTTP 400 (%s) without pinning to an old index',
+    async (type) => {
+      process.env.ELASTIC_ANALYZER = 'russian'
+      const { client, context, ctx } = setup({ storage_index_v2: {} })
+      const error = Object.assign(new Error('invalid request'), {
+        meta: { statusCode: 400, body: { error: { type, reason: 'invalid request' } } }
+      })
+      client.indices.create.mockRejectedValue(error)
+      const adapter = await createElasticAdapter('http://localhost:9200')
+      expect(await adapter.initMapping(ctx)).toBe(false)
+      expect(await adapter.initMapping(ctx)).toBe(false)
+      expect(client.indices.create).toHaveBeenCalledTimes(2)
+      expect(client.indices.delete).not.toHaveBeenCalled()
+      expect(context.error).toHaveBeenCalledTimes(2)
+      expect(context.error).toHaveBeenLastCalledWith(error)
+    }
+  )
+
+  it('retries and logs each analyzer rejection when there is no existing index', async () => {
+    process.env.ELASTIC_ANALYZER = 'icu_analyzer'
+    const { client, context, ctx } = setup()
+    const error = rejectedAnalyzer('icu_analyzer')
+    client.indices.create.mockRejectedValueOnce(error).mockRejectedValueOnce(error)
+    const adapter = await createElasticAdapter('http://localhost:9200')
+    expect(await adapter.initMapping(ctx)).toBe(false)
+    expect(await adapter.initMapping(ctx)).toBe(false)
+    expect(client.indices.create).toHaveBeenCalledTimes(2)
+    expect(client.indices.delete).not.toHaveBeenCalled()
+    expect(context.error).toHaveBeenCalledTimes(2)
+    expect(context.error).toHaveBeenLastCalledWith(error)
+    // A later retry can start indexing once the cluster accepts the analyzer.
+    expect(await adapter.initMapping(ctx)).toBe(true)
+    await adapter.index(ctx, workspace, doc)
+    expect(client.index).toHaveBeenCalledWith(expect.objectContaining({ index: 'storage_index_v2_icu_analyzer' }))
   })
 
   it('leaves old indexes untouched on a transient creation failure and allows a retry', async () => {
