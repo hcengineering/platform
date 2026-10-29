@@ -19,7 +19,9 @@ Fulltext indexing service for the Platform. Provides full-text search capabiliti
 - **`MODEL_JSON`** - Path to model JSON file (default: `model.json`)
 - **`ELASTIC_ANALYZER`** - Elasticsearch/OpenSearch analyzer used for the extracted document text (default: `rebuilt_english`, a custom English analyzer)
   - Set a built-in language analyzer such as `russian`, `german` or `french` to get stemming for non-English content
-  - Changing it on an existing deployment drops and recreates the index on the next start; run a full reindex afterwards (e.g. the `fulltext-reindex-all` tool command), otherwise search results stay empty until documents are indexed again
+  - The default keeps the index name `${ELASTIC_INDEX_NAME}_${ElasticIndexVersion}` (version defaults to `v2`). A non-default analyzer uses `${ELASTIC_INDEX_NAME}_${ElasticIndexVersion}_${ELASTIC_ANALYZER}`, e.g. `storage_index_v2_russian`
+  - On restart, the service creates the new index before cleaning up old versions, including indexes for previous analyzers. If the cluster rejects the analyzer (e.g. a typo or `icu_analyzer` without the ICU plugin), the service logs an error once and continues searching and indexing using the existing index; fix the configuration and restart to try again
+  - Neither an index-version change nor an analyzer change automatically reindexes workspaces. After a successful change (including switching back to the default), run the dev tool's `fulltext-reindex-all` command with `FULLTEXT_URL` set and the deployment's account database and queue configuration. It queues `FullReindex` for every active, enabled workspace, in order of last visit; inactive/disabled workspaces are excluded and need `fulltext-reindex <workspace-name>` when reactivated. Existing documents are absent from the new index until reindexing completes; the service logs a reminder when cleaning up old indexes
 - **`HULYLAKE_URL`** - Hulylake service URL for communication indexing (default: empty string)
   - Required only if `COMMUNICATION_API_ENABLED=true`
 - **`COMMUNICATION_API_ENABLED`** - Enable communication API for indexing messages (default: disabled)

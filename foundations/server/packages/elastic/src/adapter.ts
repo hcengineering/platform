@@ -45,62 +45,66 @@ function getIndexVersion (): string {
   return getMetadata(serverCore.metadata.ElasticIndexVersion) ?? 'v2'
 }
 
-const mappings = {
-  properties: {
-    fulltextSummary: {
-      type: 'text',
-      analyzer: DEFAULT_FULLTEXT_ANALYZER
-    },
-    workspaceId: {
-      type: 'keyword',
-      index: true
-    },
-    id: {
-      type: 'keyword',
-      index: true
-    },
-    _class: {
-      type: 'keyword',
-      index: true
-    },
-    attachedTo: {
-      type: 'keyword',
-      index: true
-    },
-    attachedToClass: {
-      type: 'keyword',
-      index: true
-    },
-    space: {
-      type: 'keyword',
-      index: true
-    },
-    'core:class:Doc%createdBy': {
-      type: 'keyword',
-      index: true
-    },
-    'core:class:Doc%createdOn': {
-      type: 'date',
-      format: 'epoch_millis',
-      index: true
-    },
-    modifiedBy: {
-      type: 'keyword',
-      index: true
-    },
-    modifiedOn: {
-      type: 'date',
-      format: 'epoch_millis',
-      index: true
-    },
-    'core:class:Doc%modifiedBy': {
-      type: 'keyword',
-      index: true
-    },
-    'core:class:Doc%modifiedOn': {
-      type: 'date',
-      format: 'epoch_millis',
-      index: true
+function getMappings (analyzer: string): {
+  properties: Record<string, { type: string, analyzer?: string, index?: boolean, format?: string }>
+} {
+  return {
+    properties: {
+      fulltextSummary: {
+        type: 'text',
+        analyzer
+      },
+      workspaceId: {
+        type: 'keyword',
+        index: true
+      },
+      id: {
+        type: 'keyword',
+        index: true
+      },
+      _class: {
+        type: 'keyword',
+        index: true
+      },
+      attachedTo: {
+        type: 'keyword',
+        index: true
+      },
+      attachedToClass: {
+        type: 'keyword',
+        index: true
+      },
+      space: {
+        type: 'keyword',
+        index: true
+      },
+      'core:class:Doc%createdBy': {
+        type: 'keyword',
+        index: true
+      },
+      'core:class:Doc%createdOn': {
+        type: 'date',
+        format: 'epoch_millis',
+        index: true
+      },
+      modifiedBy: {
+        type: 'keyword',
+        index: true
+      },
+      modifiedOn: {
+        type: 'date',
+        format: 'epoch_millis',
+        index: true
+      },
+      'core:class:Doc%modifiedBy': {
+        type: 'keyword',
+        index: true
+      },
+      'core:class:Doc%modifiedOn': {
+        type: 'date',
+        format: 'epoch_millis',
+        index: true
+      }
     }
   }
 }
@@ -108,7 +112,9 @@ const mappings = {
 class ElasticAdapter implements FullTextAdapter {
   private readonly getFulltextDocId: (workspaceId: WorkspaceUuid, doc: Ref<Doc>) => Ref<Doc>
   private readonly getDocId: (workspaceId: WorkspaceUuid, fulltext: Ref<Doc>) => Ref<Doc>
-  private readonly indexName: string
+  private indexName: string
+  private usingExistingIndex = false
+  private readonly mappings: ReturnType<typeof getMappings>
 
   constructor (
     private readonly client: Client,
@@ -116,19 +122,18 @@ class ElasticAdapter implements FullTextAdapter {
     readonly indexVersion: string,
     private readonly analyzer: string = DEFAULT_FULLTEXT_ANALYZER
   ) {
-    this.indexName = `${indexBaseName}_${indexVersion}`
+    this.indexName = `${indexBaseName}_${indexVersion}${analyzer === DEFAULT_FULLTEXT_ANALYZER ? '' : `_${analyzer}`}`
+    this.mappings = getMappings(this.analyzer)
     this.getFulltextDocId = (workspaceId, doc) => `${doc}@${workspaceId}` as Ref<Doc>
     this.getDocId = (workspaceId, fulltext) => fulltext.slice(0, -1 * (workspaceId.length + 1)) as Ref<Doc>
   }
 
   async initMapping (ctx: MeasureContext): Promise<boolean> {
-    const indexName = this.indexName
-    const indexMappings = {
-      properties: {
-        ...mappings.properties,
-        fulltextSummary: { ...mappings.properties.fulltextSummary, analyzer: this.analyzer }
-      }
+    if (this.usingExistingIndex) {
+      return true
     }
+    const indexName = this.indexName
+    const indexMappings = this.mappings
     try {
       const existingVersions = await ctx.withSync('get-indexes', {}, () =>
         this.client.indices.get({
@@ -157,43 +162,91 @@ class ElasticAdapter implements FullTextAdapter {
           }
         }
       }
-      if (existingOldVersionIndices.length > 0 || shouldDropExistingIndex) {
-        await ctx.with('delete-old-index', {}, () =>
-          this.client.indices.delete({
-            index: shouldDropExistingIndex ? allIndexes : existingOldVersionIndices
-          })
-        )
+      // A rejected analyzer must not prevent the indexer from serving the current index.
+      const keepExistingIndex = (err: any, indexes: string[]): boolean => {
+        if (err.meta?.statusCode !== 400 || indexes.length === 0) {
+          return false
+        }
+        // Prefer the current version, otherwise the most recently created index.
+        this.indexName = indexes.includes(indexName)
+          ? indexName
+          : indexes.includes(`${this.indexBaseName}_${this.indexVersion}`)
+            ? `${this.indexBaseName}_${this.indexVersion}`
+            : indexes.sort((a, b) => {
+                const createdAt = (name: string): number =>
+                  Number(existingVersions.body[name].settings?.index?.creation_date ?? 0)
+                return createdAt(b) - createdAt(a) || a.localeCompare(b)
+              })[0]
+        this.usingExistingIndex = true
+        ctx.error(`Cannot use ELASTIC_ANALYZER '${this.analyzer}'; keeping existing index '${this.indexName}'`, {
+          analyzer: this.analyzer,
+          indexName: this.indexName,
+          error: err
+        })
+        return true
+      }
+      if (shouldDropExistingIndex) {
+        // The same-name mapping migration also needs validation before any deletion.
+        try {
+          await ctx.with('validate-analyzer', { indexName }, () =>
+            this.client.indices.analyze({
+              index: indexName,
+              body: { analyzer: this.analyzer, text: 'test' }
+            })
+          )
+        } catch (err: any) {
+          if (keepExistingIndex(err, allIndexes)) {
+            return true
+          }
+          throw err
+        }
+        await ctx.with('delete-index', { indexName }, () => this.client.indices.delete({ index: indexName }))
       }
       if (!existsIndex || shouldDropExistingIndex) {
-        await ctx.with('create-index', { indexName }, () =>
-          this.client.indices.create({
-            index: indexName,
-            body: {
-              settings: {
-                analysis: {
-                  filter: {
-                    english_stemmer: {
-                      type: 'stemmer',
-                      language: 'english'
-                    },
-                    english_possessive_stemmer: {
-                      type: 'stemmer',
-                      language: 'possessive_english'
-                    }
-                  },
-                  analyzer: {
-                    rebuilt_english: {
-                      type: 'custom',
-                      tokenizer: 'standard',
-                      filter: ['english_possessive_stemmer', 'lowercase', 'english_stemmer']
-                    }
-                  }
-                }
-              },
-              mappings: indexMappings
-            }
-          })
-        )
+        try {
+          await ctx.with('create-index', { indexName }, () =>
+            this.client.indices.create({
+              index: indexName,
+              body: {
+                settings:
+                  this.analyzer === DEFAULT_FULLTEXT_ANALYZER
+                    ? {
+                        analysis: {
+                          filter: {
+                            english_stemmer: {
+                              type: 'stemmer',
+                              language: 'english'
+                            },
+                            english_possessive_stemmer: {
+                              type: 'stemmer',
+                              language: 'possessive_english'
+                            }
+                          },
+                          analyzer: {
+                            rebuilt_english: {
+                              type: 'custom',
+                              tokenizer: 'standard',
+                              filter: ['english_possessive_stemmer', 'lowercase', 'english_stemmer']
+                            }
+                          }
+                        }
+                      }
+                    : undefined,
+                mappings: indexMappings
+              }
+            })
+          )
+        } catch (err: any) {
+          if (
+            keepExistingIndex(
+              err,
+              allIndexes.filter((name) => !shouldDropExistingIndex || name !== indexName)
+            )
+          ) {
+            return true
+          }
+          throw err
+        }
       } else {
         await ctx.with('put-mapping', {}, () =>
           this.client.indices.putMapping({
@@ -201,6 +254,13 @@ class ElasticAdapter implements FullTextAdapter {
             body: indexMappings
           })
         )
+      }
+      // Creation validates the new analyzer before any old-version index is removed.
+      if (existingOldVersionIndices.length > 0) {
+        await ctx.with('delete-old-index', {}, () => this.client.indices.delete({ index: existingOldVersionIndices }))
+      }
+      if (existingOldVersionIndices.length > 0 || shouldDropExistingIndex) {
+        ctx.warn('Fulltext index changed; run fulltext-reindex-all to reindex all active workspaces', { indexName })
       }
     } catch (err: any) {
       if (err.name === 'ConnectionError') {
@@ -280,7 +340,7 @@ class ElasticAdapter implements FullTextAdapter {
 
       if (options.scoring !== undefined) {
         const scoringTerms: any[] = options.scoring.map((scoringOption): any => {
-          const field = Object.hasOwn(mappings.properties, scoringOption.attr)
+          const field = Object.hasOwn(this.mappings.properties, scoringOption.attr)
             ? scoringOption.attr
             : `${scoringOption.attr}.keyword`
           return {
@@ -425,7 +485,7 @@ class ElasticAdapter implements FullTextAdapter {
 
     for (const [q, v] of Object.entries(query)) {
       if (!q.startsWith('$')) {
-        const field = Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`
+        const field = Object.hasOwn(this.mappings.properties, q) ? q : `${q}.keyword`
         if (typeof v === 'object') {
           if (v.$in !== undefined) {
             request.bool.should.push({
@@ -484,7 +544,7 @@ class ElasticAdapter implements FullTextAdapter {
 
   private getTerms (values: string[], field: string, extra: any = {}): any {
     return {
-      [Object.hasOwn(mappings.properties, field) ? field : `${field}.keyword`]: values,
+      [Object.hasOwn(this.mappings.properties, field) ? field : `${field}.keyword`]: values,
       ...extra
     }
   }
@@ -586,14 +646,14 @@ class ElasticAdapter implements FullTextAdapter {
           if (v.$in !== undefined) {
             elasticQuery.bool.must.push({
               terms: {
-                [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: v.$in
+                [Object.hasOwn(this.mappings.properties, q) ? q : `${q}.keyword`]: v.$in
               }
             })
           }
         } else {
           elasticQuery.bool.must.push({
             term: {
-              [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: {
+              [Object.hasOwn(this.mappings.properties, q) ? q : `${q}.keyword`]: {
                 value: v
               }
             }
@@ -679,14 +739,14 @@ class ElasticAdapter implements FullTextAdapter {
           if (v.$in !== undefined) {
             elasticQuery.bool.must.push({
               terms: {
-                [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: v.$in
+                [Object.hasOwn(this.mappings.properties, q) ? q : `${q}.keyword`]: v.$in
               }
             })
           }
         } else {
           elasticQuery.bool.must.push({
             term: {
-              [Object.hasOwn(mappings.properties, q) ? q : `${q}.keyword`]: {
+              [Object.hasOwn(this.mappings.properties, q) ? q : `${q}.keyword`]: {
                 value: v
               }
             }

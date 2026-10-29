@@ -26,8 +26,11 @@ describe('getFulltextAnalyzer', () => {
   it('uses the configured analyzer', () => {
     expect(getFulltextAnalyzer({ ELASTIC_ANALYZER: 'russian' })).toBe('russian')
     expect(getFulltextAnalyzer({ ELASTIC_ANALYZER: ' german ' })).toBe('german')
-    expect(getFulltextAnalyzer({ ELASTIC_ANALYZER: 'icu_analyzer' })).toBe('icu_analyzer')
     expect(getFulltextAnalyzer({ ELASTIC_ANALYZER: 'rebuilt_english' })).toBe('rebuilt_english')
+  })
+
+  it('accepts plugin analyzer names syntactically; availability is checked during index creation', () => {
+    expect(getFulltextAnalyzer({ ELASTIC_ANALYZER: 'icu_analyzer' })).toBe('icu_analyzer')
   })
 
   it('rejects values that are not analyzer names', () => {
