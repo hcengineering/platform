@@ -93,6 +93,10 @@
     "Window": "Finestra",
     "MeetingEmptyTitle": "Riunione terminata?",
     "MeetingEmptyMessage": "Tutti i partecipanti hanno abbandonato. Sarai disconnesso tra 1 minuto. Vuoi rimanere?",
+    "ScreenShareFailed": "Impossibile condividere lo schermo",
+    "ScreenShareDenied": "La condivisione dello schermo è stata bloccata dal browser o dal sistema operativo. Consenti la registrazione dello schermo per il browser nelle impostazioni sulla privacy del sistema e riprova.",
+    "ScreenShareUnsupported": "La condivisione dello schermo non è supportata da questo browser o da questa connessione. Usa un browser desktop aggiornato tramite HTTPS.",
+    "ScreenShareError": "Impossibile avviare la condivisione dello schermo. Riprova.",
     "StayInRoom": "Rimani nella stanza"
   }
 }

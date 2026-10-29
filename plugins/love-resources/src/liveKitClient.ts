@@ -19,11 +19,13 @@ import { useMedia } from '@hcengineering/media-resources'
 import { writable } from 'svelte/store'
 import { Analytics } from '@hcengineering/analytics'
 import { addNotification, NotificationSeverity } from '@hcengineering/ui'
+import { SimpleNotification } from '@hcengineering/view-resources'
 import { getCurrentLanguage } from '@hcengineering/theme'
 import LastParticipantNotification from './components/meeting/LastParticipantNotification.svelte'
 import love from './plugin'
 import { $myPreferences } from './stores'
 import { leaveMeeting } from './meetings'
+import { getScreenShareErrorKind } from './screenShareError'
 
 export enum ScreenSharingState {
   Inactive,
@@ -353,6 +355,31 @@ export class LiveKitClient {
       await this.liveKitRoom.localParticipant.setScreenShareEnabled(value, { audio: withAudio })
     } catch (e) {
       console.log(e)
+      if (value) {
+        await this.showScreenShareError(e)
+      }
     }
+  }
+
+  private async showScreenShareError (error: unknown): Promise<void> {
+    const kind = getScreenShareErrorKind(error, navigator.mediaDevices?.getDisplayMedia !== undefined)
+    if (kind === 'notStarted') {
+      return
+    }
+    const lang = getCurrentLanguage()
+    const message =
+      kind === 'denied'
+        ? love.string.ScreenShareDenied
+        : kind === 'unsupported'
+          ? love.string.ScreenShareUnsupported
+          : love.string.ScreenShareError
+    addNotification(
+      await translate(love.string.ScreenShareFailed, {}, lang),
+      await translate(message, {}, lang),
+      SimpleNotification,
+      undefined,
+      NotificationSeverity.Error,
+      'love'
+    )
   }
 }

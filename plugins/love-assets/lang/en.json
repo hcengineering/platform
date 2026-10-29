@@ -93,6 +93,10 @@
     "Window": "Window",
     "MeetingEmptyTitle": "Meeting ended?",
     "MeetingEmptyMessage": "All participants have left. You'll be disconnected in 1 minute. Would you like to stay?",
+    "ScreenShareFailed": "Unable to share screen",
+    "ScreenShareDenied": "Screen sharing was blocked by your browser or operating system. Allow screen recording for your browser in the system privacy settings, then try again.",
+    "ScreenShareUnsupported": "Screen sharing is not supported in this browser or connection. Use a current desktop browser over HTTPS.",
+    "ScreenShareError": "Screen sharing could not be started. Please try again.",
     "StayInRoom": "Stay in room"
   }
 }

@@ -93,6 +93,10 @@
     "Window": "Janela",
     "MeetingEmptyTitle": "Reunião encerrada?",
     "MeetingEmptyMessage": "Todos os participantes saíram. Você será desconectado em 1 minuto. Deseja permanecer?",
+    "ScreenShareFailed": "Não foi possível compartilhar a tela",
+    "ScreenShareDenied": "O compartilhamento de tela foi bloqueado pelo navegador ou pelo sistema operacional. Permita a gravação de tela para o navegador nas configurações de privacidade do sistema e tente novamente.",
+    "ScreenShareUnsupported": "O compartilhamento de tela não é compatível com este navegador ou conexão. Use um navegador de desktop atualizado via HTTPS.",
+    "ScreenShareError": "Não foi possível iniciar o compartilhamento de tela. Tente novamente.",
     "StayInRoom": "Permanecer na sala"
   }
 }

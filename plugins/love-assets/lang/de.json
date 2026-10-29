@@ -93,6 +93,10 @@
     "Window": "Fenster",
     "MeetingEmptyTitle": "Besprechung beendet?",
     "MeetingEmptyMessage": "Alle Teilnehmer haben die Besprechung verlassen. Sie werden in 1 Minute automatisch getrennt. Möchten Sie bleiben?",
+    "ScreenShareFailed": "Bildschirmfreigabe nicht möglich",
+    "ScreenShareDenied": "Die Bildschirmfreigabe wurde von Ihrem Browser oder Betriebssystem blockiert. Erlauben Sie Ihrem Browser die Bildschirmaufnahme in den Datenschutzeinstellungen des Systems und versuchen Sie es erneut.",
+    "ScreenShareUnsupported": "Die Bildschirmfreigabe wird in diesem Browser oder bei dieser Verbindung nicht unterstützt. Verwenden Sie einen aktuellen Desktop-Browser über HTTPS.",
+    "ScreenShareError": "Die Bildschirmfreigabe konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
     "StayInRoom": "Im Raum bleiben"
   }
 }
