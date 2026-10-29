@@ -145,7 +145,7 @@
     "MoveToProject": "Mover al proyecto",
     "CopyToProject": "Copiar al proyecto…",
     "CopyTargetUnavailable": "Este proyecto ya no está disponible para copiar. Selecciona otro proyecto activo del que seas miembro.",
-    "CopyTemplateFailed": "No se pudo copiar la plantilla. Inténtalo de nuevo.",
+    "CopyTemplateFailed": "No se pudieron copiar las siguientes plantillas. Inténtalo de nuevo para copiar solo estas plantillas.",
     "Duplicate": "Duplicar",
     "GotoIssues": "Ir a tareas",
     "GotoActive": "Ir a tareas activas",

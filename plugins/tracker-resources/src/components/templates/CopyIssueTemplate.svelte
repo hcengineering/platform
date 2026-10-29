@@ -15,17 +15,19 @@
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
   import { Ref, generateId, getCurrentAccount } from '@hcengineering/core'
-  import type { IntlString } from '@hcengineering/platform'
+  import { type IntlString, translate } from '@hcengineering/platform'
   import presentation, { Card, SpaceSelector, getClient } from '@hcengineering/presentation'
   import { IssueTemplate, Project } from '@hcengineering/tracker'
-  import { Label } from '@hcengineering/ui'
+  import { Label, NotificationSeverity, addNotification, themeStore } from '@hcengineering/ui'
+  import { SimpleNotification } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
   import ProjectPresenter from '../projects/ProjectPresenter.svelte'
   import IssueTemplatePresenter from './IssueTemplatePresenter.svelte'
   import { submitIssueTemplateCopy } from './submitCopy'
+  import { createIssueTemplateCopySubmission } from './copySubmission'
 
-  export let value: IssueTemplate
+  export let value: IssueTemplate[]
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -39,25 +41,27 @@
     if (event.detail != null) error = undefined
   }
 
-  async function copy (): Promise<void> {
-    const target = space
-    error = undefined
-    try {
-      const copied = await submitIssueTemplateCopy(client, value, target, me.uuid, generateId)
-      // The selector stays usable during submission. A result belongs to its captured target;
-      // a successful copy to an older target must also leave the newer selection open.
-      if (space !== target) return
-      if (!copied) {
-        error = tracker.string.CopyTargetUnavailable
-        space = undefined
-        return
-      }
-      dispatch('close')
-    } catch (err: any) {
-      Analytics.handleError(err)
-      if (space === target) error = tracker.string.CopyTemplateFailed
-    }
-  }
+  const copy = createIssueTemplateCopySubmission({
+    templates: value,
+    getTarget: () => space,
+    submit: async (templates, target) => await submitIssueTemplateCopy(client, templates, target, me.uuid, generateId),
+    onUnavailable: () => {
+      error = tracker.string.CopyTargetUnavailable
+      space = undefined
+    },
+    onFailure: async (failures) => {
+      for (const failure of failures) Analytics.handleError(failure.error)
+      const title = await translate(tracker.string.CopyTemplateFailed, {}, $themeStore.language)
+      addNotification(
+        title,
+        failures.map(({ template }) => template.title).join(', '),
+        SimpleNotification,
+        undefined,
+        NotificationSeverity.Error
+      )
+    },
+    onComplete: () => dispatch('close')
+  })
 </script>
 
 <Card
@@ -72,7 +76,7 @@
   <svelte:fragment slot="header">
     <SpaceSelector
       _class={tracker.class.Project}
-      query={{ archived: false, members: me.uuid, _id: { $ne: value.space } }}
+      query={{ archived: false, members: me.uuid, _id: { $nin: value.map((it) => it.space) } }}
       label={tracker.string.Project}
       bind:space
       on:change={handleProjectChange}
@@ -83,7 +87,9 @@
       defaultIcon={tracker.icon.Home}
     />
   </svelte:fragment>
-  <IssueTemplatePresenter {value} disabled />
+  {#each value as template (template._id)}
+    <IssueTemplatePresenter value={template} disabled />
+  {/each}
   <svelte:fragment slot="error">
     <span role="alert">
       {#if error !== undefined}

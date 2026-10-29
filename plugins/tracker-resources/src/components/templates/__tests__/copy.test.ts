@@ -112,4 +112,20 @@ describe('makeIssueTemplateCopy', () => {
     expect(data.children[0].labels).not.toBe(source.children[0].labels)
     expect(data.relations).not.toBe(source.relations)
   })
+
+  it('retains one-sided template relations for the reverse related-template query', () => {
+    const source = template()
+    const data = makeIssueTemplateCopy(source, 'project-2' as any, [], newId)
+    // RelatedIssueTemplates queries templates by relations: { _id, _class }; the far-side
+    // document has no matching array to update when a template is created or copied.
+    expect(data.relations).toEqual(source.relations)
+    expect(data.relations).not.toBe(source.relations)
+    expect(source.relations).toEqual([{ _id: 'doc-1', _class: 'cls' }])
+  })
+
+  it('uses an empty relation list when the source has no relations', () => {
+    const source = template()
+    delete source.relations
+    expect(makeIssueTemplateCopy(source, 'project-2' as any, [], newId).relations).toEqual([])
+  })
 })

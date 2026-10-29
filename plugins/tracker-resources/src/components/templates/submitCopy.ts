@@ -18,30 +18,46 @@ import task from '@hcengineering/task'
 import tracker, { type Issue, type IssueTemplate, type Project } from '@hcengineering/tracker'
 import { makeIssueTemplateCopy } from './copy'
 
-/** Returns false when the selected target no longer matches the picker. Read/write failures propagate to the dialog. */
+export interface IssueTemplateCopyFailure {
+  template: IssueTemplate
+  error: unknown
+}
+
+export interface IssueTemplateCopyResult {
+  copied: IssueTemplate[]
+  failed: IssueTemplateCopyFailure[]
+}
+
+/** Revalidate once for the whole selection. Undefined means the target is no longer eligible. */
 export async function submitIssueTemplateCopy (
   client: Pick<TxOperations, 'findOne' | 'findAll' | 'createDoc'>,
-  template: IssueTemplate,
+  templates: IssueTemplate[],
   targetProject: Ref<Project> | undefined,
   account: AccountUuid,
   newChildId: () => Ref<Issue>
-): Promise<boolean> {
-  if (targetProject === undefined || targetProject === template.space) return false
+): Promise<IssueTemplateCopyResult | undefined> {
+  if (templates.length === 0 || targetProject === undefined || templates.some((it) => it.space === targetProject)) {
+    return undefined
+  }
 
   const project = await client.findOne(tracker.class.Project, {
     _id: targetProject,
     archived: false,
     members: account
   })
-  if (project === undefined) return false
+  if (project === undefined) return undefined
 
   const taskTypes = await client.findAll(task.class.TaskType, { parent: project.type })
-  const data = makeIssueTemplateCopy(
-    template,
-    project._id,
-    taskTypes.map((it) => it._id),
-    newChildId
-  )
-  await client.createDoc(tracker.class.IssueTemplate, project._id, data)
-  return true
+  const targetTaskTypes = taskTypes.map((it) => it._id)
+  const result: IssueTemplateCopyResult = { copied: [], failed: [] }
+  for (const template of templates) {
+    try {
+      const data = makeIssueTemplateCopy(template, project._id, targetTaskTypes, newChildId)
+      await client.createDoc(tracker.class.IssueTemplate, project._id, data)
+      result.copied.push(template)
+    } catch (error: unknown) {
+      result.failed.push({ template, error })
+    }
+  }
+  return result
 }

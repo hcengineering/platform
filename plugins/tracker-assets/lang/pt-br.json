@@ -145,7 +145,7 @@
     "MoveToProject": "Mover para o projeto",
     "CopyToProject": "Copiar para o projeto…",
     "CopyTargetUnavailable": "Este projeto não está mais disponível para cópia. Selecione outro projeto ativo do qual você seja membro.",
-    "CopyTemplateFailed": "Não foi possível copiar o modelo. Tente novamente.",
+    "CopyTemplateFailed": "Não foi possível copiar os seguintes modelos. Tente novamente para copiar apenas estes modelos.",
     "Duplicate": "Duplicar",
     "GotoIssues": "Ir para as questões",
     "GotoActive": "Ir para as questões ativas",

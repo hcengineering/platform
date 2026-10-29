@@ -145,7 +145,7 @@
     "MoveToProject": "プロジェクトに移動",
     "CopyToProject": "プロジェクトにコピー…",
     "CopyTargetUnavailable": "このプロジェクトにはコピーできなくなりました。参加している別のアクティブなプロジェクトを選択してください。",
-    "CopyTemplateFailed": "テンプレートをコピーできませんでした。もう一度お試しください。",
+    "CopyTemplateFailed": "次のテンプレートをコピーできませんでした。再試行すると、これらのテンプレートのみがコピーされます。",
     "Duplicate": "複製",
     "GotoIssues": "イシューへ移動",
     "GotoActive": "アクティブなイシューへ移動",

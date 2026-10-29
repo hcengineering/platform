@@ -14,7 +14,6 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Analytics } from '@hcengineering/analytics'
   import type { IntlString } from '@hcengineering/platform'
   import {
     Button,
@@ -84,26 +83,15 @@
         return
       }
       okProcessing = true
-      try {
-        const r = okAction()
-        if (r instanceof Promise) {
-          void r
-            .then(() => {
-              if (closeOnSave) dispatch('close')
-            })
-            .catch((err) => {
-              Analytics.handleError(err)
-            })
-            .finally(() => {
-              okProcessing = false
-            })
-        } else {
+      const r = okAction()
+      if (r instanceof Promise) {
+        r.then(() => {
           okProcessing = false
           if (closeOnSave) dispatch('close')
-        }
-      } catch (err: any) {
+        })
+      } else {
         okProcessing = false
-        Analytics.handleError(err)
+        if (closeOnSave) dispatch('close')
       }
     }
   }

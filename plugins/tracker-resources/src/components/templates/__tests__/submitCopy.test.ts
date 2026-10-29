@@ -87,7 +87,10 @@ describe('submitIssueTemplateCopy', () => {
   it('revalidates the selected project and creates one template with all children', async () => {
     const { source, client, findOne, findAll, createDoc, newChildId } = setup()
 
-    await expect(submitIssueTemplateCopy(client, source, targetId, account, newChildId)).resolves.toBe(true)
+    await expect(submitIssueTemplateCopy(client, [source], targetId, account, newChildId)).resolves.toEqual({
+      copied: [source],
+      failed: []
+    })
 
     expect(findOne).toHaveBeenCalledTimes(1)
     expect(findOne).toHaveBeenCalledWith(tracker.class.Project, {
@@ -117,7 +120,7 @@ describe('submitIssueTemplateCopy', () => {
     // Archiving, deletion or membership loss makes the eligibility query return no matching project.
     findOne.mockResolvedValue(undefined)
 
-    await expect(submitIssueTemplateCopy(client, source, targetId, account, newChildId)).resolves.toBe(false)
+    await expect(submitIssueTemplateCopy(client, [source], targetId, account, newChildId)).resolves.toBeUndefined()
 
     expect(findAll).not.toHaveBeenCalled()
     expect(createDoc).not.toHaveBeenCalled()
@@ -128,8 +131,11 @@ describe('submitIssueTemplateCopy', () => {
     const { source, client, findOne, createDoc, newChildId } = setup()
     findOne.mockResolvedValueOnce(undefined)
 
-    await expect(submitIssueTemplateCopy(client, source, targetId, account, newChildId)).resolves.toBe(false)
-    await expect(submitIssueTemplateCopy(client, source, targetId, account, newChildId)).resolves.toBe(true)
+    await expect(submitIssueTemplateCopy(client, [source], targetId, account, newChildId)).resolves.toBeUndefined()
+    await expect(submitIssueTemplateCopy(client, [source], targetId, account, newChildId)).resolves.toEqual({
+      copied: [source],
+      failed: []
+    })
     expect(createDoc).toHaveBeenCalledTimes(1)
   })
 
@@ -137,26 +143,91 @@ describe('submitIssueTemplateCopy', () => {
     const { source, client, findOne, findAll, createDoc, newChildId } = setup()
     const target = selection === 'missing' ? undefined : source.space
 
-    await expect(submitIssueTemplateCopy(client, source, target, account, newChildId)).resolves.toBe(false)
+    await expect(submitIssueTemplateCopy(client, [source], target, account, newChildId)).resolves.toBeUndefined()
 
     expect(findOne).not.toHaveBeenCalled()
     expect(findAll).not.toHaveBeenCalled()
     expect(createDoc).not.toHaveBeenCalled()
   })
 
-  it.each(['project lookup', 'task type lookup', 'create'])(
-    'propagates a failed %s and permits retry',
-    async (stage) => {
-      const { source, client, findOne, findAll, createDoc, newChildId } = setup()
-      const failure = new Error(`${stage} failed`)
-      const operation = stage === 'project lookup' ? findOne : stage === 'task type lookup' ? findAll : createDoc
-      operation.mockRejectedValueOnce(failure)
+  it.each(['project lookup', 'task type lookup'])('propagates a failed %s and permits retry', async (stage) => {
+    const { source, client, findOne, findAll, createDoc, newChildId } = setup()
+    const failure = new Error(`${stage} failed`)
+    const operation = stage === 'project lookup' ? findOne : findAll
+    operation.mockRejectedValueOnce(failure)
 
-      await expect(submitIssueTemplateCopy(client, source, targetId, account, newChildId)).rejects.toBe(failure)
-      expect(createDoc).toHaveBeenCalledTimes(stage === 'create' ? 1 : 0)
+    await expect(submitIssueTemplateCopy(client, [source], targetId, account, newChildId)).rejects.toBe(failure)
+    expect(createDoc).not.toHaveBeenCalled()
 
-      await expect(submitIssueTemplateCopy(client, source, targetId, account, newChildId)).resolves.toBe(true)
-      expect(createDoc).toHaveBeenCalledTimes(stage === 'create' ? 2 : 1)
+    await expect(submitIssueTemplateCopy(client, [source], targetId, account, newChildId)).resolves.toEqual({
+      copied: [source],
+      failed: []
+    })
+    expect(createDoc).toHaveBeenCalledTimes(1)
+  })
+
+  it('copies both selected templates and all their children into the target in one submission', async () => {
+    const { source, client, findOne, findAll, createDoc, newChildId } = setup()
+    const second = { ...template(), _id: 'second-template' as Ref<IssueTemplate>, title: 'Second template' }
+
+    await expect(submitIssueTemplateCopy(client, [source, second], targetId, account, newChildId)).resolves.toEqual({
+      copied: [source, second],
+      failed: []
+    })
+
+    expect(findOne).toHaveBeenCalledTimes(1)
+    expect(findAll).toHaveBeenCalledTimes(1)
+    expect(createDoc).toHaveBeenCalledTimes(2)
+    for (const [index, selected] of [source, second].entries()) {
+      expect(createDoc).toHaveBeenNthCalledWith(
+        index + 1,
+        tracker.class.IssueTemplate,
+        targetId,
+        expect.objectContaining({
+          title: selected.title,
+          children: [
+            expect.objectContaining({ id: `copied-child-${index * 2 + 1}` }),
+            expect.objectContaining({ id: `copied-child-${index * 2 + 2}` })
+          ]
+        })
+      )
+    }
+  })
+
+  it.each([0, 1])(
+    'reports exactly the failed template at index %s and still attempts the other copy',
+    async (index) => {
+      const { source, client, createDoc, newChildId } = setup()
+      const second = { ...template(), _id: 'second-template' as Ref<IssueTemplate>, title: 'Second template' }
+      const selected = [source, second]
+      const error = new Error('write failed')
+      createDoc.mockImplementation(async (_class, _space, data) => {
+        if (data.title === selected[index].title) throw error
+        return 'copy'
+      })
+
+      await expect(submitIssueTemplateCopy(client, selected, targetId, account, newChildId)).resolves.toEqual({
+        copied: [selected[1 - index]],
+        failed: [{ template: selected[index], error }]
+      })
+      expect(createDoc).toHaveBeenCalledTimes(2)
     }
   )
+
+  it('rejects the source project of any selected template before writing', async () => {
+    const { source, client, findOne, createDoc, newChildId } = setup()
+    const second = { ...template(), space: targetId }
+    await expect(
+      submitIssueTemplateCopy(client, [source, second], targetId, account, newChildId)
+    ).resolves.toBeUndefined()
+    expect(findOne).not.toHaveBeenCalled()
+    expect(createDoc).not.toHaveBeenCalled()
+  })
+
+  it('ignores an empty selection', async () => {
+    const { client, findOne, createDoc, newChildId } = setup()
+    await expect(submitIssueTemplateCopy(client, [], targetId, account, newChildId)).resolves.toBeUndefined()
+    expect(findOne).not.toHaveBeenCalled()
+    expect(createDoc).not.toHaveBeenCalled()
+  })
 })

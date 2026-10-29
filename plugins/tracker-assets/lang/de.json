@@ -178,7 +178,7 @@
     "MoveToProject": "Zu Projekt verschieben",
     "CopyToProject": "In Projekt kopieren…",
     "CopyTargetUnavailable": "In dieses Projekt kann nicht mehr kopiert werden. Wählen Sie ein anderes aktives Projekt, in dem Sie Mitglied sind.",
-    "CopyTemplateFailed": "Die Vorlage konnte nicht kopiert werden. Versuchen Sie es erneut.",
+    "CopyTemplateFailed": "Die folgenden Vorlagen konnten nicht kopiert werden. Versuchen Sie es erneut, um nur diese Vorlagen zu kopieren.",
     "Duplicate": "Duplizieren",
 
     "GotoIssues": "Zu Aufgaben",

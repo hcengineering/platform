@@ -147,7 +147,7 @@
     "MoveToProject": "移动到项目",
     "CopyToProject": "复制到项目…",
     "CopyTargetUnavailable": "此项目已无法用于复制。请选择您已加入的其他活跃项目。",
-    "CopyTemplateFailed": "无法复制模板。请重试。",
+    "CopyTemplateFailed": "无法复制以下模板。重试时将仅复制这些模板。",
     "Duplicate": "复制",
 
     "GotoIssues": "前往问题",

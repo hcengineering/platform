@@ -243,8 +243,8 @@ async function move (issues: Issue | Issue[]): Promise<void> {
 }
 
 async function copyIssueTemplateToProject (template: IssueTemplate | IssueTemplate[]): Promise<void> {
-  const value = Array.isArray(template) ? template[0] : template
-  if (value !== undefined) {
+  const value = Array.isArray(template) ? template : [template]
+  if (value.length > 0) {
     showPopup(CopyIssueTemplate, { value }, 'top')
   }
 }

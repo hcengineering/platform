@@ -26,7 +26,9 @@ import type { Issue, IssueTemplate, IssueTemplateData, Project } from '@hcengine
  * This does not change membership or access. Null parent assignments can use the target
  * project's default assignee when an issue is subsequently created from the template.
  * Child templates get fresh ids, comments and attachments are not copied.
- * Relations are retained, so copies also appear in the existing related-template views.
+ * Template relations are one-sided references: CreateIssueTemplate writes only the template,
+ * and RelatedIssueTemplates queries its relations array to find the reverse view. Keep them
+ * so copies appear there too; no far-side update is needed (unlike issue-to-issue relations).
  */
 export function makeIssueTemplateCopy (
   template: IssueTemplate,

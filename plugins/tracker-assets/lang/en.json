@@ -164,7 +164,7 @@
     "MoveToProject": "Move to project",
     "CopyToProject": "Copy to project…",
     "CopyTargetUnavailable": "This project is no longer available for copying. Select another active project you belong to.",
-    "CopyTemplateFailed": "Could not copy the template. Try again.",
+    "CopyTemplateFailed": "Could not copy the following templates. Try again to copy only these templates.",
     "Duplicate": "Duplicate",
 
     "GotoIssues": "Go to issues",
