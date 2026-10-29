@@ -33,6 +33,7 @@ import serverCore from '@hcengineering/server-core'
 
 import { Client, errors as esErr } from '@elastic/elasticsearch'
 import { getMetadata } from '@hcengineering/platform'
+import { DEFAULT_FULLTEXT_ANALYZER, getFulltextAnalyzer } from './analyzer'
 
 const DEFAULT_LIMIT = 200
 
@@ -48,7 +49,7 @@ const mappings = {
   properties: {
     fulltextSummary: {
       type: 'text',
-      analyzer: 'rebuilt_english'
+      analyzer: DEFAULT_FULLTEXT_ANALYZER
     },
     workspaceId: {
       type: 'keyword',
@@ -112,7 +113,8 @@ class ElasticAdapter implements FullTextAdapter {
   constructor (
     private readonly client: Client,
     private readonly indexBaseName: string,
-    readonly indexVersion: string
+    readonly indexVersion: string,
+    private readonly analyzer: string = DEFAULT_FULLTEXT_ANALYZER
   ) {
     this.indexName = `${indexBaseName}_${indexVersion}`
     this.getFulltextDocId = (workspaceId, doc) => `${doc}@${workspaceId}` as Ref<Doc>
@@ -121,6 +123,12 @@ class ElasticAdapter implements FullTextAdapter {
 
   async initMapping (ctx: MeasureContext): Promise<boolean> {
     const indexName = this.indexName
+    const indexMappings = {
+      properties: {
+        ...mappings.properties,
+        fulltextSummary: { ...mappings.properties.fulltextSummary, analyzer: this.analyzer }
+      }
+    }
     try {
       const existingVersions = await ctx.withSync('get-indexes', {}, () =>
         this.client.indices.get({
@@ -137,8 +145,13 @@ class ElasticAdapter implements FullTextAdapter {
             index: indexName
           })
         )
-        for (const [propName, propType] of Object.entries(mappings.properties)) {
-          if (mapping.body[indexName]?.mappings.properties?.[propName]?.type !== propType.type) {
+        for (const [propName, propType] of Object.entries(indexMappings.properties)) {
+          const existing = mapping.body[indexName]?.mappings.properties?.[propName]
+          // An analyzer change cannot be applied to an existing field, the index has to be recreated
+          if (
+            existing?.type !== propType.type ||
+            ('analyzer' in propType && existing?.analyzer !== propType.analyzer)
+          ) {
             shouldDropExistingIndex = true
             break
           }
@@ -177,7 +190,7 @@ class ElasticAdapter implements FullTextAdapter {
                   }
                 }
               },
-              mappings
+              mappings: indexMappings
             }
           })
         )
@@ -185,7 +198,7 @@ class ElasticAdapter implements FullTextAdapter {
         await ctx.with('put-mapping', {}, () =>
           this.client.indices.putMapping({
             index: indexName,
-            body: mappings
+            body: indexMappings
           })
         )
       }
@@ -768,5 +781,5 @@ export async function createElasticAdapter (url: string): Promise<FullTextAdapte
   const indexBaseName = getIndexName()
   const indexVersion = getIndexVersion()
 
-  return new ElasticAdapter(client, indexBaseName, indexVersion)
+  return new ElasticAdapter(client, indexBaseName, indexVersion, getFulltextAnalyzer())
 }

@@ -17,6 +17,9 @@ Fulltext indexing service for the Platform. Provides full-text search capabiliti
 
 - **`PORT`** - Service port (default: `4700`)
 - **`MODEL_JSON`** - Path to model JSON file (default: `model.json`)
+- **`ELASTIC_ANALYZER`** - Elasticsearch/OpenSearch analyzer used for the extracted document text (default: `rebuilt_english`, a custom English analyzer)
+  - Set a built-in language analyzer such as `russian`, `german` or `french` to get stemming for non-English content
+  - Changing it on an existing deployment drops and recreates the index on the next start; run a full reindex afterwards (e.g. the `fulltext-reindex-all` tool command), otherwise search results stay empty until documents are indexed again
 - **`HULYLAKE_URL`** - Hulylake service URL for communication indexing (default: empty string)
   - Required only if `COMMUNICATION_API_ENABLED=true`
 - **`COMMUNICATION_API_ENABLED`** - Enable communication API for indexing messages (default: disabled)
