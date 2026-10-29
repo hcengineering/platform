@@ -26,6 +26,13 @@
   import Spinner from './Spinner.svelte'
   import IconCheck from './icons/Check.svelte'
   import IconSearch from './icons/Search.svelte'
+  import IconCollapseArrow from './icons/CollapseArrow.svelte'
+  import {
+    buildSelectPopupRows,
+    loadCollapsedCategories,
+    saveCollapsedCategories,
+    type SelectPopupRow
+  } from '../selectPopupCategories'
   import { translate } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
 
@@ -40,6 +47,9 @@
   export let embedded: boolean = false
   export let componentLink: boolean = false
   export let loading: boolean = false
+  // Show category headers as collapsible groups; collapse state is remembered under collapsedCategoriesKey
+  export let collapsibleCategories: boolean = false
+  export let collapsedCategoriesKey: string | undefined = undefined
 
   let popupElement: HTMLDivElement | undefined = undefined
   export let search: string = ''
@@ -52,6 +62,27 @@
   let list: ListView
 
   let selected: any
+
+  let collapsedCategories = loadCollapsedCategories(collapsedCategoriesKey)
+
+  function toggleCategory (label: string): void {
+    if (collapsedCategories.has(label)) {
+      collapsedCategories.delete(label)
+    } else {
+      collapsedCategories.add(label)
+    }
+    collapsedCategories = collapsedCategories
+    saveCollapsedCategories(collapsedCategoriesKey, collapsedCategories)
+  }
+
+  function selectRow (row: SelectPopupRow | undefined): void {
+    if (row === undefined) return
+    if (row.kind === 'category') {
+      toggleCategory(row.category.label)
+    } else {
+      sendSelect(row.item.id)
+    }
+  }
 
   function sendSelect (id: SelectPopupValueType['id']): void {
     selected = id
@@ -84,7 +115,7 @@
     if (key.code === 'Enter') {
       key.preventDefault()
       key.stopPropagation()
-      sendSelect(filteredObjects[selection].id)
+      selectRow(rows[selection])
       return true
     }
     return false
@@ -111,6 +142,20 @@
   $: filteredObjects = value.filter((el) =>
     (itemLabelsTranslation.get(el.label ?? '') ?? el.text ?? '').toLowerCase().includes(search.toLowerCase())
   )
+
+  $: rows = collapsibleCategories
+    ? buildSelectPopupRows(filteredObjects, collapsedCategories, search !== '')
+    : filteredObjects.map((item): SelectPopupRow => ({ kind: 'item', item }))
+
+  // Start keyboard navigation on the first item instead of the first category header
+  let initialRowSelected = false
+  $: if (collapsibleCategories && !initialRowSelected && rows.length > 0) {
+    initialRowSelected = true
+    selection = Math.max(
+      0,
+      rows.findIndex((row) => row.kind === 'item')
+    )
+  }
 
   $: huge = size === 'medium' || size === 'large'
 
@@ -154,60 +199,83 @@
   {/if}
   <div class="scroll">
     <div class="box">
-      <ListView
-        bind:this={list}
-        count={filteredObjects.length}
-        bind:selection
-        on:changeContent={() => dispatch('changeContent')}
-      >
+      <ListView bind:this={list} count={rows.length} bind:selection on:changeContent={() => dispatch('changeContent')}>
         <svelte:fragment slot="item" let:item={itemId}>
-          {@const item = filteredObjects[itemId]}
-          <button
-            class="menu-item withList w-full"
-            on:click={() => {
-              sendSelect(item.id)
-            }}
-            disabled={loading}
-          >
-            <div class="flex-row-center flex-grow" class:pointer-events-none={!componentLink}>
-              {#if item.component}
-                <div class="flex-grow clear-mins"><svelte:component this={item.component} {...item.props} /></div>
-              {:else}
-                {#if item.icon}
-                  <div class="icon mr-2">
-                    <Icon icon={item.icon} iconProps={item.iconProps} fill={item.iconColor ?? 'currentColor'} {size} />
+          {@const row = rows[itemId]}
+          {#if row.kind === 'category'}
+            <button
+              class="menu-item withList w-full"
+              class:collapsed={row.collapsed}
+              on:click={() => {
+                toggleCategory(row.category.label)
+              }}
+            >
+              <div class="flex-row-center flex-grow pointer-events-none">
+                <div class="category-chevron mr-2"><IconCollapseArrow size={'small'} /></div>
+                <span class="overflow-label flex-grow content-dark-color">
+                  <Label label={row.category.label} />
+                </span>
+                <span class="ml-2 content-dark-color">{row.count}</span>
+              </div>
+            </button>
+          {:else}
+            {@const item = row.item}
+            <button
+              class="menu-item withList w-full"
+              on:click={() => {
+                sendSelect(item.id)
+              }}
+              disabled={loading}
+            >
+              <div class="flex-row-center flex-grow" class:pointer-events-none={!componentLink}>
+                {#if item.component}
+                  <div class="flex-grow clear-mins"><svelte:component this={item.component} {...item.props} /></div>
+                {:else}
+                  {#if item.icon}
+                    <div class="icon mr-2">
+                      <Icon
+                        icon={item.icon}
+                        iconProps={item.iconProps}
+                        fill={item.iconColor ?? 'currentColor'}
+                        {size}
+                      />
+                    </div>
+                  {/if}
+                  <span class="label overflow-label flex-grow" class:text-base={huge}>
+                    {#if item.label}
+                      <Label label={item.label} />
+                    {:else if item.text}
+                      {item.text}
+                    {/if}
+                  </span>
+                {/if}
+                {#if hasSelected}
+                  <div class="check">
+                    {#if item.isSelected}
+                      <Icon icon={IconCheck} size={'small'} />
+                    {/if}
                   </div>
                 {/if}
-                <span class="label overflow-label flex-grow" class:text-base={huge}>
-                  {#if item.label}
-                    <Label label={item.label} />
-                  {:else if item.text}
-                    {item.text}
-                  {/if}
-                </span>
-              {/if}
-              {#if hasSelected}
-                <div class="check">
-                  {#if item.isSelected}
-                    <Icon icon={IconCheck} size={'small'} />
-                  {/if}
-                </div>
-              {/if}
-              {#if item.id === selected && loading}
-                <Spinner size={'small'} />
-              {/if}
-            </div>
-          </button>
+                {#if item.id === selected && loading}
+                  <Spinner size={'small'} />
+                {/if}
+              </div>
+            </button>
+          {/if}
         </svelte:fragment>
         <svelte:fragment slot="category" let:item={row}>
-          {@const obj = filteredObjects[row]}
-          {#if obj.category && ((row === 0 && obj.category.label !== undefined) || obj.category.label !== filteredObjects[row - 1]?.category?.label)}
-            {#if row > 0}<div class="menu-separator" />{/if}
-            <div class="menu-group__header flex-row-center">
-              <span class="overflow-label">
-                <Label label={obj.category.label} />
-              </span>
-            </div>
+          {#if collapsibleCategories}
+            {#if row > 0 && rows[row]?.kind === 'category'}<div class="menu-separator" />{/if}
+          {:else}
+            {@const obj = filteredObjects[row]}
+            {#if obj.category && ((row === 0 && obj.category.label !== undefined) || obj.category.label !== filteredObjects[row - 1]?.category?.label)}
+              {#if row > 0}<div class="menu-separator" />{/if}
+              <div class="menu-group__header flex-row-center">
+                <span class="overflow-label">
+                  <Label label={obj.category.label} />
+                </span>
+              </div>
+            {/if}
           {/if}
         </svelte:fragment>
       </ListView>
@@ -215,3 +283,16 @@
   </div>
   {#if !embedded}<div class="menu-space" />{/if}
 </div>
+
+<style lang="scss">
+  .category-chevron {
+    display: flex;
+    flex-shrink: 0;
+    color: var(--theme-dark-color);
+    transform: rotate(90deg);
+    transition: transform 0.15s ease-in-out;
+  }
+  .collapsed .category-chevron {
+    transform: rotate(0deg);
+  }
+</style>
