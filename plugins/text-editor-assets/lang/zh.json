@@ -44,6 +44,8 @@
     "DeleteColumn": "删除",
     "AddRowBefore": "在前面添加",
     "AddRowAfter": "在后面添加",
+    "AddRowsBefore": "在前面添加 {count} 行",
+    "AddRowsAfter": "在后面添加 {count} 行",
     "DeleteRow": "删除",
     "DeleteTable": "删除",
     "MergeCells": "合并单元格",

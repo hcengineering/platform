@@ -44,6 +44,8 @@
     "DeleteColumn": "Spalte löschen",
     "AddRowBefore": "Zeile vorher hinzufügen",
     "AddRowAfter": "Zeile danach hinzufügen",
+    "AddRowsBefore": "{count} Zeilen vorher hinzufügen",
+    "AddRowsAfter": "{count} Zeilen danach hinzufügen",
     "DeleteRow": "Zeile löschen",
     "DeleteTable": "Tabelle löschen",
     "MergeCells": "Zellen verbinden",

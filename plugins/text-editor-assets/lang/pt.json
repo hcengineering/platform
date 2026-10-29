@@ -44,6 +44,8 @@
     "DeleteColumn": "Eliminar",
     "AddRowBefore": "Adicionar antes",
     "AddRowAfter": "Adicionar depois",
+    "AddRowsBefore": "Adicionar {count} linhas antes",
+    "AddRowsAfter": "Adicionar {count} linhas depois",
     "DeleteRow": "Eliminar",
     "DeleteTable": "Eliminar",
     "MergeCells": "Unir células",

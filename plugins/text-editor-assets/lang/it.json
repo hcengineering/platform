@@ -44,6 +44,8 @@
     "DeleteColumn": "Elimina colonna",
     "AddRowBefore": "Aggiungi riga prima",
     "AddRowAfter": "Aggiungi riga dopo",
+    "AddRowsBefore": "Aggiungi {count} righe prima",
+    "AddRowsAfter": "Aggiungi {count} righe dopo",
     "DeleteRow": "Elimina riga",
     "DeleteTable": "Elimina tabella",
     "MergeCells": "Unisci celle",
