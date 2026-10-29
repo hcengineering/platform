@@ -15,7 +15,7 @@
 
 import { Client } from '@elastic/elasticsearch'
 import { Analytics } from '@hcengineering/analytics'
-import type { Doc, MeasureContext, Ref, WorkspaceUuid } from '@hcengineering/core'
+import type { Class, Doc, MeasureContext, PersonId, Ref, Space, WorkspaceUuid } from '@hcengineering/core'
 import { getMetadata } from '@hcengineering/platform'
 import type { IndexedDoc } from '@hcengineering/server-core'
 import { createElasticAdapter } from '../adapter'
@@ -30,7 +30,18 @@ jest.mock(
   { virtual: true }
 )
 
-function setup (indexes: Record<string, any> = {}) {
+interface TestSetup {
+  client: {
+    indices: Record<'get' | 'getMapping' | 'create' | 'analyze' | 'delete' | 'putMapping', jest.Mock>
+    index: jest.Mock
+    bulk: jest.Mock
+    search: jest.Mock
+  }
+  context: Record<'with' | 'withSync' | 'error' | 'warn', jest.Mock>
+  ctx: MeasureContext
+}
+
+function setup (indexes: Record<string, any> = {}): TestSetup {
   const client = {
     indices: {
       get: jest.fn().mockResolvedValue({ body: indexes }),
@@ -45,7 +56,7 @@ function setup (indexes: Record<string, any> = {}) {
     search: jest.fn().mockResolvedValue({ body: { hits: { hits: [] } } })
   }
   const context = {
-    with: jest.fn(async (_name: string, _params: any, op: () => any) => await op()),
+    with: jest.fn(async (_name: string, _params: any, op: () => Promise<any>) => await op()),
     withSync: jest.fn((_name: string, _params: any, op: () => any) => op()),
     error: jest.fn(),
     warn: jest.fn()
@@ -61,7 +72,14 @@ function rejectedAnalyzer (analyzer: string): Error {
 }
 
 const workspace = 'ws1' as WorkspaceUuid
-const doc = { id: 'doc1' as Ref<Doc>, fulltextSummary: 'continued indexing' } as IndexedDoc
+const doc: IndexedDoc = {
+  id: 'doc1' as Ref<Doc>,
+  _class: ['class1' as Ref<Class<Doc>>],
+  space: 'space1' as Ref<Space>,
+  modifiedOn: 0,
+  modifiedBy: 'andrey' as PersonId,
+  fulltextSummary: 'continued indexing'
+}
 
 describe('fulltext index initialization', () => {
   const originalAnalyzer = process.env.ELASTIC_ANALYZER
@@ -176,11 +194,12 @@ describe('fulltext index initialization', () => {
   it('leaves old indexes untouched on a transient creation failure and allows a retry', async () => {
     process.env.ELASTIC_ANALYZER = 'russian'
     const { client, ctx } = setup({ storage_index_v2: {} })
+    const handleError = jest.spyOn(Analytics, 'handleError')
     client.indices.create.mockRejectedValueOnce(Object.assign(new Error('unavailable'), { meta: { statusCode: 503 } }))
     const adapter = await createElasticAdapter('http://localhost:9200')
     expect(await adapter.initMapping(ctx)).toBe(false)
     expect(client.indices.delete).not.toHaveBeenCalled()
-    expect(Analytics.handleError).toHaveBeenCalledTimes(1)
+    expect(handleError).toHaveBeenCalledTimes(1)
     expect(await adapter.initMapping(ctx)).toBe(true)
     expect(client.indices.delete).toHaveBeenCalledWith({ index: ['storage_index_v2'] })
   })

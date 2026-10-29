@@ -173,10 +173,11 @@ class ElasticAdapter implements FullTextAdapter {
           : indexes.includes(`${this.indexBaseName}_${this.indexVersion}`)
             ? `${this.indexBaseName}_${this.indexVersion}`
             : indexes.sort((a, b) => {
-                const createdAt = (name: string): number =>
-                  Number(existingVersions.body[name].settings?.index?.creation_date ?? 0)
-                return createdAt(b) - createdAt(a) || a.localeCompare(b)
-              })[0]
+              const createdAt = (name: string): number =>
+                Number(existingVersions.body[name].settings?.index?.creation_date ?? 0)
+              const difference = createdAt(b) - createdAt(a)
+              return difference === 0 || Number.isNaN(difference) ? a.localeCompare(b) : difference
+            })[0]
         this.usingExistingIndex = true
         ctx.error(`Cannot use ELASTIC_ANALYZER '${this.analyzer}'; keeping existing index '${this.indexName}'`, {
           analyzer: this.analyzer,
