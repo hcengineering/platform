@@ -20,3 +20,11 @@ export function canCreateMilestone (
   if (!permissions.whitelist.has(space) && permissions.ps[space] === undefined) return false
   return canCreateObject(tracker.class.Milestone, space, permissions)
 }
+
+export function canSaveMilestone (
+  space: DocumentQuery<Milestone>['space'] | undefined,
+  label: string,
+  permissions: PermissionsStore
+): boolean {
+  return label !== '' && canCreateMilestone(space, true, false, permissions)
+}

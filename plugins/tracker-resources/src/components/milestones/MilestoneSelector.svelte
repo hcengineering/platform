@@ -90,6 +90,7 @@
 
   const createMilestoneId = '#createMilestone'
   // A new milestone can be created only when the selector is bound to a single project
+  // and the user may create milestones in it
   $: canCreate = canCreateMilestone(space, isEditable, isAction, $permissionsStore)
 
   const getMilestoneInfo = (rawMilestones: Milestone[], sp: Milestone | undefined, canCreate: boolean) => {

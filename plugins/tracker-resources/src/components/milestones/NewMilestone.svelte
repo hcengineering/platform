@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { permissionsStore } from '@hcengineering/contact-resources'
   import { Data, Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
   import { Card, getClient, SpaceSelector } from '@hcengineering/presentation'
@@ -23,6 +24,7 @@
   import tracker from '../../plugin'
   import MilestoneStatusEditor from './MilestoneStatusEditor.svelte'
   import ProjectPresenter from '../projects/ProjectPresenter.svelte'
+  import { canSaveMilestone } from './milestonePermissions'
 
   export let space: Ref<Project>
   const dispatch = createEventDispatcher()
@@ -40,7 +42,10 @@
 
   let createdMilestone: Ref<Milestone> | undefined
 
+  $: canSave = canSaveMilestone(space, object.label, $permissionsStore)
+
   async function onSave () {
+    if (!canSaveMilestone(space, object.label, $permissionsStore)) return
     createdMilestone = await client.createDoc(tracker.class.Milestone, space, object)
   }
 </script>
@@ -48,7 +53,7 @@
 <Card
   label={tracker.string.NewMilestone}
   okAction={onSave}
-  canSave={object.label !== ''}
+  {canSave}
   okLabel={tracker.string.CreateMilestone}
   gap={'gapV-4'}
   on:close={() => dispatch('close', createdMilestone)}

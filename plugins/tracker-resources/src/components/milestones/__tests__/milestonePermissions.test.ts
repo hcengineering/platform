@@ -6,7 +6,7 @@
 import type { PermissionsStore } from '@hcengineering/contact'
 import type { Permission, Ref } from '@hcengineering/core'
 import type { Project } from '@hcengineering/tracker'
-import { canCreateMilestone } from '../milestonePermissions'
+import { canCreateMilestone, canSaveMilestone } from '../milestonePermissions'
 
 jest.mock('@hcengineering/view-resources', () => jest.requireActual('../../../../../view-resources/src/permissions'))
 jest.mock('@hcengineering/platform', () => ({
@@ -67,11 +67,6 @@ describe('milestone creation permissions', () => {
     expect(canCreateMilestone(project, true, false, store)).toBe(false)
   })
 
-  it('stays hidden while permissions load and when a forbidden result arrives', () => {
-    expect(canCreateMilestone(project, true, false, permissions())).toBe(false)
-    expect(canCreateMilestone(project, true, false, permissions('forbid-milestone'))).toBe(false)
-  })
-
   it('appears after permissions load and disappears when permission is revoked', () => {
     expect(canCreateMilestone(project, true, false, permissions())).toBe(false)
     expect(canCreateMilestone(project, true, false, permissions('allow-milestone', true))).toBe(true)
@@ -94,5 +89,27 @@ describe('milestone creation permissions', () => {
     expect(canCreateMilestone(project, true, true, store)).toBe(false)
     expect(canCreateMilestone(undefined, true, false, store)).toBe(false)
     expect(canCreateMilestone({ $in: [project, otherProject] }, true, false, store)).toBe(false)
+  })
+})
+
+describe('milestone dialog save permissions', () => {
+  it('requires a label even when the user may create milestones', () => {
+    const store = permissions('allow-milestone', true)
+    expect(canSaveMilestone(project, '', store)).toBe(false)
+    expect(canSaveMilestone(project, 'Release', store)).toBe(true)
+  })
+
+  it('disables saving when the dialog switches to a forbidden project and enables it on return', () => {
+    const store = permissions('allow-milestone', true)
+    store.ps[otherProject] = new Set(['forbid-milestone' as Ref<Permission>])
+    expect(canSaveMilestone(project, 'Release', store)).toBe(true)
+    expect(canSaveMilestone(otherProject, 'Release', store)).toBe(false)
+    expect(canSaveMilestone(project, 'Release', store)).toBe(true)
+  })
+
+  it('waits for permissions and disables saving when permission is revoked', () => {
+    expect(canSaveMilestone(project, 'Release', permissions())).toBe(false)
+    expect(canSaveMilestone(project, 'Release', permissions('allow-milestone', true))).toBe(true)
+    expect(canSaveMilestone(project, 'Release', permissions('forbid-milestone', true))).toBe(false)
   })
 })
