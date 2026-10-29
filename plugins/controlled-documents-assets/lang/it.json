@@ -78,6 +78,8 @@
     "ProvideRejectionReason": "Digita il motivo del rifiuto...",
     "RejectionReason": "Motivo del rifiuto",
     "ConfirmReviewCompletion": "Conferma completamento revisione",
+    "ConfirmApprovalSubmission": "Conferma l'invio per approvazione",
+    "ConfirmReviewSubmission": "Conferma l'invio per revisione",
     "AddApprovalTitle": "Invia il tuo documento agli approvatori",
     "AddApprovalDescription1": "Per preparare il tuo documento per l'approvazione deve soddisfare alcuni requisiti:",
     "AddApprovalDescription2": "ha stato 'Bozza' o 'Revisionato'",

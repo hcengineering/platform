@@ -22,6 +22,7 @@
     "Minor": "マイナー",
     "Patch": "パッチ",
     "ValidationWorkflow": "検証ワークフロー",
+    "Creator": "作成者",
     "ChangeOwner": "ドキュメントの所有者を変更",
     "ChangeOwnerHintBeginning": "",
     "ChangeOwnerHintEnd": "の所有権を別のユーザーに譲渡します。",
@@ -269,7 +270,8 @@
     "CreateChildFolder": "子フォルダを作成",
     "LatestVersionHint": "最新",
     "CannotDeleteFolder": "フォルダを削除できません",
-    "CannotDeleteFolderHint": "フォルダを削除する前に、すべての子ドキュメントを別の場所に移動してください。"
+    "CannotDeleteFolderHint": "フォルダを削除する前に、すべての子ドキュメントを別の場所に移動してください。",
+    "AllDocumentSpaces": "すべてのドキュメントスペース"
   },
   "controlledDocStates": {
     "Empty": "",

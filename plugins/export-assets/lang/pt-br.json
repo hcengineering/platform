@@ -48,7 +48,6 @@
     "NoSelectedDocuments": "Nenhum documento selecionado",
     "NoDocumentsMatchedFilters": "Nenhum documento foi encontrado para exportação com os filtros atuais. Ajuste os filtros ou a seleção e tente novamente.",
     "RequestPermissionToImport": "Por favor, solicite permissão ao proprietário do espaço de trabalho de destino para importar documentos.",
-    "SkipDeletedObsolete": "Pular documentos arquivados ou obsoletos",
     "ExportOnlyEffective": "Exportar apenas documentos com status efetivo",
     "ExportFilterMode": "Documentos a exportar",
     "ExportFilterEffectiveOnly": "Apenas documentos efetivos",
