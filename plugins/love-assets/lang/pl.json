@@ -97,8 +97,6 @@
     "ScreenShareDenied": "Udostępnianie ekranu zostało zablokowane przez przeglądarkę lub system operacyjny. Zezwól przeglądarce na nagrywanie ekranu w ustawieniach prywatności systemu i spróbuj ponownie.",
     "ScreenShareUnsupported": "Udostępnianie ekranu nie jest obsługiwane w tej przeglądarce lub przy tym połączeniu. Użyj aktualnej przeglądarki na komputerze przez HTTPS.",
     "ScreenShareError": "Nie udało się rozpocząć udostępniania ekranu. Spróbuj ponownie.",
-    "ScreenShareNotStartedTitle": "Udostępnianie ekranu nie zostało rozpoczęte",
-    "ScreenShareNotStarted": "Udostępnianie ekranu nie zostało rozpoczęte. Jeśli go nie anulowano, sprawdź, czy przeglądarka i system operacyjny zezwalają na udostępnianie ekranu dla tej witryny.",
     "StayInRoom": "Pozostań w pokoju"
   }
 }

@@ -111,8 +111,6 @@ export default mergeIds(loveId, love, {
     ScreenShareDenied: '' as IntlString,
     ScreenShareUnsupported: '' as IntlString,
     ScreenShareError: '' as IntlString,
-    ScreenShareNotStartedTitle: '' as IntlString,
-    ScreenShareNotStarted: '' as IntlString,
     StayInRoom: '' as IntlString
   }
 })

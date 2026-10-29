@@ -97,8 +97,6 @@
     "ScreenShareDenied": "Le partage d'écran a été bloqué par votre navigateur ou votre système d'exploitation. Autorisez l'enregistrement de l'écran pour votre navigateur dans les paramètres de confidentialité du système, puis réessayez.",
     "ScreenShareUnsupported": "Le partage d'écran n'est pas pris en charge par ce navigateur ou cette connexion. Utilisez un navigateur de bureau récent via HTTPS.",
     "ScreenShareError": "Le partage d'écran n'a pas pu démarrer. Veuillez réessayer.",
-    "ScreenShareNotStartedTitle": "Partage d'écran non démarré",
-    "ScreenShareNotStarted": "Le partage d'écran n'a pas démarré. Si vous ne l'avez pas annulé, vérifiez que votre navigateur et votre système d'exploitation autorisent le partage d'écran pour ce site.",
     "StayInRoom": "Rester dans la salle"
   }
 }

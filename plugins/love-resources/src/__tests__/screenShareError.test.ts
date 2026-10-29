@@ -23,6 +23,7 @@ function err (name: string, message: string = ''): Error {
 
 describe('getScreenShareErrorKind', () => {
   it('reports an ambiguous NotAllowedError as not started', () => {
+    expect(getScreenShareErrorKind(err('NotAllowedError'))).toBe('notStarted')
     expect(getScreenShareErrorKind(err('NotAllowedError', 'Permission denied'))).toBe('notStarted')
     expect(
       getScreenShareErrorKind(
@@ -41,6 +42,7 @@ describe('getScreenShareErrorKind', () => {
         err('NotAllowedError', 'Access to the feature "display-capture" is disallowed by permission policy.')
       )
     ).toBe('denied')
+    expect(getScreenShareErrorKind(err('NotAllowedError', 'Blocked by permissions policy'))).toBe('denied')
     expect(getScreenShareErrorKind(err('SecurityError', 'Insecure context'))).toBe('denied')
   })
 

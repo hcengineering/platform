@@ -97,8 +97,6 @@
         "ScreenShareDenied": "브라우저 또는 운영 체제에서 화면 공유를 차단했습니다. 시스템 개인정보 보호 설정에서 브라우저의 화면 녹화를 허용한 후 다시 시도하세요.",
         "ScreenShareUnsupported": "이 브라우저 또는 연결에서는 화면 공유가 지원되지 않습니다. HTTPS를 통해 최신 데스크톱 브라우저를 사용하세요.",
         "ScreenShareError": "화면 공유를 시작할 수 없습니다. 다시 시도하세요.",
-        "ScreenShareNotStartedTitle": "화면 공유가 시작되지 않았습니다",
-        "ScreenShareNotStarted": "화면 공유가 시작되지 않았습니다. 취소하지 않았다면 브라우저와 운영 체제에서 이 사이트의 화면 공유가 허용되어 있는지 확인하세요.",
         "StayInRoom": "룸에 머무르기"
     }
 }

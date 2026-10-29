@@ -21,7 +21,7 @@ export type ScreenShareErrorKind = 'notStarted' | 'denied' | 'unsupported' | 'fa
  * Browsers report both a closed source picker and a blocked permission as NotAllowedError with
  * the same message, so a user cancellation cannot be told apart reliably. Only denials that can
  * be recognized by their message (operating system or permissions policy) are reported as
- * 'denied'; any other NotAllowedError is reported as 'notStarted', which is shown as a soft hint.
+ * 'denied'; any other NotAllowedError is reported as 'notStarted' and handled silently.
  */
 export function getScreenShareErrorKind (error: unknown, displayMediaSupported: boolean = true): ScreenShareErrorKind {
   if (!displayMediaSupported) return 'unsupported'

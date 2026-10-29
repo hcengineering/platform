@@ -363,18 +363,10 @@ export class LiveKitClient {
 
   private async showScreenShareError (error: unknown): Promise<void> {
     const kind = getScreenShareErrorKind(error, navigator.mediaDevices?.getDisplayMedia !== undefined)
-    const lang = getCurrentLanguage()
     if (kind === 'notStarted') {
-      addNotification(
-        await translate(love.string.ScreenShareNotStartedTitle, {}, lang),
-        await translate(love.string.ScreenShareNotStarted, {}, lang),
-        SimpleNotification,
-        undefined,
-        NotificationSeverity.Info,
-        'love'
-      )
       return
     }
+    const lang = getCurrentLanguage()
     const message =
       kind === 'denied'
         ? love.string.ScreenShareDenied

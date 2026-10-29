@@ -97,8 +97,6 @@
     "ScreenShareDenied": "O compartilhamento de tela foi bloqueado pelo navegador ou pelo sistema operacional. Permita a gravação de tela para o navegador nas configurações de privacidade do sistema e tente novamente.",
     "ScreenShareUnsupported": "O compartilhamento de tela não é compatível com este navegador ou conexão. Use um navegador de desktop atualizado via HTTPS.",
     "ScreenShareError": "Não foi possível iniciar o compartilhamento de tela. Tente novamente.",
-    "ScreenShareNotStartedTitle": "Compartilhamento de tela não iniciado",
-    "ScreenShareNotStarted": "O compartilhamento de tela não foi iniciado. Se você não o cancelou, verifique se o navegador e o sistema operacional permitem o compartilhamento de tela para este site.",
     "StayInRoom": "Permanecer na sala"
   }
 }
