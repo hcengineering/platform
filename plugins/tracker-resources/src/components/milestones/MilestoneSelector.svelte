@@ -13,6 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { permissionsStore } from '@hcengineering/contact-resources'
   import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel, translateCB } from '@hcengineering/platform'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -30,6 +31,7 @@
   } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { milestoneStatusAssets } from '../../types'
+  import { canCreateMilestone } from './milestonePermissions'
   import NewMilestone from './NewMilestone.svelte'
 
   export let value: Ref<Milestone> | null | undefined
@@ -88,7 +90,7 @@
 
   const createMilestoneId = '#createMilestone'
   // A new milestone can be created only when the selector is bound to a single project
-  $: canCreate = isEditable && !isAction && typeof space === 'string'
+  $: canCreate = canCreateMilestone(space, isEditable, isAction, $permissionsStore)
 
   const getMilestoneInfo = (rawMilestones: Milestone[], sp: Milestone | undefined, canCreate: boolean) => {
     return [
@@ -114,7 +116,7 @@
   const client = getClient()
 
   function createMilestone (): void {
-    if (typeof space !== 'string') return
+    if (!canCreate || typeof space !== 'string') return
     const project = space
     showPopup(NewMilestone, { space: project }, 'top', async (milestoneId: Ref<Milestone> | undefined) => {
       if (milestoneId == null) return
