@@ -24,7 +24,9 @@ import {
   extensionKit,
   mergeKitOptions,
   TextColorStylingKit,
+  Heading,
   Highlight,
+  Paragraph,
   Subscript,
   Superscript
 } from '@hcengineering/text'
@@ -88,6 +90,11 @@ const StaticEditorKit = extensionKit(
   (e, context: EditorKitContext) =>
     ({
       ...CommonKitFactory(e),
+
+      // Let each text block take its direction from its first strong character,
+      // so RTL and mixed RTL/LTR text is rendered correctly (client-side only, stored content is unchanged)
+      paragraph: e(Paragraph, { HTMLAttributes: { dir: 'auto' } }),
+      heading: e(Heading, { HTMLAttributes: { dir: 'auto' } }),
 
       shortcuts: e(subKits.shortcuts, context), // needs to be loaded as early as possible to override the default behavior
 
