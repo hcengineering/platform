@@ -50,7 +50,7 @@
       space = undefined
     },
     onFailure: async (failures) => {
-      for (const failure of failures) Analytics.handleError(failure.error)
+      for (const { error } of failures) Analytics.handleError(error instanceof Error ? error : new Error(String(error)))
       const title = await translate(tracker.string.CopyTemplateFailed, {}, $themeStore.language)
       addNotification(
         title,
