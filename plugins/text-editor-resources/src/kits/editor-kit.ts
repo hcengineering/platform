@@ -34,7 +34,7 @@ import TableHeader from '@tiptap/extension-table-header'
 import 'prosemirror-codemark/dist/codemark.css'
 import 'katex/dist/katex.min.css'
 
-import Collaboration from '@tiptap/extension-collaboration'
+import { CollaborationExtension } from '../components/extension/collaboration'
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
 import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../components/extension/codeSnippets/codeblock'
 import { MermaidExtension, mermaidOptions } from '../components/extension/codeSnippets/mermaid'
@@ -180,7 +180,7 @@ const subKits = {
     'collaboration-kit',
     (e) =>
       ({
-        collaboration: e(Collaboration),
+        collaboration: e(CollaborationExtension),
         collaborationCursor: e(CollaborationCursor),
         inlineComments: e(InlineCommentCollaborationExtension)
       }) as const
