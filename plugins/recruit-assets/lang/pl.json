@@ -124,7 +124,8 @@
     "CreateNewSkills": "Utwórz nowe umiejętności, jeśli nie istnieją",
     "SwapFirstAndLastNames": "Zamień imię i nazwisko",
     "ForbidCreateVacancyPermission": "Zabroń tworzenia wolnych stanowisk",
-    "ForbidCreateVacancyPermissionDescription": "Zabroń użytkownikom tworzenia nowych stanowisk"
+    "ForbidCreateVacancyPermissionDescription": "Zabroń użytkownikom tworzenia nowych stanowisk",
+    "NumberLabels": "{count, plural, =0 {brak etykiet} =1 {1 etykieta} few {# etykiety} other {# etykiet}}"
   },
   "status": {
     "ApplicationExists": "Aplikacja już istnieje",

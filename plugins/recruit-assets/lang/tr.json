@@ -121,7 +121,8 @@
     "CreateNewSkills": "Mevcut bulunamazsa yeni yetenekler oluştur",
     "SwapFirstAndLastNames": "Ad ve soyadı değiştir",
     "ForbidCreateVacancyPermission": "İş ilanı oluşturmayı yasakla",
-    "ForbidCreateVacancyPermissionDescription": "Kullanıcıların yeni iş ilanı oluşturmasını yasaklar"
+    "ForbidCreateVacancyPermissionDescription": "Kullanıcıların yeni iş ilanı oluşturmasını yasaklar",
+    "NumberLabels": "{count, plural, =0 {etiket yok} =1 {1 etiket} other {# etiket}}"
   },
   "status": {
     "ApplicationExists": "Başvuru zaten mevcut",

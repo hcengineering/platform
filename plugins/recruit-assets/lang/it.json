@@ -121,7 +121,8 @@
     "CreateNewSkills": "Crea nuove competenze se quelle esistenti non vengono trovate",
     "SwapFirstAndLastNames": "Scambia nome e cognome",
     "ForbidCreateVacancyPermission": "Vieta creazione posizione aperta",
-    "ForbidCreateVacancyPermissionDescription": "Vieta agli utenti di creare nuove posizioni aperte"
+    "ForbidCreateVacancyPermissionDescription": "Vieta agli utenti di creare nuove posizioni aperte",
+    "NumberLabels": "{count, plural, =0 {nessuna etichetta} =1 {1 etichetta} other {# etichette}}"
   },
   "status": {
     "ApplicationExists": "La candidatura esiste già",

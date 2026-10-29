@@ -124,7 +124,8 @@
     "CreateNewSkills": "Neue Fähigkeiten erstellen, wenn keine bestehenden gefunden werden",
     "SwapFirstAndLastNames": "Vor- und Nachnamen tauschen",
     "ForbidCreateVacancyPermission": "Stellenerstellung verbieten",
-    "ForbidCreateVacancyPermissionDescription": "Verbietet Benutzern das Erstellen neuer Stellenangebote"
+    "ForbidCreateVacancyPermissionDescription": "Verbietet Benutzern das Erstellen neuer Stellenangebote",
+    "NumberLabels": "{count, plural, =0 {keine Labels} =1 {1 Label} other {# Labels}}"
   },
   "status": {
     "ApplicationExists": "Bewerbung existiert bereits",

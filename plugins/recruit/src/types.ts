@@ -39,6 +39,7 @@ export interface Vacancy extends Project {
   comments?: number
   number: number
   polls?: Collection<Poll>
+  labels?: number
 }
 
 /** @public */
