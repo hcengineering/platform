@@ -381,7 +381,7 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       action: tracker.actionImpl.CopyIssueTemplateToProject,
       label: tracker.string.CopyToProject,
       icon: view.icon.Copy,
-      input: 'selection',
+      input: 'any',
       category: tracker.category.Tracker,
       target: tracker.class.IssueTemplate,
       context: {

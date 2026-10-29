@@ -54,7 +54,11 @@ export function createIssueTemplateCopySubmission (options: CopySubmissionOption
       copied.set(target, completed)
       if (result.failed.length > 0) {
         // Report failures even if the picker has changed; the failed operation still needs feedback.
-        await options.onFailure(result.failed)
+        try {
+          await options.onFailure(result.failed)
+        } catch {
+          // Feedback must not reject the save promise and leave Card's processing state stuck.
+        }
       } else if (options.getTarget() === target) {
         options.onComplete()
       }

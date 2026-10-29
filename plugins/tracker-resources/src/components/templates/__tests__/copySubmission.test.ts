@@ -163,6 +163,29 @@ describe('copy submission selection races', () => {
     expect(submit).toHaveBeenLastCalledWith([templates[1]], 'target-a')
   })
 
+  it.each(['throws', 'rejects'])('resolves and allows retry when failure feedback %s', async (outcome) => {
+    const { templates, submit, onFailure, onComplete, copy } = setup()
+    const failure = { template: templates[1], error: new Error('write failed') }
+    submit.mockResolvedValueOnce({ copied: [templates[0]], failed: [failure] })
+    const feedbackError = new Error('failure renderer failed')
+    if (outcome === 'throws') {
+      onFailure.mockImplementationOnce(() => {
+        throw feedbackError
+      })
+    } else {
+      onFailure.mockRejectedValueOnce(feedbackError)
+    }
+
+    await expect(copy()).resolves.toBeUndefined()
+    expect(onFailure).toHaveBeenCalledWith([failure])
+    expect(onComplete).not.toHaveBeenCalled()
+
+    await copy()
+    expect(submit).toHaveBeenCalledTimes(2)
+    expect(submit).toHaveBeenLastCalledWith([templates[1]], 'target-a')
+    expect(onComplete).toHaveBeenCalledTimes(1)
+  })
+
   it('blocks duplicate submissions while failure feedback is pending', async () => {
     const { templates, submit, onFailure, copy } = setup()
     const feedback = deferred<undefined>()
