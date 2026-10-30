@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { getMetadata } from '@hcengineering/platform'
-  import uiPlugin, { closePopup, closeTooltip, navigate, parseLocation } from '@hcengineering/ui'
-  import presentation from '../plugin'
+  import { Analytics } from '@hcengineering/analytics'
+  import { closePopup, closeTooltip, navigate } from '@hcengineering/ui'
+  import { getInternalLocation, handleNewTabClick } from '../navLink'
 
   export let href: string | undefined
   export let title: string | undefined = undefined
@@ -33,6 +33,15 @@
   export let noSelect: boolean = true
   export let maxWidth: string | undefined = undefined
 
+  // Eligible Ctrl/Cmd + left clicks and middle clicks open a background Huly tab.
+  // Ctrl/Cmd + Shift/Alt and Shift/Alt + middle clicks retain the native default.
+  // Shift-only/Alt-only left clicks still follow the ordinary click handler below.
+  function newTabHandler (e: MouseEvent): void {
+    void handleNewTabClick(e, { href, disabled, onClick }).catch((err) => {
+      Analytics.handleError(err)
+    })
+  }
+
   function clickHandler (e: MouseEvent): void {
     if (disabled) return
 
@@ -43,27 +52,19 @@
     } else if (href !== undefined) {
       if (e.metaKey || e.ctrlKey) {
         e.stopPropagation()
+        newTabHandler(e)
         return
       }
 
       // we need to close popups and tooltips
       closePopup()
       closeTooltip()
-      try {
-        const url = new URL(href)
-        const frontUrl = getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin
-        if (url.origin === frontUrl) {
-          const loc = parseLocation(url)
-          const routes = getMetadata(uiPlugin.metadata.Routes)
-          const app = routes?.get(loc.path[0])
-
-          if (app !== undefined) {
-            e.preventDefault()
-            e.stopPropagation()
-            navigate(loc)
-          }
-        }
-      } catch {}
+      const loc = getInternalLocation(href)
+      if (loc !== undefined) {
+        e.preventDefault()
+        e.stopPropagation()
+        navigate(loc)
+      }
     }
   }
 </script>
@@ -106,6 +107,7 @@
     class:select-text={!noSelect}
     {title}
     on:click={clickHandler}
+    on:auxclick={newTabHandler}
   >
     <slot />
   </a>

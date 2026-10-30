@@ -25,10 +25,20 @@ export interface Location {
   fragment?: string // a value of fragment
 }
 
+/** Background resolution must not update navigation, focus or active-view stores. */
+export interface LocationResolutionOptions {
+  background?: boolean
+}
+
 export interface ResolvedLocation {
   loc: Location
   defaultLocation: Location
 }
+
+export type LocationResolver = (
+  loc: Location,
+  options?: LocationResolutionOptions
+) => Promise<ResolvedLocation | undefined>
 
 /**
  * Returns true if locations are equal.
