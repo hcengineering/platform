@@ -176,6 +176,9 @@
     "ComponentLeadSearchPlaceholder": "Komponentenleitung festlegen...",
     "ComponentMembersSearchPlaceholder": "Komponentenmitglieder ändern...",
     "MoveToProject": "Zu Projekt verschieben",
+    "CopyToProject": "In Projekt kopieren…",
+    "CopyTargetUnavailable": "In dieses Projekt kann nicht mehr kopiert werden. Wählen Sie ein anderes aktives Projekt, in dem Sie Mitglied sind.",
+    "CopyTemplateFailed": "Die folgenden Vorlagen konnten nicht kopiert werden. Versuchen Sie es erneut, um nur diese Vorlagen zu kopieren.",
     "Duplicate": "Duplizieren",
 
     "GotoIssues": "Zu Aufgaben",

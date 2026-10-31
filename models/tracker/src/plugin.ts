@@ -99,6 +99,7 @@ export default mergeIds(trackerId, tracker, {
   },
   actionImpl: {
     Move: '' as ViewAction,
+    CopyIssueTemplateToProject: '' as ViewAction,
     CopyToClipboard: '' as ViewAction,
     EditWorkflowStatuses: '' as ViewAction,
     EditProject: '' as ViewAction,
@@ -111,7 +112,8 @@ export default mergeIds(trackerId, tracker, {
     DeleteMilestone: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteProject: '' as Ref<Action<Doc, Record<string, any>>>,
     DeleteProjectClean: '' as Ref<Action<Doc, Record<string, any>>>,
-    DeleteIssue: '' as Ref<Action<Doc, Record<string, any>>>
+    DeleteIssue: '' as Ref<Action<Doc, Record<string, any>>>,
+    CopyIssueTemplateToProject: '' as Ref<Action<Doc, Record<string, any>>>
   },
 
   // For migration only
