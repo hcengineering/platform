@@ -21,6 +21,7 @@
     "Talent": "人材",
     "TalentCreateLabel": "人材",
     "CreateTalent": "新規人材",
+    "TalentCreated": "人材を作成しました",
     "CreateTalentDialogClose": "このダイアログを閉じますか？",
     "CreateTalentDialogCloseNote": "すべての変更は失われます",
     "ResumeDraft": "履歴書の下書き",

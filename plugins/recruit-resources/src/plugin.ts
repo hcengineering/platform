@@ -52,6 +52,7 @@ export default mergeIds(recruitId, recruit, {
     SelectVacancy: '' as IntlString,
     TalentCreateLabel: '' as IntlString,
     CreateTalent: '' as IntlString,
+    TalentCreated: '' as IntlString,
     CreateTalentDialogClose: '' as IntlString,
     CreateTalentDialogCloseNote: '' as IntlString,
     ResumeDraft: '' as IntlString,
