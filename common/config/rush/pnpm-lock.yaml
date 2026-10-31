@@ -18899,6 +18899,9 @@ importers:
       '@hcengineering/activity':
         specifier: workspace:^0.7.0
         version: link:../activity
+      '@hcengineering/analytics':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/core/packages/analytics
       '@hcengineering/attachment':
         specifier: workspace:^0.7.0
         version: link:../attachment
@@ -19047,6 +19050,9 @@ importers:
       jest:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@22.19.0)(ts-node@10.9.2(@types/node@22.19.0)(typescript@5.9.3))
+      jest-environment-jsdom:
+        specifier: ^30.2.0
+        version: 30.2.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       prettier:
         specifier: ^3.6.2
         version: 3.6.2

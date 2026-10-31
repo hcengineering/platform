@@ -189,6 +189,13 @@
     "Password": "Heslo",
     "FieldIsEmpty": "{field} je prázdné",
     "ValidatingCredentials": "Ověřování přihlašovacích údajů...",
+    "VerificationCode": "Ověřovací kód",
+    "SendVerificationCode": "Odeslat kód",
+    "SignatureOtpHint": "Váš účet nemá heslo. Potvrďte svůj podpis ověřovacím kódem zaslaným na váš e-mail.",
+    "SignatureOtpSent": "Použijte nejnovější kód z e-mailu. Pokud byl již použit nebo nefunguje, počkejte na konec odpočtu a vyžádejte si další.",
+    "SignatureNoEmail": "K vašemu účtu není připojena žádná e-mailová adresa, proto nelze podpis potvrdit.",
+    "SignatureAccountMismatch": "Přihlašovací údaje nepatří aktuálnímu uživateli.",
+    "ResendCodeIn": "Nový kód lze vyžádat za",
 
     "GeneralDocumentation": "Obecná dokumentace",
     "TechnicalDocumentation": "Technická dokumentace",

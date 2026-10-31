@@ -772,10 +772,12 @@ describe('account utils', () => {
       }
 
       const mockDb = {
+        reserveOtpSend: jest.fn(),
         otp: {
           findOne: jest.fn(),
           find: jest.fn(),
-          insertOne: jest.fn()
+          insertOne: jest.fn(),
+          update: jest.fn()
         }
       } as unknown as AccountDB
 
@@ -786,6 +788,11 @@ describe('account utils', () => {
 
       beforeEach(() => {
         jest.clearAllMocks()
+        jest.mocked(mockDb.reserveOtpSend).mockReset().mockResolvedValue({
+          reserved: true,
+          now: 1000,
+          retryOn: 31000
+        })
         console.error = jest.fn()
         ;(getMetadata as jest.Mock).mockImplementation((key) => {
           switch (key) {
@@ -843,21 +850,115 @@ describe('account utils', () => {
           key: 'email:test@example.com'
         }
 
-        test('should return existing OTP if not expired', async () => {
+        test('should reserve the resend delay before delivery and block concurrent sends', async () => {
+          let retryOn = 0
+          jest.mocked(mockDb.otp.find).mockResolvedValue([])
+          jest.mocked(mockDb.otp.findOne).mockResolvedValue(null)
+          jest.mocked(mockDb.reserveOtpSend).mockImplementation(async (socialId, retryDelayMs) => {
+            expect(socialId).toBe(socialIdId)
+            const now = 1000
+            if (retryOn > now) return { reserved: false, now, retryOn }
+            retryOn = now + retryDelayMs
+            return { reserved: true, now, retryOn }
+          })
+
+          const results = await Promise.all(
+            Array.from({ length: 6 }, async () => await sendOtp(mockCtx, mockDb, mockBranding, mockSocialId))
+          )
+
+          expect(results).toEqual(Array.from({ length: 6 }, () => ({ sent: true, retryOn })))
+          expect(mockDb.reserveOtpSend).toHaveBeenCalledWith(socialIdId, 30000)
+          expect(mockFetch).toHaveBeenCalledTimes(1)
+          expect(mockDb.otp.insertOne).toHaveBeenCalledTimes(1)
+          expect(jest.mocked(mockDb.reserveOtpSend).mock.invocationCallOrder[0]).toBeLessThan(
+            mockFetch.mock.invocationCallOrder[0]
+          )
+        })
+
+        test('should retain the resend delay after OTP consumption or cleanup', async () => {
+          const retryOn = Date.now() + 15000
+          jest.mocked(mockDb.otp.find).mockResolvedValue([])
+          jest.mocked(mockDb.reserveOtpSend).mockResolvedValue({ reserved: false, now: retryOn - 15000, retryOn })
+
+          await expect(sendOtp(mockCtx, mockDb, mockBranding, mockSocialId)).resolves.toEqual({
+            sent: true,
+            retryOn
+          })
+          expect(mockFetch).not.toHaveBeenCalled()
+          expect(mockDb.otp.insertOne).not.toHaveBeenCalled()
+        })
+
+        test('should not deliver an OTP when reserving the resend delay fails', async () => {
+          const error = new Error('database unavailable')
+          jest.mocked(mockDb.otp.find).mockResolvedValue([])
+          jest.mocked(mockDb.reserveOtpSend).mockRejectedValue(error)
+
+          await expect(sendOtp(mockCtx, mockDb, mockBranding, mockSocialId)).rejects.toBe(error)
+          expect(mockFetch).not.toHaveBeenCalled()
+          expect(mockDb.otp.insertOne).not.toHaveBeenCalled()
+        })
+
+        test('should retain the resend reservation when delivery fails', async () => {
+          let retryOn = 0
+          jest.mocked(mockDb.otp.find).mockResolvedValue([])
+          jest.mocked(mockDb.otp.findOne).mockResolvedValue(null)
+          jest.mocked(mockDb.reserveOtpSend).mockImplementation(async (socialId, retryDelayMs) => {
+            expect(socialId).toBe(socialIdId)
+            const now = 1000
+            if (retryOn > now) return { reserved: false, now, retryOn }
+            retryOn = now + retryDelayMs
+            return { reserved: true, now, retryOn }
+          })
+          const error = new Error('delivery failed')
+          mockFetch.mockRejectedValueOnce(error)
+
+          await expect(sendOtp(mockCtx, mockDb, mockBranding, mockSocialId)).rejects.toBe(error)
+          await expect(sendOtp(mockCtx, mockDb, mockBranding, mockSocialId)).resolves.toEqual({
+            sent: true,
+            retryOn
+          })
+          expect(mockFetch).toHaveBeenCalledTimes(1)
+          expect(mockDb.otp.insertOne).not.toHaveBeenCalled()
+        })
+
+        test('should retain the database resend cooldown even when the code has expired', async () => {
+          const now = Date.now()
+          const otpData = { code: '123456', expiresOn: now - 1000, createdOn: now - 15000 }
+          jest.mocked(mockDb.otp.find).mockResolvedValue([{ ...otpData, socialId: socialIdId }])
+          jest.mocked(mockDb.reserveOtpSend).mockResolvedValue({
+            reserved: false,
+            now,
+            retryOn: otpData.createdOn + 30000
+          })
+
+          const result = await sendOtp(mockCtx, mockDb, mockBranding, mockSocialId)
+
+          expect(result).toEqual({ sent: true, retryOn: otpData.createdOn + 30000 })
+          expect(mockDb.otp.insertOne).not.toHaveBeenCalled()
+          expect(global.fetch).not.toHaveBeenCalled()
+        })
+
+        test('should use the database reservation instead of a legacy OTP timestamp', async () => {
           const now = Date.now()
           const mockOtpData = {
             code: '123456',
             expiresOn: now + 60000,
-            createdOn: now - 15000
+            createdOn: now + 86400000
           }
           ;(mockDb.otp.find as jest.Mock).mockResolvedValue([mockOtpData])
+          jest.mocked(mockDb.reserveOtpSend).mockResolvedValue({
+            reserved: false,
+            now,
+            retryOn: now + 30000
+          })
 
           const result = await sendOtp(mockCtx, mockDb, mockBranding, mockSocialId)
 
           expect(result).toEqual({
             sent: true,
-            retryOn: mockOtpData.createdOn + 30000
+            retryOn: now + 30000
           })
+          expect(mockDb.otp.find).not.toHaveBeenCalled()
           expect(mockDb.otp.insertOne).not.toHaveBeenCalled()
         })
 
@@ -874,8 +975,9 @@ describe('account utils', () => {
           expect(mockDb.otp.insertOne).toHaveBeenCalledWith({
             socialId: mockSocialId._id,
             code: expect.any(String),
-            expiresOn: expect.any(Number),
-            createdOn: expect.any(Number)
+            expiresOn: 61000,
+            createdOn: 1000,
+            attempts: 0
           })
         })
 
@@ -925,31 +1027,20 @@ describe('account utils', () => {
       })
 
       describe('isOtpValid', () => {
-        test('should return true for valid non-expired OTP', async () => {
-          const mockOtpData = {
-            expiresOn: Date.now() + 60000
-          }
-          ;(mockDb.otp.findOne as jest.Mock).mockResolvedValue(mockOtpData)
+        test.each(['123456', '000000'])('compares only codes returned by the attempt operation (%s)', async (code) => {
+          const advanceOtpAttempts = jest.fn().mockResolvedValue(['123456'])
+          const findOne = jest.fn()
+          const db = { advanceOtpAttempts, otp: { findOne } } as unknown as AccountDB
 
-          const result = await isOtpValid(mockDb, socialIdId, '123456')
-          expect(result).toBe(true)
+          expect(await isOtpValid(db, socialIdId, code)).toBe(code === '123456')
+          expect(advanceOtpAttempts).toHaveBeenCalledWith(socialIdId)
+          expect(findOne).not.toHaveBeenCalled()
         })
 
-        test('should return false for expired OTP', async () => {
-          const mockOtpData = {
-            expiresOn: Date.now() - 1000
-          }
-          ;(mockDb.otp.findOne as jest.Mock).mockResolvedValue(mockOtpData)
-
-          const result = await isOtpValid(mockDb, socialIdId, '123456')
-          expect(result).toBe(false)
-        })
-
-        test('should return false for non-existent OTP', async () => {
-          ;(mockDb.otp.findOne as jest.Mock).mockResolvedValue(null)
-
-          const result = await isOtpValid(mockDb, socialIdId, '123456')
-          expect(result).toBe(false)
+        test('rejects when no active code has an available attempt', async () => {
+          const advanceOtpAttempts = jest.fn().mockResolvedValue([])
+          const db = { advanceOtpAttempts } as unknown as AccountDB
+          expect(await isOtpValid(db, socialIdId, '123456')).toBe(false)
         })
       })
     })
@@ -1703,11 +1794,8 @@ describe('account utils', () => {
   })
 
   describe('cleanExpiredOtp', () => {
-    const mockDb = {
-      otp: {
-        deleteMany: jest.fn()
-      }
-    } as unknown as AccountDB
+    const cleanExpired = jest.fn()
+    const mockDb = { cleanExpiredOtp: cleanExpired } as unknown as AccountDB
 
     beforeEach(() => {
       jest.clearAllMocks()
@@ -1716,9 +1804,7 @@ describe('account utils', () => {
     test('should delete expired OTP records', async () => {
       await cleanExpiredOtp(mockDb)
 
-      expect(mockDb.otp.deleteMany).toHaveBeenCalledWith({
-        expiresOn: { $lte: expect.any(Number) }
-      })
+      expect(cleanExpired).toHaveBeenCalledWith()
     })
   })
 

@@ -24,7 +24,7 @@
     "Proceed": "继续",
     "NewEmail": "新邮箱",
     "SendConfirmation": "发送确认码",
-    "CodeSent": "验证码已发送。请在下方字段中输入。",
+    "CodeSent": "请使用邮件中的最新验证码。如果已使用或已失效，请等待倒计时结束后重新请求。",
     "SendAgain": "重新发送",
     "SendAgainIn": "可在  后再次发送",
     "Value": "值",

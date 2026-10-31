@@ -194,6 +194,13 @@
     "Password": "Password",
     "FieldIsEmpty": "{field} is empty",
     "ValidatingCredentials": "Validating credentials...",
+    "VerificationCode": "Verification code",
+    "SendVerificationCode": "Send code",
+    "SignatureOtpHint": "Your account has no password. Confirm your signature with a verification code sent to your email.",
+    "SignatureOtpSent": "Use the latest code from your email. If it was already used or no longer works, wait for the timer and request another.",
+    "SignatureNoEmail": "No email address is linked to your account, so the signature cannot be confirmed.",
+    "SignatureAccountMismatch": "The credentials do not belong to the current user.",
+    "ResendCodeIn": "Request a new code in",
 
     "GeneralDocumentation": "General documentation",
     "TechnicalDocumentation": "Technical documentation",

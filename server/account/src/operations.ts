@@ -314,7 +314,7 @@ export async function loginOtp (
 ): Promise<OtpInfo> {
   const { email } = params
 
-  if (email == null || email === '') {
+  if (typeof email !== 'string' || email.trim().length === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
@@ -454,7 +454,13 @@ export async function validateOtp (
 ): Promise<LoginInfo> {
   const { email, code, password, action } = params
 
-  if (email == null || code == null || email === '' || code === '') {
+  if (
+    typeof email !== 'string' ||
+    email.trim().length === 0 ||
+    typeof code !== 'string' ||
+    code.length !== 6 ||
+    !/^\d{6}$/.test(code)
+  ) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 

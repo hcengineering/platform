@@ -194,6 +194,13 @@
     "Password": "Contraseña",
     "FieldIsEmpty": "{field} está vacío",
     "ValidatingCredentials": "Validando credenciales...",
+    "VerificationCode": "Código de verificación",
+    "SendVerificationCode": "Enviar código",
+    "SignatureOtpHint": "Tu cuenta no tiene contraseña. Confirma tu firma con un código de verificación enviado a tu correo electrónico.",
+    "SignatureOtpSent": "Usa el último código de tu correo. Si ya se usó o no funciona, espera a que termine la cuenta atrás y solicita otro.",
+    "SignatureNoEmail": "No hay ninguna dirección de correo electrónico vinculada a tu cuenta, por lo que no se puede confirmar la firma.",
+    "SignatureAccountMismatch": "Las credenciales no pertenecen al usuario actual.",
+    "ResendCodeIn": "Solicitar un nuevo código en",
 
     "GeneralDocumentation": "Documentación general",
     "TechnicalDocumentation": "Documentación técnica",

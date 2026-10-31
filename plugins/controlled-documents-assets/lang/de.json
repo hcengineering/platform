@@ -189,6 +189,13 @@
     "Password": "Passwort",
     "FieldIsEmpty": "{field} ist leer",
     "ValidatingCredentials": "Anmeldedaten werden überprüft...",
+    "VerificationCode": "Bestätigungscode",
+    "SendVerificationCode": "Code senden",
+    "SignatureOtpHint": "Ihr Konto hat kein Passwort. Bestätigen Sie Ihre Unterschrift mit einem Bestätigungscode, der an Ihre E-Mail-Adresse gesendet wird.",
+    "SignatureOtpSent": "Verwenden Sie den neuesten Code aus Ihrer E-Mail. Falls er bereits verwendet wurde oder nicht mehr funktioniert, warten Sie den Countdown ab und fordern Sie einen neuen an.",
+    "SignatureNoEmail": "Mit Ihrem Konto ist keine E-Mail-Adresse verknüpft, daher kann die Unterschrift nicht bestätigt werden.",
+    "SignatureAccountMismatch": "Die Anmeldedaten gehören nicht zum aktuellen Benutzer.",
+    "ResendCodeIn": "Neuen Code anfordern in",
 
     "GeneralDocumentation": "Allgemeine Dokumentation",
     "TechnicalDocumentation": "Technische Dokumentation",

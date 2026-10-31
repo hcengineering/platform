@@ -24,6 +24,7 @@
   export let id: string | undefined = undefined
   export let name: string | undefined = undefined
   export let disabled: boolean = false
+  export let labelId: string | undefined = undefined
 </script>
 
 <div class="editbox{error ? ' error' : ''}" style={width ? 'width: ' + width : ''}>
@@ -33,6 +34,7 @@
       class:nolabel={!label}
       {id}
       {name}
+      aria-labelledby={labelId}
       bind:value
       on:blur
       on:change
@@ -50,6 +52,7 @@
       class:nolabel={!label}
       {id}
       {name}
+      aria-labelledby={labelId}
       bind:value
       on:blur
       on:change
@@ -63,7 +66,7 @@
     />
   {/if}
   {#if label}
-    <div class="label"><Label {label} /></div>
+    <div class="label" id={labelId}><Label {label} /></div>
   {/if}
 </div>
 

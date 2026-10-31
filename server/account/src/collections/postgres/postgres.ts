@@ -21,6 +21,7 @@ import {
   type AccountRole,
   type WorkspaceUuid,
   type AccountUuid,
+  type PersonId,
   type PersonUuid
 } from '@hcengineering/core'
 
@@ -34,6 +35,7 @@ import type {
   AccountDB,
   Account,
   OTP,
+  OtpSendReservation,
   WorkspaceInvite,
   AccountEvent,
   SocialId,
@@ -554,7 +556,7 @@ export class PostgresAccountDB implements AccountDB {
     this.socialId = new PostgresDbCollection<SocialId, '_id'>('social_id', client, {
       ns,
       idKey: '_id',
-      timestampFields: ['createdOn', 'verifiedOn'],
+      timestampFields: ['createdOn', 'verifiedOn', 'otpRetryOn'],
       withRetryClient
     })
     this.workspaceStatus = new PostgresDbCollection<WorkspaceStatus>('workspace_status', client, {
@@ -809,6 +811,49 @@ export class PostgresAccountDB implements AccountDB {
       err.code === 'CONNECTION_DESTROYED' || // This error is thrown for any queries that were pending when the timeout to sql.end({ timeout: X }) was reached. If the DB client is being closed completely retry will result in CONNECTION_ENDED which is not retried so should be fine.
       msg.includes('RETRY_SERIALIZABLE')
     )
+  }
+
+  async advanceOtpAttempts (socialId: PersonId): Promise<string[]> {
+    return await this.withRetry(async (client) => {
+      const result = await client.unsafe<{ code: string }[]>(
+        `UPDATE ${this.otp.getTableName()} SET attempts = COALESCE(attempts, 0) + 1
+         WHERE social_id = $1 AND expires_on > FLOOR(EXTRACT(EPOCH FROM statement_timestamp()) * 1000)::BIGINT
+         AND COALESCE(attempts, 0) < 5 RETURNING code`,
+        [socialId]
+      )
+      return result.map((row) => row.code)
+    })
+  }
+
+  async cleanExpiredOtp (): Promise<void> {
+    await this.client.unsafe(
+      `DELETE FROM ${this.otp.getTableName()}
+       WHERE expires_on <= FLOOR(EXTRACT(EPOCH FROM statement_timestamp()) * 1000)::BIGINT`
+    )
+  }
+
+  async reserveOtpSend (socialId: PersonId, retryDelayMs: number): Promise<OtpSendReservation> {
+    return await this.withRetry(async (client) => {
+      // statement_timestamp is database time and is stable throughout each conditional write.
+      const now = 'FLOOR(EXTRACT(EPOCH FROM statement_timestamp()) * 1000)::BIGINT'
+      const result = await client.unsafe(
+        `UPDATE ${this.socialId.getTableName()} SET otp_retry_on = ${now} + $2
+         WHERE _id = $1 AND (otp_retry_on IS NULL OR otp_retry_on <= ${now})
+         RETURNING otp_retry_on - $2 AS now, otp_retry_on`,
+        [socialId, retryDelayMs]
+      )
+      if (result.length === 1) {
+        return { reserved: true, now: Number(result[0].now), retryOn: Number(result[0].otp_retry_on) }
+      }
+      const current = await client.unsafe(
+        `SELECT ${now} AS now, otp_retry_on FROM ${this.socialId.getTableName()} WHERE _id = $1`,
+        [socialId]
+      )
+      if (current.length !== 1 || current[0].otp_retry_on == null) {
+        throw new Error('OTP identity or reservation is missing')
+      }
+      return { reserved: false, now: Number(current[0].now), retryOn: Number(current[0].otp_retry_on) }
+    })
   }
 
   async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {
