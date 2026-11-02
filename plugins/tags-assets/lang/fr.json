@@ -39,6 +39,7 @@
     "Expert": "Expert",
     "Meaningfull": "Significatif",
     "Initial": "Initial",
-    "NumberLabels": "{count, plural, =0 {aucune étiquette} =1 {1 étiquette} other {# étiquettes}}"
+    "NumberLabels": "{count, plural, =0 {aucune étiquette} =1 {1 étiquette} other {# étiquettes}}",
+    "UsageCount": "Nombre d'utilisations"
   }
 }

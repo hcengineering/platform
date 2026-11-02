@@ -40,6 +40,7 @@
     "Expert": "Ekspert",
     "Meaningfull": "Wymowny",
     "Initial": "Początkowy",
-    "NumberLabels": "{count, plural, =0 {brak etykiet} =1 {1 etykieta} few {# etykiety} other {# etykiet}}"
+    "NumberLabels": "{count, plural, =0 {brak etykiet} =1 {1 etykieta} few {# etykiety} other {# etykiet}}",
+    "UsageCount": "Liczba użyć"
   }
 }
