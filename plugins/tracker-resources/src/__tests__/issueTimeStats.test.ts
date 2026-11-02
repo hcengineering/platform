@@ -3,7 +3,12 @@
 // SPDX-License-Identifier: EPL-2.0
 //
 
-import { calcIssueTimeStats, type IssueTimeInfo, type IssueTimeStatsOptions } from '../issueTimeStats'
+import {
+  calcIssueTimeStats,
+  calcPlanningIssueTimeStats,
+  type IssueTimeInfo,
+  type IssueTimeStatsOptions
+} from '../issueTimeStats'
 
 function issue (
   id: string,
@@ -48,20 +53,34 @@ describe('calcIssueTimeStats', () => {
   })
 
   it('does not count a sub-issue twice when its parent is in the same group', () => {
-    const parent = issue('p', 'todo', 10, 1, [], [
-      { childId: 'c1', estimation: 2, reportedTime: 1 },
-      { childId: 'c2', estimation: 3, reportedTime: 0 }
-    ])
+    const parent = issue(
+      'p',
+      'todo',
+      10,
+      1,
+      [],
+      [
+        { childId: 'c1', estimation: 2, reportedTime: 1 },
+        { childId: 'c2', estimation: 3, reportedTime: 0 }
+      ]
+    )
     const c1 = issue('c1', 'todo', 2, 1, ['p'])
     const c2 = issue('c2', 'todo', 3, 0, ['p'])
     expect(calcIssueTimeStats([parent, c1, c2], options(false))).toEqual({ estimation: 5, reportedTime: 2 })
   })
 
   it('leaves time of sub-issues listed in another group to that group', () => {
-    const parent = issue('p', 'todo', 10, 1, [], [
-      { childId: 'c1', estimation: 2, reportedTime: 1 },
-      { childId: 'c2', estimation: 3, reportedTime: 4 }
-    ])
+    const parent = issue(
+      'p',
+      'todo',
+      10,
+      1,
+      [],
+      [
+        { childId: 'c1', estimation: 2, reportedTime: 1 },
+        { childId: 'c2', estimation: 3, reportedTime: 4 }
+      ]
+    )
     const c1 = issue('c1', 'todo', 2, 1, ['p'])
     const c2 = issue('c2', 'done', 3, 4, ['p'])
     // Group A holds the parent and c1, group B holds c2 only.
@@ -77,18 +96,32 @@ describe('calcIssueTimeStats', () => {
   })
 
   it('counts all sub-issues through the parent when sub-issues are not listed', () => {
-    const parent = issue('p', 'todo', 10, 1, [], [
-      { childId: 'c1', estimation: 2, reportedTime: 1 },
-      { childId: 'c2', estimation: 3, reportedTime: 0 }
-    ])
+    const parent = issue(
+      'p',
+      'todo',
+      10,
+      1,
+      [],
+      [
+        { childId: 'c1', estimation: 2, reportedTime: 1 },
+        { childId: 'c2', estimation: 3, reportedTime: 0 }
+      ]
+    )
     expect(calcIssueTimeStats([parent], options(false, true))).toEqual({ estimation: 5, reportedTime: 2 })
   })
 
   it('skips a nested sub-issue whose ancestor is in the group', () => {
-    const root = issue('r', 'todo', 0, 0, [], [
-      { childId: 'm', estimation: 0, reportedTime: 0 },
-      { childId: 'g', estimation: 4, reportedTime: 1 }
-    ])
+    const root = issue(
+      'r',
+      'todo',
+      0,
+      0,
+      [],
+      [
+        { childId: 'm', estimation: 0, reportedTime: 0 },
+        { childId: 'g', estimation: 4, reportedTime: 1 }
+      ]
+    )
     // The intermediate parent 'm' is in another group.
     const grandChild = issue('g', 'todo', 4, 1, ['r', 'm'])
     expect(calcIssueTimeStats([root, grandChild], options(false))).toEqual({ estimation: 4, reportedTime: 1 })
@@ -113,5 +146,44 @@ describe('calcIssueTimeStats', () => {
       issue('c', 'done', 6, 4, ['p'])
     ]
     expect(calcIssueTimeStats(docs, options(false))).toEqual({ estimation: 2 + 1 + 4, reportedTime: 2 + 3 + 4 })
+  })
+})
+
+describe('calcPlanningIssueTimeStats', () => {
+  it('returns zero for an empty loaded page', () => {
+    expect(calcPlanningIssueTimeStats([], options(true))).toEqual({ estimation: 0, reportedTime: 0 })
+  })
+
+  it('counts all children even outside the page and preserves a larger parent estimate only for zero child estimation', () => {
+    const parent = issue('p', 'todo', 10, 1, [], [{ childId: 'c', estimation: 2, reportedTime: 3 }])
+    expect(calcPlanningIssueTimeStats([parent], options(true))).toEqual({ estimation: 2, reportedTime: 4 })
+    const zeroChildren = issue('p', 'todo', 10, 1, [], [{ childId: 'c', estimation: 0, reportedTime: 3 }])
+    expect(calcPlanningIssueTimeStats([zeroChildren], options(true))).toEqual({ estimation: 10, reportedTime: 4 })
+  })
+
+  it('suppresses loaded direct children but preserves the historical missing-direct-parent case', () => {
+    const root = issue('r', 'todo', 10, 1, [], [{ childId: 'g', estimation: 4, reportedTime: 2 }])
+    const grandchild = issue('g', 'todo', 4, 2, ['r', 'm'])
+    expect(calcPlanningIssueTimeStats([root, grandchild], options(true))).toEqual({ estimation: 8, reportedTime: 5 })
+    expect(calcPlanningIssueTimeStats([root, issue('m', 'todo', 0, 0, ['r']), grandchild], options(true))).toEqual({
+      estimation: 4,
+      reportedTime: 3
+    })
+  })
+
+  it('keeps own and child reported time for backlog roots', () => {
+    const parent = issue('p', 'backlog', 10, 1, [], [{ childId: 'c', estimation: 2, reportedTime: 3 }])
+    expect(calcPlanningIssueTimeStats([parent], options(true))).toEqual({ estimation: 0, reportedTime: 4 })
+  })
+
+  it.each(['done', 'canceled'])('preserves all historical %s cap branches', (status) => {
+    const docs = [
+      issue('a', status, 5, 2),
+      issue('b', status, 1, 3),
+      issue('c', status, 10, 8, [], [{ childId: 'x', estimation: 6, reportedTime: 3 }]),
+      issue('d', status, 10, 1, [], [{ childId: 'y', estimation: 2, reportedTime: 4 }]),
+      issue('e', status, 8, 1, [], [{ childId: 'z', estimation: 0, reportedTime: 2 }])
+    ]
+    expect(calcPlanningIssueTimeStats(docs, options(true))).toEqual({ estimation: 16, reportedTime: 24 })
   })
 })

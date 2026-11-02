@@ -79,3 +79,38 @@ export function calcIssueTimeStats<T extends IssueTimeInfo> (
   }
   return { estimation, reportedTime }
 }
+
+/**
+ * Preserve the historical milestone/assignee totals when the sum option is off.
+ * Only a loaded direct parent suppresses a row; all childInfo entries count,
+ * including children outside the loaded page or group.
+ */
+export function calcPlanningIssueTimeStats<T extends IssueTimeInfo> (
+  docs: T[],
+  options: Pick<IssueTimeStatsOptions<T>, 'isUnStarted' | 'isClosed'>
+): IssueTimeStats {
+  const ids = new Set(docs.map((it) => it._id))
+  const roots = docs.filter((it) => !ids.has(it.attachedTo))
+
+  let estimation = 0
+  let reportedTime = 0
+  for (const it of roots) {
+    const childInfo = it.childInfo ?? []
+    const cReported = childInfo.reduce((a, b) => a + b.reportedTime, 0)
+    reportedTime += cReported !== 0 ? cReported + it.reportedTime : it.reportedTime
+
+    if (options.isUnStarted(it)) continue
+
+    const cEstimation = childInfo.reduce((a, b) => a + b.estimation, 0)
+    if (childInfo.length > 0 && cEstimation !== 0) {
+      estimation += options.isClosed(it) && cReported < cEstimation ? cReported : cEstimation
+    } else if (childInfo.length === 0 && options.isClosed(it) && it.reportedTime < it.estimation) {
+      estimation += it.reportedTime
+    } else {
+      // A nonempty child list with zero estimation historically keeps the
+      // parent's estimation even when the parent is closed.
+      estimation += it.estimation
+    }
+  }
+  return { estimation, reportedTime }
+}

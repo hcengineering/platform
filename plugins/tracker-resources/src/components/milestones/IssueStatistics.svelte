@@ -20,7 +20,7 @@
   import { floorFractionDigits, Label } from '@hcengineering/ui'
   import { ViewOptions } from '@hcengineering/view'
   import { FixedColumn, statusStore } from '@hcengineering/view-resources'
-  import { calcIssueTimeStats } from '../../issueTimeStats'
+  import { calcIssueTimeStats, calcPlanningIssueTimeStats } from '../../issueTimeStats'
   import tracker from '../../plugin'
   import EstimationProgressCircle from '../issues/timereport/EstimationProgressCircle.svelte'
   import TimePresenter from '../issues/timereport/TimePresenter.svelte'
@@ -54,10 +54,9 @@
     if (key === fetchedKey) return
     fetchedKey = key
     const seq = ++fetchSeq
-    if (ids === undefined) {
-      fetched = undefined
-      return
-    }
+    // Discard the previous group while the next group's request is pending.
+    fetched = undefined
+    if (ids === undefined) return
     const res = await client.findAll(
       tracker.class.Issue,
       { _id: { $in: ids } },
@@ -85,15 +84,19 @@
   $: groupDocs =
     fetched !== undefined ? [...loaded.values(), ...fetched.filter((it) => !loaded.has(it._id))] : (docs ?? [])
 
-  $: stats = calcIssueTimeStats(groupDocs, {
-    isUnStarted: (it) => $statusStore.byId.get(it.status)?.category === task.statusCategory.UnStarted,
-    isClosed: (it) => {
+  $: statsOptions = {
+    isUnStarted: (it: Issue) => $statusStore.byId.get(it.status)?.category === task.statusCategory.UnStarted,
+    isClosed: (it: Issue) => {
       const cat = $statusStore.byId.get(it.status)?.category
       return cat === task.statusCategory.Won || cat === task.statusCategory.Lost
     },
     skipUnStarted: planning,
     includeAllChildren: viewOptions?.shouldShowSubIssues === false
-  })
+  }
+  $: stats =
+    planning && !showSum
+      ? calcPlanningIssueTimeStats(docs ?? [], statsOptions)
+      : calcIssueTimeStats(groupDocs, statsOptions)
   $: totalEstimation = floorFractionDigits(stats.estimation, 3)
   $: totalReported = floorFractionDigits(stats.reportedTime, 3)
 </script>
