@@ -29,6 +29,7 @@ import activity, { type ActivityMessage } from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
 import { parseLocation, showPopup, tooltip, type LabelAndProps, type Location, fromCodePoint } from '@hcengineering/ui'
 import workbench, { type Application } from '@hcengineering/workbench'
+import { canParseUrl } from '../url'
 
 export interface ReferenceExtensionOptions extends ReferenceOptions {
   suggestion: Omit<SuggestionOptions, 'editor'>
@@ -522,7 +523,7 @@ export async function getTargetObjectFromUrl (
 
   let location: Location
   if (typeof urlOrLocation === 'string') {
-    if (!URL.canParse(urlOrLocation)) return
+    if (!canParseUrl(urlOrLocation)) return
 
     const url = new URL(urlOrLocation)
 
@@ -602,7 +603,7 @@ export function buildReferenceUrl (props: Partial<ReferenceNodeProps>, refUrl: s
 
 export function parseReferenceUrl (urlString: string, refUrl: string = 'ref://'): ReferenceNodeProps | undefined {
   if (!urlString.startsWith(refUrl)) return
-  if (!URL.canParse(urlString)) return
+  if (!canParseUrl(urlString)) return
 
   const url = new URL(urlString)
   const label = url.searchParams?.get('label') ?? ''
