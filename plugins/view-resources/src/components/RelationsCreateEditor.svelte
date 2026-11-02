@@ -94,7 +94,7 @@
         _class: row.candidatesClass,
         docQuery,
         searchMode: 'fulltext',
-        docProps: { shouldShowAvatar: true }
+        docProps: { shouldShowAvatar: true, type: 'text' }
       },
       'top',
       (result: any) => {
@@ -137,6 +137,7 @@
           kind={'regular'}
           size={'small'}
           showNavigate={false}
+          docProps={{ type: 'text' }}
         />
         {#if !readonly}
           <Button
