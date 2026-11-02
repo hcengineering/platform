@@ -15,6 +15,7 @@
 <script lang="ts">
   import type { Class, Doc, Ref, Space } from '@hcengineering/core'
   import { AccountRole, getCurrentAccount, hasAccountRole } from '@hcengineering/core'
+  import { createQuery } from '@hcengineering/presentation'
   import { Label, Section, Scroller } from '@hcengineering/ui'
   import { Table, ViewletsSettingButton } from '@hcengineering/view-resources'
   import { Viewlet, ViewletPreference } from '@hcengineering/view'
@@ -25,7 +26,7 @@
   export let space: Ref<Space>
   export let _class: Ref<Class<Doc>>
   export let readonly: boolean = false
-  export let meetings: number
+  export let meetings: number | undefined = undefined
 
   const me = getCurrentAccount()
 
@@ -35,6 +36,23 @@
 
   let canViewMinutes: boolean = false
   $: canViewMinutes = hasAccountRole(me, AccountRole.User)
+
+  // Meeting minutes are not created as collection items, so the `meetings` counter of the
+  // room is not maintained; count the attached minutes instead.
+  const minutesQuery = createQuery()
+  let total: number | undefined = undefined
+  $: if (canViewMinutes) {
+    total = undefined
+    minutesQuery.query(
+      love.class.MeetingMinutes,
+      { attachedTo: objectId },
+      (res) => {
+        total = res.total
+      },
+      { limit: 1, total: true }
+    )
+  }
+  $: count = total ?? meetings ?? 0
 </script>
 
 {#if canViewMinutes}
@@ -50,13 +68,13 @@
     </svelte:fragment>
 
     <svelte:fragment slot="content">
-      {#if meetings > 0 && viewlet}
+      {#if count > 0 && viewlet}
         <Scroller horizontal>
           <Table
             _class={love.class.MeetingMinutes}
             config={preference?.config ?? viewlet.config}
             query={{ attachedTo: objectId }}
-            loadingProps={{ length: meetings }}
+            loadingProps={{ length: count }}
             prefferedSorting="createdOn"
             {readonly}
           />
