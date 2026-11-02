@@ -15,10 +15,27 @@
 
 import type { MeasureContext, Ref } from '@hcengineering/core'
 import { type PushData, type PushSubscription } from '@hcengineering/notification'
-import webpush, { WebPushError } from 'web-push'
+import webpush, { type RequestOptions, WebPushError } from 'web-push'
 
 /** Push endpoints return these when the subscription should be removed — not actionable server errors. */
 const disposableSubscriptionPatterns = ['expired', 'Unregistered', 'No such subscription']
+
+/**
+ * How long (in seconds) the push service keeps an undelivered notification.
+ * Without an explicit TTL web-push uses four weeks, so a device that was offline for a while
+ * receives every stale notification at once when it comes back online.
+ */
+export const DEFAULT_PUSH_TTL_SECONDS = 24 * 60 * 60
+
+export function parsePushTtl (value: string | undefined): number {
+  if (value === undefined || value.trim() === '') return DEFAULT_PUSH_TTL_SECONDS
+  const ttl = Number(value)
+  return Number.isInteger(ttl) && ttl >= 0 ? ttl : DEFAULT_PUSH_TTL_SECONDS
+}
+
+export function getPushRequestOptions (ttl: number = DEFAULT_PUSH_TTL_SECONDS): RequestOptions {
+  return { TTL: ttl }
+}
 
 export function webPushErrorBodyString (err: WebPushError): string {
   const b = err.body
@@ -38,12 +55,14 @@ export function isDisposableSubscriptionError (err: WebPushError): boolean {
 export async function sendPushToSubscription (
   ctx: MeasureContext,
   subscriptions: PushSubscription[],
-  data: PushData
+  data: PushData,
+  ttl: number = DEFAULT_PUSH_TTL_SECONDS
 ): Promise<Ref<PushSubscription>[]> {
   const result: Ref<PushSubscription>[] = []
+  const options = getPushRequestOptions(ttl)
   for (const subscription of subscriptions) {
     try {
-      await webpush.sendNotification(subscription, JSON.stringify(data))
+      await webpush.sendNotification(subscription, JSON.stringify(data), options)
     } catch (err: unknown) {
       if (err instanceof WebPushError) {
         if (isDisposableSubscriptionError(err)) {
