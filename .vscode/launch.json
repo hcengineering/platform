@@ -209,6 +209,7 @@
         "MINIO_SECRET_KEY": "minioadmin",
         "MINIO_ENDPOINT": "localhost",
         // "DISABLE_SIGNUP": "true",
+        // "ALLOW_PROVIDER_SIGNUP": "true",
         "OTLP_ENDPOINT": "http://huly.local:4318/v1/traces"
       },
       "runtimeVersion": "20",
