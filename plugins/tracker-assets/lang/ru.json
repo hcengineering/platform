@@ -219,6 +219,7 @@
     "AllFilters": "всем фильтрам",
     "NoDescription": "Нет описания",
     "SearchIssue": "Поиск задачи...",
+    "SearchMilestone": "Поиск этапа...",
 
     "StatusHistory": "История состояний",
     "NewSubIssue": "Добавить подзадачу...",

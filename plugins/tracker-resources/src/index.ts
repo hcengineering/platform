@@ -58,6 +58,7 @@ import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
 import IssueExtra from './components/issues/IssueExtra.svelte'
 import IssueItem from './components/issues/IssueItem.svelte'
+import MilestoneSearchItem from './components/milestones/MilestoneSearchItem.svelte'
 import IssuePresenter from './components/issues/IssuePresenter.svelte'
 import IssuePreview from './components/issues/IssuePreview.svelte'
 import Issues from './components/issues/Issues.svelte'
@@ -234,6 +235,30 @@ export async function queryIssue<D extends Issue> (
     title: e.identifier,
     icon: tracker.icon.TrackerApplication,
     component: IssueItem
+  }))
+}
+
+export async function queryMilestone (
+  client: Client,
+  search: string,
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+): Promise<ObjectSearchResult[]> {
+  const q: DocumentQuery<Milestone> = { label: { $like: `%${search}%` } }
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
+    q._id = {}
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<Milestone>)
+    }
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<Milestone>)
+    }
+  }
+
+  return (await client.findAll(tracker.class.Milestone, q, { limit: 200 })).map((e) => ({
+    doc: e,
+    title: e.label,
+    icon: tracker.icon.Milestone,
+    component: MilestoneSearchItem
   }))
 }
 
@@ -502,7 +527,12 @@ export default async (): Promise<Resources> => ({
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
-      await queryIssue(tracker.class.Issue, client, query, filter)
+      await queryIssue(tracker.class.Issue, client, query, filter),
+    MilestoneQuery: async (
+      client: Client,
+      query: string,
+      filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+    ) => await queryMilestone(client, query, filter)
   },
   function: {
     IssueIdentifierProvider: issueIdentifierProvider,

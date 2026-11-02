@@ -233,6 +233,7 @@
     "AllFilters": "allen Filtern",
     "NoDescription": "Keine Beschreibung",
     "SearchIssue": "Nach Aufgabe suchen...",
+    "SearchMilestone": "Nach Meilenstein suchen...",
 
     "StatusHistory": "Statusverlauf",
     "NewSubIssue": "Unteraufgabe hinzufügen...",

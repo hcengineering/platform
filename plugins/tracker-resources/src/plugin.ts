@@ -42,7 +42,9 @@ export default mergeIds(trackerId, tracker, {
   },
   completion: {
     IssueQuery: '' as Resource<ObjectSearchFactory>,
-    IssueCategory: '' as Ref<ObjectSearchCategory>
+    IssueCategory: '' as Ref<ObjectSearchCategory>,
+    MilestoneQuery: '' as Resource<ObjectSearchFactory>,
+    MilestoneCategory: '' as Ref<ObjectSearchCategory>
   },
   string: {
     More: '' as IntlString,
