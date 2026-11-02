@@ -142,6 +142,8 @@
     {navigateUrl}
     loginState="signup"
     password={object.password}
+    firstName={object.first}
+    lastName={object.last}
     retryOn={otpRetryOn}
     on:step={handleStep}
   />
