@@ -32,7 +32,7 @@ import {
   type WorkspaceUserOperation,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
+import platform, { PlatformError, Severity, Status, unknownStatus } from '@hcengineering/platform'
 import type {
   AccountAggregatedInfo,
   ApiTokenInfo,
@@ -322,7 +322,7 @@ class AccountClientImpl implements AccountClient {
     return await withRetryUntilMaxAttempts(async () => {
       const response = await fetch(concatLink(this.url, '/providers'))
 
-      return await response.json()
+      return await readJsonResponse(response)
     })()
   }
 
@@ -341,7 +341,7 @@ class AccountClientImpl implements AccountClient {
       body: JSON.stringify(request)
     })
 
-    const result = await response.json()
+    const result = await readJsonResponse(response)
     if (result.error != null) {
       throw new PlatformError(result.error)
     }
@@ -1280,7 +1280,7 @@ class AccountClientImpl implements AccountClient {
     const response = await fetch(url, { ...this.request, method: 'PUT' })
 
     if (!response.ok) {
-      const result = await response.json()
+      const result = await readJsonResponse(response)
       if (result.error != null) {
         throw new PlatformError(result.error)
       }
@@ -1292,7 +1292,7 @@ class AccountClientImpl implements AccountClient {
     const response = await fetch(url, { ...this.request, method: 'DELETE' })
 
     if (!response.ok) {
-      const result = await response.json()
+      const result = await readJsonResponse(response)
       if (result.error != null) {
         throw new PlatformError(result.error)
       }
@@ -1428,6 +1428,25 @@ class AccountClientImpl implements AccountClient {
 
     await this.rpc(request)
   }
+}
+
+/**
+ * Parses the JSON body of an account service response.
+ * Error responses with a JSON body (e.g. a Status in `error`) are returned as is,
+ * anything else (a proxy error page, an empty body, etc.) is reported with the HTTP status.
+ */
+async function readJsonResponse (response: Response): Promise<any> {
+  const text = await response.text()
+  try {
+    const result = JSON.parse(text)
+    if (response.ok || result?.error != null) {
+      return result
+    }
+  } catch {
+    // Not a JSON body, reported below with the HTTP status
+  }
+  const status = `${response.status} ${response.statusText}`.trim()
+  throw new PlatformError(unknownStatus(`Unexpected response from account service: ${status}`))
 }
 
 function withRetry<T, F extends (...args: any[]) => Promise<T>> (
