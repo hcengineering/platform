@@ -93,7 +93,8 @@
         docQuery,
         searchMode: 'fulltext',
         docProps: {
-          shouldShowAvatar: true
+          shouldShowAvatar: true,
+          type: 'text'
         },
         create
       },
