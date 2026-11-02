@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -70,8 +71,7 @@
   }
 
   async function markDone () {
-    object.doneOn = object.doneOn == null ? Date.now() : null
-    await client.update(object, { doneOn: object.doneOn })
+    await client.update(object, { doneOn: object.doneOn == null ? Date.now() : null })
   }
 
   async function dueDateChange (value: Date | null) {

@@ -41,6 +41,8 @@ import core, {
   SortingQuery,
   Space,
   Tx,
+  type TxApplyIf,
+  type TxCUD,
   TxCreateDoc,
   TxMixin,
   TxProcessor,
@@ -216,6 +218,58 @@ export class LiveQuery implements WithTx, Client {
     })
     q.result = new ResultArray([], this.getHierarchy())
     q.total = -1
+  }
+
+  /** Refreshes affected subscriptions and cached queries after a transaction was not applied. */
+  async refreshTransactions (...txes: Tx[]): Promise<void> {
+    if (this.closed) return
+    const changes: Array<TxCUD<Doc>> = []
+    const collect = (tx: Tx): void => {
+      if (tx._class === core.class.TxApplyIf) {
+        for (const child of (tx as TxApplyIf).txes) collect(child)
+      } else if (TxProcessor.isExtendsCUD(tx._class)) {
+        changes.push(tx as TxCUD<Doc>)
+      }
+    }
+    txes.forEach(collect)
+    if (changes.length === 0) return
+    const affected: Query[] = []
+    const hierarchy = this.getHierarchy()
+    for (const queries of this.queries.values()) {
+      for (const q of queries.values()) {
+        const baseClass = hierarchy.isMixin(q._class) ? hierarchy.getBaseClass(q._class) : q._class
+        const matches = changes.some((tx) => {
+          if (
+            hierarchy.isDerived(tx.objectClass, baseClass) &&
+            (typeof q.query._id !== 'string' || q.query._id === tx.objectId)
+          ) {
+            return true
+          }
+          if (q.options?.lookup !== undefined && this.getLookupWays(q.options.lookup, tx.objectClass).length > 0) {
+            return true
+          }
+          return tx.objectClass === core.class.Relation && q.options?.associations !== undefined
+        })
+        if (matches) affected.push(q)
+      }
+    }
+    this.refs.invalidateQueries(new Set(affected.map((q) => q.id)))
+    const limiter = new RateLimiter(LiveQuery.REFRESH_CONCURRENCY)
+    const refreshes: Array<Promise<void>> = []
+    for (const q of affected) {
+      this.queriesToUpdate.delete(q.id)
+      if (q.callbacks.size === 0) {
+        this.removeQueue(q)
+      } else {
+        refreshes.push(
+          limiter.exec(async () => {
+            if (q.result instanceof Promise) await q.result
+            await this.doRefresh(q, true)
+          })
+        )
+      }
+    }
+    await Promise.all(refreshes)
   }
 
   private match (q: Query, doc: Doc, skipLookup = false): boolean {
@@ -947,10 +1001,13 @@ export class LiveQuery implements WithTx, Client {
     await q.refresh()
   }
 
-  private async doRefresh (q: Query): Promise<void> {
+  private async doRefresh (q: Query, force = false): Promise<void> {
     const qid = ++q.refreshId
     const res = await this.client.findAll(q._class, q.query, q.options)
-    if (q.refreshId === qid && (!deepEqual(res, q.result) || (res.total !== q.total && q.options?.total === true))) {
+    if (
+      q.refreshId === qid &&
+      (force || !deepEqual(res, q.result) || (res.total !== q.total && q.options?.total === true))
+    ) {
       q.result = new ResultArray(res, this.getHierarchy())
       q.total = res.total
       await this.callback(q)

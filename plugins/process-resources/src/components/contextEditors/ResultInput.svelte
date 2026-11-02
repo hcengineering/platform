@@ -80,10 +80,6 @@
 
   void fillValues()
 
-  export function canClose (): boolean {
-    return false
-  }
-
   function getEditor (result: ResolvedUserResult): AnyComponent | undefined {
     const target = getAttributePresenterClass(h, result.type)
     if (
@@ -121,7 +117,6 @@
   label={plugin.string.Result}
   canSave={canSaveValue}
   okAction={save}
-  hideClose
   okLabel={presentation.string.Save}
 >
   {#if description !== undefined && description.trim() !== ''}

@@ -39,6 +39,14 @@ export class Refs {
 
   constructor (readonly getHierarchy: () => Hierarchy) {}
 
+  invalidateQueries (queryIds: Set<QueryId>): void {
+    for (const documents of this.documentRefs.values()) {
+      for (const [id, ref] of documents) {
+        if (ref.queries.some((query) => queryIds.has(query))) documents.delete(id)
+      }
+    }
+  }
+
   private getParameters<T extends Doc>(options?: FindOptions<T>): string {
     return (
       ':' +

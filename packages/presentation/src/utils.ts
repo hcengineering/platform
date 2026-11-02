@@ -1,6 +1,7 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,10 +15,8 @@
 // limitations under the License.
 //
 
-import { Analytics } from '@hcengineering/analytics'
 import core, {
   type Account,
-  AccountRole,
   type AnyAttribute,
   type ArrOf,
   type AttachedDoc,
@@ -32,14 +31,13 @@ import core, {
   type FindOptions,
   type FindResult,
   getCurrentAccount,
-  platformNow,
-  hasAccountRole,
   type Hierarchy,
   MeasureMetricsContext,
   type Mixin,
   type ModelDb,
   type Obj,
   type OperationDomain,
+  platformNow,
   reduceCalls,
   type Ref,
   type RefTo,
@@ -48,10 +46,7 @@ import core, {
   type SearchResult,
   type Space,
   type Tx,
-  type TxApplyIf,
-  type TxCUD,
   TxOperations,
-  TxProcessor,
   type TxResult,
   type Type,
   type TypeAny,
@@ -69,6 +64,9 @@ import { get, writable } from 'svelte/store'
 import { type KeyedAttribute } from '..'
 import { OptimizeQueryMiddleware, type PresentationPipeline, PresentationPipelineImpl } from './pipeline'
 import plugin, { type ClientHook } from './plugin'
+import { pendingCreatedDocs, UIClient } from './ui-client'
+
+export { pendingCreatedDocs } from './ui-client'
 
 export { reduceCalls } from '@hcengineering/core'
 
@@ -102,129 +100,6 @@ export function removeTxListener (l: TxListener): void {
 }
 
 export const uiContext = new MeasureMetricsContext('client-ui', {})
-
-export const pendingCreatedDocs = writable<Record<Ref<Doc>, boolean>>({})
-
-class UIClient extends TxOperations implements Client {
-  constructor (
-    client: Client,
-    private readonly liveQuery: Client
-  ) {
-    super(client, getCurrentAccount().primarySocialId)
-  }
-
-  protected pendingTxes = new Set<Ref<Tx>>()
-
-  async doNotify (...tx: Tx[]): Promise<void> {
-    const pending = get(pendingCreatedDocs)
-    let pendingUpdated = false
-    tx.forEach((t) => {
-      if (this.pendingTxes.has(t._id)) {
-        this.pendingTxes.delete(t._id)
-
-        // Only CUD tx can be pending now
-        const innerTx = t as TxCUD<Doc>
-
-        if (innerTx._class === core.class.TxCreateDoc) {
-          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete pending[innerTx.objectId]
-          pendingUpdated = true
-        }
-      }
-    })
-    if (pendingUpdated) {
-      pendingCreatedDocs.set(pending)
-    }
-
-    // We still want to notify about all transactions because there might be queries created after
-    // the early applied transaction
-    // For old queries there's a check anyway that prevents the same document from being added twice
-    await this.provideNotify(...tx)
-  }
-
-  private async provideNotify (...tx: Tx[]): Promise<void> {
-    try {
-      await pipeline.notifyTx(...tx)
-
-      await liveQuery.tx(...tx)
-
-      await rawLiveQuery.tx(...tx)
-
-      txListeners.forEach((it) => {
-        it(tx)
-      })
-    } catch (err: any) {
-      Analytics.handleError(err)
-      console.log(err)
-    }
-  }
-
-  override async findAll<T extends Doc>(
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<FindResult<T>> {
-    return await this.liveQuery.findAll(_class, query, options)
-  }
-
-  override async findOne<T extends Doc>(
-    _class: Ref<Class<T>>,
-    query: DocumentQuery<T>,
-    options?: FindOptions<T>
-  ): Promise<WithLookup<T> | undefined> {
-    return await this.liveQuery.findOne(_class, query, options)
-  }
-
-  override async tx (tx: Tx): Promise<TxResult> {
-    void this.notifyEarly(tx).catch((err) => {
-      console.error(err)
-    })
-    return await this.client.tx(tx)
-  }
-
-  private async notifyEarly (tx: Tx): Promise<void> {
-    if (!hasAccountRole(getCurrentAccount(), AccountRole.User)) return
-    if (tx._class === core.class.TxApplyIf) {
-      const applyTx = tx as TxApplyIf
-
-      if ((applyTx.match?.length ?? 0) !== 0 || (applyTx.notMatch?.length ?? 0) !== 0) {
-        // Cannot early apply conditional transactions
-        return
-      }
-
-      await Promise.all(
-        applyTx.txes.map(async (atx) => {
-          await this.notifyEarly(atx)
-        })
-      )
-      return
-    }
-
-    if (!TxProcessor.isExtendsCUD(tx._class)) {
-      return
-    }
-
-    const innerTx = tx as TxCUD<Doc>
-    // Can pre-build some configuration later from the model if this will be too slow.
-    const instantTxes = this.getHierarchy().classHierarchyMixin(innerTx.objectClass, plugin.mixin.InstantTransactions)
-    if (instantTxes?.txClasses.includes(innerTx._class) !== true) {
-      return
-    }
-
-    if (innerTx._class === core.class.TxCreateDoc) {
-      const pending = get(pendingCreatedDocs)
-      pending[innerTx.objectId] = true
-      pendingCreatedDocs.set(pending)
-    }
-
-    this.pendingTxes.add(tx._id)
-    await this.provideNotify(tx)
-  }
-
-  async searchFulltext (query: SearchQuery, options: SearchOptions): Promise<SearchResult> {
-    return await this.client.searchFulltext(query, options)
-  }
-}
 
 const hierarchyProxy = new Proxy(
   {},
@@ -390,7 +265,11 @@ export async function setClient (_client: Client): Promise<void> {
 
   liveQuery = new LQ(pipeline)
 
-  const uiClient = new UIClient(pipeline, liveQuery)
+  const uiClient = new UIClient(pipeline, liveQuery, rawLiveQuery, (txes) => {
+    txListeners.forEach((listener) => {
+      listener(txes)
+    })
+  })
 
   client = uiClient
 

@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -47,15 +48,26 @@
       : pnew
 
   let _props: any = filterDefaultUndefined(props, props)
+  let previousInputProps: Record<string, unknown> = { ...props }
 
   $: if (!deepEqual(_is, is)) {
     _is = is
   }
   $: {
     const p = filterDefaultUndefined(props, _props)
-    if (!deepEqual(_props, p)) {
+    // Fresh document references must reach editors even when their stored content is unchanged.
+    const hasFreshDocument = Object.entries(props ?? {}).some(
+      ([key, value]) =>
+        value !== previousInputProps[key] &&
+        value !== null &&
+        typeof value === 'object' &&
+        '_id' in value &&
+        '_class' in value
+    )
+    if (!deepEqual(_props, p) || hasFreshDocument) {
       _props = p
     }
+    previousInputProps = { ...props }
   }
 
   let Ctor: any

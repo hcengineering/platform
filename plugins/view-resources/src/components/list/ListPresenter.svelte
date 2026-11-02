@@ -40,7 +40,13 @@
 
   $: dp = attributeModel?.displayProps
 
-  function joinProps (attribute: AttributeModel, object: Doc, props: Record<string, any>, readonly: boolean) {
+  function joinProps (
+    attribute: AttributeModel,
+    object: Doc,
+    props: Record<string, any>,
+    readonly: boolean,
+    value: unknown
+  ) {
     const readonlyParams =
       readonly ||
       isObjectAttributeReadonly(object, attribute, client.getHierarchy()) ||
@@ -55,9 +61,9 @@
         : {}
     const clearAttributeProps = attribute.props
     if (attribute.attribute?.type._class === core.class.EnumOf) {
-      return { ...clearAttributeProps, type: attribute.attribute.type, ...props, ...readonlyParams }
+      return { value, ...clearAttributeProps, type: attribute.attribute.type, ...props, ...readonlyParams }
     }
-    return { object, ...clearAttributeProps, space: object.space, ...props, ...readonlyParams }
+    return { value, object, ...clearAttributeProps, space: object.space, ...props, ...readonlyParams }
   }
   const translateSize = (e: CustomEvent): void => {
     if (e.detail === undefined) return
@@ -88,7 +94,6 @@
   <FixedColumn key={`list_item_${dp.key}`} justify={dp.fixed}>
     <svelte:component
       this={attributeModel.presenter}
-      {value}
       {onChange}
       kind={'list'}
       {compactMode}
@@ -98,7 +103,10 @@
         attributeModel,
         docObject,
         props,
-        readonly || $restrictionStore.readonly || !canChangeAttr(docObject, attributeModel.attribute, $permissionsStore)
+        readonly ||
+          $restrictionStore.readonly ||
+          !canChangeAttr(docObject, attributeModel.attribute, $permissionsStore),
+        value
       )}
       on:resize={translateSize}
     />
@@ -106,7 +114,6 @@
 {:else}
   <svelte:component
     this={attributeModel.presenter}
-    {value}
     {onChange}
     kind={'list'}
     label={attributeModel.label}
@@ -116,7 +123,8 @@
       attributeModel,
       docObject,
       props,
-      readonly || $restrictionStore.readonly || !canChangeAttr(docObject, attributeModel.attribute, $permissionsStore)
+      readonly || $restrictionStore.readonly || !canChangeAttr(docObject, attributeModel.attribute, $permissionsStore),
+      value
     )}
     on:resize={translateSize}
   />

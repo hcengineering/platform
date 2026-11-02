@@ -517,6 +517,8 @@ export async function requestUserInput (
   skipExisting: boolean = false
 ): Promise<{ context: ExecutionContext, state: Ref<State>, changed: boolean }> {
   const client = getClient()
+  // Keep collected input local until every dialog has been confirmed.
+  userContext = { ...userContext }
   let changed = false
   const tr = await getTransitionUserInput(
     processId,
@@ -947,26 +949,18 @@ export async function requestResult (
     })
   )
 
-  const promise = new Promise<void>((resolve, reject) => {
+  const values = await new Promise<Record<ContextId, unknown> | null | undefined>((resolve) => {
     showPopup(
       process.component.ResultInput,
       { results: resolvedResults, context, doc: targetDoc, description },
       undefined,
-      (res) => {
-        if (res !== undefined && results.every((result) => isRequiredValueFilled(res[result._id], result.type))) {
-          for (const contextId in res) {
-            const val = res[contextId]
-            context[contextId as ContextId] = val
-          }
-          resolve()
-        } else {
-          reject(new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {})))
-        }
-      }
+      resolve
     )
   })
-  await promise
-  return context
+  if (values == null || !results.every((result) => isRequiredValueFilled(values[result._id], result.type))) {
+    throw new PlatformError(new Status(Severity.ERROR, process.error.ResultNotProvided, {}))
+  }
+  return { ...context, ...values }
 }
 
 export async function todoTranstionCheck (

@@ -47,10 +47,6 @@
     isRequiredValueFilled(values[input.id], client.getHierarchy().findAttribute(input._class, input.key)?.type)
   )
 
-  export function canClose (): boolean {
-    return false
-  }
-
   const transitionVal = model.findObject(transition)
   const processVal = model.findObject(processId)
 </script>
@@ -61,7 +57,6 @@
   label={plugin.string.EnterValue}
   canSave={canSaveValue}
   okAction={save}
-  hideClose
   okLabel={presentation.string.Save}
 >
   {#if title !== undefined && title.trim() !== ''}
