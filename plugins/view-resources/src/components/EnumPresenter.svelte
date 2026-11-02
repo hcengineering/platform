@@ -41,10 +41,12 @@
       },
       { limit: 1 }
     )
+
+  $: selectedLabel = items?.find((p) => p.id === value)?.label
 </script>
 
 {#if onChange !== undefined && type !== undefined && !readonly}
-  <span use:tooltip={value ? { label: getEmbeddedLabel(value) } : undefined}>
+  <span use:tooltip={selectedLabel ? { label: getEmbeddedLabel(selectedLabel) } : undefined}>
     <DropdownLabels
       bind:selected={value}
       {items}
