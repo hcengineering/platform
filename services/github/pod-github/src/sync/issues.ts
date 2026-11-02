@@ -47,7 +47,15 @@ import {
 } from '../types'
 import { IssueExternalData, issueDetails } from './githubTypes'
 import { GithubIssueData, IssueSyncManagerBase, IssueUpdate, WithMarkup } from './issueBase'
-import { ensureGraphQLOctokit, getSince, gqlp, guessStatus, isGHWriteAllowed, syncRunner } from './utils'
+import {
+  ensureGraphQLOctokit,
+  getSince,
+  gqlp,
+  guessStatus,
+  isGHWriteAllowed,
+  syncRunner,
+  toGithubStateReason
+} from './utils'
 
 export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncManager {
   createPromise: Promise<IssueExternalData | undefined> | undefined
@@ -234,11 +242,6 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       case 'closed':
       case 'reopened': {
         const stateMap: Record<string, 'CLOSED' | 'OPEN'> = { closed: 'CLOSED', open: 'OPEN' }
-        const stateReasonMap: Record<string, GithubIssueStateReason> = {
-          completed: GithubIssueStateReason.Completed,
-          reopened: GithubIssueStateReason.Reopened,
-          not_planed: GithubIssueStateReason.NotPlanned
-        }
         const type = await this.provider.getTaskTypeOf(prj.type, tracker.class.Issue)
         const statuses = await this.provider.getStatuses(type?._id)
         const update: IssueUpdate = {
@@ -246,7 +249,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
             await guessStatus(
               {
                 state: stateMap[event.issue.state],
-                stateReason: event.issue.state_reason != null ? stateReasonMap[event.issue.state_reason] : undefined
+                stateReason: toGithubStateReason(event.issue.state_reason)
               },
               statuses
             )
@@ -628,7 +631,7 @@ export class IssueSyncManager extends IssueSyncManagerBase implements DocSyncMan
       mutation closeIssue($issue: ID!) {
         closeIssue(input: {
           issueId: $issue,
-          stateReason: ${stateReason === 'not_planed' ? 'NOT_PLANNED' : 'COMPLETED'}
+          stateReason: ${stateReason === GithubIssueStateReason.NotPlanned ? 'NOT_PLANNED' : 'COMPLETED'}
         }) {
           issue {
             id
