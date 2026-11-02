@@ -107,6 +107,7 @@
     "DocumentColor": "",
     "Rank": "Posición",
     "TypeIssuePriority": "Prioridad de la tarea",
+    "TypeMilestoneStatus": "Estado del hito",
     "IssueTitlePlaceholder": "Título de la tarea",
     "SubIssueTitlePlaceholder": "Título de la subtarea",
     "IssueDescriptionPlaceholder": "Añadir descripción...",

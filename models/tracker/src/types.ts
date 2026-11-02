@@ -109,7 +109,7 @@ export class TTypeIssuePriority extends TType {}
  */
 
 export function TypeMilestoneStatus (): Type<MilestoneStatus> {
-  return { _class: tracker.class.TypeMilestoneStatus, label: 'TypeMilestoneStatus' as IntlString }
+  return { _class: tracker.class.TypeMilestoneStatus, label: tracker.string.TypeMilestoneStatus }
 }
 /**
  * @public

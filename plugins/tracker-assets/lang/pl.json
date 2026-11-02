@@ -109,6 +109,7 @@
     "DocumentColor": "Kolor dokumentu",
     "Rank": "Ranga",
     "TypeIssuePriority": "Priorytet zadania",
+    "TypeMilestoneStatus": "Status kamienia milowego",
     "IssueTitlePlaceholder": "Tytuł zadania",
     "SubIssueTitlePlaceholder": "Tytuł podzagadnienia",
     "IssueDescriptionPlaceholder": "Dodaj opis zadania\u2026",
