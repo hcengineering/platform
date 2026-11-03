@@ -100,6 +100,52 @@ async function onReply (
   return await worker.reply(integration, messageRecord, htmlToMarkup(toHTML(message)), files)
 }
 
+/**
+ * Routes a non-reply message that arrived inside a Telegram forum topic to the matching
+ * Huly channel (via the forum_topics table). Returns true if the message was successfully
+ * routed; false if the topic is not registered (caller should fall back to legacy flow).
+ */
+async function handleForumTopicMessage (
+  ctx: Context,
+  worker: PlatformWorker,
+  chatId: number,
+  threadId: number,
+  fromId: number
+): Promise<boolean> {
+  const topic = await worker.getForumTopicByThread(chatId, threadId)
+  if (topic === undefined) return false
+
+  const integration = await getAnyIntegrationByTelegramId(fromId, topic.workspace)
+  if (integration === undefined) return false
+
+  const channel = await worker.resolveChannelByRef(topic.workspace, topic.account, topic.channelId)
+  if (channel === undefined) return false
+
+  const ctxMessage = ctx.message as Message | undefined
+  if (ctxMessage === undefined) return false
+
+  const file = await toTelegramFileInfo(ctx as TgContext, ctxMessage)
+  let text = htmlToMarkup(toHTML(ctxMessage as Message.TextMessage))
+
+  if (isEmptyMarkup(text) && 'caption' in ctxMessage && ctxMessage.caption !== undefined) {
+    text = jsonToMarkup({
+      type: MarkupNodeType.text,
+      text: ctxMessage.caption
+    })
+  }
+
+  if (isEmptyMarkup(text) && file === undefined) return false
+
+  return await worker.sendMessage(
+    channel,
+    integration.account,
+    integration.socialId,
+    ctxMessage.message_id,
+    text,
+    file
+  )
+}
+
 async function handleSelectChannel (
   ctx: Context<Update.CallbackQueryUpdate<CallbackQuery>>,
   worker: PlatformWorker,
@@ -217,17 +263,32 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
   await defineCommands(bot, worker)
 
   bot.on(message('reply_to_message'), async (ctx) => {
-    const id = ctx.chat?.id
+    const chatId = ctx.chat?.id
     const message = ctx.message
 
-    if (id === undefined || message.reply_to_message === undefined) {
+    if (chatId === undefined || message.reply_to_message === undefined) {
       return
+    }
+
+    const fromId = ctx.from?.id
+    const threadId = (message as Message & { message_thread_id?: number }).message_thread_id
+
+    // Inside a forum-enabled DM, "replying" to the topic's own first system message is
+    // really the user opening the topic to type into it. Treat it as a fresh forum-routed
+    // message instead of trying to thread-link it to the synthetic topic head.
+    if (fromId !== undefined && threadId !== undefined && ctx.chat?.type === 'private') {
+      const replyToId = message.reply_to_message.message_id
+      const isTopicHead = replyToId === threadId
+      if (isTopicHead) {
+        const routed = await handleForumTopicMessage(ctx, worker, chatId, threadId, fromId)
+        if (routed) return
+      }
     }
 
     const replyTo = message.reply_to_message
     const isReplied = await onReply(
       ctx,
-      id,
+      chatId,
       message as ReplyMessage,
       message.message_id,
       replyTo.message_id,
@@ -241,11 +302,38 @@ export async function setUpBot (worker: PlatformWorker): Promise<Telegraf<TgCont
   })
 
   bot.on(message(), async (ctx) => {
-    const id = ctx.chat?.id
-    if (id === undefined) return
+    const chatId = ctx.chat?.id
+    if (chatId === undefined) return
     if ('reply_to_message' in ctx.message) return
 
-    const integrations = await listIntegrationsByTelegramId(id)
+    // Skip Telegram forum service messages (topic created/edited/closed/reopened, etc.).
+    // They carry message_thread_id but represent system events, not user input — answering
+    // them with reply_parameters tied to a transient probe topic causes 400 "message thread not found".
+    const m = ctx.message as Record<string, unknown>
+    if (
+      m.forum_topic_created !== undefined ||
+      m.forum_topic_edited !== undefined ||
+      m.forum_topic_closed !== undefined ||
+      m.forum_topic_reopened !== undefined ||
+      m.general_forum_topic_hidden !== undefined ||
+      m.general_forum_topic_unhidden !== undefined
+    ) {
+      return
+    }
+
+    const fromId = ctx.from?.id
+    const threadId = (ctx.message as Message.TextMessage & { message_thread_id?: number }).message_thread_id
+
+    if (fromId !== undefined && threadId !== undefined && ctx.chat?.type === 'private') {
+      const routed = await handleForumTopicMessage(ctx, worker, chatId, threadId, fromId)
+      if (routed) return
+      // Inside a topic but the topic is not in our table (stale topic, manual user
+      // creation, etc). Skip the workspace/channel keyboard fallback so Telegraf does
+      // not echo back into a thread id that may not exist anymore.
+      return
+    }
+
+    const integrations = await listIntegrationsByTelegramId(chatId)
     if (integrations === undefined) return
 
     const workspaces: WorkspaceUuid[] = integrations

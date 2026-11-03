@@ -25,7 +25,8 @@ import {
   listIntegrationsByTelegramId,
   getAccountPerson,
   removeIntegrationsByTg,
-  getAnyIntegrationByTelegramId
+  getAnyIntegrationByTelegramId,
+  updateIntegrationData
 } from '../account'
 import { WorkspaceUuid } from '@hcengineering/core'
 
@@ -34,6 +35,8 @@ export enum Command {
   Connect = 'connect',
   SyncAllChannels = 'sync_all_channels',
   SyncStarredChannels = 'sync_starred_channels',
+  SetForum = 'setforum',
+  UnsetForum = 'unsetforum',
   Help = 'help',
   Stop = 'stop'
 }
@@ -55,6 +58,14 @@ export async function getBotCommands (lang: string = 'en'): Promise<BotCommand[]
     {
       command: Command.SyncStarredChannels,
       description: await translate(telegram.string.SyncStarredChannels, { app: config.App }, lang)
+    },
+    {
+      command: Command.SetForum,
+      description: 'Route notifications into a forum topic per Huly channel (one topic per channel)'
+    },
+    {
+      command: Command.UnsetForum,
+      description: 'Disable forum routing and send notifications back to this DM'
     },
     {
       command: Command.Help,
@@ -142,6 +153,56 @@ async function onSyncChannels (ctx: Context, worker: PlatformWorker, onlyStarred
   await ctx.reply('List of channels updated')
 }
 
+async function onSetForum (ctx: Context, worker: PlatformWorker): Promise<void> {
+  const id = ctx.from?.id
+  if (id === undefined) return
+
+  // Bot API 9.4 surfaces the Threaded Mode bit via getMe().has_topics_enabled.
+  // Without it, createForumTopic will fail with 400, so refuse early with a
+  // helpful pointer to @BotFather. Using getMe instead of a probe createForumTopic
+  // avoids polluting the DM with a "topic created" service message.
+  const me = (await ctx.telegram.getMe()) as { username?: string, has_topics_enabled?: boolean }
+  if (me.has_topics_enabled !== true) {
+    await ctx.reply(
+      'Topic creation is not allowed in this DM. The bot administrator must enable Threaded Mode via @BotFather: ' +
+        `/mybots -> @${me.username ?? 'bot'} -> press Open (Mini App) -> Threads -> toggle ON, then retry /setforum.`
+    )
+    return
+  }
+
+  const integrations = await listIntegrationsByTelegramId(id)
+  if (integrations.length === 0) {
+    await ctx.reply('No Huly integration found. Connect a workspace first via /connect.')
+    return
+  }
+
+  for (const integration of integrations) {
+    await updateIntegrationData(integration, { forumChatId: id })
+  }
+
+  await ctx.reply(
+    'Forum routing enabled. Every Huly channel will become its own topic in this DM. ' +
+      'Use /unsetforum to turn it off.'
+  )
+}
+
+async function onUnsetForum (ctx: Context, worker: PlatformWorker): Promise<void> {
+  const id = ctx.from?.id
+  if (id === undefined) return
+
+  const integrations = await listIntegrationsByTelegramId(id)
+  if (integrations.length === 0) {
+    await ctx.reply('No Huly integration found.')
+    return
+  }
+
+  for (const integration of integrations) {
+    await updateIntegrationData(integration, { forumChatId: null })
+  }
+
+  await ctx.reply('Forum routing disabled. Notifications will return to this DM.')
+}
+
 async function onConnect (ctx: Context, worker: PlatformWorker): Promise<void> {
   const id = ctx.from?.id
   const lang = ctx.from?.language_code ?? 'en'
@@ -178,4 +239,6 @@ export async function defineCommands (bot: Telegraf<TgContext>, worker: Platform
   bot.command(Command.Connect, (ctx) => onConnect(ctx, worker))
   bot.command(Command.SyncAllChannels, (ctx) => onSyncChannels(ctx, worker, false))
   bot.command(Command.SyncStarredChannels, (ctx) => onSyncChannels(ctx, worker, true))
+  bot.command(Command.SetForum, (ctx) => onSetForum(ctx, worker))
+  bot.command(Command.UnsetForum, (ctx) => onUnsetForum(ctx, worker))
 }
