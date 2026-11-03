@@ -33,3 +33,20 @@ export function getWorkspaceLastVisitDays (lastVisit: number | undefined): numbe
   }
   return Math.round((Date.now() - lastVisit) / (1000 * 3600 * 24))
 }
+
+/**
+ * Number of workspaces above which the workspace selectors show a search box.
+ * @public
+ */
+export const WORKSPACE_SEARCH_THRESHOLD = 10
+
+/**
+ * Case-insensitive match of a workspace against a search string, by title or URL.
+ * An empty (or whitespace-only) search matches everything.
+ * @public
+ */
+export function matchWorkspaceSearch (ws: { name?: string, url: string }, search: string): boolean {
+  const query = search.trim().toLocaleLowerCase()
+  if (query === '') return true
+  return (ws.name?.toLocaleLowerCase().includes(query) ?? false) || ws.url.toLocaleLowerCase().includes(query)
+}
