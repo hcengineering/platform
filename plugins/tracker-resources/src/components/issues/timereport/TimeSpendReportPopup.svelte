@@ -34,16 +34,18 @@
 
   export let value: TimeSpendReport | undefined
   export let placeholder: IntlString = tracker.string.TimeSpendReportValue
-  export let defaultTimeReportDay: TimeReportDayType = TimeReportDayType.PreviousWorkDay
+  export let defaultTimeReportDay: TimeReportDayType = TimeReportDayType.CurrentWorkDay
+
+  const effectiveDefaultDay = value ? defaultTimeReportDay : TimeReportDayType.CurrentWorkDay
 
   const data = {
-    date: value?.date ?? getTimeReportDate(defaultTimeReportDay),
+    date: value?.date ?? getTimeReportDate(effectiveDefaultDay),
     description: value?.description ?? '',
     value: value?.value,
     employee: value?.employee ?? getCurrentEmployee() ?? assignee ?? null
   }
 
-  let selectedTimeReportDay = getTimeReportDayType(data.date)
+  let selectedTimeReportDay = value ? getTimeReportDayType(data.date) : effectiveDefaultDay
 
   export function canClose (): boolean {
     return true

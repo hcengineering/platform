@@ -17,7 +17,7 @@
   import { FindOptions } from '@hcengineering/core'
   import presentation, { Card } from '@hcengineering/presentation'
   import { Issue, Project, TimeSpendReport } from '@hcengineering/tracker'
-  import { Button, eventToHTMLElement, IconAdd, Scroller, showPopup, tableSP } from '@hcengineering/ui'
+  import { Button, eventToHTMLElement, IconAdd, showPopup } from '@hcengineering/ui'
   import { TableBrowser } from '@hcengineering/view-resources'
   import tracker from '../../../plugin'
   import IssuePresenter from '../IssuePresenter.svelte'
@@ -53,40 +53,101 @@
   }
 </script>
 
-<Card
-  label={tracker.string.TimeSpendReports}
-  canSave={true}
-  on:close
-  okAction={() => {}}
-  okLabel={presentation.string.Ok}
-  on:changeContent
->
-  <svelte:fragment slot="header">
-    <IssuePresenter value={issue} disabled />
-  </svelte:fragment>
-  <div class="h-50">
-    <Scroller fade={tableSP}>
-      <TableBrowser
-        _class={tracker.class.TimeSpendReport}
-        query={{ attachedTo: { $in: [issue._id, ...(issue.childInfo?.map((it) => it.childId) ?? [])] } }}
-        config={[
-          '$lookup.attachedTo',
-          '',
-          'employee',
-          {
-            key: '$lookup.attachedTo',
-            presenter: ParentNamesPresenter,
-            props: { maxWidth: '20rem' },
-            label: tracker.string.Title
-          },
-          'date',
-          'description'
-        ]}
-        {options}
-      />
-    </Scroller>
+<div class="reports-popup-shell">
+  <div class="reports-popup">
+    <Card
+      label={tracker.string.TimeSpendReports}
+      canSave={true}
+      on:close
+      okAction={() => {}}
+      okLabel={presentation.string.Ok}
+      on:changeContent
+    >
+      <svelte:fragment slot="header">
+        <IssuePresenter value={issue} disabled />
+      </svelte:fragment>
+      <div class="reports-table-host">
+        <TableBrowser
+          _class={tracker.class.TimeSpendReport}
+          query={{ attachedTo: { $in: [issue._id, ...(issue.childInfo?.map((it) => it.childId) ?? [])] } }}
+          config={[
+            '$lookup.attachedTo',
+            '',
+            'employee',
+            {
+              key: '$lookup.attachedTo',
+              presenter: ParentNamesPresenter,
+              props: { maxWidth: '20rem' },
+              label: tracker.string.Title
+            },
+            'date',
+            'description'
+          ]}
+          {options}
+        />
+      </div>
+      <svelte:fragment slot="buttons">
+        <Button id="ReportsPopupAddButton" icon={IconAdd} size={'large'} on:click={addReport} />
+      </svelte:fragment>
+    </Card>
   </div>
-  <svelte:fragment slot="buttons">
-    <Button id="ReportsPopupAddButton" icon={IconAdd} size={'large'} on:click={addReport} />
-  </svelte:fragment>
-</Card>
+</div>
+
+<style>
+  .reports-popup-shell {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+
+  .reports-popup {
+    width: min(100%, 1600px);
+    height: 100%;
+    max-height: 90vh;
+  }
+
+  .reports-popup :global(.antiCard) {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .reports-popup :global(.antiCard-content) {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Let Card/Scroller manage scrolling; avoid overriding scroll overflow. */
+  .reports-popup :global(.antiCard-content > .scroller-container) {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+  }
+
+  .reports-popup :global(.antiCard-content > .scroller-container > .horizontalBox),
+  .reports-popup :global(.antiCard-content > .scroller-container .scroll) {
+    height: 100%;
+  }
+
+
+  .reports-table-host {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .reports-table-host :global(.scroller-container) {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+  }
+</style>
