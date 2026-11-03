@@ -1,5 +1,6 @@
 <!--
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -16,7 +17,7 @@
 <script lang="ts">
   import core from '@hcengineering/core'
   import { IconWithEmoji, getClient } from '@hcengineering/presentation'
-  import ui, { Icon, Label } from '@hcengineering/ui'
+  import ui, { Component, Icon, Label } from '@hcengineering/ui'
   import view, { type TableMetadata } from '@hcengineering/view'
   import textEditor from '@hcengineering/text-editor'
 
@@ -30,9 +31,24 @@
   $: classLabel = cardClass?.label
   $: classIcon = cardClass?.icon
 
+  // Legacy tables without a source refresh their fixed set of documents.
+  $: mode = metadata.source?.mode ?? (metadata.documentIds.length > 0 ? 'fixed' : 'frozen')
+  $: fixed = mode === 'fixed'
+  $: modeLabel =
+    mode === 'fixed'
+      ? view.string.TableModeFixed
+      : mode === 'savedView'
+        ? view.string.TableModeSavedView
+        : view.string.TableModeFrozen
+
+  // The view filters as people see them in the filter bar; tables copied before filters were
+  // recorded fall back to the query.
+  $: filters = fixed ? undefined : metadata.source?.filters
+  $: hasFilters = filters !== undefined && filters !== '' && filters !== '[]'
+
   // Format query information
   $: queryInfo = (() => {
-    if (metadata.documentIds !== undefined && metadata.documentIds.length > 0) {
+    if (fixed && metadata.documentIds !== undefined && metadata.documentIds.length > 0) {
       return undefined
     } else if (metadata.query !== null && metadata.query !== undefined) {
       try {
@@ -62,6 +78,10 @@
 
 <div class="table-source-info">
   <div class="source-content">
+    <div class="source-row">
+      <span class="source-label"><Label label={view.string.TableSource} /></span>
+      <span class="source-value"><Label label={modeLabel} /></span>
+    </div>
     {#if originalUrlDisplay != null && metadata.originalUrl != null}
       <div class="source-row">
         <span class="source-label">
@@ -90,17 +110,19 @@
         </div>
       </div>
     {/if}
-    {#if queryInfo != null || (metadata.documentIds !== undefined && metadata.documentIds.length > 0)}
+    {#if hasFilters || (filters === undefined && queryInfo != null) || (fixed && metadata.documentIds !== undefined && metadata.documentIds.length > 0)}
       <div class="source-row">
         <span class="source-label">
           <Label label={ui.string.Filter} />
         </span>
         <div class="source-value query-value">
-          {#if metadata.documentIds !== undefined && metadata.documentIds.length > 0}
+          {#if fixed && metadata.documentIds !== undefined && metadata.documentIds.length > 0}
             <span class="query-text">
               <Label label={textEditor.string.SelectedDocuments} params={{ count: documentCount }} />
             </span>
-          {:else if queryInfo}
+          {:else if hasFilters}
+            <Component is={view.component.FilterSummary} props={{ filters }} />
+          {:else if filters === undefined && queryInfo}
             <pre class="query-json"><code>{queryInfo}</code></pre>
           {/if}
         </div>

@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2023, 2024 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -39,11 +40,18 @@ import {
 import TableNodeView from './TableNodeView.svelte'
 import { TableSelection } from './types'
 import { findTable, isTableSelected, selectTable as selectTableNode } from './utils'
-import { getTableMetadata } from './tableMetadata'
+import { tableIdentities, tableIdentityAttributes } from './identities'
+import { showTableMessage } from './actions/errors'
+import view from '@hcengineering/view'
+import { getTableMetadata, getTableMetadataProblem, hasTableMetadata } from './tableMetadata'
 import { refreshTable, showTableDiff, seeOriginalTableData } from './actions'
 
 export const Table = TiptapTable.extend({
   draggable: true,
+
+  addGlobalAttributes () {
+    return [...(this.parent?.() ?? []), ...tableIdentityAttributes]
+  },
 
   addAttributes () {
     return {
@@ -88,7 +96,13 @@ export const Table = TiptapTable.extend({
     return SvelteNodeViewRenderer(TableNodeView, {})
   },
   addProseMirrorPlugins () {
-    return [...(this.parent?.() ?? []), tableSelectionHighlight(), cleanupBrokenTables(), TableToolbarPlugin()]
+    return [
+      ...(this.parent?.() ?? []),
+      tableSelectionHighlight(),
+      cleanupBrokenTables(),
+      TableToolbarPlugin(),
+      tableIdentities()
+    ]
   }
 })
 
@@ -244,6 +258,25 @@ export async function openTableOptions (editor: Editor, event: MouseEvent): Prom
   const metadata = table !== undefined ? getTableMetadata(table.node) : null
 
   const ops: TableAction[] = []
+
+  // Metadata that is present but unusable: say why instead of hiding the table actions.
+  const problem = table === undefined ? undefined : getTableMetadataProblem(table.node)
+  if (problem !== undefined) {
+    ops.push({
+      id: '#refreshTable',
+      icon: textEditor.icon.Refresh,
+      label: textEditor.string.RefreshTable,
+      action: () => {
+        showTableMessage(
+          problem === 'unsupported' ? view.string.TableUnsupportedVersion : view.string.TableMetadataDamaged
+        )
+        return true
+      },
+      category: {
+        label: textEditor.string.CategoryVersioning
+      }
+    })
+  }
 
   // Add refreshable table actions first if metadata exists
   if (metadata !== null && metadata !== undefined) {
@@ -414,8 +447,7 @@ export async function isRefreshableTableActive (editor: Editor, context: ActionC
   if (!editor.isEditable) return false
   const table = findTable(editor.state.selection)
   if (table === undefined) return false
-  const metadata = getTableMetadata(table.node)
-  return metadata !== null && metadata !== undefined
+  return hasTableMetadata(table.node)
 }
 
 export {

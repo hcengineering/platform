@@ -20,10 +20,6 @@ jest.mock('@hcengineering/presentation', () => ({
   getClient: jest.fn()
 }))
 
-jest.mock('../refreshTable', () => ({
-  buildMarkdownTableFromDocs: jest.fn()
-}))
-
 const schema = new Schema({
   nodes: {
     doc: { content: 'table' },

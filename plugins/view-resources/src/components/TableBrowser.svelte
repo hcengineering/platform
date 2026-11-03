@@ -1,4 +1,5 @@
 <!--
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -60,6 +61,8 @@
   // Rows the table currently shows; mirrored into the viewlet context so the export dialog can
   // offer "current page" without re-running the query.
   let renderedObjects: Doc[] = []
+  let sourceQuery: DocumentQuery<Doc> | undefined
+  let sourceOptions: FindOptions<Doc> | undefined
   async function onSort (event: CustomEvent<{ key: string, order: SortingOrder }>): Promise<void> {
     const { key, order } = event.detail
     if (viewlet && viewOptions) {
@@ -78,6 +81,9 @@
         viewlet,
         config,
         query,
+        sourceQuery,
+        options: sourceOptions,
+        baseOptions: options,
         viewOptions,
         _class,
         objects: renderedObjects
@@ -141,6 +147,10 @@
     on:content={(evt) => {
       listProvider.update(evt.detail)
       renderedObjects = evt.detail
+    }}
+    on:source={(evt) => {
+      sourceQuery = evt.detail.query
+      sourceOptions = evt.detail.options
     }}
     on:sort={onSort}
     on:check={(evt) => {

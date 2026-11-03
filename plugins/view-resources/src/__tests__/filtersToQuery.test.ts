@@ -184,4 +184,12 @@ describe('filtersToQuery', () => {
     const q = await filtersToQuery([makeFilter('gone'), makeFilter('status')], { isLatest: true })
     expect(q).toEqual({ isLatest: true, status: { $in: ['final'] } })
   })
+
+  it('rejects a missing filter mode for tracked table refreshes', async () => {
+    ;(getClient as jest.Mock).mockReturnValue({
+      getHierarchy: () => makeHierarchy(),
+      findOne: jest.fn(async () => undefined)
+    })
+    await expect(filtersToQuery([makeFilter('status')], {}, true)).rejects.toThrow('Missing filter mode')
+  })
 })

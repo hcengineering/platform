@@ -1,4 +1,5 @@
 <!--
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -13,16 +14,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { AccountRole, Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
+  import {
+    AccountRole,
+    generateId,
+    Class,
+    Doc,
+    DocumentQuery,
+    Ref,
+    Space,
+    getCurrentAccount
+  } from '@hcengineering/core'
   import { getResource } from '@hcengineering/platform'
   import { getClient, reduceCalls } from '@hcengineering/presentation'
-  import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
+  import { Button, IconAdd, eventToHTMLElement, showPopup } from '@hcengineering/ui'
   import { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
-  import { createEventDispatcher } from 'svelte'
+  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { publishFilterSource, savedViewDiffers } from '../../tableSource'
   import { filterStore, removeFilter, selectedFilterStore, updateFilter } from '../../filter'
   import view from '../../plugin'
-  import { activeViewlet, getActiveViewletId, makeViewletKey } from '../../utils'
-  import { getViewOptions, viewOptionStore } from '../../viewOptions'
+  import { activeViewlet, getActiveViewletId } from '../../utils'
+  import { viewOptionStore } from '../../viewOptions'
   import FilterSave from './FilterSave.svelte'
   import FilterSection from './FilterSection.svelte'
   import FilterTypePopup from './FilterTypePopup.svelte'
@@ -36,6 +47,14 @@
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
+
+  // Tells "copy table" which filters and saved view stand behind this view's query.
+  const sourceId = generateId()
+  let destroyed = false
+  onDestroy(() => {
+    destroyed = true
+    publishFilterSource(sourceId, undefined)
+  })
 
   const account = getCurrentAccount()
   const canSaveFilteredView = account.role !== AccountRole.ReadOnlyGuest && account.role !== AccountRole.DocGuest
@@ -141,6 +160,14 @@
         }
       }
     }
+    if (!destroyed) {
+      publishFilterSource(sourceId, {
+        cardClass: _class,
+        baseQuery: query,
+        filters: JSON.stringify(filters),
+        resultQuery: newQuery
+      })
+    }
     dispatch('change', newQuery)
   })
 
@@ -159,15 +186,7 @@
   ): boolean {
     if (selectedFilter === undefined) return false
     if (!getCurrentAccount().socialIds.includes(selectedFilter.createdBy)) return false
-    const loc = getCurrentLocation()
-    const key = makeViewletKey(loc)
-    if (selectedFilter.viewletId !== activeViewlet[key]) return true
-    if (selectedFilter.filters !== JSON.stringify(filters)) return true
-    if (selectedFilter.viewletId !== null) {
-      const viewOptions = getViewOptions({ _id: selectedFilter.viewletId } as unknown as Viewlet, viewOptionStore)
-      if (JSON.stringify(selectedFilter.viewOptions) !== JSON.stringify(viewOptions)) return true
-    }
-    return false
+    return savedViewDiffers(selectedFilter, filters, activeViewlet, viewOptionStore)
   }
 </script>
 

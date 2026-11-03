@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021, 2023 Hardcore Engineering Inc.
 //
@@ -71,8 +72,11 @@ import {
   ViewletViewAction
 } from './types'
 
+import { TableSourceError, type TableSourceErrorCode } from './table'
+
 export * from './types'
 export * from './utils'
+export * from './table'
 
 /**
  * @public
@@ -196,7 +200,8 @@ const view = plugin(viewId, {
     ReadOnlyNotification: '' as AnyComponent,
     ForbiddenNotification: '' as AnyComponent,
     DatePresenter: '' as AnyComponent,
-    DateEditor: '' as AnyComponent
+    DateEditor: '' as AnyComponent,
+    FilterSummary: '' as AnyComponent
   },
   ids: {
     IconWithEmoji: '' as Asset
@@ -229,7 +234,6 @@ const view = plugin(viewId, {
     Subscribed: '' as IntlString,
     HyperlinkPlaceholder: '' as IntlString,
     CopyToClipboard: '' as IntlString,
-    CopyAll: '' as IntlString,
     NoGrouping: '' as IntlString,
     Type: '' as IntlString,
     ViewletViewAction: '' as IntlString,
@@ -269,7 +273,43 @@ const view = plugin(viewId, {
     ForbidAttributeChanges: '' as IntlString,
     AllowAttributeChanges: '' as IntlString,
     NoCreatePermissionTitle: '' as IntlString,
-    CopyAsMarkdownTable: '' as IntlString
+    CopyAsMarkdownTable: '' as IntlString,
+    TraceXTable: '' as IntlString,
+    TraceXTableTitle: '' as IntlString,
+    MarkdownTable: '' as IntlString,
+    TableFormat: '' as IntlString,
+    TableRows: '' as IntlString,
+    TableSource: '' as IntlString,
+    SelectedRows: '' as IntlString,
+    LoadedRows: '' as IntlString,
+    EntireView: '' as IntlString,
+    EntireViewCount: '' as IntlString,
+    TableModeFixed: '' as IntlString,
+    TableModeSavedView: '' as IntlString,
+    TableModeFrozen: '' as IntlString,
+    TableModeFixedHint: '' as IntlString,
+    TableModeSavedViewHint: '' as IntlString,
+    TableSourceLiveSavedView: '' as IntlString,
+    TableSourceAsShown: '' as IntlString,
+    TableModeSavedViewModifiedHint: '' as IntlString,
+    TableModeFrozenHint: '' as IntlString,
+    MarkdownTableHint: '' as IntlString,
+    TableSourceUnavailable: '' as IntlString,
+    TableWorkspaceMismatch: '' as IntlString,
+    TableSavedViewUnavailable: '' as IntlString,
+    TableViewletUnavailable: '' as IntlString,
+    TableColumnUnavailable: '' as IntlString,
+    TableFiltersInvalid: '' as IntlString,
+    TableTooLarge: '' as IntlString,
+    TableNoColumns: '' as IntlString,
+    TableNoSource: '' as IntlString,
+    TableUnsupportedVersion: '' as IntlString,
+    TableMetadataDamaged: '' as IntlString,
+    TableChangedDuringPreview: '' as IntlString,
+    LocalTableChanges: '' as IntlString,
+    TableConflicts: '' as IntlString,
+    TableReplace: '' as IntlString,
+    TableDiffCaption: '' as IntlString
   },
   icon: {
     Table: '' as Asset,
@@ -447,3 +487,29 @@ const view = plugin(viewId, {
   }
 })
 export default view
+
+/**
+ * User-facing message for a table source failure; unknown errors map to a generic message.
+ * @public
+ */
+export function tableSourceErrorMessage (error: unknown): {
+  label: IntlString
+  params: Record<string, string | number>
+} {
+  const labels: Record<TableSourceErrorCode, IntlString> = {
+    workspace: view.string.TableWorkspaceMismatch,
+    unavailable: view.string.TableSourceUnavailable,
+    savedView: view.string.TableSavedViewUnavailable,
+    viewlet: view.string.TableViewletUnavailable,
+    column: view.string.TableColumnUnavailable,
+    filters: view.string.TableFiltersInvalid,
+    tooLarge: view.string.TableTooLarge,
+    noColumns: view.string.TableNoColumns,
+    noSource: view.string.TableNoSource
+  }
+  if (error instanceof TableSourceError || (error as Error | undefined)?.name === 'TableSourceError') {
+    const { code, params } = error as TableSourceError
+    return { label: labels[code] ?? view.string.TableSourceUnavailable, params: params ?? {} }
+  }
+  return { label: view.string.TableSourceUnavailable, params: {} }
+}

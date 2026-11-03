@@ -14,13 +14,45 @@
 //
 -->
 <script lang="ts">
+  import type { MarkupNode } from '@hcengineering/text'
+  import { markdownToMarkup } from '@hcengineering/text-markdown'
+  import { tooltip } from '@hcengineering/ui'
+  import view, { tableSnapshotToMarkup } from '@hcengineering/view'
   import MarkupDiffViewer from '../../../MarkupDiffViewer.svelte'
   import StringDiffViewer from '../../../StringDiffViewer.svelte'
-  import { buildTableDiff } from './tableDiff'
-  import { markdownToMarkup } from '@hcengineering/text-markdown'
+  import type { TableConflictCell } from '../snapshot'
+  import { buildTableDiff, type TableDiffSide } from './tableDiff'
 
-  export let oldMarkdown: string
-  export let newMarkdown: string
+  /** Markdown for legacy tables, snapshots (with identities) otherwise. */
+  export let oldTable: TableDiffSide
+  export let newTable: TableDiffSide
+  export let conflictCells: TableConflictCell[] = []
+
+  $: conflicts = new Set(conflictCells.map(({ rowId, columnId }) => JSON.stringify([rowId, columnId])))
+
+  function ids (side: TableDiffSide): { rowIds: string[], columnIds: string[] } | undefined {
+    return typeof side === 'string' ? undefined : side
+  }
+
+  function hasConflict (row: { oldIndex?: number, newIndex?: number } | undefined, columnIndex: number): boolean {
+    if (conflicts.size === 0) return false
+    const column = diff?.columns[columnIndex]
+    const rowId =
+      row === undefined
+        ? ''
+        : row.newIndex !== undefined
+          ? ids(newTable)?.rowIds[row.newIndex]
+          : row.oldIndex !== undefined
+            ? ids(oldTable)?.rowIds[row.oldIndex]
+            : undefined
+    const columnId =
+      column?.newIndex !== undefined
+        ? ids(newTable)?.columnIds[column.newIndex]
+        : column?.oldIndex !== undefined
+          ? ids(oldTable)?.columnIds[column.oldIndex]
+          : undefined
+    return rowId !== undefined && columnId !== undefined && conflicts.has(JSON.stringify([rowId, columnId]))
+  }
 
   function safeHref (href: string | undefined): string | undefined {
     if (href === undefined) return undefined
@@ -32,9 +64,15 @@
     }
   }
 
-  $: diff = buildTableDiff(oldMarkdown, newMarkdown)
-  $: oldContent = diff === undefined ? markdownToMarkup(oldMarkdown) : undefined
-  $: newContent = diff === undefined ? markdownToMarkup(newMarkdown) : undefined
+  function documentOf (side: TableDiffSide): MarkupNode {
+    return typeof side === 'string'
+      ? markdownToMarkup(side)
+      : ({ type: 'doc', content: [tableSnapshotToMarkup(side)] } as unknown as MarkupNode)
+  }
+
+  $: diff = buildTableDiff(oldTable, newTable)
+  $: oldContent = diff === undefined ? documentOf(oldTable) : undefined
+  $: newContent = diff === undefined ? documentOf(newTable) : undefined
 </script>
 
 {#if diff !== undefined}
@@ -43,8 +81,14 @@
       <thead>
         <tr>
           <th class="indicator" scope="col"></th>
-          {#each diff.columns as column}
-            <th scope="col" class:added={column.oldIndex === undefined} class:removed={column.newIndex === undefined}>
+          {#each diff.columns as column, columnIndex}
+            <th
+              scope="col"
+              class:conflict={hasConflict(undefined, columnIndex)}
+              use:tooltip={hasConflict(undefined, columnIndex) ? { label: view.string.TableConflicts } : undefined}
+              class:added={column.oldIndex === undefined}
+              class:removed={column.newIndex === undefined}
+            >
               {#if column.oldIndex === undefined}+{:else if column.newIndex === undefined}−{/if}
               {#if column.oldIndex !== undefined && column.newIndex !== undefined && column.oldHeader !== column.newHeader}
                 <StringDiffViewer value={column.newHeader} compareTo={column.oldHeader} method="diffWordsWithSpace" />
@@ -61,6 +105,8 @@
             </th>
             {#each row.cells as cell, index}
               <td
+                class:conflict={hasConflict(row, index)}
+                use:tooltip={hasConflict(row, index) ? { label: view.string.TableConflicts } : undefined}
                 class:added={row.oldIndex === undefined || diff.columns[index].oldIndex === undefined}
                 class:removed={row.newIndex === undefined || diff.columns[index].newIndex === undefined}
               >
@@ -72,6 +118,8 @@
                   {#if safeHref(cell.oldHref) !== undefined}
                     <a href={safeHref(cell.oldHref)} target="_blank" rel="noopener noreferrer">{cell.oldValue}</a>
                   {:else}{cell.oldValue}{/if}
+                {:else if cell.oldMarkup !== undefined && cell.newMarkup !== undefined}
+                  <MarkupDiffViewer content={cell.newMarkup} comparedVersion={cell.oldMarkup} />
                 {:else if cell.oldValue !== cell.newValue}
                   <StringDiffViewer value={cell.newValue} compareTo={cell.oldValue} method="diffWordsWithSpace" />
                 {:else if safeHref(cell.newHref) !== undefined}
@@ -130,6 +178,11 @@
     background-color: var(--text-editor-highlighted-node-delete-background-color);
     color: var(--text-editor-highlighted-node-delete-font-color);
     text-decoration: line-through;
+  }
+
+  .conflict {
+    outline: 2px solid var(--theme-warning-color);
+    outline-offset: -2px;
   }
 
   .link-change {

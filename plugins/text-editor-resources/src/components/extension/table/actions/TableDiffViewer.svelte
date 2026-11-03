@@ -17,14 +17,18 @@
 <script lang="ts">
   import presentation, { Card } from '@hcengineering/presentation'
   import textEditor from '@hcengineering/text-editor'
+  import { Label } from '@hcengineering/ui'
+  import view, { type TableMetadata } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import type { TableMetadata } from '@hcengineering/view'
 
   import StructuredTableDiff from './StructuredTableDiff.svelte'
   import TableSourceInfo from './TableSourceInfo.svelte'
+  import type { TableDiffSide } from './tableDiff'
 
-  export let oldMarkdown: string
-  export let newMarkdown: string
+  /** The table as it is in the document now. */
+  export let current: TableDiffSide
+  /** The table as the source would render it now. */
+  export let fresh: TableDiffSide
   export let metadata: TableMetadata
 
   const dispatch = createEventDispatcher()
@@ -43,13 +47,17 @@
   onCancel={handleClose}
   on:close={handleClose}
 >
+  <div class="caption text-md content-dark-color"><Label label={view.string.TableDiffCaption} /></div>
   <div class="table-diff-container">
-    <StructuredTableDiff {oldMarkdown} {newMarkdown} />
+    <StructuredTableDiff oldTable={current} newTable={fresh} />
   </div>
   <TableSourceInfo {metadata} />
 </Card>
 
 <style>
+  .caption {
+    padding: 0 1rem 0.75rem;
+  }
   .table-diff-container {
     padding: 0rem 1rem;
     overflow: auto;

@@ -14,5 +14,11 @@
 //
 
 export { loadPersonName } from './personLoader'
-export { buildTableMetadata, buildRelationshipTableMetadata, isRelationshipTable } from './metadataBuilder'
+export {
+  buildTableMetadata,
+  buildRelationshipTableMetadata,
+  isRelationshipTable,
+  type TableMetadataDraft
+} from './metadataBuilder'
+export { tableLanguage } from './language'
 export { rebuildRelationshipTableViewModel } from './relationshipBuilder'

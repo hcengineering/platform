@@ -219,6 +219,10 @@
       for (const fv of filteredViews) {
         if (checkFilter(fv, loc, filters, viewOptionStore)) {
           selectedId = fv._id
+          // Opening a saved view navigates first and applies its filters after, so the store can be
+          // cleared in between while the filters still match the view exactly. Restore it: the
+          // filter bar and "Copy table" read the open saved view from the store, not from the list.
+          if ($selectedFilterStore?._id !== fv._id) selectedFilterStore.set(fv)
           dispatch('select', true)
           return
         }

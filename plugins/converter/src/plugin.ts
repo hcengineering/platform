@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -17,14 +18,14 @@ import type { Client, Doc, Mixin, Ref } from '@hcengineering/core'
 import { type Plugin, type Resource, plugin } from '@hcengineering/platform'
 import type { AnyComponent, ComponentExtensionId } from '@hcengineering/ui'
 import type { ComponentPointExtension } from '@hcengineering/presentation'
-import type { Action, BuildMarkdownTableMetadata, ViewAction } from '@hcengineering/view'
 import type {
-  CopyAsMarkdownTableFunction,
-  CopyRelationshipTableAsMarkdownFunction,
-  MarkdownValueFormatter,
-  CopyAsMarkdownTableProps,
-  TableData
-} from './types'
+  Action,
+  BuildMarkdownTableMetadata,
+  ResolvedTableSnapshot,
+  TableMetadata,
+  ViewAction
+} from '@hcengineering/view'
+import type { MarkdownValueFormatter, CopyAsMarkdownTableProps, TableData } from './types'
 
 export const converterId = 'converter' as Plugin
 
@@ -33,14 +34,13 @@ export const converterPlugin = plugin(converterId, {
     MarkdownValueFormatter: '' as Ref<Mixin<MarkdownValueFormatter>>
   },
   function: {
-    CopyAsMarkdownTable: '' as Resource<CopyAsMarkdownTableFunction>,
-    CopyRelationshipAsMarkdown: '' as Resource<CopyRelationshipTableAsMarkdownFunction>,
     BuildMarkdownTableFromMetadata: '' as Resource<
       (docs: Doc[], metadata: BuildMarkdownTableMetadata, client: Client) => Promise<string>
     >,
     BuildMarkdownTableFromDocs: '' as Resource<
       (docs: Doc[], props: CopyAsMarkdownTableProps, client: Client) => Promise<string>
     >,
+    ResolveTableSnapshot: '' as Resource<(metadata: TableMetadata, client: Client) => Promise<ResolvedTableSnapshot>>,
     BuildTableData: '' as Resource<
       (
         docs: Doc[],

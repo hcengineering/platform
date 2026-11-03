@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -13,90 +14,17 @@
 // limitations under the License.
 //
 
-import type { Doc, Class, Ref, Hierarchy, DocumentQuery } from '@hcengineering/core'
-import type { AttributeModel, BuildModelKey, Viewlet } from '@hcengineering/view'
-import type { Resource } from '@hcengineering/platform'
-
 import { escapeMarkdownLinkText, escapeMarkdownLinkUrl } from './markdown/escape'
 
-/**
- * Value formatter function for custom field extraction during markdown/export
- * @param attr - The attribute model
- * @param doc - The document object
- * @param hierarchy - The hierarchy instance
- * @param _class - The document class
- * @param language - Current language
- * @returns The formatted value, or undefined if this formatter doesn't apply
- */
-export type ValueFormatter = (
-  attr: AttributeModel,
-  doc: Doc,
-  hierarchy: Hierarchy,
-  _class: Ref<Class<Doc>>,
-  language: string | undefined
-) => Promise<string | undefined>
-
-/**
- * Mixin for classes that provide a custom value formatter for markdown/export
- */
-export interface MarkdownValueFormatter extends Class<Doc> {
-  formatter: Resource<ValueFormatter>
-}
-
-export type { TableData } from '@hcengineering/converter'
-
-/**
- * Props for CopyAsMarkdownTable function
- */
-export interface CopyAsMarkdownTableProps {
-  cardClass: Ref<Class<Doc>>
-  viewlet?: Viewlet
-  config?: Array<string | BuildModelKey>
-  valueFormatter?: ValueFormatter
-  query?: DocumentQuery<Doc>
-}
-
-/**
- * Interface for RelationshipTable's cell model
- */
-export interface RelationshipCellModel {
-  attribute: AttributeModel
-  rowSpan: number
-  object: Doc | undefined
-  parentObject: Doc | undefined
-}
-
-/**
- * Interface for RelationshipTable's row model
- */
-export interface RelationshipRowModel {
-  cells: RelationshipCellModel[]
-}
-
-/**
- * Props for CopyRelationshipTableAsMarkdown function
- */
-export interface CopyRelationshipTableAsMarkdownProps {
-  viewModel: RelationshipRowModel[]
-  model: AttributeModel[]
-  objects: Doc[]
-  cardClass: Ref<Class<Doc>>
-  valueFormatter?: ValueFormatter
-  query?: DocumentQuery<Doc>
-}
-
-/**
- * Function type for CopyAsMarkdownTable (used in action context)
- */
-export type CopyAsMarkdownTableFunction = (evt: Event, props: CopyAsMarkdownTableProps) => Promise<void>
-
-/**
- * Function type for CopyRelationshipTableAsMarkdown
- */
-export type CopyRelationshipTableAsMarkdownFunction = (
-  evt: Event,
-  props: CopyRelationshipTableAsMarkdownProps
-) => Promise<void>
+export type {
+  ValueFormatter,
+  MarkdownValueFormatter,
+  CopyAsMarkdownTableProps,
+  TableData,
+  RelationshipCellModel,
+  RelationshipRowModel,
+  CopyRelationshipTableAsMarkdownProps
+} from '@hcengineering/converter'
 
 /**
  * Interface for a generic table converter to different formats.

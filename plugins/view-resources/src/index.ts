@@ -87,6 +87,7 @@ import ArrayFilter from './components/filter/ArrayFilter.svelte'
 import DateFilter from './components/filter/DateFilter.svelte'
 import DateFilterPresenter from './components/filter/DateFilterPresenter.svelte'
 import FilterBar from './components/filter/FilterBar.svelte'
+import FilterSummary from './components/filter/FilterSummary.svelte'
 import FilterTypePopup from './components/filter/FilterTypePopup.svelte'
 import ObjectFilter from './components/filter/ObjectFilter.svelte'
 import PersonIdFilter from './components/filter/PersonIdFilter.svelte'
@@ -277,6 +278,7 @@ function PositionElementAlignment (e?: Event): PopupAlignment | undefined {
 export default async (): Promise<Resources> => ({
   actionImpl,
   component: {
+    FilterSummary,
     AddRelationPopup,
     ArrayFilter,
     ArrayEditor,
@@ -403,3 +405,5 @@ export default async (): Promise<Resources> => ({
     GetLink: getLink
   }
 })
+
+export * from './tableSource'

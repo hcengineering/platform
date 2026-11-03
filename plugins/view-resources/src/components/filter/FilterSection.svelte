@@ -1,4 +1,5 @@
 <!--
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -33,6 +34,8 @@
 
   export let filter: Filter
   export let space: Ref<Space> | undefined
+  /** Show the filter as a summary: no mode or value pickers and no remove button. */
+  export let readonly = false
 
   let currentFilter = filter.nested ? filter.nested : filter
   $: currentFilter = filter.nested ? filter.nested : filter
@@ -117,8 +120,10 @@
     <span><Label label={filter.key.label} /></span>
   </button>
   <button
-    class="filter-button hoverable lower"
+    class="filter-button lower"
+    class:hoverable={!readonly}
     data-id="btnCondition"
+    disabled={readonly}
     on:click={(e) => {
       clickHandler(e, false)
     }}
@@ -130,11 +135,13 @@
     {/await}
   </button>
   {#if filter.nested}
-    <button class="filter-button hoverable">
+    <button class="filter-button" class:hoverable={!readonly} disabled={readonly}>
       <span><Label label={filter.nested.key.label} /></span>
     </button>
     <button
-      class="filter-button hoverable lower"
+      class="filter-button lower"
+      class:hoverable={!readonly}
+      disabled={readonly}
       on:click={(e) => {
         clickHandler(e, true)
       }}
@@ -151,7 +158,9 @@
   {#await modeValuePromise then mode}
     {#if !(mode?.disableValueSelector ?? false)}
       <button
-        class="filter-button hoverable"
+        class="filter-button"
+        class:hoverable={!readonly}
+        disabled={readonly}
         on:click={(e) => {
           showPopup(
             currentFilter.key.component,
@@ -176,15 +185,17 @@
       </button>
     {/if}
   {/await}
-  <div class="divider" />
-  <button
-    class="filter-button square hoverable"
-    on:click={() => {
-      dispatch('remove')
-    }}
-  >
-    <div class="btn-icon"><Icon icon={IconClose} size={'small'} /></div>
-  </button>
+  {#if !readonly}
+    <div class="divider" />
+    <button
+      class="filter-button square hoverable"
+      on:click={() => {
+        dispatch('remove')
+      }}
+    >
+      <div class="btn-icon"><Icon icon={IconClose} size={'small'} /></div>
+    </button>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -208,6 +219,9 @@
   }
 
   .filter-button {
+    &:disabled {
+      cursor: default;
+    }
     display: flex;
     align-items: center;
     flex-shrink: 0;

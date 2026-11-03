@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -15,7 +16,7 @@
 
 import type { Class, Doc, DocumentQuery, Hierarchy, Ref } from '@hcengineering/core'
 import type { Resource } from '@hcengineering/platform'
-import type { AttributeModel, BuildModelKey, Viewlet } from '@hcengineering/view'
+import type { AttributeModel, BuildModelKey, Viewlet, TableSource } from '@hcengineering/view'
 
 /**
  * Value formatter function for custom field extraction during markdown/export
@@ -48,11 +49,20 @@ export interface CopyAsMarkdownTableProps {
   cardClass: Ref<Class<Doc>>
   viewlet?: Viewlet
   config?: Array<string | BuildModelKey>
+  language?: string
   valueFormatter?: ValueFormatter
   query?: DocumentQuery<Doc>
+  source?: TableSource
+  /**
+   * Refuse to build when a configured column no longer exists. Refreshable tables need it to keep
+   * their columns stable; exports and plain copies keep the previous lenient behaviour.
+   */
+  strictColumns?: boolean
 }
 
 export interface TableData {
+  config?: Array<string | BuildModelKey>
+  columnIds?: string[]
   headers: string[]
   /** Cell text without markdown escaping and without links. `rows[i]` belongs to `docs[i]`. */
   rows: string[][]
@@ -82,23 +92,13 @@ export interface RelationshipRowModel {
  * Props for CopyRelationshipTableAsMarkdown function
  */
 export interface CopyRelationshipTableAsMarkdownProps {
+  viewlet?: Viewlet
   viewModel: RelationshipRowModel[]
   model: AttributeModel[]
   objects: Doc[]
   cardClass: Ref<Class<Doc>>
+  language?: string
   valueFormatter?: ValueFormatter
   query?: DocumentQuery<Doc>
+  source?: TableSource
 }
-
-/**
- * Function type for CopyAsMarkdownTable (used in action context)
- */
-export type CopyAsMarkdownTableFunction = (evt: Event, props: CopyAsMarkdownTableProps) => Promise<void>
-
-/**
- * Function type for CopyRelationshipTableAsMarkdown
- */
-export type CopyRelationshipTableAsMarkdownFunction = (
-  evt: Event,
-  props: CopyRelationshipTableAsMarkdownProps
-) => Promise<void>

@@ -17,15 +17,9 @@
 import core, { type Class, type Client, type Doc, type Hierarchy, type Ref, type PersonId } from '@hcengineering/core'
 import { type MarkupNode, MarkupNodeType } from '@hcengineering/text'
 import { markdownToMarkup, markupToMarkdown } from '@hcengineering/text-markdown'
-import { getCurrentLanguage } from '@hcengineering/theme'
-import type {
-  AttributeModel,
-  BuildMarkdownTableMetadata,
-  TableMetadata,
-  Viewlet,
-  BuildModelKey
-} from '@hcengineering/view'
-import viewPlugin from '@hcengineering/view'
+import { tableLanguage } from '../data/language'
+import type { AttributeModel, BuildMarkdownTableMetadata, Viewlet, BuildModelKey } from '@hcengineering/view'
+import viewPlugin, { TableSourceError, tableColumnIds } from '@hcengineering/view'
 import { buildConfigLookup, buildModel, getAttributeValue, buildConfigAssociation } from '@hcengineering/view-resources'
 import type { CopyAsMarkdownTableProps, CopyRelationshipTableAsMarkdownProps, TableData } from '../types'
 import { formatValue, type ElementFormatter } from '../formatter'
@@ -192,7 +186,7 @@ function collectRelationshipDocsForRefPreload (
   return Array.from(byId.values())
 }
 
-async function buildRelationshipTablePropsFromMetadata (
+export async function buildRelationshipTablePropsFromMetadata (
   docs: Doc[],
   metadata: BuildMarkdownTableMetadata,
   client: Client
@@ -214,12 +208,17 @@ async function buildRelationshipTablePropsFromMetadata (
     model = await buildTableModel(client, hierarchy, cardClass, undefined)
   }
 
+  if (model.some((attr) => attr.props?.error !== undefined)) {
+    throw new TableSourceError('column')
+  }
+
   const viewModel = await rebuildRelationshipTableViewModel(docs, model, cardClass, hierarchy, client)
   return {
     viewModel,
     model,
     objects: docs,
     cardClass,
+    language: metadata.language,
     query: metadata.query
   }
 }
@@ -231,7 +230,7 @@ async function buildRelationshipTableFromMetadata (
 ): Promise<string> {
   const hierarchy = client.getHierarchy()
   const props = await buildRelationshipTablePropsFromMetadata(docs, metadata, client)
-  const language = getCurrentLanguage()
+  const language = tableLanguage(metadata.language)
   return await buildRelationshipTableMarkdown(props, hierarchy, language, client)
 }
 
@@ -244,8 +243,7 @@ export async function buildMarkdownTableFromMetadata (
   metadata: BuildMarkdownTableMetadata,
   client: Client
 ): Promise<string> {
-  const tableMetadata = metadata as TableMetadata
-  if (isRelationshipTable(tableMetadata)) {
+  if (isRelationshipTable(metadata)) {
     return await buildRelationshipTableFromMetadata(docs, metadata, client)
   }
 
@@ -256,6 +254,7 @@ export async function buildMarkdownTableFromMetadata (
 
   const props: CopyAsMarkdownTableProps = {
     cardClass: metadata.cardClass as Ref<Class<Doc>>,
+    language: metadata.language,
     viewlet,
     config: metadata.config,
     query: metadata.query
@@ -282,7 +281,7 @@ export async function buildMarkdownTableFromDocs (
  * Escaping and object links live here rather than in the cell loop: other renderers (csv, json)
  * need the plain text, and duplicating the loop is how the two would drift apart.
  */
-async function renderMarkdownTable (data: TableData, hierarchy: Hierarchy): Promise<string> {
+export async function renderMarkdownTable (data: TableData, hierarchy: Hierarchy): Promise<string> {
   if (data.headers.length === 0) {
     return ''
   }
@@ -301,7 +300,7 @@ async function renderMarkdownTable (data: TableData, hierarchy: Hierarchy): Prom
     rendered.push(row)
   }
 
-  let markdown = '| ' + data.headers.join(' | ') + ' |\n'
+  let markdown = '| ' + data.headers.map(escapeMarkdownTableCellContent).join(' | ') + ' |\n'
   markdown += '| ' + data.headers.map(() => '---').join(' | ') + ' |\n'
   for (const row of rendered) {
     markdown += '| ' + row.join(' | ') + ' |\n'
@@ -317,9 +316,6 @@ export async function buildTableData (
   elementFormatter?: ElementFormatter
 ): Promise<TableData> {
   const empty: TableData = { headers: [], rows: [], docs: [], linkColumns: [] }
-  if (docs.length === 0) {
-    return empty
-  }
 
   const hierarchy = client.getHierarchy()
   const cardClass = hierarchy.getClass(props.cardClass)
@@ -336,26 +332,34 @@ export async function buildTableData (
   )
 
   let displayableModel: AttributeModel[]
+  // The config entries the columns were built from, kept as given (with presenters, props, labels)
+  // so a refresh rebuilds exactly the same columns. Undefined when columns come from the viewlet.
+  let sourceKeys: Array<string | BuildModelKey> | undefined
   if (actualConfig !== undefined && actualConfig.length > 0) {
     const lookup =
       viewlet !== undefined
         ? buildConfigLookup(hierarchy, props.cardClass, actualConfig, viewlet.options?.lookup)
         : undefined
     const hiddenKeys = viewlet?.configOptions?.hiddenKeys ?? []
-    const model = await buildModel({
-      client,
-      _class: props.cardClass,
-      keys: actualConfig.filter((key: string | BuildModelKey) => {
-        if (typeof key === 'string') {
-          return !hiddenKeys.includes(key)
-        }
-        return !hiddenKeys.includes(key.key) && key.displayProps?.grow !== true
-      }),
-      lookup
+    const keys = actualConfig.filter((key: string | BuildModelKey) => {
+      if (typeof key === 'string') {
+        return !hiddenKeys.includes(key)
+      }
+      return !hiddenKeys.includes(key.key) && key.displayProps?.grow !== true
     })
-    displayableModel = model.filter((attr) => attr.displayProps?.grow !== true)
+    const model = await buildModel({ client, _class: props.cardClass, keys, lookup })
+    // buildModel returns one column per key, in order (missing ones become error columns).
+    const displayable = model.flatMap((attr, index) =>
+      attr.displayProps?.grow === true ? [] : [{ attr, key: keys[index] }]
+    )
+    displayableModel = displayable.map(({ attr }) => attr)
+    if (model.length === keys.length) sourceKeys = displayable.map(({ key }) => key)
   } else {
     displayableModel = await buildTableModel(client, hierarchy, props.cardClass, viewlet)
+  }
+
+  if (props.strictColumns === true && displayableModel.some((attr) => attr.props?.error !== undefined)) {
+    throw new TableSourceError('column')
   }
 
   if (displayableModel.length === 0) {
@@ -367,7 +371,7 @@ export async function buildTableData (
   // Preload associations for $associations keys
   await preloadAssociations(docs, displayableModel, client)
 
-  const language = getCurrentLanguage()
+  const language = tableLanguage(props.language)
   const userCache = new Map<PersonId, string>()
   const firstDocClass = docs.length > 0 ? docs[0]._class : props.cardClass
   const headers = await generateHeaders(displayableModel, firstDocClass, hierarchy, language)
@@ -387,7 +391,7 @@ export async function buildTableData (
         isFirstColumn,
         userCache,
         props.valueFormatter,
-        elementFormatter
+        elementFormatter ?? (attr.key === '' ? async (_doc, title) => title : undefined)
       )
       row.push(value == null ? '' : String(value))
     }
@@ -398,7 +402,16 @@ export async function buildTableData (
   // document, other formats keep the plain title.
   const linkColumns = displayableModel.length > 0 && displayableModel[0].key === '' ? [0] : []
 
-  return { headers, rows, docs: [...docs], linkColumns }
+  const config =
+    sourceKeys ??
+    displayableModel.map((attr) => ({
+      key: attr.key === '' && String(attr.label).startsWith('custom') ? String(attr.label) : attr.key,
+      label: attr.label,
+      props: attr.props,
+      displayProps: attr.displayProps,
+      sortingKey: attr.sortingKey
+    }))
+  return { headers, rows, docs: [...docs], linkColumns, config, columnIds: tableColumnIds(config) }
 }
 
 /**
@@ -410,7 +423,7 @@ export async function buildRelationshipTableMarkdown (
   language: string | undefined,
   client: Client
 ): Promise<string> {
-  if (props.viewModel.length === 0 || props.model.length === 0) {
+  if (props.model.length === 0) {
     return ''
   }
 

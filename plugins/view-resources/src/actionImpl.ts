@@ -1,3 +1,18 @@
+//
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+import { escapeCommentJson } from './tableSource'
 import contact from '@hcengineering/contact'
 import core, {
   type Blob,
@@ -36,7 +51,7 @@ import {
   showPanel,
   showPopup
 } from '@hcengineering/ui'
-import { TABLE_METADATA_MARKER } from '@hcengineering/view'
+import { TABLE_METADATA_HTML_ATTRIBUTE, TABLE_METADATA_MARKER, TABLE_METADATA_MIME_TYPE } from '@hcengineering/view'
 import { get } from 'svelte/store'
 import MoveView from './components/Move.svelte'
 import view from './plugin'
@@ -51,8 +66,7 @@ import {
 } from './selection'
 import { deleteObjects, getObjectId, getObjectLinkFragment, restrictionStore } from './utils'
 import workbenchPlugin from '@hcengineering/workbench'
-import converter from '@hcengineering/converter'
-import { viewletContextStore } from './viewletContextStore'
+import converter, { type CopyAsMarkdownTableProps } from '@hcengineering/converter'
 
 /**
  * Action to be used for copying text to clipboard.
@@ -126,17 +140,70 @@ export async function copyText (text: any, contentType: string = 'text/plain'): 
  * @param metadata - Optional metadata object containing table information (query, config, document IDs, etc.)
  */
 export async function copyMarkdown (markdown: string, metadata?: Record<string, any>): Promise<void> {
-  // Browsers reject text/markdown and custom MIME types in ClipboardItem (NotAllowedError),
-  // so metadata is embedded as an HTML comment and everything is copied as text/plain
+  if (metadata !== undefined && copyWithMetadata(markdown, metadata)) return
+  if (metadata !== undefined && (await copyWithHtmlMetadata(markdown, metadata))) return
+  // Last resort for browsers without the async clipboard API: the metadata travels as an HTML
+  // comment in the text itself.
   let markdownToCopy = markdown
   if (metadata !== undefined) {
     try {
-      markdownToCopy = markdown + '\n' + `${TABLE_METADATA_MARKER}${JSON.stringify(metadata)} -->`
+      markdownToCopy = markdown + '\n' + `${TABLE_METADATA_MARKER}${escapeCommentJson(JSON.stringify(metadata))} -->`
     } catch (e) {
       console.error('Failed to embed metadata in markdown:', e)
     }
   }
   await copyText(markdownToCopy, 'text/plain')
+}
+
+function escapeHtml (text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
+/**
+ * When the copy event is refused (the click no longer counts after a slow load, or Safari), write
+ * clean Markdown as text/plain and keep the metadata in an attribute of the text/html flavour, so
+ * it never shows up as text in other apps. Browsers reject custom types in ClipboardItem.
+ */
+async function copyWithHtmlMetadata (markdown: string, metadata: Record<string, any>): Promise<boolean> {
+  if (typeof ClipboardItem === 'undefined' || typeof navigator.clipboard?.write !== 'function') return false
+  try {
+    const html = `<pre ${TABLE_METADATA_HTML_ATTRIBUTE}="${escapeHtml(JSON.stringify(metadata))}">${escapeHtml(markdown)}</pre>`
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/plain': new Blob([markdown], { type: 'text/plain' }),
+        'text/html': new Blob([html], { type: 'text/html' })
+      })
+    ])
+    return true
+  } catch (e) {
+    console.warn('Failed to copy the table with metadata in text/html:', e)
+    return false
+  }
+}
+
+/**
+ * Put clean Markdown in text/plain and the metadata in its own clipboard type, so pasting into
+ * other apps does not show a JSON comment. Returns false when the browser refuses the copy.
+ */
+function copyWithMetadata (markdown: string, metadata: Record<string, any>): boolean {
+  if (typeof document === 'undefined' || typeof document.execCommand !== 'function') return false
+  let written = false
+  const listener = (event: ClipboardEvent): void => {
+    if (event.clipboardData === null) return
+    event.clipboardData.setData('text/plain', markdown)
+    event.clipboardData.setData(TABLE_METADATA_MIME_TYPE, JSON.stringify(metadata))
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    written = true
+  }
+  document.addEventListener('copy', listener, true)
+  try {
+    return document.execCommand('copy') && written
+  } catch (e) {
+    return false
+  } finally {
+    document.removeEventListener('copy', listener, true)
+  }
 }
 
 function Delete (
@@ -680,36 +747,13 @@ async function CopyDocumentMarkdown (
 }
 
 /**
- * CopyAsMarkdownTable action implementation
- * Reads viewlet config from store if not provided in props
+ * CopyAsMarkdownTable action implementation.
+ * The converter dialog resolves the viewlet context and the table source in one place.
  * @public
  */
-async function CopyAsMarkdownTableAction (
-  doc: Doc | Doc[],
-  evt: Event,
-  props: {
-    cardClass: Ref<Class<Doc>>
-    viewlet?: any
-    config?: Array<string | any>
-    query?: DocumentQuery<Doc>
-    viewOptions?: any
-  }
-): Promise<void> {
-  // Get viewlet context from store if not provided in props
-  const $viewletContextStore = get(viewletContextStore)
-  const viewletContext = $viewletContextStore.getLastContext()
-
-  // Merge store context with props (props take precedence)
-  const mergedProps = {
-    cardClass: viewletContext?._class ?? props.cardClass,
-    viewlet: props.viewlet ?? viewletContext?.viewlet,
-    config: props.config ?? viewletContext?.config,
-    query: props.query ?? viewletContext?.query,
-    viewOptions: props.viewOptions ?? viewletContext?.viewOptions
-  }
-
+async function CopyAsMarkdownTableAction (doc: Doc | Doc[], evt: Event, props: CopyAsMarkdownTableProps): Promise<void> {
   const copyFn = await getResource(converter.actionImpl.CopyAsMarkdownTable)
-  await copyFn(doc, evt, mergedProps)
+  await copyFn(doc, evt, props)
 }
 
 /**

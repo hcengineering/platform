@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -13,7 +14,8 @@
 // limitations under the License.
 //
 
-import { buildMarkdownTableFromDocs, copyAsMarkdownTable } from '../markdown'
+import { buildMarkdownTableFromDocs, writeTableToClipboard } from '../markdown'
+import { captureTableSnapshot } from '../trackedTable'
 import { isIntlString } from '../formatter'
 import type { Doc, Class, Ref } from '@hcengineering/core'
 import type { CopyAsMarkdownTableProps } from '../types'
@@ -38,6 +40,8 @@ jest.mock('@hcengineering/platform', () => {
 })
 
 jest.mock('@hcengineering/presentation', () => ({
+  __esModule: true,
+  default: { metadata: { FrontUrl: 'FrontUrl', WorkspaceUuid: 'WorkspaceUuid' } },
   getClient: jest.fn()
 }))
 
@@ -75,7 +79,11 @@ jest.mock('@hcengineering/view', () => {
     class: { Viewlet: 'view:class:Viewlet', ViewletPreference: 'view:class:ViewletPreference' },
     viewlet: { Table: 'view:viewlet:Table' }
   }
-  return { __esModule: true, default: viewMock }
+  return {
+    ...jest.requireActual('../../../view/src/table'),
+    __esModule: true,
+    default: { ...viewMock, component: { EditDoc: 'view:component:EditDoc' } }
+  }
 })
 
 const mockGetObjectLinkFragment = getObjectLinkFragment as jest.Mock
@@ -128,13 +136,13 @@ describe('converter-resources', () => {
       ])
     })
 
-    it('returns empty string for empty docs', async () => {
+    it('retains headers for empty docs', async () => {
       const result = await buildMarkdownTableFromDocs(
         [],
         { cardClass: 'card:class:Card' as Ref<Class<Doc>> },
         mockClient
       )
-      expect(result).toBe('')
+      expect(result).toContain('---')
     })
 
     it('builds markdown table from docs with viewlet config', async () => {
@@ -166,7 +174,7 @@ describe('converter-resources', () => {
     })
   })
 
-  describe('copyAsMarkdownTable', () => {
+  describe('copying a table', () => {
     let mockClient: any
     let mockHierarchy: any
     let mockDoc: Doc
@@ -203,20 +211,32 @@ describe('converter-resources', () => {
       ])
     })
 
-    it('does nothing when docs is empty', async () => {
-      const evt: Event = {} as any
+    it('writes the table and notifies', async () => {
       const props: CopyAsMarkdownTableProps = { cardClass: 'card:class:Card' as Ref<Class<Doc>> }
-      await copyAsMarkdownTable([], evt, props)
-      expect(copyMarkdown).not.toHaveBeenCalled()
-    })
-
-    it('calls copyMarkdown and addNotification on success', async () => {
-      const evt: Event = {} as any
-      const props: CopyAsMarkdownTableProps = { cardClass: 'card:class:Card' as Ref<Class<Doc>> }
-      await copyAsMarkdownTable([mockDoc], evt, props)
+      await writeTableToClipboard(await captureTableSnapshot([mockDoc], props, mockClient), 'tracex')
       expect(copyMarkdown).toHaveBeenCalled()
       const { addNotification } = await import('@hcengineering/ui')
       expect(addNotification).toHaveBeenCalled()
+    })
+
+    it('copies a TraceX table with its source and without a value snapshot', async () => {
+      const props: CopyAsMarkdownTableProps = { cardClass: 'card:class:Card' as Ref<Class<Doc>> }
+      await writeTableToClipboard(await captureTableSnapshot([mockDoc], props, mockClient), 'tracex')
+      expect(copyMarkdown).toHaveBeenCalledWith(
+        expect.stringContaining('Test Card'),
+        expect.objectContaining({
+          version: '2.0',
+          source: { kind: 'table', mode: 'fixed' },
+          documentIds: [mockDoc._id]
+        })
+      )
+      expect((copyMarkdown as jest.Mock).mock.calls[0][1]).not.toHaveProperty('snapshot')
+    })
+
+    it('copies plain markdown without metadata', async () => {
+      const resolved = { markdown: '| A |\n| --- |\n', snapshot: {} as any, metadata: {} as any }
+      await writeTableToClipboard(resolved, 'markdown')
+      expect(copyMarkdown).toHaveBeenCalledWith(resolved.markdown, undefined)
     })
   })
 })

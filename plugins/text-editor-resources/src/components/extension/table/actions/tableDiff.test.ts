@@ -13,6 +13,14 @@
 //
 
 import { buildTableDiff } from './tableDiff'
+import { MarkupNodeType } from '@hcengineering/text'
+import { markdownToMarkup } from '@hcengineering/text-markdown'
+import { tableSnapshotFromMarkup, type TableSnapshot } from '@hcengineering/view'
+
+jest.mock('@hcengineering/view', () => ({
+  __esModule: true,
+  ...jest.requireActual('../../../../../../view/src/table')
+}))
 
 const oldTable = '| Name | State |\n| --- | --- |\n| Alpha | Open |\n| Beta | Closed |\n'
 
@@ -191,5 +199,74 @@ describe('buildTableDiff', () => {
 
   it('leaves non-table input to the existing viewer', () => {
     expect(buildTableDiff('plain text', oldTable)).toBeUndefined()
+  })
+})
+
+describe('identified table diff', () => {
+  function snapshot (markdown: string, rowIds: string[], columnIds: string[]): TableSnapshot {
+    const table = markdownToMarkup(markdown).content?.find((node) => node.type === MarkupNodeType.table)
+    if (table === undefined) throw new Error('no table')
+    return tableSnapshotFromMarkup(table, rowIds, columnIds)
+  }
+  const before = snapshot(oldTable, ['a', 'b'], ['name', 'state'])
+
+  it('matches a row even when every cell changes', () => {
+    const after = snapshot(
+      '| Name | State |\n| --- | --- |\n| Renamed | Done |\n| Beta | Closed |\n',
+      ['a', 'b'],
+      ['name', 'state']
+    )
+    const diff = buildTableDiff(before, after)
+    expect(diff?.rows).toHaveLength(2)
+    expect(diff?.rows[0]).toMatchObject({ oldIndex: 0, newIndex: 0 })
+  })
+
+  it('does not equate a removed and added column with the same label', () => {
+    const after = { ...before, columnIds: ['name', 'owner'] }
+    const diff = buildTableDiff(before, after)
+    expect(diff?.columns.map((column) => [column.oldIndex, column.newIndex])).toEqual([
+      [0, 0],
+      [undefined, 1],
+      [1, undefined]
+    ])
+  })
+
+  it('keeps identical rows distinct after insertion and reordering', () => {
+    const old = snapshot('| Name |\n| --- |\n| Same |\n| Same |\n', ['a', 'b'], ['name'])
+    const fresh = { ...old, rowIds: ['b', 'a'] }
+    expect(buildTableDiff(old, fresh)?.rows.map((row) => row.oldIndex)).toEqual([1, 0])
+  })
+
+  it('detects formatting changes without changing row identity', () => {
+    const after = snapshot(oldTable.replace('Alpha', '**Alpha**'), ['a', 'b'], ['name', 'state'])
+    const cell = buildTableDiff(before, after)?.rows[0].cells[0]
+    expect(cell).toMatchObject({ oldValue: 'Alpha', newValue: 'Alpha' })
+    expect(cell?.oldMarkup).toBeDefined()
+    expect(JSON.stringify(cell?.newMarkup)).toContain('bold')
+  })
+
+  it('ignores Markdown escaping and whitespace that do not change the content', () => {
+    const escaped = snapshot('| Name | State |\n| --- | --- |\n| A \\| B &amp; C | Open |\n', ['a'], ['name', 'state'])
+    const plain = snapshot('| Name | State |\n| --- | --- |\n|  A \\| B & C  | Open |\n', ['a'], ['name', 'state'])
+    const diff = buildTableDiff(escaped, plain)
+    expect(diff?.rows[0].cells.every((cell) => cell.oldValue === cell.newValue && cell.oldMarkup === undefined)).toBe(
+      true
+    )
+  })
+
+  it('reports removal of every row', () => {
+    const after = snapshot('| Name | State |\n| --- | --- |\n', [], ['name', 'state'])
+    expect(buildTableDiff(before, after)?.rows.every((row) => row.newIndex === undefined)).toBe(true)
+  })
+
+  it('compares identified relationship rows through merged cells', () => {
+    const markdown =
+      '<table><tr><th>Name</th><th>State</th></tr><tr><td rowspan="2">Alpha</td><td>One</td></tr><tr><td>Two</td></tr></table>'
+    const old = snapshot(markdown, ['a-one', 'a-two'], ['name', 'state'])
+    const after = snapshot(markdown.replace('Alpha', 'Renamed'), ['a-one', 'a-two'], ['name', 'state'])
+    const diff = buildTableDiff(old, after)
+    expect(diff?.rows.map((row) => row.oldIndex)).toEqual([0, 1])
+    expect(diff?.rows[1].cells[0]).toMatchObject({ oldValue: 'Alpha', newValue: 'Renamed' })
+    expect(diff?.rows[1].cells[1]).toMatchObject({ oldValue: 'Two', newValue: 'Two' })
   })
 })

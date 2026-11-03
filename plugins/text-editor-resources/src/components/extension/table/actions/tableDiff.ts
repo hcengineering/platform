@@ -12,8 +12,17 @@
 // limitations under the License.
 //
 
-import { type MarkupNode, MarkupMarkType, MarkupNodeType } from '@hcengineering/text'
+import { type MarkupNode, MarkupNodeType } from '@hcengineering/text'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
+import {
+  tableCellHref,
+  tableCellRich,
+  tableCellText,
+  tableCellToMarkup,
+  tableCellValue,
+  type TableCellValue,
+  type TableSnapshot
+} from '@hcengineering/view'
 
 export interface TableDiffColumn {
   oldIndex?: number
@@ -22,17 +31,30 @@ export interface TableDiffColumn {
   newHeader: string
 }
 
+export interface TableDiffCell {
+  oldValue: string
+  newValue: string
+  oldHref?: string
+  newHref?: string
+  /** Set when formatting changed: documents to render with a markup diff. */
+  oldMarkup?: MarkupNode
+  newMarkup?: MarkupNode
+}
+
 export interface TableDiffRow {
   oldIndex?: number
   newIndex?: number
   moved: boolean
-  cells: Array<{ oldValue: string, newValue: string, oldHref?: string, newHref?: string }>
+  cells: TableDiffCell[]
 }
 
 export interface TableDiff {
   columns: TableDiffColumn[]
   rows: TableDiffRow[]
 }
+
+/** A Markdown table (legacy tables without identities) or a snapshot with identities. */
+export type TableDiffSide = string | TableSnapshot
 
 interface ParsedTable {
   headers: string[]
@@ -42,36 +64,30 @@ interface ParsedTable {
 interface TableCell {
   value: string
   href?: string
+  rich: boolean
+  /** Canonical content: text, links and meaningful formatting, independent of Markdown escaping. */
+  canonical: string
+  content: TableCellValue
 }
 
-function nodeText (node: MarkupNode): string {
-  if (node.type === MarkupNodeType.hard_break) return '\n'
-  if (node.text !== undefined) return node.text
-  return (node.content ?? []).map(nodeText).join('')
-}
-
-function cellLink (node: MarkupNode): string | undefined {
-  const links = new Set<string>()
-  let hasUnlinkedText = false
-  const visit = (current: MarkupNode): void => {
-    if (current.text !== undefined && current.text.trim().length > 0) {
-      const link = current.marks?.find(
-        (mark) => mark.type === MarkupMarkType.link && typeof mark.attrs?.href === 'string'
-      )
-      if (link?.attrs?.href !== undefined) links.add(String(link.attrs.href))
-      else hasUnlinkedText = true
-    }
-    for (const child of current.content ?? []) visit(child)
+function toCell (content: TableCellValue): TableCell {
+  return {
+    value: tableCellText(content),
+    href: tableCellHref(content),
+    rich: tableCellRich(content),
+    canonical: JSON.stringify(content),
+    content
   }
-  visit(node)
-  return !hasUnlinkedText && links.size === 1 ? [...links][0] : undefined
 }
 
-function parseTable (markdown: string): ParsedTable | undefined {
-  const content = markdownToMarkup(markdown).content ?? []
-  const table = content.find((node) => node.type === MarkupNodeType.table)
-  if (table === undefined) return undefined
+function cellDocument (content: TableCellValue): MarkupNode {
+  return { type: MarkupNodeType.doc, content: [tableCellToMarkup(content) as MarkupNode] }
+}
 
+/** Markdown tables are compared only without merged cells; snapshots address merged cells by grid. */
+function parseMarkdown (markdown: string): ParsedTable | undefined {
+  const table = (markdownToMarkup(markdown).content ?? []).find((node) => node.type === MarkupNodeType.table)
+  if (table === undefined) return undefined
   const rows: TableCell[][] = []
   for (const row of table.content ?? []) {
     if (row.type !== MarkupNodeType.table_row) return undefined
@@ -79,11 +95,10 @@ function parseTable (markdown: string): ParsedTable | undefined {
     for (const cell of row.content ?? []) {
       if (cell.type !== MarkupNodeType.table_cell && cell.type !== MarkupNodeType.table_header) return undefined
       if (Number(cell.attrs?.rowspan ?? 1) !== 1 || Number(cell.attrs?.colspan ?? 1) !== 1) return undefined
-      cells.push({ value: nodeText(cell), href: cellLink(cell) })
+      cells.push(toCell(tableCellValue(cell)))
     }
     rows.push(cells)
   }
-
   const headers = rows[0]
   if (headers === undefined || headers.length === 0 || rows.some((row) => row.length !== headers.length)) {
     return undefined
@@ -91,18 +106,46 @@ function parseTable (markdown: string): ParsedTable | undefined {
   return { headers: headers.map((cell) => cell.value), rows: rows.slice(1) }
 }
 
+function parseSnapshot (snapshot: TableSnapshot): ParsedTable | undefined {
+  const rows = snapshot.cells.map((row) => row.map(toCell))
+  const headers = rows[0]
+  if (headers === undefined || headers.length === 0) return undefined
+  return { headers: headers.map((cell) => cell.value), rows: rows.slice(1) }
+}
+
+function parseSide (side: TableDiffSide): ParsedTable | undefined {
+  return typeof side === 'string' ? parseMarkdown(side) : parseSnapshot(side)
+}
+
 function uniqueMatches (oldValues: string[], newValues: string[]): Map<number, number> {
   const matches = new Map<number, number>()
-  for (let oldIndex = 0; oldIndex < oldValues.length; oldIndex++) {
-    const value = oldValues[oldIndex]
-    if (oldValues.filter((item) => item === value).length !== 1) continue
-    const newIndex = newValues.indexOf(value)
-    if (newIndex >= 0 && newValues.lastIndexOf(value) === newIndex) matches.set(newIndex, oldIndex)
-  }
+  const oldCounts = countValues(oldValues)
+  const newCounts = countValues(newValues)
+  const oldIndices = new Map(oldValues.map((value, index) => [value, index]))
+  newValues.forEach((value, newIndex) => {
+    if (oldCounts.get(value) === 1 && newCounts.get(value) === 1) matches.set(newIndex, oldIndices.get(value)!)
+  })
   return matches
 }
 
-function matchColumns (oldTable: ParsedTable, newTable: ParsedTable): TableDiffColumn[] {
+function matchColumns (
+  oldTable: ParsedTable,
+  newTable: ParsedTable,
+  oldIds?: string[],
+  newIds?: string[]
+): TableDiffColumn[] {
+  if (oldIds !== undefined && newIds !== undefined) {
+    const matches = uniqueMatches(oldIds, newIds)
+    const columns: TableDiffColumn[] = newTable.headers.map((newHeader, newIndex) => {
+      const oldIndex = matches.get(newIndex)
+      return { oldIndex, newIndex, oldHeader: oldIndex === undefined ? '' : oldTable.headers[oldIndex], newHeader }
+    })
+    const used = new Set(matches.values())
+    oldTable.headers.forEach((oldHeader, oldIndex) => {
+      if (!used.has(oldIndex)) columns.push({ oldIndex, oldHeader, newHeader: '' })
+    })
+    return columns
+  }
   const matches = uniqueMatches(oldTable.headers, newTable.headers)
   const usedOld = new Set(matches.values())
 
@@ -168,33 +211,51 @@ function countValues (values: string[]): Map<string, number> {
 function movedRows (matches: Map<number, number>): Set<number> {
   const entries = [...matches.entries()].sort(([a], [b]) => a - b)
   const moved = new Set<number>()
-  // A row is marked as moved only if its relative order crosses another matched row.
-  for (let index = 0; index < entries.length; index++) {
-    if (
-      entries.some(
-        ([newIndex, oldIndex], other) =>
-          other !== index && (newIndex - entries[index][0]) * (oldIndex - entries[index][1]) < 0
-      )
-    ) {
-      moved.add(entries[index][0])
-    }
+  // A crossing exists when an earlier old index is greater, or a later old index is smaller.
+  let previousMax = -Infinity
+  for (const [newIndex, oldIndex] of entries) {
+    if (oldIndex < previousMax) moved.add(newIndex)
+    previousMax = Math.max(previousMax, oldIndex)
+  }
+  let nextMin = Infinity
+  for (const [newIndex, oldIndex] of [...entries].reverse()) {
+    if (oldIndex > nextMin) moved.add(newIndex)
+    nextMin = Math.min(nextMin, oldIndex)
   }
   return moved
 }
 
-/** Compare table structure before comparing text inside corresponding cells. */
-export function buildTableDiff (oldMarkdown: string, newMarkdown: string): TableDiff | undefined {
-  const oldTable = parseTable(oldMarkdown)
-  const newTable = parseTable(newMarkdown)
+/**
+ * Compare table structure before comparing cells: rows and columns are matched by identity when
+ * both sides are snapshots, and by content otherwise. Cells are compared by canonical content.
+ */
+export function buildTableDiff (oldSide: TableDiffSide, newSide: TableDiffSide): TableDiff | undefined {
+  const oldTable = parseSide(oldSide)
+  const newTable = parseSide(newSide)
   if (oldTable === undefined || newTable === undefined) return undefined
 
-  const columns = matchColumns(oldTable, newTable)
+  const oldSnapshot = typeof oldSide === 'string' ? undefined : oldSide
+  const newSnapshot = typeof newSide === 'string' ? undefined : newSide
+  const identities =
+    oldSnapshot !== undefined &&
+    newSnapshot !== undefined &&
+    oldSnapshot.rowIds.length === oldTable.rows.length &&
+    newSnapshot.rowIds.length === newTable.rows.length &&
+    oldSnapshot.columnIds.length === oldTable.headers.length &&
+    newSnapshot.columnIds.length === newTable.headers.length
+      ? { old: oldSnapshot, new: newSnapshot }
+      : undefined
+  const hasIdentities = identities !== undefined
+  const columns = matchColumns(oldTable, newTable, identities?.old.columnIds, identities?.new.columnIds)
   const oldValues = oldTable.rows.map((row) => rowValues(row, columns, true))
   const newValues = newTable.rows.map((row) => rowValues(row, columns, false))
-  const matches = uniqueMatches(
-    oldValues.map((values) => JSON.stringify(values)),
-    newValues.map((values) => JSON.stringify(values))
-  )
+  const matches =
+    identities !== undefined
+      ? uniqueMatches(identities.old.rowIds, identities.new.rowIds)
+      : uniqueMatches(
+          oldValues.map((values) => JSON.stringify(values)),
+          newValues.map((values) => JSON.stringify(values))
+        )
   const usedOld = new Set(matches.values())
   const identityColumn = columns.find((column) => column.oldIndex === 0 && column.newIndex !== undefined)
   const oldIdentityValues = oldTable.rows.map((row) => row[0]?.value ?? '')
@@ -232,7 +293,7 @@ export function buildTableDiff (oldMarkdown: string, newMarkdown: string): Table
 
   // Pair edited rows only when their original first column identifies the same unique row.
   for (let newIndex = 0; newIndex < newValues.length; newIndex++) {
-    if (matches.has(newIndex)) continue
+    if (hasIdentities || matches.has(newIndex)) continue
     const candidates = oldValues
       .map((values, oldIndex) => ({
         oldIndex,
@@ -264,12 +325,22 @@ export function buildTableDiff (oldMarkdown: string, newMarkdown: string): Table
       oldIndex,
       newIndex,
       moved: moved.has(newIndex),
-      cells: columns.map((column) => ({
-        oldValue: oldRow === undefined || column.oldIndex === undefined ? '' : oldRow[column.oldIndex].value,
-        newValue: column.newIndex === undefined ? '' : row[column.newIndex].value,
-        oldHref: oldRow === undefined || column.oldIndex === undefined ? undefined : oldRow[column.oldIndex].href,
-        newHref: column.newIndex === undefined ? undefined : row[column.newIndex].href
-      }))
+      cells: columns.map((column) => {
+        const oldCell = column.oldIndex === undefined ? undefined : oldRow?.[column.oldIndex]
+        const newCell = column.newIndex === undefined ? undefined : row[column.newIndex]
+        const richChange =
+          oldCell !== undefined &&
+          newCell !== undefined &&
+          oldCell.canonical !== newCell.canonical &&
+          (oldCell.rich || newCell.rich || (oldCell.value === newCell.value && oldCell.href === newCell.href))
+        return {
+          oldValue: oldCell?.value ?? '',
+          newValue: newCell?.value ?? '',
+          oldHref: oldCell?.href,
+          newHref: newCell?.href,
+          ...(richChange ? { oldMarkup: cellDocument(oldCell.content), newMarkup: cellDocument(newCell.content) } : {})
+        }
+      })
     }
   })
   oldTable.rows.forEach((row, oldIndex) => {

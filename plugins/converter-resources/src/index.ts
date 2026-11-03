@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -15,27 +16,19 @@
 
 import { type Resources } from '@hcengineering/platform'
 import {
-  copyAsMarkdownTableFromResource,
-  copyRelationshipTableAsMarkdown,
   buildMarkdownTableFromMetadata as buildMarkdownTableFromMetadataImpl,
   buildMarkdownTableFromDocs as buildMarkdownTableFromDocsImpl,
   buildTableData as buildTableDataImpl
 } from './markdown'
 import { copyAsMarkdownTableAction } from './actionImpl'
+import { resolveTableSnapshot } from './trackedTable'
 import CopyAsMarkdownButton from './components/CopyAsMarkdownButton.svelte'
 
 export * from './formatter'
 export * from './model'
 export * from './data'
 
-export {
-  copyAsMarkdownTable,
-  copyAsMarkdownTableFromResource,
-  copyRelationshipTableAsMarkdown,
-  buildMarkdownTableFromDocs,
-  buildMarkdownTableFromMetadata,
-  buildTableData
-} from './markdown'
+export { buildMarkdownTableFromDocs, buildMarkdownTableFromMetadata, buildTableData } from './markdown'
 
 export { isRelationshipTable, buildRelationshipTableMetadata } from './data'
 
@@ -46,10 +39,9 @@ export { type TableConverter, MarkdownTableConverter } from './types'
 
 export default async (): Promise<Resources> => ({
   function: {
-    CopyAsMarkdownTable: copyAsMarkdownTableFromResource,
-    CopyRelationshipAsMarkdown: copyRelationshipTableAsMarkdown,
     BuildMarkdownTableFromMetadata: buildMarkdownTableFromMetadataImpl,
     BuildMarkdownTableFromDocs: buildMarkdownTableFromDocsImpl,
+    ResolveTableSnapshot: resolveTableSnapshot,
     BuildTableData: buildTableDataImpl
   },
   actionImpl: {

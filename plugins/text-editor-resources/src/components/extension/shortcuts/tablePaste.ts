@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -16,8 +17,9 @@ import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { Extension } from '@tiptap/core'
 import { Fragment, Node } from '@tiptap/pm/model'
 import { Plugin } from '@tiptap/pm/state'
-import type { TableMetadata } from '@hcengineering/view'
-import { TABLE_METADATA_MIME_TYPE, TABLE_METADATA_TOKEN } from './tableMetadata'
+import { parseTableMetadata, type TableMetadata } from '@hcengineering/view'
+import { attachTableSnapshot } from '../table/snapshot'
+import { TABLE_METADATA_HTML_ATTRIBUTE, TABLE_METADATA_MIME_TYPE, TABLE_METADATA_TOKEN } from './tableMetadata'
 
 export const TableMetadataPasteExtension = Extension.create({
   name: 'tableMetadataPaste',
@@ -39,7 +41,8 @@ function extractMetadataFromHtmlComments (text: string): { metadata: TableMetada
   const match = text.match(commentRegex)
   if (match?.[1] !== undefined) {
     try {
-      const metadata = JSON.parse(match[1]) as TableMetadata
+      const metadata = parseTableMetadata(JSON.parse(match[1]))
+      if (metadata === undefined) return { metadata: null, cleanedText: text }
       // Remove the HTML comment from the text
       const cleanedText = text.replace(commentRegex, '').trim()
       return { metadata, cleanedText }
@@ -48,6 +51,21 @@ function extractMetadataFromHtmlComments (text: string): { metadata: TableMetada
     }
   }
   return { metadata: null, cleanedText: text }
+}
+
+/** Metadata kept in an attribute of the text/html flavour (when a custom type could not be written). */
+export function extractMetadataFromHtmlAttribute (html: string): TableMetadata | null {
+  if (!html.includes(TABLE_METADATA_HTML_ATTRIBUTE) || typeof DOMParser === 'undefined') return null
+  try {
+    const element = new DOMParser()
+      .parseFromString(html, 'text/html')
+      .querySelector(`[${TABLE_METADATA_HTML_ATTRIBUTE}]`)
+    const value = element?.getAttribute(TABLE_METADATA_HTML_ATTRIBUTE)
+    return value == null ? null : (parseTableMetadata(JSON.parse(value)) ?? null)
+  } catch (e) {
+    console.warn('Failed to parse metadata from the HTML clipboard flavour:', e)
+    return null
+  }
 }
 
 export function normalizeEscapedMarkdownLinks (markdown: string): string {
@@ -85,16 +103,21 @@ function TableMetadataPastePlugin (): Plugin {
         if (clipboardData.types.includes(metadataType)) {
           try {
             const metadataJsonStr = clipboardData.getData(metadataType)
-            metadata = JSON.parse(metadataJsonStr) as TableMetadata
+            metadata = parseTableMetadata(JSON.parse(metadataJsonStr)) ?? null
           } catch (e) {
             console.warn('Failed to parse metadata from MIME type:', e)
           }
         }
 
+        // 2. The text/html flavour, when the custom type could not be written
+        if (metadata === null) {
+          metadata = extractMetadataFromHtmlAttribute(clipboardData.getData('text/html') ?? '')
+        }
+
         // Track cleaned markdown text (with HTML comments removed)
         let cleanedMarkdown: string | null = null
 
-        // 2. Try HTML comments in markdown (fallback, works across browsers)
+        // 3. Try HTML comments in markdown (fallback, works across browsers)
         if (metadata === null) {
           const markdownText = clipboardData.getData('text/markdown')
           if (markdownText?.length > 0) {
@@ -106,7 +129,7 @@ function TableMetadataPastePlugin (): Plugin {
           }
         }
 
-        // 3. Try HTML comments in plain text (for old browsers that only provide text/plain)
+        // 4. Try HTML comments in plain text (for old browsers that only provide text/plain)
         if (metadata === null) {
           const plainText = clipboardData.getData('text/plain')
           if (plainText?.length > 0) {
@@ -150,7 +173,7 @@ function TableMetadataPastePlugin (): Plugin {
             return false
           }
 
-          markdown = normalizeEscapedMarkdownLinks(markdown)
+          if (metadata.version === '1.0') markdown = normalizeEscapedMarkdownLinks(markdown)
 
           // Check if we're in a code block (don't process tables there)
           const { $from } = view.state.selection
@@ -175,8 +198,6 @@ function TableMetadataPastePlugin (): Plugin {
           })
 
           if (hasTable) {
-            const metadataAttr = JSON.stringify(metadata)
-
             // Rebuild content with metadata in table nodes
             const rebuildNode = (node: Node): Node => {
               // Text nodes cannot be recreated, return as-is
@@ -185,9 +206,7 @@ function TableMetadataPastePlugin (): Plugin {
               }
 
               if (node.type.name === 'table') {
-                const newAttrs = { ...node.attrs, tableMetadata: metadataAttr }
-                const newContent = rebuildFragment(node.content)
-                return node.type.create(newAttrs, newContent, node.marks)
+                return attachTableSnapshot(node, metadata)
               }
 
               // For other nodes, rebuild content but keep original attributes and marks

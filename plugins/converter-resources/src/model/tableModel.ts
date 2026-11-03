@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -33,6 +34,9 @@ export function modelToConfig (model: AttributeModel[]): Array<string | BuildMod
         props: m.props,
         sortingKey: m.sortingKey
       }
+    }
+    if (m.key !== '' && m.props !== undefined && Object.keys(m.props).length > 0) {
+      return { key: m.key, label: m.label, props: m.props, displayProps: m.displayProps, sortingKey: m.sortingKey }
     }
     if (m.key !== '') {
       return m.key

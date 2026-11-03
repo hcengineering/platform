@@ -1,4 +1,5 @@
 <!--
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2025 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -34,6 +35,9 @@
   export let readonly = false
 
   const contextId = generateId()
+  // The query and options the table actually runs, after view options were applied.
+  let sourceQuery: DocumentQuery<Doc> | undefined
+  let sourceOptions: FindOptions<Doc> | undefined
   async function onSort (event: CustomEvent<{ key: string, order: SortingOrder }>): Promise<void> {
     const { key, order } = event.detail
     if (viewlet && viewOptions) {
@@ -52,6 +56,9 @@
         viewlet,
         config,
         query,
+        sourceQuery,
+        options: sourceOptions,
+        baseOptions: options,
         viewOptions,
         _class
       }
@@ -101,5 +108,9 @@
     viewOptionsConfig={viewOptionsConfig ?? viewlet?.viewOptions?.other}
     {readonly}
     on:sort={onSort}
+    on:source={(evt) => {
+      sourceQuery = evt.detail.query
+      sourceOptions = evt.detail.options
+    }}
   />
 </Scroller>

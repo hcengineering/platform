@@ -147,6 +147,8 @@
   ) {
     const p = await getResultQuery(hierarchy, query, viewOptionsConfig, viewOptions)
     resultQuery = mergeQueries(p, query)
+    // Lets "copy table" repeat exactly the rows shown, view options included.
+    dispatch('source', { query: resultQuery, options: { ...options, sort: getSort(sortKey), lookup, associations } })
     loading += q.query(
       _class,
       resultQuery,

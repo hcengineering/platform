@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2026 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -15,12 +16,18 @@
 
 import type { Doc } from '@hcengineering/core'
 import type { CopyAsMarkdownTableProps } from '@hcengineering/converter'
-import { copyAsMarkdownTable } from './markdown'
+import { openCopyTableDialog } from './copyTable'
 
 export async function copyAsMarkdownTableAction (
   doc: Doc | Doc[],
   evt: Event,
   props: CopyAsMarkdownTableProps
 ): Promise<void> {
-  await copyAsMarkdownTable(doc, evt, props)
+  openCopyTableDialog({
+    cardClass: props.cardClass,
+    query: props.query,
+    viewlet: props.viewlet,
+    config: props.config,
+    selected: Array.isArray(doc) ? doc : [doc]
+  })
 }

@@ -1,3 +1,17 @@
+//
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
 import core, {
   type AnyAttribute,
   type AttachedDoc,
@@ -57,10 +71,15 @@ export function updateFilter (filter: Filter): void {
  * performs at runtime. Lets stored filters (e.g. a card-relation eligibility filter) be
  * re-applied to a query without mounting the filter bar. Each filter's value is resolved via
  * its {@link FilterMode} `result` resource and merged into the base query.
+ * Strict callers reject stale filters instead of silently widening the resulting query.
  *
  * @public
  */
-export async function filtersToQuery (filters: Filter[], base: DocumentQuery<Doc> = {}): Promise<DocumentQuery<Doc>> {
+export async function filtersToQuery (
+  filters: Filter[],
+  base: DocumentQuery<Doc> = {},
+  strict: boolean = false
+): Promise<DocumentQuery<Doc>> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const newQuery: Record<string, any> = hierarchy.clone(base)
@@ -68,7 +87,10 @@ export async function filtersToQuery (filters: Filter[], base: DocumentQuery<Doc
   for (const filter of filters) {
     try {
       const mode = await client.findOne(view.class.FilterMode, { _id: filter.mode })
-      if (mode === undefined) continue
+      if (mode === undefined) {
+        if (strict) throw new Error(`Missing filter mode: ${filter.mode}`)
+        continue
+      }
       const result = await getResource(mode.result)
       const newValue = await result(filter, () => {})
 
@@ -82,6 +104,7 @@ export async function filtersToQuery (filters: Filter[], base: DocumentQuery<Doc
 
       newQuery[filterKey] = mergeFilterValue(newQuery[filterKey], newValue)
     } catch (e) {
+      if (strict) throw e
       console.error('Failed to apply filter', filter.key?.key, e)
     }
   }
