@@ -27,7 +27,6 @@ The catalog is a discovery guide, not a duplicate API reference. Refer to the li
 | [`SplitButton`](../src/components/SplitButton.svelte) | Separates a primary action from its secondary action menu. |
 | [`FilterButton`](../src/components/FilterButton.svelte) | Button specialized for enabling or configuring filters. |
 | [`StatusBarButton`](../src/components/StatusBarButton.svelte) | Compact action intended for a status bar. |
-| [`Like`](../src/components/Like.svelte) | Toggleable like or reaction action. |
 
 ## Form controls and text input
 
@@ -57,7 +56,6 @@ The catalog is a discovery guide, not a duplicate API reference. Refer to the li
 | [`ModernToggle`](../src/components/ModernToggle.svelte) | On/off switch for the modern visual language. |
 | [`ToggleWithLabel`](../src/components/ToggleWithLabel.svelte) | Toggle paired with a descriptive label. |
 | [`MiniToggle`](../src/components/MiniToggle.svelte) | Compact on/off switch for dense layouts. |
-| [`ToggleButton`](../src/components/ToggleButton.svelte) | Button that represents and changes a binary state. |
 | [`RadioButton`](../src/components/RadioButton.svelte) | Standard single-choice radio control. |
 | [`ModernRadioButton`](../src/components/ModernRadioButton.svelte) | Radio control for the modern visual language. |
 | [`RadioGroup`](../src/components/RadioGroup.svelte) | Coordinates a set of mutually exclusive radio options. |
@@ -76,10 +74,8 @@ The catalog is a discovery guide, not a duplicate API reference. Refer to the li
 | [`DropdownLabelsPopup`](../src/components/DropdownLabelsPopup.svelte) | Popup used to choose label values. |
 | [`DropdownLabelsIntl`](../src/components/DropdownLabelsIntl.svelte) | Label dropdown whose options use localized strings. |
 | [`DropdownLabelsPopupIntl`](../src/components/DropdownLabelsPopupIntl.svelte) | Localized label-selection popup. |
-| [`DropdownRecord`](../src/components/DropdownRecord.svelte) | Dropdown that selects a record-like item. |
 | [`SelectPopup`](../src/components/SelectPopup.svelte) | Generic popup for choosing one of a set of items. |
 | [`ColorPopup`](../src/components/ColorPopup.svelte) | Popup for choosing a color. |
-| [`PopupMenu`](../src/components/PopupMenu.svelte) | Menu rendered inside popup infrastructure. |
 | [`Menu`](../src/components/Menu.svelte) | General action or option menu. |
 | [`Submenu`](../src/components/Submenu.svelte) | Nested menu section opened from a parent menu item. |
 | [`NestedMenu`](../src/components/NestedMenu.svelte) | Menu supporting hierarchical options. |
@@ -102,7 +98,6 @@ The catalog is a discovery guide, not a duplicate API reference. Refer to the li
 | [`NavGroup`](../src/components/NavGroup.svelte) | Groups related navigation entries. |
 | [`Chevron`](../src/components/Chevron.svelte) | Directional disclosure indicator. |
 | [`AccordionItem`](../src/components/AccordionItem.svelte) | Expandable section in an accordion-style layout. |
-| [`Fold`](../src/components/Fold.svelte) | Collapsible content region. |
 | [`ExpandCollapse`](../src/components/ExpandCollapse.svelte) | Control for expanding and collapsing associated content. |
 | [`Expandable`](../src/components/Expandable.svelte) | Container that reveals or hides additional content. |
 | [`ShowMore`](../src/components/ShowMore.svelte) | Reveals content beyond an initially limited view. |
@@ -141,10 +136,8 @@ The catalog is a discovery guide, not a duplicate API reference. Refer to the li
 | [`PopupInstance`](../src/components/PopupInstance.svelte) | Runtime-rendered popup instance integrated with popup infrastructure. |
 | [`ModernPopup`](../src/components/ModernPopup.svelte) | Popup variant for the modern visual language. |
 | [`TooltipInstance`](../src/components/TooltipInstance.svelte) | Runtime-rendered tooltip content. |
-| [`Wizard`](../src/components/wizard/Wizard.svelte) | Coordinates a multi-step flow. |
 | [`ModernWizardDialog`](../src/components/wizard/ModernWizardDialog.svelte) | Dialog container for a modern multi-step flow. |
 | [`ModernWizardBar`](../src/components/wizard/ModernWizardBar.svelte) | Progress and navigation bar for a modern wizard. |
-| [`StepsDialog`](../src/components/StepsDialog.svelte) | Dialog that presents content as a sequence of steps. |
 
 ## Status, progress, and notifications
 
@@ -169,14 +162,11 @@ The catalog is a discovery guide, not a duplicate API reference. Refer to the li
 
 | Component | Purpose |
 | --- | --- |
-| [`DatePicker`](../src/components/calendar/DatePicker.svelte) | Calendar-based date selector. |
-| [`DateRangePicker`](../src/components/calendar/DateRangePicker.svelte) | Calendar-based date-range selector. |
 | [`DatePopup`](../src/components/calendar/DatePopup.svelte) | Popup for selecting a date. |
 | [`SimpleDatePopup`](../src/components/calendar/SimpleDatePopup.svelte) | Compact date-selection popup. |
 | [`RangeDatePopup`](../src/components/calendar/RangeDatePopup.svelte) | Popup for choosing a bounded date range. |
 | [`DateRangePopup`](../src/components/calendar/DateRangePopup.svelte) | Date-range popup with range-specific interactions. |
 | [`TimePopup`](../src/components/calendar/TimePopup.svelte) | Popup for choosing a time. |
-| [`SimpleTimePopup`](../src/components/calendar/SimpleTimePopup.svelte) | Compact time-selection popup. |
 | [`MonthCalendar`](../src/components/calendar/MonthCalendar.svelte) | Month-oriented calendar view. |
 | [`YearCalendar`](../src/components/calendar/YearCalendar.svelte) | Year-oriented calendar view. |
 | [`WeekCalendar`](../src/components/calendar/WeekCalendar.svelte) | Week-oriented calendar view. |
@@ -218,7 +208,6 @@ The catalog is a discovery guide, not a duplicate API reference. Refer to the li
 | [`Icon`](../src/components/Icon.svelte) | Resolves and renders a supplied icon component. |
 | [`WorkspaceAvatar`](../src/components/WorkspaceAvatar.svelte) | Displays an avatar for a workspace. |
 | [`TraceXLogo`](../src/components/TraceXLogo.svelte) | Displays the TraceX logo in supported variants. |
-| [`Link`](../src/components/Link.svelte) | Styled link integrated with UI navigation behavior. |
 | [`LinkWrapper`](../src/components/LinkWrapper.svelte) | Adds link behavior around supplied content. |
 
 ## Icons
@@ -243,9 +232,9 @@ Icons are Svelte components and use the `Icon` export prefix. Choose an icon by 
 | --- | --- | --- |
 | Trigger an action | `Button` | Use `ButtonIcon`, `CircleButton`, or `ActionIcon` for compact icon-only actions; use `ModernButton` when matching an existing modern surface. |
 | Enter one line of text | `EditBox` | Use `ModernEditbox` when matching an existing modern surface, or `SearchInput` for search semantics. |
-| Choose a value from a popup | `Dropdown` | Use `SelectPopup` when you already own the trigger, or a specialized label, record, color, or nested selector. |
+| Choose a value from a popup | `Dropdown` | Use `SelectPopup` when you already own the trigger, or a specialized label, color, or nested selector. |
 | Show transient contextual content | `Popup` | Use `TooltipInstance` for hints and `Modal` or `Dialog` for focused workflows. |
-| Present a focused workflow | `Dialog` | Use `Wizard` or `StepsDialog` when the workflow has explicit steps; use a modern variant only within a matching surface. |
+| Present a focused workflow | `Dialog` | Use `ModernWizardDialog` when the workflow has explicit steps and matches an existing modern surface. |
 | Display loading state | `Loading` | Use `Spinner` for a small indeterminate indicator, `Progress` for known progress, or `LoadingScreen` for a full area. |
 
 ## Maintaining this catalog

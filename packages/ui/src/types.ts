@@ -451,25 +451,6 @@ export interface TimelineState {
   viewBox: DOMRect
 }
 
-export interface WizardModel {
-  label: IntlString
-  component: AnyComponent | AnySvelteComponent
-  props?: any
-}
-export type WizardItemPosition = 'start' | 'middle' | 'end'
-export type WizardItemPositionState = 'current' | 'prev' | 'next'
-
-/**
- * @public
- */
-export interface DialogStep {
-  readonly name: IntlString
-  readonly description?: IntlString
-  readonly additionalInfo?: string
-  readonly component: AnyComponent | AnySvelteComponent
-  props?: Record<string, any>
-}
-
 /**
  * @public
  */
