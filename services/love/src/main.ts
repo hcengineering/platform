@@ -21,7 +21,6 @@ import {
 import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import { MeasureContext, newMetrics, systemAccountUuid } from '@hcengineering/core'
 import {
-  parseRoomName,
   ParticipantMetadata,
   queueEvents,
   QueueMeetingEvent,
@@ -52,42 +51,15 @@ import config from './config'
 import { LiveKitPollingService } from './polling'
 import { RecordingProcessor } from './recordings'
 import { WebhookProcessor } from './webhook'
+import { routeWebhookEvent } from './webhookEvents'
 import { WorkspaceClient } from './workspaceClient'
 import { GuestManager } from './guests'
 import { createToken, decodeMeetingToken, getRoomName, parseMetadata } from './utils'
-/**
- * Recursively converts all BigInt values in an object to strings.
- * This is needed because JSON.stringify cannot handle BigInt values.
- */
-function convertBigIntToString (obj: unknown): unknown {
-  if (obj === null || obj === undefined) {
-    return obj
-  }
-  if (typeof obj === 'bigint') {
-    return obj.toString()
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(convertBigIntToString)
-  }
-  if (typeof obj === 'object') {
-    const result: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(obj)) {
-      result[key] = convertBigIntToString(value)
-    }
-    return result
-  }
-  return obj
-}
+
+export { getWebhookRoomName } from './webhookEvents'
 
 function getAccountClient (token?: string): AccountClient {
   return getAccountClientRaw(config.AccountsURL, token)
-}
-
-export function getWebhookRoomName (event: WebhookEvent): string | undefined {
-  if (event.egressInfo != null && typeof event.egressInfo.roomName === 'string') return event.egressInfo.roomName
-  if (typeof (event as any).roomName === 'string') return (event as any).roomName
-  if (event.room != null && typeof event.room.name === 'string') return event.room.name
-  return undefined
 }
 
 export const main = async (): Promise<void> => {
@@ -213,34 +185,10 @@ export const main = async (): Promise<void> => {
   app.post('/webhook', async (req, res) => {
     try {
       const rawEvent: WebhookEvent = await decodeEvent(req)
-      // Convert all BigInt values to strings to prevent serialization errors throughout the handler
-      const event = convertBigIntToString(rawEvent) as typeof rawEvent
+      const routed = routeWebhookEvent(ctx, rawEvent, config.LiveKitProject)
+      if (routed === undefined) return
 
-      if (event.room?.metadata != null && event.room?.metadata !== '') {
-        try {
-          const metadata = JSON.parse(event.room.metadata) as RoomMetadata
-          if (metadata.projectKey != null && metadata.projectKey !== config.LiveKitProject) {
-            ctx.info('Ignoring event from different project', { eventProjectKey: metadata.projectKey })
-            return
-          }
-        } catch (err: any) {
-          ctx.error('Failed to parse room metadata', { error: err, room: JSON.stringify(event?.room, null, 2) })
-        }
-      }
-
-      const roomStr = getWebhookRoomName(event)
-      if (roomStr === undefined) {
-        console.warn('No roomName available in event', { event: event.event })
-        return
-      }
-
-      const roomName = parseRoomName(roomStr)
-      if (roomName === undefined) {
-        ctx.info('Skipping event: invalid room name format', { roomName: roomStr, event: event.event })
-
-        return
-      }
-
+      const { event, roomName } = routed
       await eventProducer.send(ctx, roomName.workspace, [queueEvents.webhook(roomName.meetingId, event)])
     } catch (e) {
       ctx.error('Failed to process webhook event', { error: e })
