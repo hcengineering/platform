@@ -27,8 +27,8 @@ import { type Filter } from '@hcengineering/view'
 import { filtersToQuery } from './filter'
 
 /**
- * A relation selected before its owning document exists — buffered by {@link RelationsCreateEditor}
- * and written out by {@link commitPendingRelations} once the document is created.
+ * A relation selected before its owning document exists, buffered by the caller and written out
+ * by {@link commitPendingRelations} once the document is created.
  *
  * @public
  */
