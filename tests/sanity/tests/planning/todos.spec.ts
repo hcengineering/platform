@@ -183,6 +183,9 @@ test.describe('Planning ToDo tests', () => {
       await issuesPage.fillNewIssueForm(newIssue)
       await issuesPage.clickButtonCreateIssue()
       await issuesPage.clickLinkSidebarAll()
+      await issuesPage.clickModelSelectorAll()
+      // Backlog group auto-folds when it has more than 20 issues, so filter the list down to the new one
+      await issuesPage.searchIssueByName(newIssue.title)
       await issuesPage.openIssueByName(newIssue.title)
       await issuesDetailsPage.editIssue({ assignee: 'Appleseed John', status: 'ToDo' })
 
