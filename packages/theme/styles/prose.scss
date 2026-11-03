@@ -73,7 +73,7 @@ table.proseTable {
     min-width: 1rem;
     height: 2rem;
     border: 1px solid var(--text-editor-table-border-color);
-    padding: .25rem .5rem;
+    padding: 0.375rem 0.625rem;
     vertical-align: top;
     box-sizing: border-box;
     position: relative;
@@ -432,10 +432,20 @@ table.proseTable {
 
 .proseBlockQuote {
   margin-inline: 1px 0;
-  padding-left: 1.5em;
-  padding-right: 1.5em;
+  padding: 0.75em 1.25em;
   position: relative;
-  border-left: 2px solid var(--text-editor-block-quote-color);
+  border-left: 3px solid var(--text-editor-block-quote-color);
+  border-radius: 0 0.25rem 0.25rem 0;
+  background-color: rgba(255, 255, 255, 0.05);
+
+  p {
+    font-style: italic;
+    color: var(--theme-content-color);
+  }
+}
+
+.theme-light .proseBlockQuote {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
 .proseCode {
@@ -454,8 +464,8 @@ table.proseTable {
   color: var(--theme-content-color);
   background-color: var(--theme-button-default);
   border: 1px solid var(--theme-button-border);
-  border-radius: .25rem;
-  padding: 0.25rem .5rem;
+  border-radius: .375rem;
+  padding: 0.75rem 1rem;
   user-select: text;
   cursor: auto;
 
@@ -466,6 +476,7 @@ table.proseTable {
     word-wrap: nowrap;
     scrollbar-width: auto;
     font-size: .8125rem;
+    line-height: 1.6;
     font-family: var(--mono-font);
   }
 }
@@ -477,6 +488,7 @@ pre.proseCodeBlock {
 pre.proseCodeBlock {
   button:not(.hovered) {
     opacity: 0;
+    transition: opacity 0.15s ease;
   }
 
   &:hover {
