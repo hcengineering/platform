@@ -795,10 +795,11 @@ describe('PostgresAccountDB', () => {
                     OR
                     (
                       (s.is_disabled = FALSE OR s.is_disabled IS NULL)
-                      AND s.mode = 'upgrading'
+AND s.mode = 'upgrading'
                     )
                   )
-               )
+                  OR s.mode IN ('pending-deletion', 'deleting')
+                )
                AND s.mode <> 'manual-creation'
                AND (s.processing_attempts IS NULL OR s.processing_attempts <= 3)
                AND (s.last_processing_time IS NULL OR s.last_processing_time < $5)
