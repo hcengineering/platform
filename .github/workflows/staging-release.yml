@@ -4,7 +4,8 @@ name: Create staging release
 # result as the next s0.x.x staging version and moves the `staging` channel to
 # it. Does NOT deploy anything — pushing the version tag only feeds the
 # existing build/test/docker pipeline in main.yml (triggered by tags matching
-# `s*`).
+# `s[0-9]*`; the moving `staging` tag deliberately does not trigger it, otherwise
+# the same version would be built and uploaded twice).
 
 on:
   workflow_dispatch:

@@ -221,15 +221,82 @@ describe('updateManager', () => {
     expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(2)
   })
 
-  it('resets the backoff once progress is received', () => {
+  it('keeps growing the backoff when a download fails after progress', async () => {
+    // A download that reaches 100% and then fails must not restart every 10s
+    available()
+    autoUpdater.emit('download-progress', { percent: 100 })
+    lastReject?.(new Error('network'))
+    await flush()
+    jest.advanceTimersByTime(10_000)
+    expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(1)
+
+    available()
+    autoUpdater.emit('download-progress', { percent: 100 })
+    lastReject?.(new Error('network'))
+    await flush()
+    jest.advanceTimersByTime(29_999)
+    expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(1)
+    jest.advanceTimersByTime(1)
+    expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(2)
+  })
+
+  it('resets the backoff after a successful download', () => {
     autoUpdater.emit('error', new Error('network'))
     jest.advanceTimersByTime(10_000)
     autoUpdater.emit('error', new Error('network'))
     jest.advanceTimersByTime(30_000)
     expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(2)
 
-    autoUpdater.emit('download-progress', { percent: 1 })
+    autoUpdater.emit('update-downloaded', {})
     autoUpdater.emit('error', new Error('network'))
+    jest.advanceTimersByTime(10_000)
+    expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(3)
+  })
+
+  const failDownload = async (code?: string): Promise<void> => {
+    available()
+    autoUpdater.emit('download-progress', { percent: 100 })
+    lastReject?.(Object.assign(new Error('failed'), { code }))
+    await flush()
+  }
+
+  it.each(['ERR_CHECKSUM_MISMATCH', 'ERR_UPDATER_INVALID_SIGNATURE'])(
+    'does not re-download a broken release right away (%s)',
+    async (code) => {
+      // The first occurrence may be accidental: regular backoff
+      await failDownload(code)
+      expect(mainWindow.setProgressBar).toHaveBeenLastCalledWith(-1)
+      jest.advanceTimersByTime(10_000)
+      expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(1)
+
+      // The same error again: the release is broken, wait an hour
+      await failDownload(code)
+      jest.advanceTimersByTime(60 * 60_000 - 1)
+      expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(1)
+      jest.advanceTimersByTime(1)
+      expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(2)
+    }
+  )
+
+  it('needs the same permanent error in a row to back off for an hour', async () => {
+    await failDownload('ERR_CHECKSUM_MISMATCH')
+    jest.advanceTimersByTime(10_000)
+    await failDownload() // transient error in between
+    jest.advanceTimersByTime(30_000)
+    await failDownload('ERR_CHECKSUM_MISMATCH')
+    jest.advanceTimersByTime(60_000)
+    expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(3)
+  })
+
+  it('resets the backoff when there is no update', () => {
+    autoUpdater.emit('error', new Error('offline'))
+    jest.advanceTimersByTime(10_000)
+    autoUpdater.emit('error', new Error('offline'))
+    jest.advanceTimersByTime(30_000)
+    expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(2)
+
+    autoUpdater.emit('update-not-available', {})
+    autoUpdater.emit('error', new Error('offline'))
     jest.advanceTimersByTime(10_000)
     expect(autoUpdater.checkForUpdates).toHaveBeenCalledTimes(3)
   })

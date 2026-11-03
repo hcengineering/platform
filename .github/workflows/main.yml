@@ -15,8 +15,11 @@ on:
   push:
     branches: [develop]
     tags:
-      - v*
-      - s*
+      # Only release tags (v0.7.x / s0.7.x). Moving tags such as `staging`
+      # point to the same commit as a release tag and would start a second,
+      # concurrent build of the same version.
+      - v[0-9]*
+      - s[0-9]*
   pull_request:
     branches: [develop, staging, staging-new, main]
 
@@ -819,7 +822,7 @@ jobs:
           TEAM_ID: ${{ secrets.TEAM_ID }}
         run: |
           cd qms-desktop-package
-          if [[ "${GITHUB_REF_NAME}" == s* ]]; then
+          if [[ "${GITHUB_REF_NAME}" =~ ^s[0-9] ]]; then
             variant=staging
             dist_command=dist-staging
             signed_command=dist-staging-signed
@@ -849,17 +852,9 @@ jobs:
           aws configure set default.s3.max_concurrent_requests 4
           aws configure set default.s3.multipart_threshold 128MB
           aws configure set default.s3.multipart_chunksize 64MB
-          # sync is idempotent: already uploaded files are skipped on retry
-          for i in 1 2 3; do
-            if aws s3 sync "qms-desktop-package/${{ env.PublishTempFolder }}" "s3://${{ secrets.DIST_S3_BUCKET }}/" \
-              --endpoint-url "${{ secrets.S3_ENDPOINT }}"; then
-              exit 0
-            fi
-            echo "::warning::S3 sync failed (attempt $i/3), retrying in 30s"
-            sleep 30
-          done
-          echo "::error::S3 sync failed after 3 attempts"
-          exit 1
+          # Binaries first, manifests last and only after the uploaded sizes are verified
+          bash qms-desktop-package/scripts/upload-dist.sh "qms-desktop-package/${{ env.PublishTempFolder }}" \
+            "${{ secrets.DIST_S3_BUCKET }}" "${{ secrets.S3_ENDPOINT }}"
       - name: Upload MacOS
         uses: actions/upload-artifact@v6
         with:
