@@ -44,6 +44,7 @@
   export let tableId: string | undefined = undefined
   export let readonly = false
   export let reorderable = false
+  export let columnsReorderable = false
 
   export let selection: number | undefined = undefined
 
@@ -169,7 +170,10 @@
     }
   }
 
-  const dispatch = createEventDispatcher()
+  const dispatch = createEventDispatcher<{
+    'row-focus': Doc
+    'column-reorder': { from: number, to: number }
+  }>()
 
   const showContextMenu = async (ev: MouseEvent, object: Doc, row: number): Promise<void> => {
     selection = row
@@ -271,7 +275,55 @@
   })
   $: void updateModelOptions(client, _class, config)
 
+  let draggedColumn: number | undefined
+  let columnDropTarget: number | undefined
+
+  $: canReorderColumns = columnsReorderable && !readonly && !$restrictionStore.readonly && !isBuildingModel
+
+  function resetColumnDrag (): void {
+    draggedColumn = undefined
+    columnDropTarget = undefined
+  }
+
+  function startColumnDrag (event: DragEvent, index: number): void {
+    if (!canReorderColumns) {
+      event.preventDefault()
+      return
+    }
+    event.stopPropagation()
+    draggedColumn = index
+    if (event.dataTransfer !== null) {
+      event.dataTransfer.effectAllowed = 'move'
+      event.dataTransfer.setData('text/plain', String(index))
+    }
+  }
+
+  function dragColumnOver (event: DragEvent, index: number): void {
+    if (draggedColumn === undefined || !canReorderColumns) return
+    event.preventDefault()
+    event.stopPropagation()
+    if (event.dataTransfer !== null) event.dataTransfer.dropEffect = 'move'
+    columnDropTarget = index
+  }
+
+  function dropColumn (event: DragEvent, index: number): void {
+    const from = draggedColumn
+    if (from === undefined) return
+    event.preventDefault()
+    event.stopPropagation()
+    resetColumnDrag()
+    if (!canReorderColumns || from === index) return
+    dispatch('column-reorder', { from, to: index })
+  }
+
+  function leaveColumn (event: DragEvent): void {
+    if (!(event.currentTarget as HTMLElement).contains(event.relatedTarget as Node | null)) {
+      columnDropTarget = undefined
+    }
+  }
+
   async function build (modelOptions: BuildModelOptions): Promise<void> {
+    resetColumnDrag()
     isBuildingModel = true
     const res = await buildModel(modelOptions)
     model = res
@@ -317,12 +369,26 @@
     {#if !hiddenHeader}
       <thead class="scroller-thead">
         <tr class="scroller-thead__tr">
-          {#each model as attribute}
+          {#each model as attribute, column (attribute)}
             <th
+              class:reorderable-column={canReorderColumns}
+              class:dragging-column={draggedColumn === column}
+              class:column-drop-before={columnDropTarget === column &&
+                draggedColumn !== undefined &&
+                draggedColumn > column}
+              class:column-drop-after={columnDropTarget === column &&
+                draggedColumn !== undefined &&
+                draggedColumn < column}
               class:w-full={attribute.displayProps?.grow === true}
               class:align-left={attribute.displayProps?.align === 'left'}
               class:align-center={attribute.displayProps?.align === 'center'}
               class:align-right={attribute.displayProps?.align === 'right'}
+              draggable={canReorderColumns}
+              on:dragstart={(event) => startColumnDrag(event, column)}
+              on:dragover={(event) => dragColumnOver(event, column)}
+              on:dragleave={leaveColumn}
+              on:drop={(event) => dropColumn(event, column)}
+              on:dragend={resetColumnDrag}
             >
               <div class="antiTable-cells">
                 {#if attribute.label}
@@ -367,7 +433,7 @@
             on:contextmenu={contextHandler(object, row)}
           >
             {#await canEdit(object) then canEditObject}
-              {#each model as attribute, cell (attribute.key)}
+              {#each model as attribute, cell (attribute)}
                 <td
                   class:align-left={attribute.displayProps?.align === 'left'}
                   class:align-center={attribute.displayProps?.align === 'center'}
@@ -401,6 +467,22 @@
 {/if}
 
 <style lang="scss">
+  .reorderable-column {
+    cursor: grab;
+  }
+
+  .dragging-column {
+    opacity: 0.5;
+  }
+
+  .column-drop-before {
+    box-shadow: inset 2px 0 0 var(--primary-button-default);
+  }
+
+  .column-drop-after {
+    box-shadow: inset -2px 0 0 var(--primary-button-default);
+  }
+
   .dragging {
     opacity: 0.5;
   }

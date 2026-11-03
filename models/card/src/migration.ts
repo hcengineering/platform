@@ -38,7 +38,7 @@ import {
   type MigrationUpgradeClient
 } from '@hcengineering/model'
 import tags from '@hcengineering/tags'
-import view, { type ViewOptionModel, type Viewlet } from '@hcengineering/view'
+import view, { type BuildModelKey, type ViewOptionModel, type Viewlet } from '@hcengineering/view'
 import card from '.'
 
 export const cardOperation: MigrateOperation = {
@@ -156,8 +156,49 @@ export const cardOperation: MigrateOperation = {
         state: 'add-relationship-table-no-relations-view-option',
         mode: 'upgrade',
         func: addRelationshipTableNoRelationsViewOption
+      },
+      {
+        state: 'add-card-title-sorting',
+        mode: 'upgrade',
+        func: addCardTitleSorting
       }
     ])
+  }
+}
+
+/** Add title sorting to existing card table columns without replacing their configuration. */
+export async function addCardTitleSorting (client: MigrationUpgradeClient): Promise<void> {
+  const txOp = new TxOperations(client, core.account.System)
+  const masterTags = await client.findAll(card.class.MasterTag, {})
+  const cardDescendants = client.getHierarchy().getDescendants(card.class.Card)
+  const allViewletTargets = [...masterTags.map((p) => p._id), ...cardDescendants, card.class.Card]
+  const viewlets = await client.findAll(view.class.Viewlet, {
+    attachTo: { $in: allViewletTargets },
+    descriptor: { $in: [view.viewlet.Table, view.viewlet.RelationshipTable] }
+  })
+
+  for (const viewlet of viewlets) {
+    let changed = false
+    const config = viewlet.config.map((column): string | BuildModelKey => {
+      if (column === '') {
+        changed = true
+        return { key: '', sortingKey: 'title' }
+      }
+      if (
+        typeof column !== 'string' &&
+        column.key === '' &&
+        column.presenter === undefined &&
+        column.displayProps?.grow !== true &&
+        (column.sortingKey === undefined || column.sortingKey === '')
+      ) {
+        changed = true
+        return { ...column, sortingKey: 'title' }
+      }
+      return column
+    })
+    if (changed) {
+      await txOp.update(viewlet, { config })
+    }
   }
 }
 
@@ -485,7 +526,8 @@ function extractObjectData<T extends Doc> (doc: T): Data<T> {
   return data as Data<T>
 }
 
-async function migrateViewlets (client: Client): Promise<void> {
+/** Populate card type viewlets from the base configuration and their own attributes. */
+export async function migrateViewlets (client: Client): Promise<void> {
   const txOp = new TxOperations(client, core.account.System)
   const viewlets = await client.findAll(view.class.Viewlet, { attachTo: card.class.Card, variant: { $exists: false } })
   const masterTags = await client.findAll(card.class.MasterTag, {})
@@ -494,12 +536,15 @@ async function migrateViewlets (client: Client): Promise<void> {
     for (const viewlet of viewlets) {
       const base = extractObjectData(viewlet)
       const resConfig = [...base.config]
+      const configuredKeys = new Set(resConfig.map((column) => (typeof column === 'string' ? column : column.key)))
       let index = -1
       if (viewlet.descriptor === view.viewlet.List) {
         index = viewlet.config.findIndex((p) => typeof p !== 'string' && p.displayProps?.grow === true)
       }
       const attributes = client.getHierarchy().getOwnAttributes(masterTag._id)
       for (const attr of attributes) {
+        if (configuredKeys.has(attr[1].name)) continue
+        configuredKeys.add(attr[1].name)
         // let push it after grow for the list
         if (index !== -1) {
           resConfig.splice(index + 1, 0, attr[1].name)
