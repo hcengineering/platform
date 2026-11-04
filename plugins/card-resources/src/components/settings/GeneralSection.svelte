@@ -274,6 +274,7 @@
 
   function changeVersioning (event: CustomEvent<boolean>): void {
     if (h.isMixin(masterTag._id)) return
+    versioningEnabled = event.detail
     if (!event.detail) {
       void saveVersioning(false)
       return
@@ -416,7 +417,7 @@
           {#if versioningEnabled}
             <ButtonIcon icon={setting.icon.Setting} size="extra-small" on:click={versioningSetting} />
           {/if}
-          <Toggle bind:on={versioningEnabled} disabled={versioningUpdating} on:change={changeVersioning} />
+          <Toggle on={versioningEnabled} disabled={versioningUpdating} on:change={changeVersioning} />
         </div>
       </div>
       <div class="settings-row">

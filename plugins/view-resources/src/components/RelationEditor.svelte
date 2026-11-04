@@ -14,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { Analytics } from '@hcengineering/analytics'
   import card, { type MasterTag } from '@hcengineering/card'
   import core, { Association, Class, Doc, DocumentQuery, Ref, SortingOrder, WithLookup } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
@@ -22,7 +23,9 @@
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { showMenu } from '../actions'
   import { buildRelationCandidatesQuery } from '../relations'
+  import { isRelationColumn, reorderRelationColumns } from '../relation-column-order'
   import view from '../plugin'
+  import { restrictionStore } from '../utils'
   import DocTable from './DocTable.svelte'
   import MasterDetailView from './masterDetail/MasterDetailView.svelte'
   import ObjectBoxPopup from './ObjectBoxPopup.svelte'
@@ -128,6 +131,8 @@
 
   let viewlet: WithLookup<Viewlet> | undefined
   let preference: ViewletPreference | undefined = undefined
+  let loadingViewlet = true
+  let savingColumnOrder = false
 
   type RelationViewMode = 'table' | 'master-detail'
 
@@ -186,11 +191,38 @@
   $: baseClass = client.getHierarchy().getBaseClass(_class)
 
   $: selectedConfig = preference?.config ?? viewlet?.config
-  $: config = selectedConfig?.filter((p) =>
-    typeof p === 'string'
-      ? !p.includes('$lookup') && !p.startsWith('@')
-      : !p.key.includes('$lookup') && !p.key.startsWith('@')
-  )
+  $: config = selectedConfig?.filter(isRelationColumn)
+
+  async function reorderColumns (from: number, to: number): Promise<void> {
+    if (viewlet === undefined || selectedConfig === undefined || loadingViewlet || savingColumnOrder) return
+    if (readonly || $restrictionStore.readonly) return
+    const reorderedConfig = reorderRelationColumns(selectedConfig, from, to)
+    if (reorderedConfig === selectedConfig) return
+    const viewletId = viewlet._id
+
+    try {
+      savingColumnOrder = true
+      const currentPreference =
+        preference?.attachedTo === viewletId
+          ? preference
+          : await client.findOne(view.class.ViewletPreference, {
+              space: core.space.Workspace,
+              attachedTo: viewletId
+            })
+      if (currentPreference !== undefined) {
+        await client.update(currentPreference, { config: reorderedConfig })
+      } else {
+        await client.createDoc(view.class.ViewletPreference, core.space.Workspace, {
+          attachedTo: viewletId,
+          config: reorderedConfig
+        })
+      }
+    } catch (error) {
+      Analytics.handleError(error instanceof Error ? error : new Error(String(error)))
+    } finally {
+      savingColumnOrder = false
+    }
+  }
 
   async function onContextMenu (ev: MouseEvent, doc: Doc): Promise<void> {
     const q =
@@ -240,16 +272,22 @@
             { id: 'master-detail', icon: view.icon.MasterDetail }
           ]}
           selected={relationViewMode}
-          kind={'subtle'}
+          kind="subtle"
           onlyIcons
           on:select={(event) => {
             selectRelationViewMode(event.detail.id)
           }}
         />
       {/if}
-      <ViewletsSettingButton viewletQuery={{ attachTo: baseClass }} kind={'tertiary'} bind:viewlet bind:preference />
+      <ViewletsSettingButton
+        viewletQuery={{ attachTo: baseClass }}
+        kind="tertiary"
+        bind:viewlet
+        bind:preference
+        bind:loading={loadingViewlet}
+      />
       {#if !readonly && allowToCreate}
-        <Button id={core.string.AddRelation} icon={IconAdd} kind={'ghost'} on:click={add} />
+        <Button id={core.string.AddRelation} icon={IconAdd} kind="ghost" on:click={add} />
       {/if}
     </div>
   </svelte:fragment>
@@ -269,7 +307,18 @@
         </div>
       {:else}
         <Scroller horizontal>
-          <DocTable objects={uniqueDocs} {_class} {config} {onContextMenu} {readonly} reorderable />
+          <DocTable
+            objects={uniqueDocs}
+            {_class}
+            {config}
+            {onContextMenu}
+            {readonly}
+            reorderable
+            columnsReorderable={!loadingViewlet && !savingColumnOrder}
+            on:column-reorder={(event) => {
+              void reorderColumns(event.detail.from, event.detail.to)
+            }}
+          />
         </Scroller>
       {/if}
     {:else if !readonly || emptyKind === 'placeholder'}

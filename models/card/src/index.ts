@@ -142,7 +142,6 @@ export class TCard extends TDoc implements Card {
   @Prop(TypeRef(card.class.Card), card.string.Parent)
     parent?: Ref<Card> | null
 
-  @Hidden()
   @Prop(Collection(attachment.class.Attachment), attachment.string.Attachments, { shortLabel: attachment.string.Files })
     attachments?: number
 
@@ -401,7 +400,7 @@ export function createSystemType (
       isLatest: true
     },
     config: [
-      { key: '', props: { shrink: true } },
+      { key: '', sortingKey: 'title', props: { shrink: true } },
       '_class',
       {
         key: '',
@@ -777,7 +776,7 @@ export function createModel (builder: Builder): void {
         isLatest: true
       },
       config: [
-        '',
+        { key: '', sortingKey: 'title' },
         '_class',
         {
           key: '',
@@ -882,7 +881,7 @@ export function createModel (builder: Builder): void {
       baseQuery: {
         isLatest: true
       },
-      config: ['']
+      config: [{ key: '', sortingKey: 'title' }]
     },
     card.viewlet.CardRelationshipTable
   )
