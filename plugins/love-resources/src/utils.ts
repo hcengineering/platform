@@ -65,7 +65,7 @@ import MeetingMinutesSearchItem from './components/MeetingMinutesSearchItem.svel
 import RoomSettingsPopup from './components/RoomSettingsPopup.svelte'
 import love from './plugin'
 import { $myPreferences, currentMeetingMinutes } from './stores'
-import { getLiveKitClient } from './liveKitClient'
+import { getLiveKitClient, lkSessionConnected } from './liveKitClient'
 import { getLoveClient } from './loveClient'
 
 export const liveKitClient = getLiveKitClient()
@@ -397,6 +397,13 @@ async function checkRecordingAvailable (endpoint: string): Promise<void> {
 }
 
 void checkRecordAvailable()
+
+// Re-check availability on every connection to a meeting
+lkSessionConnected.subscribe((connected) => {
+  if (connected) {
+    void checkRecordAvailable()
+  }
+})
 
 export async function createMeeting (
   client: TxOperations,
