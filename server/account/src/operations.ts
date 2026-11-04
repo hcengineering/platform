@@ -2417,7 +2417,8 @@ export async function getLoginInfoByToken (
       throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
     }
 
-    const endpointKind = meta?.clientNetworkPosition === 'internal' ? EndpointKind.Internal : EndpointKind.External
+    const endpointKind =
+      (params?.kind ?? meta?.clientNetworkPosition) === 'internal' ? EndpointKind.Internal : EndpointKind.External
     const endpoint = getEndpoint(workspace.uuid, workspace.region, endpointKind)
 
     if (isDocGuest) {

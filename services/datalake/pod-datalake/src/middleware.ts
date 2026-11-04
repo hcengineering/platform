@@ -1,5 +1,6 @@
 //
 // Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -40,7 +41,11 @@ export const keepAlive = (options: KeepAliveOptions): RequestHandler => {
 export const withAdminAuthorization = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   try {
     const token = extractToken(req.headers)
-    if (token == null || !(token.account === systemAccountUuid || token.extra?.admin === 'true')) {
+    if (
+      token == null ||
+      (token.extra?.readonly === 'true' && req.method !== 'GET' && req.method !== 'HEAD') ||
+      !(token.account === systemAccountUuid || token.extra?.admin === 'true')
+    ) {
       throw new ApiError(401, 'Unauthorized')
     }
     req.token = token
@@ -54,7 +59,8 @@ export const withAdminAuthorization = (req: RequestWithAuth, res: Response, next
 export const withAuthorization = (req: RequestWithAuth, res: Response, next: NextFunction): void => {
   try {
     const token = extractToken(req.headers)
-    if (token == null || token.extra?.guest === 'true' || token.extra?.readonly === 'true') {
+    const reading = req.method === 'GET' || req.method === 'HEAD'
+    if (token == null || token.extra?.guest === 'true' || (token.extra?.readonly === 'true' && !reading)) {
       throw new ApiError(401, 'Unauthorized')
     }
     req.token = token

@@ -1,5 +1,17 @@
 <!--
 // Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
+//
+// Licensed under the Eclipse Public License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License. You may
+// obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 -->
 
@@ -7,21 +19,23 @@
   import { Analytics } from '@hcengineering/analytics'
   import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
-  import presentation, { getFileUrl } from '@hcengineering/presentation'
+  import presentation, { getFileUrl, getPrintContext } from '@hcengineering/presentation'
   import { convertToHTML } from '@hcengineering/print'
-  import { EmbeddedHTML, Spinner, themeStore } from '@hcengineering/ui'
+  import { EmbeddedHTML, Label, Spinner, themeStore } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
   export let contentType: string
   export let metadata: BlobMetadata | undefined
+  export let sourceLink: string | undefined = undefined
+  const printing = getPrintContext() !== undefined
 
   let isLoading = true
   let convertedFile: string | undefined
 
   const token = getMetadata(presentation.metadata.Token) ?? ''
 
-  $: if (value !== undefined) {
+  $: if (value !== undefined && !printing) {
     isLoading = true
     convertedFile = undefined
 
@@ -264,7 +278,10 @@
   `
 </script>
 
-{#if src}
+{#if printing}
+  <Label label={presentation.string.ContentTypeNotSupported} />:
+  {#if sourceLink !== undefined}<a href={sourceLink}>{name}</a>{:else}{name}{/if}
+{:else if src}
   {#if isLoading}
     <div class="centered">
       <Spinner size="medium" />

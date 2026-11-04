@@ -1,6 +1,7 @@
 <!--
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021, 2023, 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -17,13 +18,14 @@
   import { Analytics } from '@hcengineering/analytics'
   import { type Blob, Markup, type Ref } from '@hcengineering/core'
   import { IntlString } from '@hcengineering/platform'
+  import { getPrintContext } from '@hcengineering/presentation'
   import { EmptyMarkup, getMarkup, markupToJSON } from '@hcengineering/text'
   import textEditor from '@hcengineering/text-editor'
-  import { themeStore } from '@hcengineering/ui'
+  import { getRenderContext, themeStore, trackRenderResource } from '@hcengineering/ui'
   import { Content, Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import { ParseOptions } from '@tiptap/pm/model'
   import { EditorView } from '@tiptap/pm/view'
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher, getAllContexts, onDestroy, onMount } from 'svelte'
 
   import { EditorKitOptions, getEditorKit } from '../../src/kits/editor-kit'
   import { deleteAttachment } from '../command/deleteAttachment'
@@ -52,6 +54,12 @@
   }
 
   const dispatch = createEventDispatcher()
+  const printContext = getPrintContext()
+  const svelteContext = getAllContexts()
+  const rendering = getRenderContext()
+  let loadingContent = true
+  const trackLoading = trackRenderResource()
+  $: trackLoading(loadingContent)
 
   export function isEditable (): boolean {
     return editor?.isEditable
@@ -151,9 +159,11 @@
     needFocus = false
   }
 
-  onMount(async () => {
+  async function initialize (): Promise<void> {
     const kit = await getEditorKit(
       {
+        printContext,
+        getSvelteContext: () => svelteContext,
         mode: 'compact',
 
         drawingBoard: false,
@@ -191,6 +201,9 @@
       content: markupToJSON(content),
       autofocus: editable ? autofocus : false,
       extensions: [kit],
+      onCreate: () => {
+        loadingContent = false
+      },
       parseOptions: {
         preserveWhitespace: 'full'
       },
@@ -213,8 +226,16 @@
         dispatch('update', content)
       },
       onContentError: ({ error }) => {
+        rendering?.fail(error)
         Analytics.handleError(error)
       }
+    })
+  }
+  onMount(() => {
+    void initialize().catch((error) => {
+      rendering?.fail(error)
+      loadingContent = false
+      Analytics.handleError(error)
     })
   })
 

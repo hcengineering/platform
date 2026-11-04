@@ -18,11 +18,13 @@ import { Analytics } from '@hcengineering/analytics'
 import core, {
   AccountRole,
   MeasureMetricsContext,
+  type Account,
   type AccountUuid,
   type PersonId,
   type WorkspaceUuid
 } from '@hcengineering/core'
 import { setMetadata } from '@hcengineering/platform'
+import type { Session } from '@hcengineering/server-core'
 import serverToken from '@hcengineering/server-token'
 
 import { TSessionManager } from '../sessionManager'
@@ -58,11 +60,24 @@ jest.mock('../utils', () => ({ sendResponse: jest.fn().mockResolvedValue(undefin
 
 const ws = 'ws-1' as WorkspaceUuid
 
-function mkSession (user: string, role: AccountRole = AccountRole.User): any {
-  return {
-    getUser: () => user as AccountUuid,
-    getRawAccount: () => ({ role, primarySocialId: `social-${user}` as PersonId })
+function mkSession (
+  user: string,
+  role: AccountRole = AccountRole.User,
+  readonly: boolean = false
+): Pick<Session, 'token' | 'getUser' | 'getRawAccount'> {
+  const account: Account = {
+    uuid: user as AccountUuid,
+    role,
+    primarySocialId: `social-${user}` as PersonId,
+    socialIds: [],
+    fullSocialIds: []
   }
+  const session: Pick<Session, 'token' | 'getUser' | 'getRawAccount'> = {
+    token: { account: account.uuid, workspace: ws, extra: readonly ? { readonly: 'true' } : {} },
+    getUser: () => account.uuid,
+    getRawAccount: () => account
+  }
+  return session
 }
 
 interface FakePipeline {
@@ -134,8 +149,8 @@ describe('restart-storm protections', () => {
     return workspace
   }
 
-  const q = (user: string, online: boolean, role?: AccountRole): void =>
-    (sm as any).queueStatus(ws, mkSession(user, role), online)
+  const q = (user: string, online: boolean, role?: AccountRole, readonly: boolean = false): void =>
+    (sm as any).queueStatus(ws, mkSession(user, role, readonly), online)
 
   describe('presence status batching', () => {
     it('does nothing until the flush window elapses, then writes one batch for many users', async () => {
@@ -204,6 +219,18 @@ describe('restart-storm protections', () => {
       await jest.advanceTimersByTimeAsync(1000)
 
       expect(pipeline.findAll).not.toHaveBeenCalled()
+    })
+
+    it('ignores read-only user tokens', async () => {
+      const pipeline = mkPipeline()
+      installWorkspace(pipeline)
+
+      q('print-user', true, AccountRole.User, true)
+      await jest.advanceTimersByTimeAsync(1000)
+
+      expect(pipeline.findAll).not.toHaveBeenCalled()
+      expect(pipeline.tx).not.toHaveBeenCalled()
+      expect(pipeline.handleBroadcast).not.toHaveBeenCalled()
     })
 
     it('skips (and drops) the batch for a workspace in maintenance', async () => {

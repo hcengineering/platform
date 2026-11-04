@@ -1,5 +1,6 @@
 //
 // Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,28 +14,18 @@
 // limitations under the License.
 //
 
-import { type Ref } from '@hcengineering/core'
+import { concatLink, type Ref } from '@hcengineering/core'
+import { getMetadata } from '@hcengineering/platform'
+import { getCurrentLocation, locationToUrl, type Location } from '@hcengineering/ui'
 import drive, { type File } from '@hcengineering/drive'
-import {
-  previewTypes as $previewTypes,
-  FilePreview,
-  getClient,
-  getPreviewType,
-  type FilePreviewExtension
-} from '@hcengineering/presentation'
+import presentation, { FilePreview, getClient } from '@hcengineering/presentation'
 import { type Editor } from '@tiptap/core'
 import { SvelteRenderer } from '../../../node-view'
 import { parseReferenceUrl } from '../../reference'
-import { type EmbedNodeProviderConstructor } from '../embed'
+import { type EmbedNodeProvider } from '../embed'
 import { setLoadingState } from '../../toolbar/toolbar'
 
-export interface DriveEmbedOptions {
-  _x?: number
-}
-
-export const defaultDriveEmbedOptions: DriveEmbedOptions = {}
-
-export const DriveEmbedProvider: EmbedNodeProviderConstructor<DriveEmbedOptions> = (options) => ({
+export const DriveEmbedProvider = (): EmbedNodeProvider => ({
   buildView: async (src: string) => {
     const ref = parseReferenceUrl(src)
     if (ref?.objectclass !== drive.class.File || ref.id === undefined) {
@@ -48,30 +39,29 @@ export const DriveEmbedProvider: EmbedNodeProviderConstructor<DriveEmbedOptions>
     const version = await client.findOne(drive.class.FileVersion, { attachedTo: file._id, version: file.version })
     if (version === undefined) return
 
-    const allPreviewTypesPromise = new Promise<FilePreviewExtension[]>((resolve) => {
-      $previewTypes.subscribe((types) => {
-        if (types.length > 0) resolve(types)
-      })
-    })
+    const location: Location = {
+      path: ['workbench', getCurrentLocation().path[1], 'drive', 'file', file._id]
+    }
+    const sourceLink = concatLink(
+      getMetadata(presentation.metadata.FrontUrl) ?? window.location.origin,
+      locationToUrl(location)
+    )
 
-    const allPreviewTypes = await allPreviewTypesPromise
-    const previewType = await getPreviewType(version.type, allPreviewTypes)
-
-    if (previewType === undefined) return
-
-    return (editor: Editor, root: HTMLDivElement, getPos: () => number) => {
+    return (editor: Editor, root: HTMLDivElement, getPos: () => number, context: Map<unknown, unknown>) => {
       const setLoading = (loading: boolean): void => {
         const pos = typeof getPos === 'function' ? getPos() : 0
         setLoadingState(editor.view, pos, loading)
       }
       const renderer = new SvelteRenderer(FilePreview, {
         element: root,
+        context,
         props: {
           file: version.file,
           contentType: version.type,
           name: version.title,
           metadata: version.metadata,
           embedded: true,
+          props: { sourceLink },
           setLoading
         }
       })

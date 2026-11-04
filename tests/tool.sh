@@ -15,9 +15,9 @@
 #
 
 export MODEL_VERSION=$(node ../common/scripts/show_version.js)
-export STORAGE_CONFIG="datalake|http://localhost:4031"
-export ACCOUNTS_URL=http://localhost:3003
-export TRANSACTOR_URL=ws://localhost:3334
+export STORAGE_CONFIG="datalake|http://tracex.local:4031"
+export ACCOUNTS_URL=http://tracex.local:3003
+export TRANSACTOR_URL=ws://tracex.local:3334
 export ACCOUNT_DB_URL=postgresql://postgres:postgres@localhost:5433/postgres
 export DB_URL=postgresql://postgres:postgres@localhost:5433/postgres
 export ELASTIC_URL=http://localhost:9201

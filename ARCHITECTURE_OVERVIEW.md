@@ -47,7 +47,7 @@ The Huly platform consists of **30+ microservices** working together in a distri
 
 | Service | Port | Description |
 |---------|------|-------------|
-| **print** | 4005 | PDF generation service for printing documents and reports. |
+| **print** | 4005 | PDF generation service for printing documents and reports. See [Document printing](docs/printing.md) for the export flow, authorization, rendering readiness, and browser debugging. |
 | **sign** | 4006 | Digital signature service for document signing with certificates. |
 | **payment** | 3040 | Payment and billing integration (Polar). Handles subscriptions and payments. |
 | **export** | 4009 | Data export service for workspace backups and data extraction. |

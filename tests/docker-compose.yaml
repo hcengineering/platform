@@ -115,7 +115,7 @@ services:
       - WORKSPACE_LIMIT_PER_USER=100
       - DB_URL=${DB_URL}
       - REGION_INFO=|America
-      - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
+      - TRANSACTOR_URL=ws://transactor:3334;ws://tracex.local:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://stats:4901
@@ -133,7 +133,7 @@ services:
     environment:
       - SERVER_SECRET=secret
       - DB_URL=${DB_URL}
-      - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
+      - TRANSACTOR_URL=ws://transactor:3334;ws://tracex.local:3334
       - QUEUE_CONFIG=${QUEUE_CONFIG}
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - REGION=
@@ -161,21 +161,40 @@ services:
       - SERVER_PORT=8083
       - SERVER_SECRET=secret
       - ACCOUNTS_URL_INTERNAL=http://account:3003
-      - ACCOUNTS_URL=http://localhost:3003
-      - FILES_URL=http://localhost:4031/blob/:workspace/:blobId/:filename
-      - UPLOAD_URL=http://localhost:4031/upload/form-data/:workspace
-      - DATALAKE_URL=http://localhost:4031
-      - PREVIEW_URL=http://localhost:4031
+      - ACCOUNTS_URL=http://tracex.local:3003
+      - FILES_URL=http://tracex.local:4031/blob/:workspace/:blobId/:filename
+      - UPLOAD_URL=http://tracex.local:4031/upload/form-data/:workspace
+      - DATALAKE_URL=http://tracex.local:4031
+      - PREVIEW_URL=http://tracex.local:4031
       - ELASTIC_URL=http://elastic:9200
-      - GMAIL_URL=http://localhost:8088
-      - CALENDAR_URL=http://localhost:8095
+      - GMAIL_URL=http://tracex.local:8088
+      - CALENDAR_URL=http://tracex.local:8095
       - REKONI_URL=http://rekoni:4007
-      - TELEGRAM_URL=http://localhost:8086
-      - COLLABORATOR_URL=ws://localhost:3079
+      - TELEGRAM_URL=http://tracex.local:8086
+      - COLLABORATOR_URL=ws://tracex.local:3079
+      - PRINT_URL=http://tracex.local:4005
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - BRANDING_URL=http://localhost:8083/branding-test.json
+      - BRANDING_URL=http://tracex.local:8083/branding-test.json
       - STATS_URL=http://stats:4901
-      - STATS_API=http://localhost:4901
+      - STATS_API=http://tracex.local:4901
+  print:
+    image: tracexapp/print
+    pull_policy: never
+    extra_hosts:
+      - "tracex.local:host-gateway"
+    depends_on:
+      - front
+      - account
+      - datalake
+      - transactor
+    ports:
+      - 4005:4005
+    environment:
+      - SECRET=secret
+      - ACCOUNTS_URL=http://account:3003
+      - FRONT_URL=http://tracex.local:8083
+      - STORAGE_CONFIG=${STORAGE_CONFIG}
+      - STATS_URL=http://stats:4901
   transactor:
     image: tracexapp/transactor
     pull_policy: never
@@ -203,7 +222,7 @@ services:
       - METRICS_CONSOLE=false
       - METRICS_FILE=metrics.txt
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - FRONT_URL=http://localhost:8083
+      - FRONT_URL=http://tracex.local:8083
       - ACCOUNTS_URL=http://account:3003
       - COLLABORATOR_URL=http://collaborator:3079
       - LAST_NAME_FIRST=true
@@ -342,11 +361,11 @@ services:
       - WORKSPACE_LIMIT_PER_USER=100
       - DB_URL=${DB_URL}
       - REGION_INFO=|America
-      - TRANSACTOR_URL=ws://transactor:3334;ws://localhost:3334
+      - TRANSACTOR_URL=ws://transactor:3334;ws://tracex.local:3334
       - STORAGE_CONFIG=${STORAGE_CONFIG}
       - BRANDING_PATH=/var/cfg/branding.json
       - STATS_URL=http://stats:4901
-      - FRONT_URL=http://localhost:8084
+      - FRONT_URL=http://tracex.local:8084
       - MAIL_URL=http://mail:8097
       - MAIL_AUTH_TOKEN=${MAIL_AUTH_TOKEN}
     restart: unless-stopped
@@ -363,21 +382,21 @@ services:
       - SERVER_PORT=8084
       - SERVER_SECRET=secret
       - ACCOUNTS_URL_INTERNAL=http://account-otp:3004
-      - ACCOUNTS_URL=http://localhost:3004
-      - FILES_URL=http://localhost:4031/blob/:workspace/:blobId/:filename
-      - UPLOAD_URL=http://localhost:4031/upload/form-data/:workspace
-      - DATALAKE_URL=http://localhost:4031
-      - PREVIEW_URL=http://localhost:4031
+      - ACCOUNTS_URL=http://tracex.local:3004
+      - FILES_URL=http://tracex.local:4031/blob/:workspace/:blobId/:filename
+      - UPLOAD_URL=http://tracex.local:4031/upload/form-data/:workspace
+      - DATALAKE_URL=http://tracex.local:4031
+      - PREVIEW_URL=http://tracex.local:4031
       - ELASTIC_URL=http://elastic:9200
-      - GMAIL_URL=http://localhost:8088
-      - CALENDAR_URL=http://localhost:8095
-      - TELEGRAM_URL=http://localhost:8086
+      - GMAIL_URL=http://tracex.local:8088
+      - CALENDAR_URL=http://tracex.local:8095
+      - TELEGRAM_URL=http://tracex.local:8086
       - REKONI_URL=http://rekoni:4007
-      - COLLABORATOR_URL=ws://localhost:3079
+      - COLLABORATOR_URL=ws://tracex.local:3079
       - STORAGE_CONFIG=${STORAGE_CONFIG}
-      - BRANDING_URL=http://localhost:8084/branding-test.json
+      - BRANDING_URL=http://tracex.local:8084/branding-test.json
       - STATS_URL=http://stats:4901
-      - STATS_API=http://localhost:4901
+      - STATS_API=http://tracex.local:4901
       # Only needs to be non-empty: it switches the login UI to OTP mode
       - MAIL_URL=http://mail:8097
     restart: unless-stopped

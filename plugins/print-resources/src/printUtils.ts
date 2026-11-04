@@ -1,4 +1,5 @@
 // Copyright © 2026 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,11 +13,8 @@
 // limitations under the License.
 
 import type { Class, Client, Doc, Ref } from '@hcengineering/core'
-import type { Location } from '@hcengineering/ui'
 import { Analytics } from '@hcengineering/analytics'
-import guest, { type PublicLink, createPublicLink } from '@hcengineering/guest'
-import view from '@hcengineering/view'
-import { getDocTitle, getObjectLinkFragment } from '@hcengineering/view-resources'
+import { getDocTitle } from '@hcengineering/view-resources'
 import { getMetadata } from '@hcengineering/platform'
 import presentation, { getFileUrl } from '@hcengineering/presentation'
 import { printToPDF } from '@hcengineering/print'
@@ -31,53 +29,6 @@ export interface PdfResult {
 export interface PrintAllOptions {
   onProgress: (current: number, total?: number) => void
   getCancelled: () => boolean
-}
-
-const PUBLIC_LINK_RETRY_COUNT = 10
-const PUBLIC_LINK_RETRY_DELAY_MS = 250
-
-async function sleep (ms: number): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-/**
- * Get or create a public link for a document (for print/share).
- * Returns the link if it exists or after creating it; the link's url may be set asynchronously by the server.
- */
-export async function ensurePublicLink (client: Client, doc: Doc): Promise<PublicLink | undefined> {
-  const readLink = async (): Promise<PublicLink | undefined> => {
-    const current = await client.findOne(guest.class.PublicLink, { attachedTo: doc._id })
-    return current?.url !== undefined && current.url !== '' ? current : undefined
-  }
-
-  const existing = await readLink()
-  if (existing !== undefined) {
-    return existing
-  }
-
-  const created = await client.findOne(guest.class.PublicLink, { attachedTo: doc._id })
-  if (created === undefined) {
-    const location = await getObjectLocation(client, doc)
-    await createPublicLink(client as any, doc, location)
-  }
-
-  // Public link URL is filled by server trigger asynchronously.
-  for (let i = 0; i < PUBLIC_LINK_RETRY_COUNT; i++) {
-    const link = await readLink()
-    if (link !== undefined) {
-      return link
-    }
-    await sleep(PUBLIC_LINK_RETRY_DELAY_MS)
-  }
-
-  return undefined
-}
-
-async function getObjectLocation (client: Client, obj: Doc): Promise<Location> {
-  const hierarchy = client.getHierarchy()
-  const panelComponent = hierarchy.classHierarchyMixin(obj._class, view.mixin.ObjectPanel)
-  const comp = panelComponent?.component ?? view.component.EditDoc
-  return await getObjectLinkFragment(hierarchy, obj, {}, comp)
 }
 
 /**
@@ -109,17 +60,7 @@ export async function printAll (
     options.onProgress(i + 1, docs.length)
     const doc = docs[i]
     try {
-      const link = await ensurePublicLink(client, doc)
-      if (link?.url === undefined || link.url === '') {
-        const title = await getDocTitleForPdf(client, doc._id, doc._class, doc).catch(() => 'document.pdf')
-        results.push({
-          blobId: '',
-          title,
-          error: `Could not get public link for doc ${doc._id} (${doc._class})`
-        })
-        continue
-      }
-      let blobId: string = await printToPDF(link.url, token)
+      let blobId: string = await printToPDF(doc, token)
       if (signed) {
         blobId = await signPDF(blobId, token)
       }

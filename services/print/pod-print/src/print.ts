@@ -37,7 +37,12 @@ export type PageOrientation = (typeof validPageOrientations)[number]
  * @param options - The options to use when printing the webpage.
  * @returns Buffer with the printed content.
  */
-export async function print (ctx: MeasureContext, url: string, options?: PrintOptions): Promise<Buffer | undefined> {
+export async function print (
+  ctx: MeasureContext,
+  url: string,
+  options?: PrintOptions,
+  readonlyToken?: string
+): Promise<Buffer | undefined> {
   const kind = options?.kind ?? 'pdf'
   const orientation = options?.orientation ?? 'portrait'
   const viewport = options?.viewport ?? { width: 1440, height: 900 }
@@ -56,76 +61,120 @@ export async function print (ctx: MeasureContext, url: string, options?: PrintOp
       ...config.PuppeteerArgs
     ]
   })
-  const page = await browser.newPage()
-
-  page
-    .on('pageerror', (err: unknown) => {
-      const message = err instanceof Error ? err.message : String(err)
-      ctx.warn('pageerror', { message })
-    })
-    .on('requestfailed', (request) => {
-      ctx.warn('requestfailed', { url: request.url(), errorText: request.failure()?.errorText })
-    })
-
-  await page.setViewport(viewport)
-
-  await page.goto(url, {
-    waitUntil: 'domcontentloaded'
-  })
-  await waitForInitialNetworkIdle(ctx, page)
-
-  let res: Uint8Array | undefined
-
-  if (kind === 'pdf') {
-    await waitForContentReady(ctx, page)
-    await page.emulateMediaType('print')
-    // Wait for two animation frames: the first applies the print media query and the second
-    // lets reactive UI state update the layout. Resource readiness is handled separately below.
-    await waitForPrintLayout(page)
-    // Scroll through the entire page to render lazy content, such as images.
-    await scrollThrough(page)
-    await waitForImages(page)
-    await waitForMermaidDiagrams(ctx, page)
-
-    // Read page header and footer if defined
-    const pageHeader = await page.evaluate(() => {
-      const header = document.querySelector('#page-header')
-      return header?.innerHTML ?? ''
-    })
-
-    const pageFooter = await page.evaluate(() => {
-      const footer = document.querySelector('#page-footer')
-      return footer?.innerHTML ?? ''
-    })
-
-    const displayHeaderFooter = pageHeader !== '' || pageFooter !== ''
-
-    res = await ctx.with('pdf', {}, () =>
-      page.pdf({
-        format: 'A4',
-        landscape: orientation === 'landscape',
-        timeout: 0,
-        waitForFonts: true,
-        headerTemplate: pageHeader,
-        footerTemplate: pageFooter,
-        displayHeaderFooter,
-        margin: {
-          top: '1.5cm',
-          right: '1cm',
-          bottom: '1.5cm',
-          left: '1cm'
-        }
-      })
-    )
-  } else {
-    // Note: currently we do not take the full page screenshot - only the viewport
-    // might make it configurable in the future
-    res = await ctx.with('screenshot', { kind }, () => page.screenshot({ type: kind }))
+  let timedOut = false
+  let closing: Promise<void> | undefined
+  const close = (): Promise<void> => {
+    closing ??= browser.close()
+    return closing
   }
+  const deadline = setTimeout(() => {
+    timedOut = true
+    void close().catch(() => {})
+  }, 120000)
+  try {
+    const page = await browser.newPage()
+    let renderError: string | undefined
 
-  await browser.close()
+    page
+      .on('pageerror', (err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err)
+        renderError ??= message
+        ctx.warn('pageerror', { message })
+      })
+      .on('requestfailed', (request) => {
+        ctx.warn('requestfailed', { url: request.url(), errorText: request.failure()?.errorText })
+      })
 
-  return res !== undefined ? Buffer.from(res) : undefined
+    if (readonlyToken !== undefined) {
+      await page.evaluateOnNewDocument(
+        (target: string, token: string) => {
+          if (window.top === window && window.location.href === target) sessionStorage.setItem('print-token', token)
+        },
+        url,
+        readonlyToken
+      )
+    }
+    await page.setViewport(viewport)
+
+    await page.goto(url, {
+      waitUntil: 'domcontentloaded'
+    })
+    await waitForInitialNetworkIdle(ctx, page)
+
+    if (readonlyToken !== undefined) await waitForPrintReady(page)
+    await waitForContentReady(ctx, page, readonlyToken !== undefined)
+
+    if (kind === 'pdf') {
+      await page.emulateMediaType('print')
+      // Wait for two animation frames: the first applies the print media query and the second
+      // lets reactive UI state update the layout. Resource readiness is handled separately below.
+      await waitForPrintLayout(page)
+      // Scroll through the entire page to render lazy content, such as images.
+      await scrollThrough(page)
+    }
+    await waitForImages(page)
+    if (readonlyToken === undefined) await waitForMermaidDiagrams(ctx, page)
+    if (readonlyToken !== undefined) await waitForPrintReady(page)
+    if (readonlyToken !== undefined && renderError !== undefined) throw new Error(renderError)
+
+    let res: Uint8Array | undefined
+    if (kind === 'pdf') {
+      // Read page header and footer if defined
+      const pageHeader = await page.evaluate(() => {
+        const header = document.querySelector('#page-header')
+        return header?.innerHTML ?? ''
+      })
+
+      const pageFooter = await page.evaluate(() => {
+        const footer = document.querySelector('#page-footer')
+        return footer?.innerHTML ?? ''
+      })
+
+      const displayHeaderFooter = pageHeader !== '' || pageFooter !== ''
+
+      res = await ctx.with('pdf', {}, () =>
+        page.pdf({
+          format: 'A4',
+          landscape: orientation === 'landscape',
+          timeout: 60000,
+          waitForFonts: true,
+          headerTemplate: pageHeader,
+          footerTemplate: pageFooter,
+          displayHeaderFooter,
+          margin: {
+            top: '1.5cm',
+            right: '1cm',
+            bottom: '1.5cm',
+            left: '1cm'
+          }
+        })
+      )
+    } else {
+      // Note: currently we do not take the full page screenshot - only the viewport
+      // might make it configurable in the future
+      res = await ctx.with('screenshot', { kind }, () => page.screenshot({ type: kind }))
+    }
+
+    return res !== undefined ? Buffer.from(res) : undefined
+  } catch (error) {
+    if (timedOut) throw new Error('Print timed out')
+    throw error
+  } finally {
+    clearTimeout(deadline)
+    await close()
+  }
+}
+
+async function waitForPrintReady (page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const root = document.querySelector<HTMLElement>('[data-print-root]')
+      return root?.dataset.printState === 'ready' || root?.dataset.printState === 'error'
+    },
+    { timeout: 60000 }
+  )
+  const failed = await page.$eval('[data-print-root]', (root) => root.getAttribute('data-print-state') === 'error')
+  if (failed) throw new Error('Print document could not be opened')
 }
 
 async function waitForInitialNetworkIdle (ctx: MeasureContext, page: Page): Promise<void> {
@@ -153,7 +202,7 @@ async function waitForPrintLayout (page: Page): Promise<void> {
   })
 }
 
-async function waitForContentReady (ctx: MeasureContext, page: Page): Promise<void> {
+async function waitForContentReady (ctx: MeasureContext, page: Page, required: boolean = false): Promise<void> {
   try {
     await page.waitForFunction(
       () => {
@@ -164,6 +213,7 @@ async function waitForContentReady (ctx: MeasureContext, page: Page): Promise<vo
     )
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err)
+    if (required) throw new Error('Document content did not finish loading')
     ctx.warn('page content did not finish loading before PDF generation', { message })
   }
 }

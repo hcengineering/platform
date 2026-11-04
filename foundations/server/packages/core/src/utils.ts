@@ -193,6 +193,7 @@ export function updateHashForDoc (hash: Hash, _obj: any): void {
 }
 
 export class SessionDataImpl implements SessionData {
+  readonly?: boolean
   _removedMap: Map<Ref<Doc>, Doc> | undefined
   _contextCache: Map<string, any> | undefined
   _broadcast: SessionData['broadcast'] | undefined

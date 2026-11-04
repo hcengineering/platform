@@ -1,6 +1,7 @@
 <!--
 //
 // Copyright © 2022, 2023, 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -36,6 +37,7 @@
     getFileUrl,
     getImageSize,
     imageSizeToRatio,
+    getPrintContext,
     KeyedAttribute
   } from '@hcengineering/presentation'
   import { isDocCreatedByAccount } from '@hcengineering/contact'
@@ -48,14 +50,16 @@
     IconScribble,
     IconSize,
     Loading,
+    getRenderContext,
     PopupAlignment,
     themeStore,
-    ThrottledCaller
+    ThrottledCaller,
+    trackRenderResource
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
   import { Editor, FocusPosition, mergeAttributes } from '@tiptap/core'
   import { isChangeOrigin } from '@tiptap/extension-collaboration'
-  import { createEventDispatcher, getContext, onDestroy, onMount } from 'svelte'
+  import { createEventDispatcher, getAllContexts, getContext, onDestroy, onMount, tick } from 'svelte'
   import { Doc as YDoc } from 'yjs'
 
   import textEditor, {
@@ -114,7 +118,13 @@
   const dispatch = createEventDispatcher()
 
   const account = getCurrentAccount()
-  $: isGuest = account.role === AccountRole.DocGuest || account.role === AccountRole.ReadOnlyGuest
+  const printContext = getPrintContext()
+  const svelteContext = getAllContexts()
+  const rendering = getRenderContext()
+  const trackLoading = trackRenderResource()
+  let destroyed = false
+  const isGuest =
+    account.role === AccountRole.DocGuest || account.role === AccountRole.ReadOnlyGuest || printContext !== undefined
 
   const objectClass = object._class
   const objectId = object._id
@@ -133,7 +143,8 @@
   let synced = false
   let editorReady = false
 
-  $: loading = !synced
+  $: loading = !synced || !editorReady
+  $: trackLoading(loading && !contentError)
   $: canEditAsGuestCreator = account.role === AccountRole.Guest && isDocCreatedByAccount(object, account)
   $: editable =
     !readonly &&
@@ -142,8 +153,11 @@
     editorReady &&
     (hasAccountRole(account, AccountRole.User) || canEditAsGuestCreator)
 
-  void provider.loaded.then(() => (synced = true))
-  void provider.loaded.then(() => dispatch('loaded'))
+  async function contentReady (): Promise<void> {
+    await tick()
+    if (destroyed || contentError) return
+    dispatch('loaded')
+  }
 
   let editor: Editor
   let element: HTMLElement
@@ -352,15 +366,19 @@
     }
   }
 
-  onMount(async () => {
+  async function initialize (): Promise<void> {
     // it is recommended to wait for the local provider to be loaded
     // https://discuss.yjs.dev/t/initial-offline-value-of-a-shared-document/465/4
     await provider.loaded
+    if (destroyed) return
+    synced = true
 
     const canAttachFiles = attachFile != null
 
     const kit = await getEditorKit(
       {
+        printContext,
+        getSvelteContext: () => svelteContext,
         objectId,
         objectClass,
         objectSpace,
@@ -426,6 +444,7 @@
       },
       kitOptions
     )
+    if (destroyed) return
 
     // Create editor immediately with cached content
     // BUT keep it read-only until remote sync completes
@@ -447,6 +466,9 @@
       },
       onCreate: () => {
         editorReady = true
+        void contentReady().catch((error) => {
+          rendering?.fail(error)
+        })
       },
       onTransaction: () => {
         // force re-render so `editor.isActive` works as expected
@@ -472,13 +494,22 @@
       onContentError: ({ error, disableCollaboration }) => {
         disableCollaboration()
         contentError = true
+        rendering?.fail(error)
         console.error(error)
         Analytics.handleError(error)
       }
     })
+  }
+  onMount(() => {
+    void initialize().catch((error) => {
+      rendering?.fail(error)
+      contentError = true
+      Analytics.handleError(error)
+    })
   })
 
   onDestroy(() => {
+    destroyed = true
     if (editor !== undefined) {
       try {
         editor.destroy()

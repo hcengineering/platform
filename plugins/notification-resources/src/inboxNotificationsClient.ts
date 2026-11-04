@@ -1,5 +1,6 @@
 //
 // Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -33,6 +34,7 @@ import notification, {
   type InboxNotificationsClient
 } from '@hcengineering/notification'
 import { createQuery, getClient, onClient } from '@hcengineering/presentation'
+import { restrictionStore } from '@hcengineering/view-resources'
 import { derived, get, writable } from 'svelte/store'
 
 import { isActivityNotification } from './utils'
@@ -164,6 +166,7 @@ export class InboxNotificationsClientImpl implements InboxNotificationsClient {
   }
 
   async readDoc (_id: Ref<Doc>): Promise<void> {
+    if (get(restrictionStore).readonly) return
     const docNotifyContext = this._contextByDoc.get(_id)
 
     if (docNotifyContext === undefined || getCurrentAccount().role === AccountRole.ReadOnlyGuest) {

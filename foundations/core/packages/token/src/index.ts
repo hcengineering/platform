@@ -18,3 +18,4 @@
 export { default } from './plugin'
 export * from './extract'
 export * from './token'
+export * from './readonly'

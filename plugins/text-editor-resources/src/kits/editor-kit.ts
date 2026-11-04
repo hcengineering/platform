@@ -1,5 +1,6 @@
 //
 // Copyright © 2023, 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,7 +16,7 @@
 import { type GuestPeopleScope } from '@hcengineering/contact'
 import { type Class, type Doc, type Ref, type Space } from '@hcengineering/core'
 import { getResource } from '@hcengineering/platform'
-import { getClient } from '@hcengineering/presentation'
+import { getClient, type PrintContext } from '@hcengineering/presentation'
 import {
   CodeExtension,
   codeOptions,
@@ -41,7 +42,7 @@ import { CodeBlockHighlighExtension, codeBlockHighlightOptions } from '../compon
 import { MermaidExtension, mermaidOptions } from '../components/extension/codeSnippets/mermaid'
 import { DrawingBoardExtension } from '../components/extension/drawingBoard'
 import { EmbedNode } from '../components/extension/embed/embed'
-import { defaultDriveEmbedOptions, DriveEmbedProvider } from '../components/extension/embed/providers/drive'
+import { DriveEmbedProvider } from '../components/extension/embed/providers/drive'
 import { defaultYoutubeEmbedUrlOptions, YoutubeEmbedProvider } from '../components/extension/embed/providers/youtube'
 import { EmojiExtension } from '../components/extension/emoji'
 import { FileExtension } from '../components/extension/fileExt'
@@ -76,6 +77,8 @@ import { MathematicsExtension } from '../components/extension/mathematics'
 
 export interface EditorKitContext {
   mode?: 'full' | 'compact'
+  printContext?: PrintContext
+  getSvelteContext?: () => Map<unknown, unknown>
 
   objectId?: Ref<Doc>
   objectClass?: Ref<Class<Doc>>
@@ -117,7 +120,9 @@ const StaticEditorKit = extensionKit(
       embed: e(
         EmbedNode,
         context.mode === 'full' && {
-          providers: [YoutubeEmbedProvider(defaultYoutubeEmbedUrlOptions), DriveEmbedProvider(defaultDriveEmbedOptions)]
+          printContext: context.printContext,
+          getSvelteContext: context.getSvelteContext,
+          providers: [YoutubeEmbedProvider(defaultYoutubeEmbedUrlOptions), DriveEmbedProvider()]
         }
       ),
       inlineNote: e(NoteExtension, context.mode === 'full'), // Semi-deprecated, should be removed in the future
@@ -172,11 +177,11 @@ const subKits = {
 
   codeSnippets: extensionKit(
     'code-snippets-kit',
-    (e) =>
+    (e, context: EditorKitContext) =>
       ({
         codeBlock: e(CodeBlockHighlighExtension, codeBlockHighlightOptions),
         codeInline: e(CodeExtension, codeOptions),
-        codeBlockMermaid: e(MermaidExtension, mermaidOptions)
+        codeBlockMermaid: e(MermaidExtension, { ...mermaidOptions, printContext: context.printContext })
       }) as const
   ),
 

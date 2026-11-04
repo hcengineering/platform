@@ -2,6 +2,22 @@
 
 ## Prepare environment with docker to test final product.
 
+The UI test stack uses `tracex.local` for its browser-facing URLs. Before
+starting it locally, add this entry to the host's `/etc/hosts` (CI already does this):
+
+```text
+127.0.0.1 tracex.local
+```
+
+The print container maps the same hostname to `host-gateway` and reaches the
+services through their published ports. This keeps the page and file URLs on the
+same hostname, including authentication cookies. Server-to-server connections
+continue to use internal Docker service names.
+
+Playwright runs full Chromium in headless mode and treats the configured local
+HTTP origins as secure contexts so the clipboard APIs used by the tests remain
+available. The default headless shell does not apply the secure-origin flag.
+
 ```bash
 rush update
 rush build

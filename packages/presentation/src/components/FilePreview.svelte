@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -20,8 +21,12 @@
     Label,
     resizeObserver,
     deviceOptionsStore as deviceInfo,
-    Loading
+    Loading,
+    trackRenderResource
   } from '@hcengineering/ui'
+
+  import { onDestroy } from 'svelte'
+  import { getResource } from '@hcengineering/platform'
 
   import presentation from '../plugin'
 
@@ -47,10 +52,41 @@
 
   let loading = true
   let previewType: FilePreviewExtension | undefined = undefined
-  $: void getPreviewType(contentType, $previewTypes).then((res) => {
-    previewType = res
-    loading = false
+  let failed = false
+  let generation = 0
+  onDestroy(() => {
+    generation++
   })
+
+  function failedPreview (): void {
+    generation++
+    failed = true
+    loading = false
+  }
+
+  const trackLoading = trackRenderResource({ timeoutMs: 15000, onTimeout: failedPreview })
+  $: trackLoading(loading)
+
+  async function resolvePreview (
+    _file: string,
+    _name: string,
+    contentType: string,
+    types: FilePreviewExtension[]
+  ): Promise<void> {
+    const request = ++generation
+    loading = true
+    failed = false
+    try {
+      const type = await getPreviewType(contentType, types)
+      if (type !== undefined) await getResource(type.component)
+      if (request !== generation) return
+      previewType = type
+      loading = false
+    } catch {
+      if (request === generation) failedPreview()
+    }
+  }
+  $: void resolvePreview(file, name, contentType, $previewTypes)
 
   // For types we cannot render inline (e.g. pptx) the preview service may still
   // have generated a thumbnail image - show it in higher quality instead of just download.
@@ -106,66 +142,73 @@
   on:contextmenu
   style:min-height={fit ? '0' : `${minHeight ?? 0}px`}
 >
-  {#await srcRef then src}
-    {#if src === ''}
-      <div class="flex-col items-center">
-        <Label label={presentation.string.FailedToPreview} />
-      </div>
-    {:else if previewType !== undefined}
-      <Component
-        is={previewType.component}
-        props={{ value: file, name, contentType, metadata, ...props, fit, setLoading }}
-      />
-    {:else if loading}
-      <Loading />
-    {:else if thumbnail !== undefined && thumbnailFile !== undefined}
-      <div class="flex-col items-center flex-gap-3">
-        <div
-          class="thumbnail-wrap"
-          style:aspect-ratio={`${thumbnail.width} / ${thumbnail.height}`}
-          style:width={`min(100%, ${thumbnail.width}px)`}
-        >
-          <!-- Hi-res defines the box; low-res is a blurred placeholder shown until it loads -->
-          {#if !hiResLoaded}
-            <img class="thumbnail low-res" src={getPreviewThumbnail(thumbnailFile, 64, 64, 1)} alt={name} />
-            <div class="thumbnail-loader"><Loading /></div>
-          {/if}
-          <img
-            class="thumbnail hi-res"
-            class:loaded={hiResLoaded}
-            src={getPreviewThumbnail(thumbnailFile, thumbnail.width, thumbnail.height, 1)}
-            srcset={`${getPreviewThumbnail(thumbnailFile, thumbnail.width, thumbnail.height, 2)} 2x, ${getPreviewThumbnail(thumbnailFile, thumbnail.width, thumbnail.height, 3)} 3x`}
-            alt={name}
-            on:load={() => (hiResLoaded = true)}
-          />
+  {#if failed}
+    <Label label={presentation.string.FailedToPreview} />:
+    {#if typeof props.sourceLink === 'string'}<a href={props.sourceLink}>{name}</a>{:else}{name}{/if}
+  {:else}
+    {#await srcRef then src}
+      {#if src === ''}
+        <div class="flex-col items-center">
+          <Label label={presentation.string.FailedToPreview} />
         </div>
-        <a class="no-line" href={src} download={name} bind:this={download}>
-          <Button
-            label={presentation.string.Download}
-            kind={'ghost'}
-            on:click={() => {
-              download.click()
-            }}
-            showTooltip={{ label: presentation.string.Download }}
-          />
-        </a>
-      </div>
-    {:else}
-      <div class="flex-col items-center flex-gap-3">
-        <Label label={presentation.string.ContentTypeNotSupported} />
-        <a class="no-line" href={src} download={name} bind:this={download}>
-          <Button
-            label={presentation.string.Download}
-            kind={'primary'}
-            on:click={() => {
-              download.click()
-            }}
-            showTooltip={{ label: presentation.string.Download }}
-          />
-        </a>
-      </div>
-    {/if}
-  {/await}
+      {:else if previewType !== undefined}
+        <Component
+          is={previewType.component}
+          props={{ value: file, name, contentType, metadata, ...props, fit, setLoading }}
+        />
+      {:else if loading}
+        <Loading />
+      {:else if thumbnail !== undefined && thumbnailFile !== undefined}
+        <div class="flex-col items-center flex-gap-3">
+          <div
+            class="thumbnail-wrap"
+            style:aspect-ratio={`${thumbnail.width} / ${thumbnail.height}`}
+            style:width={`min(100%, ${thumbnail.width}px)`}
+          >
+            <!-- Hi-res defines the box; low-res is a blurred placeholder shown until it loads -->
+            {#if !hiResLoaded}
+              <img class="thumbnail low-res" src={getPreviewThumbnail(thumbnailFile, 64, 64, 1)} alt={name} />
+              <div class="thumbnail-loader"><Loading /></div>
+            {/if}
+            <img
+              class="thumbnail hi-res"
+              class:loaded={hiResLoaded}
+              src={getPreviewThumbnail(thumbnailFile, thumbnail.width, thumbnail.height, 1)}
+              srcset={`${getPreviewThumbnail(thumbnailFile, thumbnail.width, thumbnail.height, 2)} 2x, ${getPreviewThumbnail(thumbnailFile, thumbnail.width, thumbnail.height, 3)} 3x`}
+              alt={name}
+              on:load={() => (hiResLoaded = true)}
+            />
+          </div>
+          <a class="no-line" href={src} download={name} bind:this={download}>
+            <Button
+              label={presentation.string.Download}
+              noPrint
+              kind="ghost"
+              on:click={() => {
+                download.click()
+              }}
+              showTooltip={{ label: presentation.string.Download }}
+            />
+          </a>
+        </div>
+      {:else}
+        <div class="flex-col items-center flex-gap-3">
+          <Label label={presentation.string.ContentTypeNotSupported} />
+          <a class="no-line" href={src} download={name} bind:this={download}>
+            <Button
+              label={presentation.string.Download}
+              noPrint
+              kind="primary"
+              on:click={() => {
+                download.click()
+              }}
+              showTooltip={{ label: presentation.string.Download }}
+            />
+          </a>
+        </div>
+      {/if}
+    {/await}
+  {/if}
 </div>
 
 <style lang="scss">
@@ -180,6 +223,16 @@
   .content-embedded {
     width: 100%;
     border: none;
+  }
+
+  @media print {
+    .content-default,
+    .content-embedded {
+      height: auto;
+      min-height: 0 !important;
+      overflow: visible;
+      break-inside: avoid;
+    }
   }
 
   .thumbnail-wrap {

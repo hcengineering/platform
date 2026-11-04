@@ -559,6 +559,7 @@ export async function configurePlatform(): Promise<void> {
       [onboardId, onboard.component.OnboardApp],
       [calendarId, calendar.component.ConnectApp],
       [guestId, guest.component.GuestApp],
+      [printId, print.component.PrintApp],
       [globalProfileRoute, globalProfile.component.GlobalProfileApp],
       ['meetings', love.component.GuestMeetingApp]
     ])

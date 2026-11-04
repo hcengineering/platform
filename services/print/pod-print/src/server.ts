@@ -1,6 +1,7 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -15,7 +16,15 @@
 //
 
 import { createRestTxOperations } from '@hcengineering/api-client'
-import { type Class, type Doc, generateId, newMetrics, type Ref, type WorkspaceIds } from '@hcengineering/core'
+import {
+  type Class,
+  type Doc,
+  concatLink,
+  generateId,
+  newMetrics,
+  type Ref,
+  type WorkspaceIds
+} from '@hcengineering/core'
 import { StorageConfiguration, initStatisticsContext } from '@hcengineering/server-core'
 import { buildStorageFromConfig } from '@hcengineering/server-storage'
 import {
@@ -24,7 +33,7 @@ import {
   isWorkspaceLoginInfo,
   type WorkspaceLoginInfo
 } from '@hcengineering/account-client'
-import { getPublicLink } from '@hcengineering/server-guest-resources'
+import { generateReadOnlyToken } from '@hcengineering/server-token'
 import { createOpenTelemetryMetricsContext, SplitLogger } from '@hcengineering/analytics-service'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
@@ -120,7 +129,7 @@ const handleRequest = async (
 ): Promise<void> => {
   try {
     const token = extractToken(req.headers, req.query)
-    const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken()
+    const wsLoginInfo = await getAccountClient(token).getLoginInfoByToken({ kind: 'internal' })
     if (!isWorkspaceLoginInfo(wsLoginInfo)) {
       throw new ApiError(401, "Couldn't find workspace with the provided token")
     }
@@ -138,6 +147,35 @@ const handleRequest = async (
 const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, next: NextFunction) => {
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   handleRequest(fn, req, res, next)
+}
+
+async function renderDocument (
+  ctx: Request['ctx'],
+  workspace: WorkspaceIds,
+  login: WorkspaceLoginInfo,
+  objectClass: string,
+  objectId: string,
+  options: PrintOptions
+): Promise<Buffer | undefined> {
+  if (objectClass === '' || objectId === '') throw new ApiError(400, 'Document target is required')
+  const readonlyToken = generateReadOnlyToken(login.token, 180)
+  const endpoint = login.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
+  const client = await createRestTxOperations(endpoint, workspace.uuid, readonlyToken, false)
+
+  try {
+    const doc = await client.findOne(objectClass as Ref<Class<Doc>>, { _id: objectId as Ref<Doc> })
+    if (doc === undefined) {
+      throw new ApiError(404, 'Document not found')
+    }
+
+    const url = new URL(concatLink(config.FrontUrl, 'print/' + encodeURIComponent(workspace.url)))
+    url.searchParams.set('objectClass', objectClass)
+    url.searchParams.set('objectId', objectId)
+
+    return await print(ctx, url.toString(), options, readonlyToken)
+  } finally {
+    await client.close()
+  }
 }
 
 function parsePrintOptions (query: Request['query']): PrintOptions {
@@ -202,30 +240,38 @@ export function createServer (
     '/print',
     wrapRequest(async (req, res, wsIds, wsLoginInfo) => {
       const ctx = req.ctx
-      const rawlink = req.query.link as string
-      const link = decodeURIComponent(rawlink)
-
-      // Verify that link is from the same host and protocol is among the allowed
-      const url = new URL(link)
-      if (
-        !['http:', 'https:'].includes(url.protocol) ||
-        (whitelistedHostnames != null && !whitelistedHostnames.has(url.hostname))
-      ) {
-        ctx.error('Rejected processing unexpected link', { link })
-        throw new ApiError(403, 'Cannot process provided link')
-      }
-
       const options = parsePrintOptions(req.query)
+      const objectId = req.query.objectId
+      const objectClass = req.query.objectClass
 
-      const printRes = await ctx.with(
-        'print',
-        { kind: options.kind, orientation: options.orientation },
-        (ctx) => print(ctx, link, options),
-        {
-          url,
-          viewport: options.viewport
+      let printRes: Buffer | undefined
+      if (typeof objectId === 'string' && typeof objectClass === 'string') {
+        printRes = await renderDocument(ctx, wsIds, wsLoginInfo, objectClass, objectId, options)
+      } else {
+        const rawlink = req.query.link
+        if (typeof rawlink !== 'string') throw new ApiError(400, 'Document target is required')
+        const link = decodeURIComponent(rawlink)
+
+        // Verify that link is from the same host and protocol is among the allowed
+        const url = new URL(link)
+        if (
+          !['http:', 'https:'].includes(url.protocol) ||
+          (whitelistedHostnames != null && !whitelistedHostnames.has(url.hostname))
+        ) {
+          ctx.error('Rejected processing unexpected link', { link })
+          throw new ApiError(403, 'Cannot process provided link')
         }
-      )
+
+        printRes = await ctx.with(
+          'print',
+          { kind: options.kind, orientation: options.orientation },
+          (ctx) => print(ctx, link, options),
+          {
+            url,
+            viewport: options.viewport
+          }
+        )
+      }
 
       if (printRes === undefined) {
         throw new ApiError(400, 'Failed to print')
@@ -233,7 +279,9 @@ export function createServer (
 
       const printId = `print-${generateId()}`
 
-      await storageAdapter.put(ctx, wsIds, printId, printRes, `application/${options.kind}`, printRes.length)
+      const contentType =
+        options.kind === undefined || options.kind === 'pdf' ? 'application/pdf' : `image/${options.kind}`
+      await storageAdapter.put(ctx, wsIds, printId, printRes, contentType, printRes.length)
 
       res.contentType('application/json')
       res.send({ id: printId })
@@ -290,50 +338,25 @@ export function createServer (
       const objectClass = req.params.objectClass
       const options = parsePrintOptions(req.query)
 
-      const transactorUrl = wsLoginInfo.endpoint.replace('ws://', 'http://').replace('wss://', 'https://')
-      const client = await createRestTxOperations(transactorUrl, wsLoginInfo.workspace, wsLoginInfo.token)
-
-      try {
-        const doc = await client.findOne(objectClass as Ref<Class<Doc>>, { _id: objectId as Ref<Doc> })
-        if (doc === undefined) {
-          throw new ApiError(404, 'Document not found')
-        }
-
-        const link = await getPublicLink(doc, client, wsIds, true, null)
-
-        const printRes = await ctx.with(
-          'print',
-          { kind: options.kind, orientation: options.orientation },
-          (ctx) => print(ctx, link, options),
-          {
-            link,
-            viewport: options.viewport
-          }
-        )
-
-        if (printRes === undefined) {
-          throw new ApiError(400, 'Failed to print')
-        }
-
-        const kind = options.kind
-        const contentType = kind === 'pdf' || kind === undefined ? 'application/pdf' : `image/${kind}`
-        res.contentType(contentType)
-        res.send(printRes)
-      } finally {
-        await client.close()
-      }
+      const printRes = await renderDocument(ctx, wsIds, wsLoginInfo, objectClass, objectId, options)
+      if (printRes === undefined) throw new ApiError(400, 'Failed to print')
+      const contentType =
+        options.kind === undefined || options.kind === 'pdf' ? 'application/pdf' : `image/${options.kind}`
+      res.contentType(contentType)
+      res.send(printRes)
     })
   )
 
-  app.use((err: any, _req: any, res: any, _next: any) => {
-    measureCtx.error('error', { err })
+  app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+    measureCtx.error('request failed', { method: req.method, path: req.path, err })
 
     if (err instanceof ApiError) {
       res.status(err.code).send({ code: err.code, message: err.message })
       return
     }
 
-    res.status(500).send(err.message?.length > 0 ? { message: err.message } : err)
+    const message = err instanceof Error ? err.message : undefined
+    res.status(500).send(message !== undefined && message.length > 0 ? { message } : err)
   })
 
   return {

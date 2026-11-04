@@ -24114,15 +24114,24 @@ importers:
 
   ../../plugins/print-resources:
     dependencies:
+      '@hcengineering/account-client':
+        specifier: workspace:^0.7.25
+        version: link:../../foundations/core/packages/account-client
       '@hcengineering/analytics':
         specifier: workspace:^0.7.19
         version: link:../../foundations/core/packages/analytics
+      '@hcengineering/client':
+        specifier: workspace:^0.7.19
+        version: link:../../foundations/core/packages/client
+      '@hcengineering/contact':
+        specifier: workspace:^0.7.0
+        version: link:../contact
       '@hcengineering/core':
         specifier: workspace:^0.7.26
         version: link:../../foundations/core/packages/core
-      '@hcengineering/guest':
+      '@hcengineering/login':
         specifier: workspace:^0.7.0
-        version: link:../guest
+        version: link:../login
       '@hcengineering/platform':
         specifier: workspace:^0.7.20
         version: link:../../foundations/core/packages/platform
@@ -24144,6 +24153,9 @@ importers:
       '@hcengineering/view-resources':
         specifier: workspace:^0.7.0
         version: link:../view-resources
+      '@hcengineering/workbench':
+        specifier: workspace:^0.7.0
+        version: link:../workbench
       svelte:
         specifier: ^4.2.20
         version: 4.2.20

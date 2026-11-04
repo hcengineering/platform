@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,33 +15,61 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
-  import { getFileUrl } from '@hcengineering/presentation'
-  import { Loading, Scroller } from '@hcengineering/ui'
+  import presentation, { fetchPreviewFile, getPrintContext } from '@hcengineering/presentation'
+  import { Label, Loading, Scroller, trackRenderResource } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
 
   export let value: Ref<Blob>
   export let name: string
   export let fit: boolean = false
-
-  $: void fetchFile(value, name)
-
+  export let sourceLink: string | undefined = undefined
+  const staticView = getPrintContext() !== undefined
   let loading = true
-  let text: string | undefined = undefined
-
-  async function fetchFile (value: Ref<Blob>, name: string): Promise<void> {
-    loading = true
-
-    const src = getFileUrl(value, name)
-    const res = await fetch(src)
-    text = await res.text()
-
+  let failed = false
+  let text = ''
+  let generation = 0
+  let controller: AbortController | undefined
+  function failedPreview (): void {
+    generation++
+    controller?.abort()
+    failed = true
     loading = false
   }
+
+  const trackLoading = trackRenderResource({ timeoutMs: 15000, onTimeout: failedPreview })
+  $: trackLoading(loading)
+
+  async function prepare (value: string, name: string): Promise<void> {
+    const request = ++generation
+    controller?.abort()
+    const abort = new AbortController()
+    controller = abort
+    loading = true
+    failed = false
+    try {
+      const response = await fetchPreviewFile(value, name, { signal: abort.signal })
+      const content = await response.text()
+      if (request !== generation) return
+      text = content
+      loading = false
+    } catch {
+      if (request === generation) failedPreview()
+    }
+  }
+  $: void prepare(value, name)
+  onDestroy(() => {
+    generation++
+    controller?.abort()
+  })
 </script>
 
-{#if loading}
-  <div class="flex-center w-full h-full clear-mins">
-    <Loading />
-  </div>
+{#if failed}
+  <Label label={presentation.string.FailedToPreview} />:
+  {#if sourceLink !== undefined}<a href={sourceLink}>{name}</a>{:else}{name}{/if}
+{:else if loading}
+  <div class="flex-center w-full h-full clear-mins"><Loading /></div>
+{:else if staticView}
+  <pre class="select-text static-text">{text}</pre>
 {:else}
   <div class="container h-full w-full" class:fit>
     <Scroller horizontal padding="0 1rem">
@@ -52,11 +81,9 @@
 <style lang="scss">
   .container {
     max-height: 80vh;
-
     overflow: hidden;
     border: 1px solid var(--theme-button-border);
     border-radius: 0.25rem;
-
     &.fit {
       min-height: 100%;
     }
@@ -65,11 +92,14 @@
       min-height: 20rem;
     }
   }
-
   pre {
     font-family: var(--mono-font);
-    white-space: pre !important;
-    word-wrap: nowrap !important;
+    white-space: pre;
     font-size: 0.8125rem;
+  }
+  .static-text {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
   }
 </style>

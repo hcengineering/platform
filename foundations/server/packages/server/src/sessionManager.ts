@@ -1147,7 +1147,13 @@ export class TSessionManager implements SessionManager {
 
   private queueStatus (workspaceId: WorkspaceUuid, session: Session, online: boolean): void {
     const user = session.getUser()
-    if (user === undefined || session.getRawAccount().role === AccountRole.ReadOnlyGuest) return
+    if (
+      user === undefined ||
+      session.getRawAccount().role === AccountRole.ReadOnlyGuest ||
+      session.token.extra?.readonly === 'true'
+    ) {
+      return
+    }
     let pending = this.pendingStatus.get(workspaceId)
     if (pending === undefined) {
       pending = new Map()

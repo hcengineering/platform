@@ -1,5 +1,6 @@
 //
 // Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,7 +15,7 @@
 //
 
 import { getMetadata, translate } from '@hcengineering/platform'
-import { type ActionContext, copyTextToClipboard } from '@hcengineering/presentation'
+import { type ActionContext, copyTextToClipboard, type PrintContext } from '@hcengineering/presentation'
 import { EmbedNode as BaseEmbedNode } from '@hcengineering/text'
 import textEditor from '@hcengineering/text-editor'
 import { type Editor, type Range } from '@tiptap/core'
@@ -36,11 +37,14 @@ import EmbedToolbarHead from './EmbedToolbarHead.svelte'
 
 export interface EmbedNodeOptions {
   providers: EmbedNodeProvider[]
+  printContext?: PrintContext
+  getSvelteContext?: () => Map<unknown, unknown>
 }
 
 export interface EmbedNodeViewHandle {
   name: string
   destroy?: () => void
+  ready?: Promise<void>
 }
 
 export interface EmbedNodeProvider {
@@ -51,7 +55,8 @@ export interface EmbedNodeProvider {
 export type EmbedNodeView = (
   editor: Editor,
   root: HTMLDivElement,
-  getPos: () => number
+  getPos: () => number,
+  context: Map<unknown, unknown>
 ) => EmbedNodeViewHandle | undefined
 export type EmbedNodeProviderConstructor<T> = (options: T) => EmbedNodeProvider
 
@@ -106,7 +111,10 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
 
   addNodeView () {
     return ({ node, HTMLAttributes, editor, getPos }) => {
-      const providerPromise = matchUrl(this.options.providers, node.attrs.src)
+      const printContext = this.options.printContext
+      const resolved = matchUrl(this.options.providers, node.attrs.src)
+      const providerPromise = printContext?.waitFor(resolved, 15000) ?? resolved
+      const finish = printContext?.registerResource() ?? (() => {})
 
       const root = document.createElement('div')
       root.setAttribute('data-type', this.name)
@@ -118,16 +126,25 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
       root.setAttribute('block-editor-blur', 'true')
 
       let handle: EmbedNodeViewHandle | undefined
+      let destroyed = false
 
       void providerPromise
-        .then((view) => {
+        .then(async (view) => {
+          if (destroyed) return
           view = view ?? StubEmbedNodeView
-          handle = view(editor, root, getPos)
+          handle = view(editor, root, getPos, this.options.getSvelteContext?.() ?? new Map())
           if (handle !== undefined) {
             root.classList.add(`embed-${handle.name}`)
+            await handle.ready
           }
         })
+        .catch(async () => {
+          if (destroyed) return
+          handle = StubEmbedNodeView(editor, root, getPos, this.options.getSvelteContext?.() ?? new Map())
+          await handle?.ready
+        })
         .finally(() => {
+          finish()
           const pos = typeof getPos === 'function' ? getPos() : 0
           setLoadingState(editor.view, pos, false)
         })
@@ -135,6 +152,8 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
       return {
         dom: root,
         destroy: () => {
+          destroyed = true
+          finish()
           handle?.destroy?.()
         }
       }
@@ -525,11 +544,12 @@ const StubEmbedNodeView: EmbedNodeView = (editor: Editor, root: HTMLDivElement, 
     }
   }
 
-  void embed()
+  const ready = embed()
   root.appendChild(hint)
 
   return {
-    name: 'stub'
+    name: 'stub',
+    ready
   }
 }
 

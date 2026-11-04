@@ -1,6 +1,7 @@
 //
 // Copyright © 2025 Hardcore Engineering Inc.
 // Copyright © 2026 Intabia Fusion.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -25,6 +26,8 @@ import {
 } from '@hcengineering/core'
 import { createQuery, getClient } from '@hcengineering/presentation'
 import pulse, { type DocumentPresence } from '@hcengineering/pulse'
+import { restrictionStore } from '@hcengineering/view-resources'
+import { get } from 'svelte/store'
 
 export interface PresenceInfo {
   personId: Ref<Person>
@@ -46,7 +49,7 @@ export interface PresenceActionParams {
  * @public
  */
 export function canSendPulse (): boolean {
-  return hasAccountRole(getCurrentAccount(), AccountRole.Guest)
+  return !get(restrictionStore).readonly && hasAccountRole(getCurrentAccount(), AccountRole.Guest)
 }
 
 function presenceDocId (objectId: string, personId: Ref<Person>): Ref<DocumentPresence> {

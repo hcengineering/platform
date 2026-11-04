@@ -179,6 +179,7 @@ export class ClientSession implements Session {
       this.token.extra?.service ?? '🤦‍♂️user',
       this.getPermissionsGrant()
     )
+    contextData.readonly = this.token.extra?.readonly === 'true'
     ctx.ctx.contextData = contextData
   }
 
@@ -394,7 +395,7 @@ export class ClientSession implements Session {
   }
 
   async upload (ctx: ClientSessionCtx, domain: Domain, docs: Doc[]): Promise<void> {
-    if (!this.allowUpload) {
+    if (!this.allowUpload || this.token.extra?.readonly === 'true') {
       await ctx.sendResponse(ctx.requestId, { error: 'Upload not allowed' })
       return
     }
@@ -410,7 +411,7 @@ export class ClientSession implements Session {
   }
 
   async clean (ctx: ClientSessionCtx, domain: Domain, docs: Ref<Doc>[]): Promise<void> {
-    if (!this.allowUpload) {
+    if (!this.allowUpload || this.token.extra?.readonly === 'true') {
       await ctx.sendResponse(ctx.requestId, { error: 'Clean not allowed' })
       return
     }

@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2024-2025 Anticrm Platform Contributors.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -19,6 +20,7 @@
   import { Avatar, getPersonsByPersonRefs } from '@hcengineering/contact-resources'
   import { getEmbeddedLabel } from '@hcengineering/platform'
   import { IconSize, tooltip, deviceOptionsStore as deviceInfo, checkAdaptiveMatching } from '@hcengineering/ui'
+  import { restrictionStore } from '@hcengineering/view-resources'
 
   import PresenceList from './PresenceList.svelte'
   import { presence } from '../presence'
@@ -53,50 +55,52 @@
   $: void updatePresence(presenceInfo)
 </script>
 
-<div
-  data-id="document-presence"
-  use:presence={{
-    personId: me,
-    objectId: presenceId ?? object._id,
-    objectClass: object._class,
-    onPresence
-  }}
->
-  {#if persons.length > 0}
-    {#if adaptive}
-      <div
-        class="hulyCombineAvatars-container"
-        use:tooltip={{ component: PresenceList, props: { persons, size }, direction: 'bottom' }}
-      >
-        {#each persons.slice(0, limit) as person, i}
-          <div
-            class="hulyCombineAvatar tiny"
-            data-over={i === limit - 1 && overLimit ? `+${persons.length - limit + 1}` : undefined}
-          >
-            <Avatar name={person.name} {size} {person} />
-          </div>
-        {/each}
-      </div>
-    {:else}
-      <div class="flex-row-center flex-gap-1">
-        {#each persons as person}
-          <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <!-- svelte-ignore a11y-no-static-element-interactions -->
-          <div
-            use:tooltip={{ label: getEmbeddedLabel(formatName(person.name)) }}
-            class="avatar-button"
-            class:followee-avatar={$followee === person._id}
-            on:click={() => {
-              toggleFollowee(person._id)
-            }}
-          >
-            <Avatar name={person.name} {size} {person} />
-          </div>
-        {/each}
-      </div>
+{#if !$restrictionStore.readonly}
+  <div
+    data-id="document-presence"
+    use:presence={{
+      personId: me,
+      objectId: presenceId ?? object._id,
+      objectClass: object._class,
+      onPresence
+    }}
+  >
+    {#if persons.length > 0}
+      {#if adaptive}
+        <div
+          class="hulyCombineAvatars-container"
+          use:tooltip={{ component: PresenceList, props: { persons, size }, direction: 'bottom' }}
+        >
+          {#each persons.slice(0, limit) as person, i}
+            <div
+              class="hulyCombineAvatar tiny"
+              data-over={i === limit - 1 && overLimit ? `+${persons.length - limit + 1}` : undefined}
+            >
+              <Avatar name={person.name} {size} {person} />
+            </div>
+          {/each}
+        </div>
+      {:else}
+        <div class="flex-row-center flex-gap-1">
+          {#each persons as person}
+            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <div
+              use:tooltip={{ label: getEmbeddedLabel(formatName(person.name)) }}
+              class="avatar-button"
+              class:followee-avatar={$followee === person._id}
+              on:click={() => {
+                toggleFollowee(person._id)
+              }}
+            >
+              <Avatar name={person.name} {size} {person} />
+            </div>
+          {/each}
+        </div>
+      {/if}
     {/if}
-  {/if}
-</div>
+  </div>
+{/if}
 
 <style lang="scss">
   .avatar-button {

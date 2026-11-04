@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,11 +15,20 @@
 -->
 <script lang="ts">
   import { type Blob, type Ref } from '@hcengineering/core'
+  import presentation, { getPrintContext } from '@hcengineering/presentation'
+  import { Label } from '@hcengineering/ui'
   import AudioPlayer from './AudioPlayer.svelte'
 
   export let value: Ref<Blob>
   export let name: string
   export let contentType: string
+  export let sourceLink: string | undefined = undefined
+  const printing = getPrintContext() !== undefined
 </script>
 
-<AudioPlayer {value} {name} {contentType} fullSize={true} />
+{#if printing}
+  <Label label={presentation.string.ContentTypeNotSupported} />:
+  {#if sourceLink !== undefined}<a href={sourceLink}>{name}</a>{:else}{name}{/if}
+{:else}
+  <AudioPlayer {value} {name} {contentType} fullSize={true} />
+{/if}

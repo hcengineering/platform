@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -89,7 +90,7 @@
 
   {#if !isLoading}
     {#if src === '' || src === undefined}
-      <div class="centered">
+      <div class="flex-center flex-grow w-full h-full">
         <Label label={presentation.string.FailedToPreview} />
       </div>
     {:else if isImage}
@@ -100,7 +101,7 @@
       <EmbeddedPDF {src} {name} {css} fit />
     {/if}
   {:else}
-    <div class="centered">
+    <div class="flex-center flex-grow w-full h-full">
       <Spinner size="medium" />
     </div>
   {/if}
@@ -139,13 +140,5 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-  }
-  .centered {
-    flex-grow: 1;
-    width: 100;
-    height: 100;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 </style>

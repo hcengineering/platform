@@ -48,7 +48,7 @@ services:
       - 4041:4041
     restart: unless-stopped
   postgres:
-    image: postgres:16
+    image: postgres:18.1
     extra_hosts:
       - "tracex.local:host-gateway"
     command: ["postgres", "-p", "5432"]

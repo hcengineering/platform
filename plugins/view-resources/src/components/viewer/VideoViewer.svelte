@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2024 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -14,15 +15,17 @@
 -->
 <script lang="ts">
   import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
-  import { getFileUrl, getVideoMeta } from '@hcengineering/presentation'
+  import presentation, { getFileUrl, getVideoMeta, getPrintContext } from '@hcengineering/presentation'
   import { HlsVideo } from '@hcengineering/hls'
-  import { Video } from '@hcengineering/ui'
+  import { Label, Video } from '@hcengineering/ui'
 
   export let value: Ref<Blob>
   export let name: string
   export let contentType: string
   export let metadata: BlobMetadata | undefined
   export let fit: boolean = false
+  export let sourceLink: string | undefined = undefined
+  const printing = getPrintContext() !== undefined
 
   $: aspectRatio =
     metadata?.originalWidth && metadata?.originalHeight
@@ -32,24 +35,29 @@
   $: maxHeight = metadata?.originalHeight ? `min(${metadata.originalHeight}px, 80vh)` : undefined
 </script>
 
-<div
-  class="flex justify-center w-full"
-  style:aspect-ratio={aspectRatio}
-  style:max-width={fit ? '100%' : maxWidth}
-  style:max-height={fit ? '100%' : maxHeight}
->
-  {#if contentType.toLowerCase().endsWith('x-mpegurl')}
-    {@const src = getFileUrl(value, '')}
-    <HlsVideo {src} hlsSrc={src} preload />
-  {:else}
-    {#await getVideoMeta(value, name) then meta}
-      {#if meta?.hls?.source !== undefined}
-        {@const src = getFileUrl(value, '')}
-        <HlsVideo {src} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
-      {:else}
-        {@const src = getFileUrl(value, '')}
-        <Video {src} {name} preload />
-      {/if}
-    {/await}
-  {/if}
-</div>
+{#if printing}
+  <Label label={presentation.string.ContentTypeNotSupported} />:
+  {#if sourceLink !== undefined}<a href={sourceLink}>{name}</a>{:else}{name}{/if}
+{:else}
+  <div
+    class="flex justify-center w-full"
+    style:aspect-ratio={aspectRatio}
+    style:max-width={fit ? '100%' : maxWidth}
+    style:max-height={fit ? '100%' : maxHeight}
+  >
+    {#if contentType.toLowerCase().endsWith('x-mpegurl')}
+      {@const src = getFileUrl(value, '')}
+      <HlsVideo {src} hlsSrc={src} preload />
+    {:else}
+      {#await getVideoMeta(value, name) then meta}
+        {#if meta?.hls?.source !== undefined}
+          {@const src = getFileUrl(value, '')}
+          <HlsVideo {src} hlsSrc={meta.hls.source} hlsThumbnail={meta.hls.thumbnail} preload={false} />
+        {:else}
+          {@const src = getFileUrl(value, '')}
+          <Video {src} {name} preload />
+        {/if}
+      {/await}
+    {/if}
+  </div>
+{/if}
