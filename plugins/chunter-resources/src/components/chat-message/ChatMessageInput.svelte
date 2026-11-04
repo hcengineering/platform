@@ -19,9 +19,10 @@
   import chunter, { ChatMessage, ChunterEvents, ThreadMessage } from '@hcengineering/chunter'
   import { Class, Doc, generateId, getCurrentAccount, Ref, type CommitResult } from '@hcengineering/core'
   import { createQuery, DraftController, draftsStore, getClient } from '@hcengineering/presentation'
-  import { areEqualMarkups, EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
+  import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
+  import { keepsUnsentDraft } from './draftSync'
   import { ThrottledCaller } from '@hcengineering/ui'
   import { getSpace, editingMessageStore } from '@hcengineering/activity-resources'
 
@@ -67,6 +68,8 @@
   let currentMessage: MessageDraft = chatMessage ?? (currentDraft != null ? { ...currentDraft } : getDefault())
   let _id = currentMessage._id
   let inputContent = currentMessage.message
+  // What this input showed when it loaded the draft; content still equal to it was not edited here.
+  let loadedMessage: MessageDraft = { ...currentMessage }
 
   // The same draft (and message _id) can be open in several inputs at once, e.g. in the channel view and in the
   // sidebar. Watch for the message being created to clear this input when it was sent from another one.
@@ -80,21 +83,19 @@
   function onMessageCreated (result: ChatMessage[]): void {
     if (result.length === 0 || _id === chatMessage?._id) return
     // Ouch we have got comment with same id created already.
-    const sent = result[0]
-    if (
-      areEqualMarkups(currentMessage.message, sent.message) &&
-      (currentMessage.attachments ?? 0) === (sent.attachments ?? 0)
-    ) {
-      clear()
-    } else {
-      // Content added here after the message was sent elsewhere is kept as a new draft
+    if (keepsUnsentDraft(currentMessage, loadedMessage, result[0])) {
+      // Content typed here and not sent is kept as a new draft
       _id = generateId()
       currentMessage = { ...currentMessage, _id }
+    } else {
+      // Stale copy of the draft that was sent
+      clear()
     }
   }
 
   function clear (): void {
     currentMessage = getDefault()
+    loadedMessage = { ...currentMessage }
     _id = currentMessage._id
     inputContent = currentMessage.message
     inputRef.removeDraft(false)
