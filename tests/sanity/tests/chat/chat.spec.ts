@@ -287,10 +287,13 @@ test.describe('Channel tests', () => {
   })
 
   test('Check if user can copy message', async ({ page }) => {
-    const baseURL = process.env.PLATFORM_URI ?? 'http://tracex.local:8083'
-    const expectedUrl = `${baseURL}/workbench/${data.workspaceName}/chunter/chunter%3Aspace%3ARandom%7Cchunter%3Aclass%3AChannel?message=`
     await leftSideMenuPage.clickChunter()
     await channelPage.clickChannel('random')
+    // Workspace URL slug may differ from its name (e.g. "demo-6ae9fc70-..." when the name is taken),
+    // so take the actual origin and slug from the current page URL.
+    const currentUrl = new URL(page.url())
+    const workspaceSlug = currentUrl.pathname.split('/')[2]
+    const expectedUrl = `${currentUrl.origin}/workbench/${workspaceSlug}/chunter/chunter%3Aspace%3ARandom%7Cchunter%3Aclass%3AChannel?message=`
     await channelPage.sendMessage('Test message')
     await channelPage.clickOpenMoreButton('Test message')
     await channelPage.clickCopyLinkButton()
