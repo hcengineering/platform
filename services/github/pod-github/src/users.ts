@@ -36,7 +36,9 @@ export class UserManager {
   }
 
   private secretToUserRecord (secret: IntegrationSecret, login: string): GithubUserRecord | undefined {
-    const parsed = JSON.parse(secret.secret) ?? {} // TODO: Add security
+    // Records saved before octokit was excluded carry a JSON husk of the client
+    // (`{ log, rest, retry }`, no methods); drop it so callers create a real one.
+    const { octokit, ...parsed } = JSON.parse(secret.secret) ?? {} // TODO: Add security
     return {
       ...parsed,
       account: secret.socialId,
@@ -97,6 +99,8 @@ export class UserManager {
   }
 
   async updateUser (dta: GithubUserRecord, clear: boolean = true): Promise<void> {
+    // The live Octokit client is runtime state, not part of the stored secret.
+    const { octokit, ...stored } = dta
     if (clear) {
       this.userCache.clear()
       this.refUserCache.clear()
@@ -132,7 +136,7 @@ export class UserManager {
         key: dta._id,
         kind: githubUserIntegrationKind,
         socialId: dta.account,
-        secret: JSON.stringify(dta),
+        secret: JSON.stringify(stored),
         workspaceUuid: null
       })
     } else {
@@ -140,7 +144,7 @@ export class UserManager {
         key: dta._id,
         kind: githubUserIntegrationKind,
         socialId: dta.account,
-        secret: JSON.stringify(dta),
+        secret: JSON.stringify(stored),
         workspaceUuid: null
       })
     }
