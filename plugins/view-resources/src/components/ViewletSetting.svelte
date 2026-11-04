@@ -192,7 +192,6 @@
   function processAttribute (attribute: AnyAttribute, result: Config[], useMixinProxy = false): void {
     if (attribute.hidden || attribute.label === undefined) return
     if (viewlet.configOptions?.hiddenKeys?.includes(attribute.name)) return
-    if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) return
     const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
     const value = getValue(attribute.name, attribute.type, attrClass)
     for (const res of result) {
@@ -403,7 +402,6 @@
 
     for (const [attributeKey, attribute] of attributes) {
       if (attribute.hidden || attribute.label === undefined) continue
-      if (hierarchy.isDerived(attribute.type._class, core.class.Collection)) continue
       const { attrClass, category } = getAttributePresenterClass(hierarchy, attribute.type)
       const mixin =
         category === 'object'
