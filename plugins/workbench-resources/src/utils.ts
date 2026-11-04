@@ -176,6 +176,9 @@ export async function showApplication (app: Application): Promise<void> {
 }
 
 export const workspacesStore = writable<WorkspaceInfoWithStatus[]>([])
+
+// Inbox unread state of the current workspace (used instead of the server hasUnread flag).
+export const currentWorkspaceHasInboxUnread = writable<boolean>(false)
 export const locationWorkspaceStore = derived(location, (loc: Location) => loc.path[1])
 export const currentWorkspaceStore = derived(
   [workspacesStore, locationWorkspaceStore],

@@ -356,6 +356,54 @@ describe('postgres operations', () => {
     expect(((r4[0].$lookup?.attachedTo as any)?.$lookup.attachedTo as Task)?._id).toEqual(docId)
   })
 
+  it('filters by existence of a looked-up document', async () => {
+    const removedTask = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'removed-task',
+      description: 'Descr',
+      rate: 20
+    })
+    await operations.addCollection(
+      taskPlugin.class.TaskComment,
+      '' as Ref<Space>,
+      removedTask,
+      taskPlugin.class.Task,
+      'tasks',
+      { message: 'orphan', date: new Date() }
+    )
+    await operations.removeDoc(taskPlugin.class.Task, '' as Ref<Space>, removedTask)
+
+    const task = await operations.createDoc(taskPlugin.class.Task, '' as Ref<Space>, {
+      name: 'task',
+      description: 'Descr',
+      rate: 20
+    })
+    const commentId = await operations.addCollection(
+      taskPlugin.class.TaskComment,
+      '' as Ref<Space>,
+      task,
+      taskPlugin.class.Task,
+      'tasks',
+      { message: 'attached', date: new Date() }
+    )
+
+    const all = await client.findAll<TaskComment>(taskPlugin.class.TaskComment, {})
+    expect(all).toHaveLength(2)
+
+    const withParent = await client.findAll<TaskComment>(
+      taskPlugin.class.TaskComment,
+      { '$lookup.attachedTo._id': { $exists: true } },
+      { lookup: { attachedTo: taskPlugin.class.Task } }
+    )
+    expect(withParent.map((it) => it._id)).toEqual([commentId])
+
+    const orphans = await client.findAll<TaskComment>(
+      taskPlugin.class.TaskComment,
+      { '$lookup.attachedTo._id': { $exists: false } },
+      { lookup: { attachedTo: taskPlugin.class.Task } }
+    )
+    expect(orphans.map((it) => it.message)).toEqual(['orphan'])
+  })
+
   it('check associations', async () => {
     const association = await operations.findOne(core.class.Association, {})
     if (association == null) {

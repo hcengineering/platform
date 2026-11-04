@@ -27,7 +27,7 @@ import {
 import type { ConnectionMgr, DBClient, DBResult } from '@hcengineering/postgres-base'
 import { PostgresAdapter } from '../storage'
 import { genMinModel } from './minmodel'
-import { createTaskModel, type Task, taskPlugin } from './tasks'
+import { createTaskModel, type Task, type TaskComment, taskPlugin } from './tasks'
 
 function makeAdapter (): { adapter: PostgresAdapter, execute: jest.Mock } {
   const hierarchy = new Hierarchy()
@@ -123,5 +123,22 @@ describe('PostgreSQL query filters', () => {
 
     expect(execute.mock.calls[0][0]).toContain("test_task.data->'arr' ?| $2::text[]")
     expect(execute.mock.calls[0][1][1]).toEqual(['1', '2'])
+  })
+
+  it('filters by existence of a looked-up document via LEFT JOIN', async () => {
+    const { adapter, execute } = makeAdapter()
+    const ctx = new MeasureMetricsContext('test', {}) as MeasureContext<SessionData>
+    // Used by the workbench to skip activity inbox notifications whose message is gone.
+    const query = { '$lookup.attachedTo._id': { $exists: true } } as unknown as DocumentQuery<TaskComment>
+
+    await adapter.findAll(ctx, taskPlugin.class.TaskComment, query, {
+      unsecured: true,
+      lookup: { attachedTo: taskPlugin.class.Task }
+    })
+
+    const sql = execute.mock.calls[0][0] as string
+    const alias = sql.match(/LEFT JOIN \S+ AS (\S+) ON/)?.[1]
+    expect(alias).toBeDefined()
+    expect(sql).toContain(`${alias}."_id" IS NOT NULL`)
   })
 })
