@@ -54,6 +54,7 @@
   {ignoreObjects}
   docQuery={query}
   versionsQuery={docQuery}
+  searchMode={'fulltext'}
   searchField={'title'}
   type={'object'}
   groupBy={'_class'}
