@@ -13,7 +13,8 @@
 // limitations under the License.
 //
 
-import { areEqualMarkups, type Markup } from '@hcengineering/text'
+import { type Markup } from '@hcengineering/core'
+import { areEqualMarkups } from '@hcengineering/text'
 
 export interface DraftContent {
   message: Markup

@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: EPL-2.0
 
-import { jsonToMarkup, markupToJSON, type Markup } from '@hcengineering/text'
+import { type Markup } from '@hcengineering/core'
+import { jsonToMarkup, MarkupNodeType, markupToJSON } from '@hcengineering/text'
 
 import { keepsUnsentDraft } from '../components/chat-message/draftSync'
 
 function text (value: string): Markup {
   return jsonToMarkup({
-    type: 'doc',
-    content: value === '' ? [] : [{ type: 'paragraph', content: [{ type: 'text', text: value }] }]
+    type: MarkupNodeType.doc,
+    content:
+      value === '' ? [] : [{ type: MarkupNodeType.paragraph, content: [{ type: MarkupNodeType.text, text: value }] }]
   })
 }
 
