@@ -1358,6 +1358,70 @@ export function devTool (
       })
     })
 
+  program
+    .command('disable-meeting-room-defaults-all')
+    .description('Disable automatic recording and transcription in meeting rooms of all active, enabled workspaces')
+    .option('--dry-run', 'Only report rooms that would be updated', false)
+    .option('--apply', 'Apply changes; without this option the command runs in dry-run mode', false)
+    .action(async (cmd: { dryRun: boolean, apply: boolean }) => {
+      if (cmd.dryRun && cmd.apply) {
+        throw new Error('--dry-run cannot be used with --apply')
+      }
+
+      const dryRun = cmd.dryRun || !cmd.apply
+      await withAccountDatabase(async (db) => {
+        const statuses = await db.workspaceStatus.find({ mode: 'active', isDisabled: false })
+        const activeWorkspaces = new Set(statuses.map((status) => status.workspaceUuid))
+        const workspaces = (await db.workspace.find({})).filter((workspace) => activeWorkspaces.has(workspace.uuid))
+        let completed = 0
+        let failed = 0
+        let updated = 0
+        let wouldUpdate = 0
+
+        console.log('disable-meeting-room-defaults-all: starting', { dryRun, workspaces: workspaces.length })
+        for (const workspace of workspaces) {
+          try {
+            const endpoint = await getWorkspaceTransactorEndpoint(workspace.uuid)
+            const connection = await connect(endpoint, workspace.uuid, undefined, { model: 'upgrade' })
+            try {
+              const ops = new TxOperations(connection, core.account.System)
+              const result = await disableMeetingRoomDefaults(ops, dryRun)
+              updated += result.updated
+              wouldUpdate += result.wouldUpdate
+              console.log('disable-meeting-room-defaults-all: workspace processed', {
+                workspace: workspace.uuid,
+                name: workspace.name,
+                dryRun,
+                ...result
+              })
+            } finally {
+              await connection.close()
+            }
+            completed++
+          } catch (error) {
+            failed++
+            console.error('disable-meeting-room-defaults-all: workspace failed', {
+              workspace: workspace.uuid,
+              name: workspace.name,
+              error
+            })
+          }
+        }
+
+        console.log('disable-meeting-room-defaults-all: finished', {
+          dryRun,
+          workspaces: workspaces.length,
+          completed,
+          failed,
+          updated,
+          wouldUpdate
+        })
+        if (failed > 0) {
+          process.exitCode = 1
+        }
+      })
+    })
+
   extendProgram?.(program)
 
   process.on('unhandledRejection', (reason, promise) => {
