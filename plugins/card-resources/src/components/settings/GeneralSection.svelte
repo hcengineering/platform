@@ -237,15 +237,6 @@
   async function saveVersioning (enabled: boolean): Promise<void> {
     versioningUpdating = true
     const previous = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled ?? false
-    console.log('[GeneralSection.saveVersioning] Saving versioning', {
-      masterTagId: masterTag._id,
-      objectClass: masterTag._class,
-      objectSpace: masterTag.space,
-      enabled,
-      previous,
-      hasVersionAttribute: h.findAttribute(masterTag._id, 'version') !== undefined,
-      hasEffectiveAttribute: h.findAttribute(masterTag._id, 'isEffective') !== undefined
-    })
     try {
       if (enabled && h.findAttribute(masterTag._id, 'version') === undefined) {
         await client.createDoc(core.class.Attribute, core.space.Model, {
@@ -257,7 +248,6 @@
           readonly: true,
           type: TypeNumber()
         })
-        console.log('[GeneralSection.saveVersioning] Version attribute created', { masterTagId: masterTag._id })
       }
       if (enabled && h.findAttribute(masterTag._id, 'isEffective') === undefined) {
         await client.createDoc(core.class.Attribute, core.space.Model, {
@@ -269,20 +259,12 @@
           readonly: true,
           type: TypeBoolean()
         })
-        console.log('[GeneralSection.saveVersioning] Effective attribute created', { masterTagId: masterTag._id })
       }
-      console.log('[GeneralSection.saveVersioning] Creating versionable mixin', { masterTagId: masterTag._id, enabled })
       await client.createMixin(masterTag._id, masterTag._class, masterTag.space, core.mixin.VersionableClass, {
         enabled
       })
-      console.log('[GeneralSection.saveVersioning] Versionable mixin saved', {
-        masterTagId: masterTag._id,
-        enabled,
-        hierarchyEnabled: h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
-      })
       versioningEnabled = enabled
     } catch (error) {
-      console.log('[GeneralSection.saveVersioning] Saving failed', { masterTagId: masterTag._id, enabled, error })
       versioningEnabled = previous
       await setPlatformStatus(unknownError(error))
     } finally {
@@ -291,39 +273,22 @@
   }
 
   function changeVersioning (event: CustomEvent<boolean>): void {
-    console.log('[GeneralSection.changeVersioning] Toggle changed', {
-      masterTagId: masterTag._id,
-      objectClass: masterTag._class,
-      requestedEnabled: event.detail,
-      toggleEnabled: versioningEnabled,
-      hierarchyEnabled: h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled,
-      isMixin: h.isMixin(masterTag._id),
-      versioningUpdating
-    })
     if (h.isMixin(masterTag._id)) return
     if (!event.detail) {
       void saveVersioning(false)
       return
     }
-    console.log('[GeneralSection.changeVersioning] Opening confirmation', { masterTagId: masterTag._id })
     showPopup(
       MessageBox,
       {
         label: card.string.EnableVersioning,
         message: card.string.EnableVersioningConfirm,
         action: async () => {
-          console.log('[GeneralSection.changeVersioning] Enabling confirmed', { masterTagId: masterTag._id })
           await saveVersioning(true)
         }
       },
       undefined,
-      (result) => {
-        console.log('[GeneralSection.changeVersioning] Confirmation closed', {
-          masterTagId: masterTag._id,
-          result,
-          toggleEnabled: versioningEnabled,
-          hierarchyEnabled: h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
-        })
+      () => {
         versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled ?? false
       }
     )
