@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -48,6 +49,7 @@
   export let disabled: boolean = true
   export let isCard: boolean = false
   export let showAll: boolean = false
+  export let customOnly: boolean = false
   export let attributeMapper:
     | {
         component: AnySvelteComponent
@@ -82,11 +84,13 @@
     const cl = hierarchy.getClass(_class)
     const attributes = Array.from(
       hierarchy.getAllAttributes(_class, _class === ofClass ? core.class.Doc : cl.extends).values()
-    ).sort((a, b) => {
-      const rankA = a.rank ?? toRank(a._id) ?? ''
-      const rankB = b.rank ?? toRank(b._id) ?? ''
-      return rankA.localeCompare(rankB)
-    })
+    )
+      .filter((attribute) => !customOnly || attribute.isCustom === true)
+      .sort((a, b) => {
+        const rankA = a.rank ?? toRank(a._id) ?? ''
+        const rankB = b.rank ?? toRank(b._id) ?? ''
+        return rankA.localeCompare(rankB)
+      })
     return attributes
   }
 
@@ -217,6 +221,7 @@
         <ClassAttributesList
           {_class}
           {ofClass}
+          {customOnly}
           {attributeMapper}
           showAll={showAll && !hierarchy.isMixin(_class)}
           {selected}
@@ -234,6 +239,7 @@
           <ClassAttributesList
             _class={clazz2._id}
             {ofClass}
+            {customOnly}
             {attributeMapper}
             {selected}
             showAll={showAll && !hierarchy.isMixin(_class)}
@@ -249,6 +255,7 @@
       <ClassAttributesList
         {_class}
         {ofClass}
+        {customOnly}
         {attributeMapper}
         {selected}
         showAll={showAll && !hierarchy.isMixin(_class)}
