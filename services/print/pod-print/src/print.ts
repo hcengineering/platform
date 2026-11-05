@@ -142,7 +142,7 @@ export async function print (
           footerTemplate: pageFooter,
           displayHeaderFooter,
           margin: {
-            top: '1.5cm',
+            top: pageHeader !== '' ? '2cm' : '1.5cm',
             right: '1cm',
             bottom: '1.5cm',
             left: '1cm'
