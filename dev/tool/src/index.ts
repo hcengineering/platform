@@ -121,7 +121,8 @@ import { mkdir, writeFile } from 'fs/promises'
 import { dirname } from 'path'
 import { restoreMarkupRefs } from './markup'
 import { disableMeetingRoomDefaults, updateMeetingRoomDefaults, type MeetingRoomDefaults } from './meeting-rooms'
-import { parseIncludedWorkspaces, withMeetingRoomDatabase } from './meeting-room-command'
+import { parseIncludedWorkspaces } from './meeting-room-command'
+import { withAccountDatabaseCommand } from './account-database-command'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1412,7 +1413,7 @@ export function devTool (
         if (!dbUrl.startsWith('postgresql')) {
           throw new Error('Only PostgreSQL is supported')
         }
-        await withMeetingRoomDatabase(
+        await withAccountDatabaseCommand(
           async (db) => {
             const statuses = await db.workspaceStatus.find({ mode: 'active', isDisabled: false })
             const activeWorkspaces = new Set(statuses.map((status) => status.workspaceUuid))

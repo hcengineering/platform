@@ -13,7 +13,6 @@
 // limitations under the License.
 //
 
-import { getAccountDB, type AccountDB } from '@hcengineering/account'
 import { InvalidArgumentError } from 'commander'
 
 /** Parses an explicitly provided include filter without allowing an empty selection. */
@@ -26,23 +25,4 @@ export function parseIncludedWorkspaces (value: string): string[] {
     throw new InvalidArgumentError('At least one workspace UUID or URL must be provided')
   }
   return workspaces
-}
-
-/** Runs the command with account storage and reports setup, processing and cleanup failures. */
-export async function withMeetingRoomDatabase (
-  action: (db: AccountDB) => Promise<void>,
-  dbUrl: string,
-  namespace?: string
-): Promise<void> {
-  try {
-    const [db, close] = await getAccountDB(dbUrl, namespace)
-    try {
-      await action(db)
-    } finally {
-      close()
-    }
-  } catch (error) {
-    process.exitCode = 1
-    console.error('configure-meeting-room-defaults: command failed', { error })
-  }
 }
