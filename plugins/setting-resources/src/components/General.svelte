@@ -1,6 +1,7 @@
 <!--
 // Copyright © 2022-2024 Hardcore Engineering Inc.
 // Copyright © 2026 TraceX
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -127,9 +128,13 @@
   }
 
   async function handleDelete (): Promise<void> {
+    if (workspaceUrl === '') return
     showPopup(MessageBox, {
       label: settingsRes.string.DeleteWorkspace,
       message: settingsRes.string.DeleteWorkspaceConfirm,
+      okLabel: settingsRes.string.DeleteWorkspace,
+      confirmationValue: workspaceUrl,
+      confirmationLabel: settingsRes.string.EnterWorkspaceUrlToConfirmDeletion,
       dangerous: true,
       action: async () => {
         await accountClient.deleteWorkspace()
@@ -421,6 +426,7 @@
                   slot="footer"
                   label={settingsRes.string.DeleteWorkspace}
                   color="dangerous"
+                  disabled={workspaceUrl === ''}
                   on:click={handleDelete}
                 />
               </SettingsCard>

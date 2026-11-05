@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2020 Anticrm Platform Contributors.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,8 +14,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { translate, type IntlString } from '@hcengineering/platform'
-  import { Button, FocusHandler, Label, createFocusManager } from '@hcengineering/ui'
+  import { setPlatformStatus, translate, unknownError, type IntlString } from '@hcengineering/platform'
+  import { Button, EditBox, FocusHandler, Label, createFocusManager, themeStore } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import presentation, { HTMLViewer } from '..'
 
@@ -28,11 +29,30 @@
   export let dangerous: boolean = false
   export let canSubmit = true
   export let action: (() => Promise<void>) | undefined = undefined
+  export let confirmationValue: string | undefined = undefined
+  export let confirmationLabel: IntlString | undefined = undefined
 
   const dispatch = createEventDispatcher()
   let processing = false
+  let confirmationInput = ''
+
+  $: confirmed =
+    confirmationValue === undefined || (confirmationValue !== '' && confirmationInput.trim() === confirmationValue)
 
   const manager = createFocusManager()
+
+  async function confirm (): Promise<void> {
+    if (processing || !confirmed) return
+    processing = true
+    try {
+      if (action !== undefined) await action()
+      dispatch('close', true)
+    } catch (error) {
+      await setPlatformStatus(unknownError(error))
+    } finally {
+      processing = false
+    }
+  }
 
   function onKeyDown (ev: KeyboardEvent): void {
     if (ev.key === 'Escape') {
@@ -64,6 +84,20 @@
       <Label label={message} {params} />
     {/if}
   </div>
+  {#if confirmationValue !== undefined}
+    <div class="flex-col flex-gap-2 mb-4">
+      {#if confirmationLabel !== undefined}
+        <div class="select-text">
+          {#await translate(confirmationLabel, { value: '{value}' }, $themeStore.language) then prompt}
+            {#each prompt.split('{value}') as part, index}
+              {#if index > 0}<strong>{confirmationValue}</strong>{/if}{part}
+            {/each}
+          {/await}
+        </div>
+      {/if}
+      <EditBox bind:value={confirmationInput} disabled={processing} autoFocus />
+    </div>
+  {/if}
   <div class="footer">
     <Button
       focus={!dangerous}
@@ -72,18 +106,8 @@
       size={'large'}
       kind={dangerous ? 'dangerous' : 'primary'}
       loading={processing}
-      on:click={() => {
-        processing = true
-        if (action !== undefined) {
-          void action().then(() => {
-            processing = false
-            dispatch('close', true)
-          })
-        } else {
-          dispatch('close', true)
-          processing = false
-        }
-      }}
+      disabled={processing || !confirmed}
+      on:click={confirm}
     />
     {#if canSubmit}
       <Button

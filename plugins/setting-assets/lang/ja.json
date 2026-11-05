@@ -127,6 +127,7 @@
     "DeleteRoleConfirmation": "本当にこの役割を削除しますか？この役割を持つすべてのユーザーは権限を失います。",
     "DeleteWorkspace": "ワークスペースを削除",
     "DeleteWorkspaceConfirm": "本当にこのワークスペースを削除しますか？あなたと他のすべてのメンバーはこのワークスペースへのアクセスを失います。ワークスペースからのすべての情報が失われます。この操作は元に戻せません。続行しますか？",
+    "EnterWorkspaceUrlToConfirmDeletion": "ワークスペースの削除を確認するには、{value} と入力してください。",
     "DeleteWorkspaceDescription": "このワークスペースと保存されているすべての情報を完全に削除します。",
     "DeleteSpaceType": "スペースタイプを削除",
     "DeleteSpaceTypeConfirm": "本当にこのスペースタイプを削除しますか？",

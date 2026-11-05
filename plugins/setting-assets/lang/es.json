@@ -118,6 +118,7 @@
     "DeleteRoleConfirmation": "¿Está seguro de que desea eliminar esta función? Todos los usuarios con este rol perderán sus permisos",
     "DeleteWorkspace": "Eliminar espacio de trabajo",
     "DeleteWorkspaceConfirm": "¿Estás seguro de que quieres eliminar este espacio de trabajo? Tú y todos los demás miembros perderán el acceso a este espacio de trabajo. Toda la información del espacio de trabajo se perderá. Esta acción no se puede deshacer. ¿Quieres continuar?",
+    "EnterWorkspaceUrlToConfirmDeletion": "Introduce {value} para confirmar la eliminación del espacio de trabajo.",
     "DeleteWorkspaceDescription": "Eliminar permanentemente este espacio de trabajo y toda la información almacenada en él.",
     "DeleteSpaceType": "Eliminar tipo de espacio",
     "DeleteSpaceTypeConfirm": "¿Estás seguro de que quieres eliminar este tipo de espacio?",

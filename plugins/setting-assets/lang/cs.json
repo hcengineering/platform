@@ -121,6 +121,7 @@
     "DeleteRoleConfirmation": "Opravdu chcete tuto roli smazat? Všichni uživatelé s touto rolí ztratí svá oprávnění.",
     "DeleteWorkspace": "Smazat pracovní prostor",
     "DeleteWorkspaceConfirm": "Opravdu chcete tento pracovní prostor smazat? Vy i všichni ostatní členové ztratíte přístup k tomuto pracovnímu prostoru. Všechny informace z pracovního prostoru budou ztraceny. Tuto akci nelze vrátit zpět. Chcete pokračovat?",
+    "EnterWorkspaceUrlToConfirmDeletion": "Pro potvrzení smazání pracovního prostoru zadejte {value}.",
     "DeleteWorkspaceDescription": "Trvale odstranit tento pracovní prostor a všechny informace v něm uložené.",
     "DeleteSpaceType": "Smazat typ prostoru",
     "DeleteSpaceTypeConfirm": "Opravdu chcete tento typ prostoru smazat?",
