@@ -114,7 +114,6 @@
   import { type BarLabelSlot } from './lib/bar-labels'
   import ConfirmCascadePopup from './ConfirmCascadePopup.svelte'
   import DependencyEditor from '../DependencyEditor.svelte'
-  import EditMilestone from '../milestones/EditMilestone.svelte'
   import {
     Loading,
     addNotification,
@@ -1767,16 +1766,15 @@
     )
   }
 
-  // Open the EditMilestone popup when a milestone row is clicked in
-  // the sidebar — user expects parity with the issue row's single-click
-  // open behavior. The sidebar carries a compact
-  // MilestoneMarker, so resolve to the full Milestone from the live query
-  // before passing it as the popup's `object` prop (EditMilestone reads
-  // object.label / status / dates synchronously).
+  // Open the milestone when its row is clicked in the sidebar — parity with
+  // the issue row's single-click open. EditMilestone is panel content with no
+  // frame or background of its own, so as a bare popup it rendered
+  // transparently over the chart. Open it in the side panel through EditDoc,
+  // which loads the milestone and renders its editor mixin (EditMilestone).
   function onMilestoneOpen (e: CustomEvent<{ milestoneId: Ref<Milestone> }>): void {
     const full = milestones.find((m) => m._id === e.detail.milestoneId)
     if (full === undefined) return
-    showPopup(EditMilestone, { object: full }, 'middle')
+    showPanel(view.component.EditDoc, full._id, full._class, 'content')
   }
 
   function newIssue (): void {
