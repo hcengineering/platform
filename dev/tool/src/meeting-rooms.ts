@@ -14,7 +14,44 @@
 //
 
 import love, { type Room } from '@hcengineering/love'
-import { type Ref, type TxOperations } from '@hcengineering/core'
+import { type Ref, type TxOperations, type WorkspaceUuid } from '@hcengineering/core'
+import { type Sql } from 'postgres'
+
+export interface MeetingRoomDefaults {
+  startWithRecording?: boolean
+  startWithTranscription?: boolean
+}
+
+/** Updates only the requested defaults directly in PostgreSQL, without a transactor connection. */
+export async function updateMeetingRoomDefaults (
+  sql: Sql,
+  workspace: WorkspaceUuid,
+  defaults: MeetingRoomDefaults,
+  dryRun: boolean
+): Promise<DisableMeetingRoomDefaultsResult> {
+  if (Object.keys(defaults).length === 0) {
+    throw new Error('At least one meeting room default must be specified')
+  }
+
+  const patch = sql.json({ ...defaults })
+  const classes = [love.class.Room, love.class.Office]
+  if (dryRun) {
+    const [result] = await sql<{ count: string }[]>`
+      SELECT COUNT(*) AS count FROM love
+      WHERE "workspaceId" = ${workspace} AND _class IN ${sql(classes)}
+        AND NOT (data @> ${patch}::jsonb)
+    `
+    return { updated: 0, wouldUpdate: Number(result.count) }
+  }
+
+  const result = await sql`
+    UPDATE love SET data = data || ${patch}::jsonb, "%hash%" = ${Date.now().toString(16)}
+    WHERE "workspaceId" = ${workspace} AND _class IN ${sql(classes)}
+      AND NOT (data @> ${patch}::jsonb)
+    RETURNING _id
+  `
+  return { updated: result.length, wouldUpdate: result.length }
+}
 
 export interface DisableMeetingRoomDefaultsResult {
   updated: number

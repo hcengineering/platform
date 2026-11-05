@@ -34,6 +34,7 @@ import {
   createPostgreeDestroyAdapter,
   createPostgresAdapter,
   createPostgresTxAdapter,
+  getDBClient,
   shutdownPostgres
 } from '@hcengineering/postgres'
 import {
@@ -63,7 +64,7 @@ import { createWorkspace, upgradeWorkspace } from '@hcengineering/workspace-serv
 import { faker } from '@faker-js/faker'
 import { getPlatformQueue } from '@hcengineering/kafka'
 import { buildStorageFromConfig, createStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
-import { program, type Command } from 'commander'
+import { Option, program, type Command } from 'commander'
 import { updateField } from './workspace'
 
 import { RatingCalculator, ratingEvents, type QueueRatingMessage } from '@hcengineering/pod-rating'
@@ -119,7 +120,9 @@ import { existsSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { dirname } from 'path'
 import { restoreMarkupRefs } from './markup'
-import { disableMeetingRoomDefaults } from './meeting-rooms'
+import { disableMeetingRoomDefaults, updateMeetingRoomDefaults, type MeetingRoomDefaults } from './meeting-rooms'
+import { parseIncludedWorkspaces } from './meeting-room-command'
+import { withAccountDatabaseCommand } from './account-database-command'
 
 const colorConstants = {
   colorRed: '\u001b[31m',
@@ -1357,6 +1360,125 @@ export function devTool (
         }
       })
     })
+
+  program
+    .command('configure-meeting-room-defaults')
+    .description('Configure meeting room defaults directly in PostgreSQL for active, enabled workspaces')
+    .option(
+      '--include-workspaces <workspaces>',
+      'Only process these workspace UUIDs or URLs (comma-separated)',
+      parseIncludedWorkspaces
+    )
+    .option('--exclude-workspaces <workspaces>', 'Skip these workspace UUIDs or URLs (comma-separated); exclusion wins')
+    .addOption(
+      new Option('--recording <mode>', 'Set automatic recording; omitted means unchanged').choices([
+        'enable',
+        'disable'
+      ])
+    )
+    .addOption(
+      new Option('--transcription <mode>', 'Set automatic transcription; omitted means unchanged').choices([
+        'enable',
+        'disable'
+      ])
+    )
+    .option('--dry-run', 'Only report rooms that would be updated', false)
+    .option('--apply', 'Apply changes; without this option the command runs in dry-run mode', false)
+    .action(
+      async (cmd: {
+        dryRun: boolean
+        apply: boolean
+        includeWorkspaces?: string[]
+        excludeWorkspaces?: string
+        recording?: 'enable' | 'disable'
+        transcription?: 'enable' | 'disable'
+      }) => {
+        if (cmd.dryRun && cmd.apply) {
+          throw new Error('--dry-run cannot be used with --apply')
+        }
+        if (cmd.recording === undefined && cmd.transcription === undefined) {
+          throw new Error('Specify --recording and/or --transcription')
+        }
+
+        const dryRun = cmd.dryRun || !cmd.apply
+        const defaults: MeetingRoomDefaults = {}
+        if (cmd.recording !== undefined) defaults.startWithRecording = cmd.recording === 'enable'
+        if (cmd.transcription !== undefined) defaults.startWithTranscription = cmd.transcription === 'enable'
+        const include = cmd.includeWorkspaces ?? []
+        const exclude = (cmd.excludeWorkspaces ?? '')
+          .split(',')
+          .map((value) => value.trim())
+          .filter(Boolean)
+        const { dbUrl } = prepareTools()
+        if (!dbUrl.startsWith('postgresql')) {
+          throw new Error('Only PostgreSQL is supported')
+        }
+        await withAccountDatabaseCommand(
+          async (db) => {
+            const statuses = await db.workspaceStatus.find({ mode: 'active', isDisabled: false })
+            const activeWorkspaces = new Set(statuses.map((status) => status.workspaceUuid))
+            const workspaces = (await db.workspace.find({})).filter(
+              (workspace) =>
+                activeWorkspaces.has(workspace.uuid) &&
+                (include.length === 0 || include.includes(workspace.uuid) || include.includes(workspace.url)) &&
+                !exclude.includes(workspace.uuid) &&
+                !exclude.includes(workspace.url)
+            )
+            let completed = 0
+            let failed = 0
+            let updated = 0
+            let wouldUpdate = 0
+
+            console.log('configure-meeting-room-defaults: starting', {
+              dryRun,
+              defaults,
+              workspaces: workspaces.length
+            })
+            const pg = getDBClient(dbUrl)
+            try {
+              const sql = await pg.getClient()
+              for (const workspace of workspaces) {
+                try {
+                  const result = await updateMeetingRoomDefaults(sql, workspace.uuid, defaults, dryRun)
+                  updated += result.updated
+                  wouldUpdate += result.wouldUpdate
+                  console.log('configure-meeting-room-defaults: workspace processed', {
+                    workspace: workspace.uuid,
+                    name: workspace.name,
+                    dryRun,
+                    ...result
+                  })
+                  completed++
+                } catch (error) {
+                  failed++
+                  console.error('configure-meeting-room-defaults: workspace failed', {
+                    workspace: workspace.uuid,
+                    name: workspace.name,
+                    error
+                  })
+                }
+              }
+            } finally {
+              pg.close()
+            }
+
+            console.log('configure-meeting-room-defaults: finished', {
+              dryRun,
+              workspaces: workspaces.length,
+              completed,
+              failed,
+              updated,
+              wouldUpdate
+            })
+            if (failed > 0) {
+              process.exitCode = 1
+            }
+          },
+          getAccountDBUrl(),
+          process.env.ACCOUNT_DB_NS
+        )
+      }
+    )
 
   extendProgram?.(program)
 
