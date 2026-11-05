@@ -209,7 +209,7 @@
                               : marketplace.string.MakePrivate}
                             kind="ghost"
                             disabled={busy}
-                            on:click={(): Promise<void> => toggleVisibility(entry)}
+                            on:click={() => toggleVisibility(entry)}
                           />
                         </div>
                       {/if}
