@@ -127,7 +127,7 @@
     "DeleteRoleConfirmation": "Sind Sie sicher, dass Sie diese Rolle löschen möchten? Alle Benutzer mit dieser Rolle verlieren ihre Berechtigungen.",
     "DeleteWorkspace": "Arbeitsbereich löschen",
     "DeleteWorkspaceConfirm": "Sind Sie sicher, dass Sie diesen Arbeitsbereich löschen möchten? Sie und alle anderen Mitglieder verlieren den Zugriff auf diesen Arbeitsbereich. Alle Informationen aus dem Arbeitsbereich gehen verloren. Diese Aktion kann nicht rückgängig gemacht werden. Möchten Sie fortfahren?",
-    "EnterWorkspaceUrlToConfirmDeletion": "Geben Sie {value} ein, um das Löschen des Arbeitsbereichs zu bestätigen.",
+    "EnterWorkspaceNameToConfirmDeletion": "Geben Sie {value} ein, um das Löschen des Arbeitsbereichs zu bestätigen.",
     "DeleteWorkspaceDescription": "Diesen Arbeitsbereich und alle darin gespeicherten Informationen dauerhaft löschen.",
     "DeleteSpaceType": "Bereichstyp löschen",
     "DeleteSpaceTypeConfirm": "Sind Sie sicher, dass Sie diesen Bereichstyp löschen möchten?",

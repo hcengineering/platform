@@ -75,7 +75,7 @@
 
   let loading = true
   let isEditingName = false
-  let oldName: string
+  let oldName = ''
   let name: string = ''
   let workspaceUrl = ''
   let workspaceId = ''
@@ -116,7 +116,10 @@
     }
 
     if (isEditingName) {
-      await accountClient.updateWorkspaceName(name.trim())
+      const updatedName = name.trim()
+      await accountClient.updateWorkspaceName(updatedName)
+      oldName = updatedName
+      name = updatedName
     }
 
     isEditingName = !isEditingName
@@ -128,13 +131,13 @@
   }
 
   async function handleDelete (): Promise<void> {
-    if (workspaceUrl === '') return
+    if (oldName.trim() === '') return
     showPopup(MessageBox, {
       label: settingsRes.string.DeleteWorkspace,
       message: settingsRes.string.DeleteWorkspaceConfirm,
       okLabel: settingsRes.string.DeleteWorkspace,
-      confirmationValue: workspaceUrl,
-      confirmationLabel: settingsRes.string.EnterWorkspaceUrlToConfirmDeletion,
+      confirmationValue: oldName.trim(),
+      confirmationLabel: settingsRes.string.EnterWorkspaceNameToConfirmDeletion,
       dangerous: true,
       action: async () => {
         await accountClient.deleteWorkspace()
@@ -426,7 +429,7 @@
                   slot="footer"
                   label={settingsRes.string.DeleteWorkspace}
                   color="dangerous"
-                  disabled={workspaceUrl === ''}
+                  disabled={oldName.trim() === ''}
                   on:click={handleDelete}
                 />
               </SettingsCard>

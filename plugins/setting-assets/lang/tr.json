@@ -127,7 +127,7 @@
     "DeleteRoleConfirmation": "Bu rolü silmek istediğinizden emin misiniz? Bu role sahip tüm kullanıcılar izinlerini kaybedecek.",
     "DeleteWorkspace": "Çalışma alanını sil",
     "DeleteWorkspaceConfirm": "Bu çalışma alanını silmek istediğinizden emin misiniz? Siz ve diğer tüm üyeler bu çalışma alanına erişimi kaybedecek. Çalışma alanındaki tüm bilgiler kaybolacak. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?",
-    "EnterWorkspaceUrlToConfirmDeletion": "Çalışma alanının silinmesini onaylamak için {value} yazın.",
+    "EnterWorkspaceNameToConfirmDeletion": "Çalışma alanının silinmesini onaylamak için {value} yazın.",
     "DeleteWorkspaceDescription": "Bu çalışma alanını ve içindeki tüm bilgileri kalıcı olarak sil.",
     "DeleteSpaceType": "Alan tipini sil",
     "DeleteSpaceTypeConfirm": "Bu alan tipini silmek istediğinizden emin misiniz?",

@@ -95,7 +95,7 @@
           {/await}
         </div>
       {/if}
-      <EditBox bind:value={confirmationInput} disabled={processing} autoFocus />
+      <EditBox bind:value={confirmationInput} kind="default" focusable focusIndex={0} disabled={processing} autoFocus />
     </div>
   {/if}
   <div class="footer">
