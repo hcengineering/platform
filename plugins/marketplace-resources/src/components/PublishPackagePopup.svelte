@@ -13,9 +13,13 @@
 -->
 <script lang="ts">
   import { getCurrentAccount } from '@hcengineering/core'
-  import marketplace, { parseDefinitionPackageRelease, type DefinitionPackageRelease } from '@hcengineering/marketplace'
+  import marketplace, {
+    MarketplaceError,
+    parseDefinitionPackageRelease,
+    type DefinitionPackageRelease
+  } from '@hcengineering/marketplace'
   import { getEmbeddedLabel } from '@hcengineering/platform'
-  import ui, { Button, Dialog, EditBox, Label, Notice } from '@hcengineering/ui'
+  import ui, { Button, Dialog, EditBox, Label, Notice, ToggleWithLabel } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
   import { getMarketplaceClient } from '../catalog'
   import { getPackageName } from '../package-presentation'
@@ -26,6 +30,7 @@
   const dispatch = createEventDispatcher<{ close: boolean }>()
   let release: DefinitionPackageRelease | undefined
   let contactEmail = ''
+  let privatePackage = false
   let busy = false
   let error = ''
   let valid = false
@@ -33,9 +38,16 @@
   async function validate (): Promise<void> {
     try {
       const value = await parseDefinitionPackageRelease(source)
-      if (value.package.author !== getCurrentAccount().uuid)
-        throw new Error('Only the package author can publish releases')
+      const author = getCurrentAccount().uuid
+      if (value.package.author !== author) throw new Error('Only the package author can publish releases')
       release = value
+      try {
+        const entry = await getMarketplaceClient().get({ id: value.package.id, author })
+        privatePackage = entry.visibility === 'private'
+        contactEmail = entry.contactEmail ?? ''
+      } catch (cause) {
+        if (!(cause instanceof MarketplaceError) || cause.status !== 404) throw cause
+      }
       valid = true
     } catch (cause) {
       error = cause instanceof Error ? cause.message : String(cause)
@@ -48,7 +60,7 @@
     busy = true
     error = ''
     try {
-      await getMarketplaceClient().publish(source, contactEmail)
+      await getMarketplaceClient().publish(source, contactEmail, privatePackage ? 'private' : 'public')
       dispatch('close', true)
     } catch (cause) {
       error = cause instanceof Error ? cause.message : String(cause)
@@ -68,6 +80,14 @@
 >
   <div class="flex-col flex-gap-4">
     <div class="text-sm content-dark-color"><Label label={marketplace.string.PublishPackageDescription} /></div>
+    <div data-id="package-private-visibility">
+      <ToggleWithLabel
+        label={marketplace.string.PrivatePackage}
+        description={marketplace.string.PrivatePackageDescription}
+        bind:on={privatePackage}
+        disabled={busy || !valid}
+      />
+    </div>
     {#if release}
       <PackageCard
         name={getPackageName(release)}

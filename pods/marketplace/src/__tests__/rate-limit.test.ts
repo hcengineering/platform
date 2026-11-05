@@ -33,6 +33,8 @@ describe('Marketplace request quotas', () => {
   })
   const store: jest.Mocked<CatalogStore> = {
     list: jest.fn(),
+    get: jest.fn(),
+    setVisibility: jest.fn(),
     releases: jest.fn(),
     download: jest.fn(),
     publish: jest.fn()

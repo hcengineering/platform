@@ -147,9 +147,10 @@ The installer accepts model-space definitions and identifier sequences (`core.cl
 - Limits use the pod's in-memory store and reset on restart; replicas have independent budgets. A deployment requiring a shared quota must provide a shared rate-limit store or enforce it at ingress. Forwarded client IPs are trusted only when `TRUST_PROXY` explicitly lists trusted proxy addresses/CIDRs (comma-separated). Without that configuration, limits use the socket peer; behind an ingress this means a shared budget for that peer. Restrict direct pod access and list only the actual ingress addresses when configuring proxy trust.
 - Publication parses and verifies the complete package YAML, including its digest, and compares the supplied author UUID with the authenticated account. Missing or foreign authors cannot publish. A file digest alone never establishes ownership.
 - Catalog keys are `(author, id)`, so a copied artifact with another author cannot reserve the original author's ID. Existing file-upgrade checks still reject changing authors.
+- Package visibility is `public` or `private` and applies to every release. Private packages are visible only to their authenticated global author, across that author's workspaces. SQL filters apply before list pagination; metadata, history and downloads return 404 for other accounts. Only the author can change visibility. Existing packages and new publications without a visibility header default to public; later publications without the header preserve the current visibility.
 - A release version is insert-only. Identical retries return the recorded release without changing its contents or publication time. A conflicting payload returns 409. New releases retain the kind and must have greater SemVer precedence than the current latest version.
 - Publication locks the package row inside a PostgreSQL transaction. Concurrent first publications and new versions cannot overwrite each other or move the latest version backwards.
-- The catalog shows the latest description, author display name and optional explicitly supplied public contact email. Email is never queried or matched for ownership. Omitting the contact in a new release clears it from the catalog; identical retries do not change catalog metadata.
+- The catalog shows the latest description, author display name and optional explicitly supplied contact email to accounts allowed to see the package. Email is never queried or matched for ownership. Omitting the contact in a new release clears it from the catalog; identical retries preserve release metadata but apply an explicitly supplied visibility choice.
 - The HTTP body for publication and download is the ordinary flat package YAML (`application/yaml`). JSON is used only for catalog summaries and error responses.
 
 Routes:
@@ -158,11 +159,15 @@ Routes:
 | --- | --- | --- |
 | GET | `/health` | Readiness after storage initialization |
 | GET | `/packages?search=&mine=true&offset=0&limit=30` | Latest entries; `mine` uses the authenticated UUID |
+| GET | `/package?id=...&author=...` | Accessible package metadata, including visibility |
+| PATCH | `/package?id=...&author=...` | Change visibility as the author; required `X-Marketplace-Visibility: public` or `private` header; no request body |
 | GET | `/releases?id=...&author=...&offset=0` | Publication history, up to 50 releases per page |
 | GET | `/release?id=...&author=...&version=...` | Package YAML; omitted version selects latest |
-| POST | `/releases` | Publish package YAML; optional `X-Marketplace-Contact-Email` header |
+| POST | `/releases` | Publish package YAML; optional `X-Marketplace-Contact-Email` and `X-Marketplace-Visibility` headers |
 
 Workspace settings now provide **Catalog**, **Installed packages** and **My publications**. Publish directly from the existing package export dialog, or select an already exported file from **My publications**. No package ID, version or previous file is requested when creating a new version. Publishing first saves the package metadata, then opens a publication dialog holding the fixed artifact for safe retries. Canceling publication does not undo local package version creation.
+
+The publication dialog offers **Private package** and loads the current visibility for existing packages. New packages start with this option disabled. **My publications** offers **Make private** and **Make public** without creating a new release. Private packages carry a label in the catalog. Visibility controls future catalog access; it does not remove files already downloaded or definitions already installed in workspaces.
 
 Catalog install and history actions download and verify the selected author/ID/version before opening the existing installation dialog. **Update from catalog** selects the latest release for the installation's original author and opens the same manual diff/merge review used for files. Publication never automatically updates any workspace. When `MARKETPLACE_URL` is absent, file operations remain available.
 
@@ -197,6 +202,8 @@ Manual scenarios:
 - Publish a second version without choosing the previous file. From the other workspace, open **Update from catalog** and verify that manual diff/conflict review is required.
 - Retry the exact publication, submit changed content with the same version, and try another account's artifact. Confirm only the identical retry succeeds.
 - Publish without email and with an explicitly entered email; confirm both work and the contact never changes ownership.
+- Publish a private package and check it from two accounts: the author can list, inspect and download every version from any of their workspaces; the other account cannot discover it or access metadata, history or YAML even with a known ID, author and version.
+- Switch an existing package between public and private in **My publications** without publishing a release. Confirm access changes for all versions and the publication timestamp remains unchanged. Publish a new version and retry an old-client publication without a visibility header; confirm privacy is preserved.
 - Open publication history and install an older release as an independent instance. Confirm existing workspace definitions are not silently updated.
 
 - Export a card type with an embedded process using `Make package`; verify the `.package.yaml` contains real definition blocks beside its metadata, can be parsed and passes hash validation. Confirm its author is the current global account UUID.

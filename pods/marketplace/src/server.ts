@@ -15,7 +15,8 @@ import type { AccountUuid } from '@hcengineering/core'
 import {
   DefinitionPackageError,
   parseDefinitionPackageRelease,
-  serializeDefinitionPackageRelease
+  serializeDefinitionPackageRelease,
+  type CatalogPackageVisibility
 } from '@hcengineering/marketplace'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import process from '@hcengineering/process'
@@ -49,8 +50,8 @@ export function createCatalogServer ({
   app.set('trust proxy', trustedProxies ?? false)
   app.use(
     cors({
-      methods: ['GET', 'POST'],
-      allowedHeaders: ['Authorization', 'Content-Type', 'X-Marketplace-Contact-Email'],
+      methods: ['GET', 'POST', 'PATCH'],
+      allowedHeaders: ['Authorization', 'Content-Type', 'X-Marketplace-Contact-Email', 'X-Marketplace-Visibility'],
       exposedHeaders: ['Retry-After', 'RateLimit', 'RateLimit-Policy']
     })
   )
@@ -99,6 +100,7 @@ export function createCatalogServer ({
     route(async (req, res, account) => {
       res.json(
         await store.list({
+          viewer: account.uuid,
           search: text(req.query.search, 'search', true).slice(0, 200),
           author: req.query.mine === 'true' ? account.uuid : undefined,
           offset: integer(req.query.offset, 0, 1000000),
@@ -108,18 +110,36 @@ export function createCatalogServer ({
     })
   )
   app.get(
+    '/package',
+    requestLimiter,
+    route(async (req, res, account) => {
+      res.json(await store.get(identity(req), account.uuid))
+    })
+  )
+  app.patch(
+    '/package',
+    requestLimiter,
+    route(async (req, res, account) => {
+      const visibility = packageVisibility(req)
+      if (visibility === undefined) throw new CatalogError(400, 'Package visibility is required')
+      await store.setVisibility(identity(req), account.uuid, visibility)
+      res.sendStatus(204)
+    })
+  )
+  app.get(
     '/releases',
     requestLimiter,
-    route(async (req, res) => {
-      res.json(await store.releases(identity(req), integer(req.query.offset, 0, 1000000)))
+    route(async (req, res, account) => {
+      res.json(await store.releases(identity(req), account.uuid, integer(req.query.offset, 0, 1000000)))
     })
   )
   app.get(
     '/release',
     requestLimiter,
-    route(async (req, res) => {
+    route(async (req, res, account) => {
       const source = await store.download(
         identity(req),
+        account.uuid,
         req.query.version === undefined ? undefined : text(req.query.version, 'version')
       )
       res.type('application/yaml').send(source)
@@ -132,6 +152,7 @@ export function createCatalogServer ({
     requestLimiter,
     publicationLimiter,
     route(async (req, res, account) => {
+      const visibility = packageVisibility(req)
       await new Promise<void>((resolve, reject) => {
         express.text({ type: ['application/yaml', 'text/yaml'], limit: '3mb' })(req, res, (error?: unknown) => {
           if (error !== undefined) reject(error)
@@ -178,6 +199,7 @@ export function createCatalogServer ({
         await store.publish({
           id: release.package.id,
           author: account.uuid,
+          ...(visibility === undefined ? {} : { visibility }),
           name: names.join(', ').slice(0, 300) || release.package.id,
           description: release.package.description ?? '',
           kind: release.definition.kind,
@@ -216,6 +238,14 @@ function text (value: unknown, field: string, optional = false): string {
   if (optional && (value === undefined || value === '')) return ''
   if (typeof value !== 'string' || value.trim() === '' || value.length > 500) {
     throw new CatalogError(400, `Invalid ${field}`)
+  }
+  return value
+}
+
+function packageVisibility (req: Request): CatalogPackageVisibility | undefined {
+  const value = req.header('X-Marketplace-Visibility')
+  if (value !== undefined && value !== 'public' && value !== 'private') {
+    throw new CatalogError(400, 'Invalid package visibility')
   }
   return value
 }

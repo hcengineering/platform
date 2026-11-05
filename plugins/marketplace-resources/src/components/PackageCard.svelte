@@ -12,7 +12,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import marketplace from '@hcengineering/marketplace'
+  import marketplace, { type CatalogPackageVisibility } from '@hcengineering/marketplace'
   import { IconArchive, Label, Notice, SettingsCard, ShowMore } from '@hcengineering/ui'
 
   export let name: string
@@ -23,11 +23,17 @@
   export let contactEmail: string | undefined = undefined
   export let publishedOn: number | undefined = undefined
   export let installedVersions: readonly string[] = []
+  export let visibility: CatalogPackageVisibility | undefined = undefined
 </script>
 
 <SettingsCard label={marketplace.string.Marketplace} labelText={name}>
   <span slot="actions" class="version text-sm font-medium">v{version}</span>
   <div class="flex-col flex-gap-4">
+    {#if visibility === 'private'}
+      <span class="text-sm content-dark-color" data-id="package-private">
+        <Label label={marketplace.string.PrivatePackage} />
+      </span>
+    {/if}
     {#if kind !== undefined || authorName || publishedOn !== undefined}
       <div class="metadata flex-row-center flex-wrap flex-gap-3 text-sm content-dark-color">
         {#if kind !== undefined}

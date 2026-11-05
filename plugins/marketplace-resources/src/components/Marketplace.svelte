@@ -133,6 +133,20 @@
     }
     input.click()
   }
+
+  async function toggleVisibility (entry: CatalogPackage): Promise<void> {
+    if (busy) return
+    busy = true
+    error = ''
+    try {
+      await getMarketplaceClient().setVisibility(entry, entry.visibility === 'private' ? 'public' : 'private')
+      await reload(selected, search)
+    } catch (cause) {
+      error = cause instanceof Error ? cause.message : String(cause)
+    } finally {
+      busy = false
+    }
+  }
 </script>
 
 <div class="hulyComponent">
@@ -169,6 +183,7 @@
                     authorName={entry.authorName}
                     contactEmail={entry.contactEmail}
                     publishedOn={entry.publishedOn}
+                    visibility={entry.visibility}
                     installedVersions={getInstalledPackageVersions(entry, installations)}
                   >
                     <svelte:fragment slot="actions">
@@ -186,6 +201,18 @@
                         disabled={busy}
                         on:click={() => showPopup(PackageVersionsPopup, { entry }, 'centered')}
                       />
+                      {#if selected === 2}
+                        <div data-id="package-toggle-visibility">
+                          <Button
+                            label={entry.visibility === 'private'
+                              ? marketplace.string.MakePublic
+                              : marketplace.string.MakePrivate}
+                            kind="ghost"
+                            disabled={busy}
+                            on:click={(): Promise<void> => toggleVisibility(entry)}
+                          />
+                        </div>
+                      {/if}
                     </svelte:fragment>
                   </PackageCard>
                 </div>

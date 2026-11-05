@@ -18,7 +18,10 @@ export interface CatalogPackageIdentity {
   author: AccountUuid
 }
 
+export type CatalogPackageVisibility = 'public' | 'private'
+
 export interface CatalogPackage extends CatalogPackageIdentity {
+  visibility: CatalogPackageVisibility
   name: string
   description: string
   kind: 'card' | 'process'

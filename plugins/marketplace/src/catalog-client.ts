@@ -13,6 +13,7 @@
 import type {
   CatalogPackage,
   CatalogPackageIdentity,
+  CatalogPackageVisibility,
   CatalogPage,
   CatalogRelease,
   CatalogSearch
@@ -70,18 +71,39 @@ export class MarketplaceClient {
     return await (await this.request('releases', { ...identity, offset: String(offset) })).json()
   }
 
+  /** Read package metadata using the same visibility rules as release downloads. */
+  async get (identity: CatalogPackageIdentity): Promise<CatalogPackage> {
+    return await (await this.request('package', { ...identity })).json()
+  }
+
+  /** Change visibility for all releases; only the authenticated package author may do so. */
+  async setVisibility (identity: CatalogPackageIdentity, visibility: CatalogPackageVisibility): Promise<void> {
+    await this.request(
+      'package',
+      { ...identity },
+      {
+        method: 'PATCH',
+        headers: { 'X-Marketplace-Visibility': visibility }
+      }
+    )
+  }
+
   async download (identity: CatalogPackageIdentity, version?: string): Promise<string> {
     return await (await this.request('release', { ...identity, ...(version === undefined ? {} : { version }) })).text()
   }
 
-  async publish (source: string, contactEmail = ''): Promise<CatalogRelease> {
+  async publish (source: string, contactEmail = '', visibility?: CatalogPackageVisibility): Promise<CatalogRelease> {
     return await (
       await this.request(
         'releases',
         {},
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/yaml', 'X-Marketplace-Contact-Email': contactEmail },
+          headers: {
+            'Content-Type': 'application/yaml',
+            'X-Marketplace-Contact-Email': contactEmail,
+            ...(visibility === undefined ? {} : { 'X-Marketplace-Visibility': visibility })
+          },
           body: source
         }
       )
