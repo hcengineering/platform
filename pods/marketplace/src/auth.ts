@@ -21,6 +21,26 @@ export interface CatalogAccount {
   name: string
 }
 
+/** Resolve recipients through the configured account authority and verified registered email identities. */
+export function createRecipientResolver (accountsUrl: string): (token: string, email: string) => Promise<AccountUuid> {
+  return async (token, email) => {
+    try {
+      const account = await getClient(accountsUrl, token).resolveAccountByEmail(email)
+      if (
+        account === undefined ||
+        [systemAccountUuid, readOnlyGuestAccountUuid, docGuestAccountUuid].includes(account)
+      ) {
+        throw new CatalogError(404, 'No registered account with this verified email')
+      }
+      return account
+    } catch (error) {
+      if (error instanceof CatalogError) throw error
+      if (error instanceof PlatformError) throw new CatalogError(400, 'The recipient could not be verified')
+      throw new CatalogError(503, 'The account service is unavailable')
+    }
+  }
+}
+
 /** Uses the configured account authority, never an account URL supplied by the request. */
 export function createAuthenticator (accountsUrl: string, secret: string): (token: string) => Promise<CatalogAccount> {
   return async (token) => {

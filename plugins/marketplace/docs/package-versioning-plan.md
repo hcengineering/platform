@@ -26,9 +26,10 @@ Marketplace owns package metadata, release creation, versioning, file serializat
 The first Marketplace catalog belongs to one TraceX installation and is shared by its workspaces using the same account service. Independent installations have independent catalogs. The account service is the identity authority for that catalog.
 
 - Package ownership uses the existing global `AccountUuid` from that installation's account service. It remains stable across workspaces; workspace social IDs, display names and email addresses are not ownership keys.
+- The original `author` remains part of the immutable package identity. The catalog records a separate `owner`, initially the author. The owner can explicitly transfer management and publication rights to another registered account without rewriting old releases or breaking existing installations.
 - Publication and new-release permissions must be checked by the catalog service against the authenticated account and the recorded package owner. The `author` field in a supplied release file is attribution, not proof of ownership.
 - Show the author's profile name, with a short account identifier as a fallback when no name is available.
-- An email address is optional contact information shown only with the author's explicit consent. Missing or changed email does not prevent publication or change package ownership.
+- An email address is optional contact information supplied explicitly by the publisher. Missing or changed contact email does not prevent publication or change package ownership.
 - Installing or editing a package preserves its original author. Importing a file from another installation does not associate its author with a local account or grant permission to publish updates under that identity.
 
 A future external catalog would use its own authenticated publisher accounts and require explicit account linking or ownership transfer. That is outside the first version; email matching must not establish ownership.
@@ -140,27 +141,32 @@ The installer accepts model-space definitions and identifier sequences (`core.cl
 
 ## Standalone catalog pod
 
-`pods/marketplace` owns the HTTP routes, publication checks and PostgreSQL tables in its own `marketplace` schema. It does not add account-service methods or access account/workspace tables. The account service verifies existing global accounts and provides display names through its existing client. Deployment can use a separate database or the same PostgreSQL cluster with an independent schema.
+`pods/marketplace` owns the HTTP routes, publication checks and PostgreSQL tables in its own `marketplace` schema. It does not access account/workspace tables. The account service verifies existing global accounts and provides display names through its client. Its `resolveAccountByEmail` method resolves only verified, active email identities of registered accounts and returns the global account UUID without profile or security settings. The catalog uses this method to resolve recipients, never its optional contact email. Deployment can use a separate database or the same PostgreSQL cluster with an independent schema.
 
 - All catalog operations require a signed human-account token from the configured account authority. Shared guest, service, API-key and permission-grant tokens are rejected. The account is checked through the configured `ACCOUNTS_URL`; clients cannot supply another authority.
 - Catalog routes share a per-IP limit of 300 requests per minute, enforced before account verification. Publication has an additional per-IP limit of 20 attempts per 15 minutes, before authentication and YAML parsing. Failed requests count too. Rejections return JSON with HTTP 429, `Retry-After` and standard rate-limit headers. Readiness and CORS preflight requests do not consume these quotas.
 - Limits use the pod's in-memory store and reset on restart; replicas have independent budgets. A deployment requiring a shared quota must provide a shared rate-limit store or enforce it at ingress. Forwarded client IPs are trusted only when `TRUST_PROXY` explicitly lists trusted proxy addresses/CIDRs (comma-separated). Without that configuration, limits use the socket peer; behind an ingress this means a shared budget for that peer. Restrict direct pod access and list only the actual ingress addresses when configuring proxy trust.
-- Publication parses and verifies the complete package YAML, including its digest, and compares the supplied author UUID with the authenticated account. Missing or foreign authors cannot publish. A file digest alone never establishes ownership.
+- Publication parses and verifies the complete package YAML, including its digest. Only the original author can create the first publication. Later publications check the current owner inside the locked package transaction, including identical retries. A transferred package retains its original author in every release. A file digest alone never establishes ownership.
 - Catalog keys are `(author, id)`, so a copied artifact with another author cannot reserve the original author's ID. Existing file-upgrade checks still reject changing authors.
-- Package visibility is `public` or `private` and applies to every release. Private packages are visible only to their authenticated global author, across that author's workspaces. SQL filters apply before list pagination; metadata, history and downloads return 404 for other accounts. Only the author can change visibility. Existing packages and new publications without a visibility header default to public; later publications without the header preserve the current visibility.
+- Package visibility is `public` or `private` and applies to every release. Private packages are visible to their current owner and explicitly granted reader accounts across their workspaces. SQL filters apply before list pagination; metadata, history and downloads return 404 for other accounts. Only the current owner can change visibility or inspect and manage readers. Grants use account UUIDs and survive recipient email changes. Revocation affects future catalog access; a public package remains public even after a reader grant is removed. Existing packages and new publications without a visibility header default to public; later publications without the header preserve the current visibility.
+- Transfer and access changes lock the same package row as publication. Transfer preserves the package ID, original author, release bytes, hashes, versions and timestamps; it clears the old contact email. The former owner loses management/publication rights and is not automatically granted read access. Existing reader grants remain, except a grant to the new owner is removed because ownership already provides access. **My publications** filters by current owner. New owners can create versions from installed definitions using the ordinary card/process export menus; permission is checked against the catalog while the exported manifest retains the original identity.
 - A release version is insert-only. Identical retries return the recorded release without changing its contents or publication time. A conflicting payload returns 409. New releases retain the kind and must have greater SemVer precedence than the current latest version.
 - Publication locks the package row inside a PostgreSQL transaction. Concurrent first publications and new versions cannot overwrite each other or move the latest version backwards.
 - The catalog shows the latest description, author display name and optional explicitly supplied contact email to accounts allowed to see the package. Email is never queried or matched for ownership. Omitting the contact in a new release clears it from the catalog; identical retries preserve release metadata but apply an explicitly supplied visibility choice.
-- The HTTP body for publication and download is the ordinary flat package YAML (`application/yaml`). JSON is used only for catalog summaries and error responses.
+- The HTTP body for publication and download is the ordinary flat package YAML (`application/yaml`, up to 3 MiB). Reader grants and ownership transfers accept a JSON object with `email` (up to 1 KiB). Resolution is performed only after checking current ownership, and the mutation rechecks ownership under the transaction lock.
 
 Routes:
 
 | Method | Route | Result |
 | --- | --- | --- |
 | GET | `/health` | Readiness after storage initialization |
-| GET | `/packages?search=&mine=true&offset=0&limit=30` | Latest entries; `mine` uses the authenticated UUID |
-| GET | `/package?id=...&author=...` | Accessible package metadata, including visibility |
-| PATCH | `/package?id=...&author=...` | Change visibility as the author; required `X-Marketplace-Visibility: public` or `private` header; no request body |
+| GET | `/packages?search=&mine=true&offset=0&limit=30` | Latest accessible entries; `mine` filters by authenticated owner UUID |
+| GET | `/package?id=...&author=...` | Accessible package metadata, including visibility and current owner UUID |
+| PATCH | `/package?id=...&author=...` | Change visibility as the owner; required `X-Marketplace-Visibility: public` or `private` header; no request body |
+| GET | `/package/access?id=...&author=...` | Explicit reader accounts and supplied email labels; owner only |
+| POST | `/package/access?id=...&author=...` | Grant read access by verified account email; owner only |
+| DELETE | `/package/access?id=...&author=...&account=...` | Revoke a reader by global account UUID; owner only |
+| POST | `/package/owner?id=...&author=...` | Transfer ownership by verified account email; owner only |
 | GET | `/releases?id=...&author=...&offset=0` | Publication history, up to 50 releases per page |
 | GET | `/release?id=...&author=...&version=...` | Package YAML; omitted version selects latest |
 | POST | `/releases` | Publish package YAML; optional `X-Marketplace-Contact-Email` and `X-Marketplace-Visibility` headers |
@@ -168,6 +174,8 @@ Routes:
 Workspace settings now provide **Catalog**, **Installed packages** and **My publications**. Publish directly from the existing package export dialog, or select an already exported file from **My publications**. No package ID, version or previous file is requested when creating a new version. Publishing first saves the package metadata, then opens a publication dialog holding the fixed artifact for safe retries. Canceling publication does not undo local package version creation.
 
 The publication dialog offers **Private package** and loads the current visibility for existing packages. New packages start with this option disabled. **My publications** offers **Make private** and **Make public** without creating a new release. Private packages carry a label in the catalog. Visibility controls future catalog access; it does not remove files already downloaded or definitions already installed in workspaces.
+
+**Manage access** in **My publications** lets the owner grant and revoke read access or transfer ownership. Transfers require an explicit confirmation in the dialog. Readers can browse, inspect history, install and download all versions, but cannot publish, change visibility, inspect the access list, share further or transfer ownership. No invitations or email messages are sent; recipients must already have registered accounts with verified email identities.
 
 Catalog install and history actions download and verify the selected author/ID/version before opening the existing installation dialog. **Update from catalog** selects the latest release for the installation's original author and opens the same manual diff/merge review used for files. Publication never automatically updates any workspace. When `MARKETPLACE_URL` is absent, file operations remain available.
 
@@ -182,6 +190,8 @@ docker compose -f dev/docker-compose.yaml up -d marketplace
 ```
 
 Refresh the model and browser bundles as usual. If front runs in Docker, its new `MARKETPLACE_URL` environment setting requires recreating front as part of the normal deployment. The dev server serves `dev/prod/public/config.json`; the root `dev/prod/config.json` is a separate local configuration.
+
+For sharing and transfers, refresh the account-client dependency and deploy the account service containing `resolveAccountByEmail` along with Marketplace and browser bundles. Marketplace initializes existing package owners from their original authors and creates its reader-grant table at startup.
 
 PostgreSQL integration tests are opt-in: set `MARKETPLACE_TEST_DB_URL` to a disposable database named `tracex_marketplace_test` and run the pod tests. They never read production `DB_URL`. HTTP tests listen only on an ephemeral loopback port.
 
@@ -204,6 +214,8 @@ Manual scenarios:
 - Publish without email and with an explicitly entered email; confirm both work and the contact never changes ownership.
 - Publish a private package and check it from two accounts: the author can list, inspect and download every version from any of their workspaces; the other account cannot discover it or access metadata, history or YAML even with a known ID, author and version.
 - Switch an existing package between public and private in **My publications** without publishing a release. Confirm access changes for all versions and the publication timestamp remains unchanged. Publish a new version and retry an old-client publication without a visibility header; confirm privacy is preserved.
+- Grant a private package to a registered account by verified email. Confirm it appears in that account's catalog with full history and download/install access, while publishing, sharing, changing visibility and ownership remain denied. Revoke access and confirm metadata, history and YAML return 404. Missing, unverified, deleted and unregistered email identities must not receive grants.
+- Transfer a private package, then sign in as both accounts. Confirm **My publications** follows the new owner, the previous owner cannot publish even an identical retry, and the new owner can create and publish a version from an installed card module or process bundle. Verify original author/ID, old YAML bytes, hashes and installed update matching are unchanged. Confirm only the new owner can manage readers or transfer ownership again.
 - Open publication history and install an older release as an independent instance. Confirm existing workspace definitions are not silently updated.
 
 - Export a card type with an embedded process using `Make package`; verify the `.package.yaml` contains real definition blocks beside its metadata, can be parsed and passes hash validation. Confirm its author is the current global account UUID.

@@ -21,18 +21,20 @@ import {
 } from '@hcengineering/core'
 import { generateToken } from '@hcengineering/server-token'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
-import { createAuthenticator } from '../auth'
+import { createAuthenticator, createRecipientResolver } from '../auth'
 
 jest.mock('@hcengineering/account-client', () => ({ getClient: jest.fn() }))
 const account = '267c1923-5983-4ab0-ac89-82f481836724' as AccountUuid
 const secret = 'marketplace-test-secret'
 const getAccountInfo = jest.fn()
 const getPerson = jest.fn()
+const resolveAccountByEmail = jest.fn()
 const authenticate = createAuthenticator('https://accounts.example.test', secret)
 
 beforeEach(() => {
   jest.clearAllMocks()
-  jest.mocked(getClient).mockReturnValue({ getAccountInfo, getPerson } as unknown as ReturnType<typeof getClient>)
+  const client: Partial<ReturnType<typeof getClient>> = { getAccountInfo, getPerson, resolveAccountByEmail }
+  jest.mocked(getClient).mockReturnValue(client as ReturnType<typeof getClient>)
   getAccountInfo.mockResolvedValue({})
   getPerson.mockResolvedValue({ firstName: 'Jane', lastName: 'Doe' })
 })
@@ -102,4 +104,32 @@ it('rejects a permission grant even when signed by the same authority', async ()
   })
   await expect(authenticate(token)).rejects.toMatchObject({ status: 401 })
   expect(getClient).not.toHaveBeenCalled()
+})
+
+describe('verified recipient resolution', () => {
+  const resolve = createRecipientResolver('https://accounts.example.test')
+
+  it('uses the configured authority and registered verified email resolution', async () => {
+    resolveAccountByEmail.mockResolvedValueOnce(account)
+    await expect(resolve('owner-token', 'recipient@example.com')).resolves.toBe(account)
+    expect(getClient).toHaveBeenCalledWith('https://accounts.example.test', 'owner-token')
+    expect(resolveAccountByEmail).toHaveBeenCalledWith('recipient@example.com')
+  })
+
+  it.each([undefined, systemAccountUuid, readOnlyGuestAccountUuid, docGuestAccountUuid])(
+    'rejects nonexistent or special recipient %s',
+    async (recipient) => {
+      resolveAccountByEmail.mockResolvedValueOnce(recipient)
+      await expect(resolve('owner-token', 'recipient@example.com')).rejects.toMatchObject({ status: 404 })
+    }
+  )
+
+  it('fails closed on authority errors and outages', async () => {
+    resolveAccountByEmail.mockRejectedValueOnce(
+      new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    )
+    await expect(resolve('owner-token', 'recipient@example.com')).rejects.toMatchObject({ status: 400 })
+    resolveAccountByEmail.mockRejectedValueOnce(new Error('offline'))
+    await expect(resolve('owner-token', 'recipient@example.com')).rejects.toMatchObject({ status: 503 })
+  })
 })

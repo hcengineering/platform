@@ -1,6 +1,7 @@
 //
 // Copyright © 2024 Hardcore Engineering Inc.
 // Copyright © 2026 TraceX
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -169,6 +170,7 @@ export interface AccountClient {
   deleteWorkspace: () => Promise<void>
   findPersonBySocialKey: (socialKey: string, requireAccount?: boolean) => Promise<PersonUuid | undefined>
   findPersonBySocialId: (socialId: PersonId, requireAccount?: boolean) => Promise<PersonUuid | undefined>
+  resolveAccountByEmail: (email: string) => Promise<AccountUuid | undefined>
   findSocialIdBySocialKey: (socialKey: string) => Promise<PersonId | undefined>
   findFullSocialIdBySocialKey: (socialKey: string) => Promise<SocialId | undefined>
   findFullSocialIds: (socialIds: PersonId[]) => Promise<SocialId[]>
@@ -907,6 +909,12 @@ class AccountClientImpl implements AccountClient {
       params: { socialId, requireAccount }
     }
 
+    return await this.rpc(request)
+  }
+
+  /** Resolve a registered account by a verified email without returning profile or security settings. */
+  async resolveAccountByEmail (email: string): Promise<AccountUuid | undefined> {
+    const request: Request = { method: 'resolveAccountByEmail', params: { email } }
     return await this.rpc(request)
   }
 

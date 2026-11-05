@@ -50,17 +50,24 @@ describe('Marketplace HTTP boundary', () => {
   const store: jest.Mocked<CatalogStore> = {
     list: jest.fn(),
     get: jest.fn(),
+    readers: jest.fn(),
+    grantRead: jest.fn(),
+    revokeRead: jest.fn(),
+    transferOwnership: jest.fn(),
     setVisibility: jest.fn(),
     releases: jest.fn(),
     download: jest.fn(),
     publish: jest.fn()
   }
+  const resolveRecipient = jest.fn<Promise<AccountUuid>, [string, string]>()
   const onError = jest.fn()
   beforeAll(async () => {
     server = createCatalogServer({
       store,
       onError,
+      resolveRecipient,
       authenticate: async (token) => {
+        if (token === 'recipient-token') return { uuid: stranger, name: 'Recipient' }
         if (token !== 'signed-account') throw new CatalogError(401, 'Invalid token')
         return { uuid: author, name: 'Test Author' }
       }
@@ -81,6 +88,8 @@ describe('Marketplace HTTP boundary', () => {
   })
   beforeEach(() => {
     jest.clearAllMocks()
+    store.readers.mockResolvedValue([])
+    resolveRecipient.mockResolvedValue(stranger)
   })
 
   it('requires authentication before reading a publication', async () => {
@@ -96,7 +105,7 @@ describe('Marketplace HTTP boundary', () => {
       items: [],
       nextOffset: 2
     })
-    expect(store.list).toHaveBeenCalledWith({ viewer: author, search: 'review', author, offset: 1, limit: 1 })
+    expect(store.list).toHaveBeenCalledWith({ viewer: author, search: 'review', owner: author, offset: 1, limit: 1 })
     await client.list({ search: '' })
     expect(store.list).toHaveBeenLastCalledWith({ viewer: author, search: '', offset: 0, limit: 30 })
   })
@@ -120,9 +129,10 @@ describe('Marketplace HTTP boundary', () => {
     expect(store.publish.mock.calls[0][0].source).not.toMatch(/^source:/m)
   })
 
-  it('rejects a copied release attributed to another account', async () => {
+  it('checks publication ownership in storage using the authenticated publisher', async () => {
+    store.publish.mockRejectedValueOnce(new CatalogError(403, 'Only the package owner can publish releases'))
     await expect(client.publish(await artifact(stranger))).rejects.toMatchObject({ status: 403 })
-    expect(store.publish).not.toHaveBeenCalled()
+    expect(store.publish).toHaveBeenCalledWith(expect.objectContaining({ author: stranger, publisher: author }))
   })
 
   it('rejects a modified release digest and malformed definitions before storage', async () => {
@@ -160,6 +170,7 @@ describe('Marketplace HTTP boundary', () => {
   it('passes the authenticated viewer to metadata and visibility operations', async () => {
     const entry: CatalogPackage = {
       ...identity,
+      owner: author,
       name: 'Review',
       description: '',
       kind: 'process',
@@ -213,6 +224,63 @@ describe('Marketplace HTTP boundary', () => {
     expect(response.status).toBe(204)
     expect(response.headers.get('Access-Control-Allow-Methods')).toContain('PATCH')
     expect(response.headers.get('Access-Control-Allow-Headers')).toContain('X-Marketplace-Visibility')
+  })
+
+  it('lists, grants and revokes explicit readers using verified recipients and the authenticated owner', async () => {
+    store.readers.mockResolvedValueOnce([{ account: stranger, email: 'reader@example.com' }])
+    expect(await client.readers(identity)).toEqual([{ account: stranger, email: 'reader@example.com' }])
+    await client.grantRead(identity, ' Reader@Example.com ')
+    expect(resolveRecipient).toHaveBeenCalledWith('signed-account', 'reader@example.com')
+    expect(store.grantRead).toHaveBeenCalledWith(identity, author, { account: stranger, email: 'reader@example.com' })
+    await client.revokeRead(identity, stranger)
+    expect(store.revokeRead).toHaveBeenCalledWith(identity, author, stranger)
+  })
+
+  it('transfers catalog ownership without changing the author of later releases', async () => {
+    await client.transferOwnership(identity, 'recipient@example.com')
+    expect(store.transferOwnership).toHaveBeenCalledWith(identity, author, stranger)
+    const recipient = new MarketplaceClient(url, 'recipient-token')
+    await recipient.publish(await artifact())
+    expect(store.publish).toHaveBeenCalledWith(expect.objectContaining({ ...identity, publisher: stranger }))
+  })
+
+  it('rejects access changes before resolving recipients when ownership is missing', async () => {
+    store.readers.mockRejectedValueOnce(new CatalogError(404, 'Package not found'))
+    await expect(client.grantRead(identity, 'reader@example.com')).rejects.toMatchObject({ status: 404 })
+    store.readers.mockRejectedValueOnce(new CatalogError(404, 'Package not found'))
+    await expect(client.transferOwnership(identity, 'reader@example.com')).rejects.toMatchObject({ status: 404 })
+    expect(resolveRecipient).not.toHaveBeenCalled()
+    expect(store.grantRead).not.toHaveBeenCalled()
+    expect(store.transferOwnership).not.toHaveBeenCalled()
+  })
+
+  it('validates recipients, JSON and account IDs without accepting client-supplied account mappings', async () => {
+    await expect(client.grantRead(identity, 'invalid')).rejects.toMatchObject({ status: 400 })
+    await expect(client.transferOwnership(identity, '')).rejects.toMatchObject({ status: 400 })
+    await expect(client.revokeRead(identity, 'invalid')).rejects.toMatchObject({ status: 400 })
+    const path = `${url}/package/access?${new URLSearchParams({ ...identity })}`
+    const headers: Record<string, string> = {
+      Authorization: 'Bearer signed-account',
+      'Content-Type': 'application/json'
+    }
+    expect((await fetch(path, { method: 'POST', headers, body: '{' })).status).toBe(400)
+    expect((await fetch(path, { method: 'POST', headers, body: JSON.stringify({ account: stranger }) })).status).toBe(
+      400
+    )
+    expect(
+      (await fetch(path, { method: 'POST', headers, body: JSON.stringify({ email: 'x'.repeat(1500) }) })).status
+    ).toBe(413)
+    expect(resolveRecipient).not.toHaveBeenCalled()
+    expect(store.grantRead).not.toHaveBeenCalled()
+  })
+
+  it('requires authentication for every access and transfer operation', async () => {
+    const query = new URLSearchParams({ ...identity, account: stranger })
+    for (const method of ['GET', 'POST', 'DELETE']) {
+      expect((await fetch(`${url}/package/access?${query}`, { method })).status).toBe(401)
+    }
+    expect((await fetch(`${url}/package/owner?${query}`, { method: 'POST' })).status).toBe(401)
+    expect(resolveRecipient).not.toHaveBeenCalled()
   })
 
   it('rejects invalid pagination, identity, content type and oversized input', async () => {

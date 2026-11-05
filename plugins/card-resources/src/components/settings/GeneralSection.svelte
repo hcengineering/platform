@@ -17,7 +17,10 @@
   import { type Card, MasterTag } from '@hcengineering/card'
   import core, { type Class, getCurrentAccount, type Ref } from '@hcengineering/core'
   import { getDefinitionPackageInfo, type DefinitionPackageOwner } from '@hcengineering/marketplace'
-  import { DefinitionPackageExportPopup, getDefinitionPackageExportItems } from '@hcengineering/marketplace-resources'
+  import {
+    DefinitionPackageExportPopup,
+    getDefinitionPackageExportItemsStore
+  } from '@hcengineering/marketplace-resources'
   import { TypeBoolean, TypeNumber } from '@hcengineering/model'
   import { getEmbeddedLabel, setPlatformStatus, translateCB, unknownError } from '@hcengineering/platform'
   import { getClient, IconDownload, IconWithEmoji, MessageBox } from '@hcengineering/presentation'
@@ -54,6 +57,11 @@
   import DuplicateSetting from './DuplicateSetting.svelte'
 
   export let masterTag: MasterTag
+
+  $: packageExportItems = getDefinitionPackageExportItemsStore(
+    getDefinitionPackageInfo(masterTag),
+    getCurrentAccount().uuid
+  )
 
   let name: string = ''
   let description = masterTag.description ?? ''
@@ -370,7 +378,7 @@
       items={[
         { id: 'json', label: getEmbeddedLabel('JSON') },
         { id: 'yaml', label: getEmbeddedLabel('YAML') },
-        ...getDefinitionPackageExportItems(getDefinitionPackageInfo(masterTag), getCurrentAccount().uuid)
+        ...$packageExportItems
       ]}
       noSelection
       on:selected={onExportSelected}

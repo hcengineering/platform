@@ -38,15 +38,18 @@
   async function validate (): Promise<void> {
     try {
       const value = await parseDefinitionPackageRelease(source)
-      const author = getCurrentAccount().uuid
-      if (value.package.author !== author) throw new Error('Only the package author can publish releases')
+      const account = getCurrentAccount().uuid
+      const author = value.package.author
+      if (author === undefined) throw new Error('The package must have an author')
       release = value
       try {
         const entry = await getMarketplaceClient().get({ id: value.package.id, author })
+        if (entry.owner !== account) throw new Error('Only the package owner can publish releases')
         privatePackage = entry.visibility === 'private'
         contactEmail = entry.contactEmail ?? ''
       } catch (cause) {
         if (!(cause instanceof MarketplaceError) || cause.status !== 404) throw cause
+        if (author !== account) throw new Error('Only the package owner can publish releases')
       }
       valid = true
     } catch (cause) {

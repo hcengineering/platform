@@ -13,6 +13,7 @@
 import type {
   CatalogPackage,
   CatalogPackageIdentity,
+  CatalogPackageReader,
   CatalogPackageVisibility,
   CatalogPage,
   CatalogRelease,
@@ -76,7 +77,7 @@ export class MarketplaceClient {
     return await (await this.request('package', { ...identity })).json()
   }
 
-  /** Change visibility for all releases; only the authenticated package author may do so. */
+  /** Change visibility for all releases; only the current package owner may do so. */
   async setVisibility (identity: CatalogPackageIdentity, visibility: CatalogPackageVisibility): Promise<void> {
     await this.request(
       'package',
@@ -90,6 +91,42 @@ export class MarketplaceClient {
 
   async download (identity: CatalogPackageIdentity, version?: string): Promise<string> {
     return await (await this.request('release', { ...identity, ...(version === undefined ? {} : { version }) })).text()
+  }
+
+  /** List explicit readers; only the current owner can inspect the access list. */
+  async readers (identity: CatalogPackageIdentity): Promise<CatalogPackageReader[]> {
+    return await (await this.request('package/access', { ...identity })).json()
+  }
+
+  /** Grant read access to a registered account identified by its verified email. */
+  async grantRead (identity: CatalogPackageIdentity, email: string): Promise<void> {
+    await this.request(
+      'package/access',
+      { ...identity },
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      }
+    )
+  }
+
+  /** Revoke future catalog access without affecting previously downloaded files or installations. */
+  async revokeRead (identity: CatalogPackageIdentity, account: string): Promise<void> {
+    await this.request('package/access', { ...identity, account }, { method: 'DELETE' })
+  }
+
+  /** Transfer management and publication rights while retaining the immutable author/package identity. */
+  async transferOwnership (identity: CatalogPackageIdentity, email: string): Promise<void> {
+    await this.request(
+      'package/owner',
+      { ...identity },
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      }
+    )
   }
 
   async publish (source: string, contactEmail = '', visibility?: CatalogPackageVisibility): Promise<CatalogRelease> {

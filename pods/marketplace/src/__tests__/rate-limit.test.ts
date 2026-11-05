@@ -34,6 +34,10 @@ describe('Marketplace request quotas', () => {
   const store: jest.Mocked<CatalogStore> = {
     list: jest.fn(),
     get: jest.fn(),
+    readers: jest.fn(),
+    grantRead: jest.fn(),
+    revokeRead: jest.fn(),
+    transferOwnership: jest.fn(),
     setVisibility: jest.fn(),
     releases: jest.fn(),
     download: jest.fn(),
@@ -44,7 +48,13 @@ describe('Marketplace request quotas', () => {
   async function start (
     limits: Pick<CatalogServerOptions, 'requestLimit' | 'publicationLimit' | 'trustedProxies'>
   ): Promise<void> {
-    server = createCatalogServer({ store, authenticate, onError, ...limits }).listen(0, '127.0.0.1')
+    server = createCatalogServer({
+      store,
+      authenticate,
+      onError,
+      resolveRecipient: async () => author,
+      ...limits
+    }).listen(0, '127.0.0.1')
     await new Promise<void>((resolve, reject) => {
       server?.once('listening', resolve)
       server?.once('error', reject)

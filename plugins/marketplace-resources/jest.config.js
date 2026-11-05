@@ -13,5 +13,12 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  transform: {
+    '^.+\\.[tj]sx?$': ['ts-jest', { tsconfig: { allowJs: true } }]
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!\\.pnpm/|svelte/)',
+    'node_modules/\\.pnpm/(?!svelte@)'
+  ],
   testMatch: ['**/?(*.)+(spec|test).[jt]s?(x)']
 }

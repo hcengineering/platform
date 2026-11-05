@@ -38,6 +38,7 @@
   import PackageVersionsPopup from './PackageVersionsPopup.svelte'
   import PublishPackagePopup from './PublishPackagePopup.svelte'
   import PackageCard from './PackageCard.svelte'
+  import PackageAccessPopup from './PackageAccessPopup.svelte'
 
   const configured = hasMarketplace()
   const tabs = [
@@ -202,6 +203,17 @@
                         on:click={() => showPopup(PackageVersionsPopup, { entry }, 'centered')}
                       />
                       {#if selected === 2}
+                        <div data-id="package-manage-access">
+                          <Button
+                            label={marketplace.string.ManagePackageAccess}
+                            kind="ghost"
+                            disabled={busy}
+                            on:click={() =>
+                              showPopup(PackageAccessPopup, { entry }, 'centered', () => {
+                                void reload(selected, search)
+                              })}
+                          />
+                        </div>
                         <div data-id="package-toggle-visibility">
                           <Button
                             label={entry.visibility === 'private'

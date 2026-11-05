@@ -12,7 +12,7 @@
 
 import type { AccountUuid } from '@hcengineering/core'
 
-/** Catalog identities are scoped to an authenticated global account. */
+/** Catalog identities retain the original author's global account, independently of current ownership. */
 export interface CatalogPackageIdentity {
   id: string
   author: AccountUuid
@@ -21,6 +21,7 @@ export interface CatalogPackageIdentity {
 export type CatalogPackageVisibility = 'public' | 'private'
 
 export interface CatalogPackage extends CatalogPackageIdentity {
+  owner: AccountUuid
   visibility: CatalogPackageVisibility
   name: string
   description: string
@@ -29,6 +30,11 @@ export interface CatalogPackage extends CatalogPackageIdentity {
   authorName: string
   contactEmail?: string
   publishedOn: number
+}
+
+export interface CatalogPackageReader {
+  account: AccountUuid
+  email: string
 }
 
 export interface CatalogRelease extends CatalogPackageIdentity {
