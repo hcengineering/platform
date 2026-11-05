@@ -10,7 +10,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { createAuthenticator } from './auth'
+import { createAuthenticator, createRecipientResolver } from './auth'
 import { createCatalogServer } from './server'
 import { PostgresCatalogStore } from './store'
 
@@ -31,6 +31,7 @@ async function start (): Promise<void> {
   const app = createCatalogServer({
     store,
     authenticate: createAuthenticator(accountsUrl, secret),
+    resolveRecipient: createRecipientResolver(accountsUrl),
     trustedProxies: process.env.TRUST_PROXY?.split(',')
       .map((proxy) => proxy.trim())
       .filter((proxy) => proxy !== ''),

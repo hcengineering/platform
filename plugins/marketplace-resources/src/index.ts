@@ -20,6 +20,7 @@ import Marketplace from './components/Marketplace.svelte'
 export { DefinitionPackageExportPopup, DefinitionPackageInstallPopup, DefinitionPackageUpdatePopup }
 export { default as ImportSlotsPopup } from './components/ImportSlotsPopup.svelte'
 export { getDefinitionPackageExportItems, getDefinitionPackageOwner } from './export-utils'
+export { getDefinitionPackageExportItemsStore } from './catalog'
 
 export default async (): Promise<Resources> => ({
   component: {

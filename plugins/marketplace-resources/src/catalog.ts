@@ -10,18 +10,47 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import type { AccountUuid } from '@hcengineering/core'
 import marketplace, {
   MarketplaceClient,
   MarketplaceError,
   compareDefinitionPackageVersions,
   parseDefinitionPackageRelease,
   type CatalogPackageIdentity,
-  type DefinitionPackageInstallation
+  type DefinitionPackageInstallation,
+  type DefinitionPackageInfo
 } from '@hcengineering/marketplace'
 import { getMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
+import type { DropdownIntlItem } from '@hcengineering/ui'
+import { readable, type Readable } from 'svelte/store'
+import { getDefinitionPackageExportItems } from './export-utils'
 
-/** Matches workspace installations by publisher and package, independently of the catalog's latest version. */
+/** Resolve catalog ownership for export menus while keeping unpublished file packages usable offline. */
+export function getDefinitionPackageExportItemsStore (
+  info: DefinitionPackageInfo | undefined,
+  account: AccountUuid
+): Readable<DropdownIntlItem[]> {
+  const local = getDefinitionPackageExportItems(info, account)
+  if (info?.author === undefined || !hasMarketplace()) return readable(local)
+  const identity: CatalogPackageIdentity = { id: info.id, author: info.author }
+  return readable<DropdownIntlItem[]>([], (set) => {
+    let active = true
+    Promise.resolve()
+      .then(async () => await getMarketplaceClient().get(identity))
+      .then((entry) => {
+        if (active) set(getDefinitionPackageExportItems(info, account, entry.owner))
+      })
+      .catch(() => {
+        if (active) set(local)
+      })
+    return () => {
+      active = false
+    }
+  })
+}
+
+/** Matches installations by original author and package, independently of current ownership and latest version. */
 export function getInstalledPackageVersions (
   identity: CatalogPackageIdentity,
   installations: ReadonlyArray<Pick<DefinitionPackageInstallation, 'package'>>

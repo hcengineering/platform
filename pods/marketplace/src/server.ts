@@ -15,7 +15,8 @@ import type { AccountUuid } from '@hcengineering/core'
 import {
   DefinitionPackageError,
   parseDefinitionPackageRelease,
-  serializeDefinitionPackageRelease
+  serializeDefinitionPackageRelease,
+  type CatalogPackageVisibility
 } from '@hcengineering/marketplace'
 import { getEmbeddedLabel } from '@hcengineering/platform'
 import process from '@hcengineering/process'
@@ -29,6 +30,7 @@ import type { CatalogStore } from './store'
 export interface CatalogServerOptions {
   store: CatalogStore
   authenticate: (token: string) => Promise<CatalogAccount>
+  resolveRecipient: (token: string, email: string) => Promise<AccountUuid>
   onError: (error: unknown) => void
   requestLimit?: number
   publicationLimit?: number
@@ -39,6 +41,7 @@ export interface CatalogServerOptions {
 export function createCatalogServer ({
   store,
   authenticate,
+  resolveRecipient,
   onError,
   requestLimit = 300,
   publicationLimit = 20,
@@ -49,8 +52,8 @@ export function createCatalogServer ({
   app.set('trust proxy', trustedProxies ?? false)
   app.use(
     cors({
-      methods: ['GET', 'POST'],
-      allowedHeaders: ['Authorization', 'Content-Type', 'X-Marketplace-Contact-Email'],
+      methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+      allowedHeaders: ['Authorization', 'Content-Type', 'X-Marketplace-Contact-Email', 'X-Marketplace-Visibility'],
       exposedHeaders: ['Retry-After', 'RateLimit', 'RateLimit-Policy']
     })
   )
@@ -77,7 +80,7 @@ export function createCatalogServer ({
   })
 
   function route (
-    handler: (req: Request, res: Response, account: CatalogAccount) => Promise<void>
+    handler: (req: Request, res: Response, account: CatalogAccount, token: string) => Promise<void>
   ): express.RequestHandler {
     return (req, res, next) => {
       const token = /^Bearer (\S+)$/i.exec(req.header('Authorization') ?? '')?.[1]
@@ -87,7 +90,7 @@ export function createCatalogServer ({
       }
       authenticate(token)
         .then(async (account) => {
-          await handler(req, res, account)
+          await handler(req, res, account, token)
         })
         .catch(next)
     }
@@ -99,8 +102,9 @@ export function createCatalogServer ({
     route(async (req, res, account) => {
       res.json(
         await store.list({
+          viewer: account.uuid,
           search: text(req.query.search, 'search', true).slice(0, 200),
-          author: req.query.mine === 'true' ? account.uuid : undefined,
+          owner: req.query.mine === 'true' ? account.uuid : undefined,
           offset: integer(req.query.offset, 0, 1000000),
           limit: integer(req.query.limit, 30, 100, 1)
         })
@@ -108,18 +112,75 @@ export function createCatalogServer ({
     })
   )
   app.get(
+    '/package',
+    requestLimiter,
+    route(async (req, res, account) => {
+      res.json(await store.get(identity(req), account.uuid))
+    })
+  )
+  app.patch(
+    '/package',
+    requestLimiter,
+    route(async (req, res, account) => {
+      const visibility = packageVisibility(req)
+      if (visibility === undefined) throw new CatalogError(400, 'Package visibility is required')
+      await store.setVisibility(identity(req), account.uuid, visibility)
+      res.sendStatus(204)
+    })
+  )
+  app.get(
+    '/package/access',
+    requestLimiter,
+    route(async (req, res, account) => {
+      res.json(await store.readers(identity(req), account.uuid))
+    })
+  )
+  app.post(
+    '/package/access',
+    requestLimiter,
+    route(async (req, res, account, token) => {
+      const target = identity(req)
+      await store.readers(target, account.uuid)
+      const email = await recipientEmail(req, res)
+      const recipient = await resolveRecipient(token, email)
+      await store.grantRead(target, account.uuid, { account: recipient, email })
+      res.sendStatus(204)
+    })
+  )
+  app.delete(
+    '/package/access',
+    requestLimiter,
+    route(async (req, res, account) => {
+      await store.revokeRead(identity(req), account.uuid, accountUuid(req.query.account, 'account'))
+      res.sendStatus(204)
+    })
+  )
+  app.post(
+    '/package/owner',
+    requestLimiter,
+    route(async (req, res, account, token) => {
+      const target = identity(req)
+      await store.readers(target, account.uuid)
+      const email = await recipientEmail(req, res)
+      const recipient = await resolveRecipient(token, email)
+      await store.transferOwnership(target, account.uuid, recipient)
+      res.sendStatus(204)
+    })
+  )
+  app.get(
     '/releases',
     requestLimiter,
-    route(async (req, res) => {
-      res.json(await store.releases(identity(req), integer(req.query.offset, 0, 1000000)))
+    route(async (req, res, account) => {
+      res.json(await store.releases(identity(req), account.uuid, integer(req.query.offset, 0, 1000000)))
     })
   )
   app.get(
     '/release',
     requestLimiter,
-    route(async (req, res) => {
+    route(async (req, res, account) => {
       const source = await store.download(
         identity(req),
+        account.uuid,
         req.query.version === undefined ? undefined : text(req.query.version, 'version')
       )
       res.type('application/yaml').send(source)
@@ -132,6 +193,7 @@ export function createCatalogServer ({
     requestLimiter,
     publicationLimiter,
     route(async (req, res, account) => {
+      const visibility = packageVisibility(req)
       await new Promise<void>((resolve, reject) => {
         express.text({ type: ['application/yaml', 'text/yaml'], limit: '3mb' })(req, res, (error?: unknown) => {
           if (error !== undefined) reject(error)
@@ -140,9 +202,7 @@ export function createCatalogServer ({
       })
       if (typeof req.body !== 'string') throw new CatalogError(415, 'Send a package as application/yaml')
       const release = await parseDefinitionPackageRelease(req.body)
-      if (release.package.author !== account.uuid) {
-        throw new CatalogError(403, 'Only the package author can publish releases')
-      }
+      const author = accountUuid(release.package.author, 'author')
       if (
         release.package.id.length > 200 ||
         release.package.version.length > 100 ||
@@ -177,7 +237,9 @@ export function createCatalogServer ({
       res.status(201).json(
         await store.publish({
           id: release.package.id,
-          author: account.uuid,
+          author,
+          publisher: account.uuid,
+          ...(visibility === undefined ? {} : { visibility }),
           name: names.join(', ').slice(0, 300) || release.package.id,
           description: release.package.description ?? '',
           kind: release.definition.kind,
@@ -202,7 +264,11 @@ export function createCatalogServer ({
       return
     }
     if (typeof error === 'object' && error !== null && 'type' in error && error.type === 'entity.too.large') {
-      res.status(413).json({ message: 'Release artifact exceeds 3 MiB' })
+      res.status(413).json({ message: 'Request body exceeds the allowed size' })
+      return
+    }
+    if (typeof error === 'object' && error !== null && 'type' in error && error.type === 'entity.parse.failed') {
+      res.status(400).json({ message: 'Invalid JSON request body' })
       return
     }
     onError(error)
@@ -220,6 +286,14 @@ function text (value: unknown, field: string, optional = false): string {
   return value
 }
 
+function packageVisibility (req: Request): CatalogPackageVisibility | undefined {
+  const value = req.header('X-Marketplace-Visibility')
+  if (value !== undefined && value !== 'public' && value !== 'private') {
+    throw new CatalogError(400, 'Invalid package visibility')
+  }
+  return value
+}
+
 function integer (value: unknown, fallback: number, max: number, min = 0): number {
   if (value === undefined) return fallback
   if (typeof value !== 'string' || !/^\d+$/.test(value) || Number(value) < min || Number(value) > max) {
@@ -229,7 +303,39 @@ function integer (value: unknown, fallback: number, max: number, min = 0): numbe
 }
 
 function identity (req: Request): { id: string, author: AccountUuid } {
-  const author = text(req.query.author, 'author')
-  if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(author)) throw new CatalogError(400, 'Invalid author')
-  return { id: text(req.query.id, 'id'), author: author as AccountUuid }
+  return { id: text(req.query.id, 'id'), author: accountUuid(req.query.author, 'author') }
+}
+
+function accountUuid (value: unknown, field: string): AccountUuid {
+  const account = text(value, field)
+  if (!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(account)) throw new CatalogError(400, `Invalid ${field}`)
+  return account as AccountUuid
+}
+
+async function recipientEmail (req: Request, res: Response): Promise<string> {
+  await new Promise<void>((resolve, reject) => {
+    express.json({ limit: '1kb' })(req, res, (error?: unknown) => {
+      if (error !== undefined) reject(error)
+      else resolve()
+    })
+  })
+  const body: unknown = req.body
+  if (body === null || typeof body !== 'object' || !('email' in body) || typeof body.email !== 'string') {
+    throw new CatalogError(400, 'Enter a registered account email')
+  }
+  const email = body.email.trim().toLowerCase()
+  const [local, domain, extra] = email.split('@')
+  if (
+    email.length > 254 ||
+    !local ||
+    !domain ||
+    extra !== undefined ||
+    !domain.includes('.') ||
+    domain.startsWith('.') ||
+    domain.endsWith('.') ||
+    /\s/.test(email)
+  ) {
+    throw new CatalogError(400, 'Enter a valid account email')
+  }
+  return email
 }

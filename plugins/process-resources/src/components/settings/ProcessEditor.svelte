@@ -20,7 +20,7 @@
   import { getDefinitionPackageInfo, type DefinitionPackageOwner } from '@hcengineering/marketplace'
   import {
     DefinitionPackageExportPopup,
-    getDefinitionPackageExportItems,
+    getDefinitionPackageExportItemsStore,
     getDefinitionPackageOwner
   } from '@hcengineering/marketplace-resources'
   import { getEmbeddedLabel, setPlatformStatus, unknownError } from '@hcengineering/platform'
@@ -178,6 +178,10 @@
   const EXPORT_YAML = 'yaml'
 
   let exportItems: DropdownIntlItem[]
+  $: packageExportItems = getDefinitionPackageExportItemsStore(
+    packageOwner === undefined ? undefined : getDefinitionPackageInfo(packageOwner),
+    getCurrentAccount().uuid
+  )
   $: exportItems = [
     {
       id: EXPORT_WITH_SLOTS,
@@ -193,10 +197,7 @@
     },
     ...((value !== undefined && getDefinitionPackageInfo(value) !== undefined) ||
     (value !== undefined && packageType?._id === value.masterTag)
-      ? getDefinitionPackageExportItems(
-          packageOwner === undefined ? undefined : getDefinitionPackageInfo(packageOwner),
-          getCurrentAccount().uuid
-        )
+      ? $packageExportItems
       : [])
   ]
 

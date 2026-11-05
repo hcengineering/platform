@@ -16,15 +16,14 @@ import marketplace, { getDefinitionPackageInfo, type DefinitionPackageInfo } fro
 import type { Process } from '@hcengineering/process'
 import type { DropdownIntlItem } from '@hcengineering/ui'
 
-/** Only the recorded author is offered a new version of an existing package. */
+/** Local packages use their author; published packages can supply the current catalog owner. */
 export function getDefinitionPackageExportItems (
   info: DefinitionPackageInfo | undefined,
-  author: AccountUuid
+  account: AccountUuid,
+  owner: AccountUuid | undefined = info?.author
 ): DropdownIntlItem[] {
   if (info === undefined) return [{ id: 'make-package', label: marketplace.string.MakePackage }]
-  return info.author === author
-    ? [{ id: 'new-package-version', label: marketplace.string.CreateNewPackageVersion }]
-    : []
+  return owner === account ? [{ id: 'new-package-version', label: marketplace.string.CreateNewPackageVersion }] : []
 }
 
 /** An embedded process inherits its card type's package unless it has its own package. */

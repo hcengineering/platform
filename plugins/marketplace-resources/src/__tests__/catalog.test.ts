@@ -14,11 +14,20 @@ import type { AccountUuid } from '@hcengineering/core'
 import marketplace, {
   createDefinitionPackageRelease,
   MarketplaceClient,
-  serializeDefinitionPackageRelease
+  serializeDefinitionPackageRelease,
+  type CatalogPackage,
+  type DefinitionPackageInfo
 } from '@hcengineering/marketplace'
 import { setMetadata } from '@hcengineering/platform'
 import presentation from '@hcengineering/presentation'
-import { downloadCatalogRelease, getInstalledPackageVersions, getMarketplaceClient, hasMarketplace } from '../catalog'
+import {
+  downloadCatalogRelease,
+  getDefinitionPackageExportItemsStore,
+  getInstalledPackageVersions,
+  getMarketplaceClient,
+  hasMarketplace
+} from '../catalog'
+import type { DropdownIntlItem } from '@hcengineering/ui'
 
 // eslint-disable-next-line @typescript-eslint/naming-convention -- Standard CommonJS runtime global.
 declare const __dirname: string
@@ -96,4 +105,62 @@ it('rejects the wrong version and tampered bytes', async () => {
   await expect(downloadCatalogRelease(identity, '1.0.1')).rejects.toThrow('does not match')
   download.mockResolvedValueOnce(source.replace('Review card', 'Tampered'))
   await expect(downloadCatalogRelease(identity)).rejects.toThrow('digest')
+})
+
+describe('catalog ownership in export menus', () => {
+  const owner = 'ac842ec2-bd9e-4f51-86ef-ce1393386348' as AccountUuid
+  const info: DefinitionPackageInfo = { ...identity, version: '1.0.0' }
+  const entry: CatalogPackage = {
+    ...identity,
+    owner,
+    visibility: 'private',
+    name: 'Review',
+    description: '',
+    kind: 'process',
+    version: '1.0.0',
+    authorName: 'Original author',
+    publishedOn: 1
+  }
+
+  it('offers a new version to the current owner and removes it from the original author', async () => {
+    jest.spyOn(MarketplaceClient.prototype, 'get').mockResolvedValue(entry)
+    let own: DropdownIntlItem[] = []
+    let former: DropdownIntlItem[] = []
+    const unsubscribeOwner = getDefinitionPackageExportItemsStore(info, owner).subscribe((items) => {
+      own = items
+    })
+    const unsubscribeAuthor = getDefinitionPackageExportItemsStore(info, identity.author).subscribe((items) => {
+      former = items
+    })
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0)
+    })
+    expect(own.map((item) => item.id)).toEqual(['new-package-version'])
+    expect(former).toEqual([])
+    unsubscribeOwner()
+    unsubscribeAuthor()
+  })
+
+  it('does not give publication rights to a reader and preserves offline file creation', async () => {
+    const readEntry: CatalogPackage = { ...entry, owner: identity.author }
+    jest
+      .spyOn(MarketplaceClient.prototype, 'get')
+      .mockResolvedValueOnce(readEntry)
+      .mockRejectedValueOnce(new Error('offline'))
+    let reader: DropdownIntlItem[] = []
+    let local: DropdownIntlItem[] = []
+    const unsubscribeReader = getDefinitionPackageExportItemsStore(info, owner).subscribe((items) => {
+      reader = items
+    })
+    const unsubscribeLocal = getDefinitionPackageExportItemsStore(info, identity.author).subscribe((items) => {
+      local = items
+    })
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0)
+    })
+    expect(reader).toEqual([])
+    expect(local.map((item) => item.id)).toEqual(['new-package-version'])
+    unsubscribeReader()
+    unsubscribeLocal()
+  })
 })

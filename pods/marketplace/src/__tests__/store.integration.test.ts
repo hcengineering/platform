@@ -11,6 +11,7 @@
 // limitations under the License.
 
 import type { AccountUuid } from '@hcengineering/core'
+import type { CatalogPackageReader } from '@hcengineering/marketplace'
 import { PostgresCatalogStore, type CatalogPublication } from '../store'
 
 // Point only at a disposable database; these tests never use the service's DB_URL.
@@ -36,6 +37,7 @@ integration('Marketplace PostgreSQL release storage', () => {
     publication = {
       id: `local/test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
       author,
+      publisher: author,
       name: 'Process bundle',
       description: 'A % literal _ search',
       kind: 'process',
@@ -50,15 +52,18 @@ integration('Marketplace PostgreSQL release storage', () => {
   it('keeps old release bytes and selects the newest release', async () => {
     await store.publish(publication)
     await store.publish({ ...publication, version: '1.0.1', contentHash: 'sha256:updated', source: 'updated YAML' })
-    expect(await store.download(publication, '1.0.0')).toBe('original YAML')
-    expect(await store.download(publication)).toBe('updated YAML')
-    expect((await store.releases(publication, 0)).items.map((release) => release.version)).toEqual(['1.0.1', '1.0.0'])
+    expect(await store.download(publication, author, '1.0.0')).toBe('original YAML')
+    expect(await store.download(publication, author)).toBe('updated YAML')
+    expect((await store.releases(publication, author, 0)).items.map((release) => release.version)).toEqual([
+      '1.0.1',
+      '1.0.0'
+    ])
   })
 
   it('accepts identical retries without changing the publication timestamp', async () => {
     const first = await store.publish(publication)
     expect(await store.publish({ ...publication, publishedOn: publication.publishedOn + 100 })).toEqual(first)
-    expect((await store.releases(publication, 0)).items).toHaveLength(1)
+    expect((await store.releases(publication, author, 0)).items).toHaveLength(1)
   })
 
   it('rejects replacing content, kind changes, downgrades and equal SemVer precedence', async () => {
@@ -69,14 +74,14 @@ integration('Marketplace PostgreSQL release storage', () => {
     })
     await expect(store.publish({ ...publication, version: '0.9.0' })).rejects.toMatchObject({ status: 409 })
     await expect(store.publish({ ...publication, version: '1.0.0+changed' })).rejects.toMatchObject({ status: 409 })
-    expect(await store.download(publication)).toBe('original YAML')
+    expect(await store.download(publication, author)).toBe('original YAML')
   })
 
   it('scopes package IDs to their real authors', async () => {
     await store.publish(publication)
-    await store.publish({ ...publication, author: other, source: 'other author' })
-    expect(await store.download(publication)).toBe('original YAML')
-    expect(await store.download({ ...publication, author: other })).toBe('other author')
+    await store.publish({ ...publication, author: other, publisher: other, source: 'other author' })
+    expect(await store.download(publication, author)).toBe('original YAML')
+    expect(await store.download({ ...publication, author: other }, other)).toBe('other author')
   })
 
   it('serializes concurrent first publications and never replaces a version', async () => {
@@ -86,7 +91,7 @@ integration('Marketplace PostgreSQL release storage', () => {
     ])
     expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
     expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1)
-    expect((await store.releases(publication, 0)).items).toHaveLength(1)
+    expect((await store.releases(publication, author, 0)).items).toHaveLength(1)
   })
 
   it('keeps the greatest SemVer latest under concurrent upgrades', async () => {
@@ -96,19 +101,182 @@ integration('Marketplace PostgreSQL release storage', () => {
         await store.publish({ ...publication, version, source: version, contentHash: version })
       })
     )
-    expect(await store.download(publication)).toBe('1.0.3')
+    expect(await store.download(publication, author)).toBe('1.0.3')
   })
 
   it('searches literal text, filters authors and exposes optional contact only when supplied', async () => {
     await store.publish(publication)
-    const page = await store.list({ search: '% literal _', author, offset: 0, limit: 100 })
+    const page = await store.list({ viewer: author, search: '% literal _', author, offset: 0, limit: 100 })
     expect(page.items).toEqual(expect.arrayContaining([expect.objectContaining({ id: publication.id })]))
     expect(page.items.find((entry) => entry.id === publication.id)?.contactEmail).toBeUndefined()
     expect(
-      (await store.list({ search: publication.name, author: other, offset: 0, limit: 100 })).items.every(
-        (entry) => entry.author === other
-      )
+      (
+        await store.list({ viewer: author, search: publication.name, author: other, offset: 0, limit: 100 })
+      ).items.every((entry) => entry.author === other)
     ).toBe(true)
-    await expect(store.download({ ...publication, id: 'local/missing' })).rejects.toMatchObject({ status: 404 })
+    await expect(store.download({ ...publication, id: 'local/missing' }, author)).rejects.toMatchObject({ status: 404 })
+  })
+
+  it('keeps legacy publications public and initializes the visibility schema repeatedly', async () => {
+    await store.publish(publication)
+    await store.init()
+    expect((await store.get(publication, other)).visibility).toBe('public')
+    expect(await store.download(publication, other)).toBe('original YAML')
+    expect((await store.releases(publication, other, 0)).items).toHaveLength(1)
+  })
+
+  it('hides private packages and every release from other accounts, including direct requests', async () => {
+    await store.publish({ ...publication, visibility: 'private' })
+    await store.publish({ ...publication, version: '1.0.1', source: 'updated YAML', contentHash: 'sha256:updated' })
+    expect((await store.get(publication, author)).visibility).toBe('private')
+    expect(await store.download(publication, author)).toBe('updated YAML')
+    expect(await store.download(publication, author, '1.0.0')).toBe('original YAML')
+    expect((await store.releases(publication, author, 0)).items).toHaveLength(2)
+    for (const mine of [false, true]) {
+      const page = await store.list({
+        viewer: other,
+        search: '',
+        author: mine ? author : undefined,
+        offset: 0,
+        limit: 100
+      })
+      expect(page.items.some((entry) => entry.id === publication.id && entry.author === author)).toBe(false)
+    }
+    const own = await store.list({ viewer: author, search: '', author, offset: 0, limit: 100 })
+    expect(own.items).toContainEqual(expect.objectContaining({ id: publication.id, visibility: 'private' }))
+    await expect(store.get(publication, other)).rejects.toMatchObject({ status: 404 })
+    await expect(store.releases(publication, other, 0)).rejects.toMatchObject({ status: 404 })
+    await expect(store.download(publication, other)).rejects.toMatchObject({ status: 404 })
+    await expect(store.download(publication, other, '1.0.0')).rejects.toMatchObject({ status: 404 })
+    await expect(store.setVisibility(publication, other, 'public')).rejects.toMatchObject({ status: 404 })
+    expect((await store.get(publication, author)).visibility).toBe('private')
+  })
+
+  it('lets only the author switch visibility for the whole package without creating releases', async () => {
+    await store.publish(publication)
+    await store.setVisibility(publication, author, 'private')
+    await expect(store.download(publication, other)).rejects.toMatchObject({ status: 404 })
+    expect((await store.releases(publication, author, 0)).items).toHaveLength(1)
+    await store.setVisibility(publication, author, 'public')
+    expect(await store.download(publication, other)).toBe('original YAML')
+    expect((await store.get(publication, other)).publishedOn).toBe(publication.publishedOn)
+    await expect(store.setVisibility({ ...publication, id: 'local/missing' }, author, 'private')).rejects.toMatchObject(
+      { status: 404 }
+    )
+  })
+
+  it('preserves privacy on retries from older clients and applies explicit visibility even on an identical retry', async () => {
+    const first = await store.publish({ ...publication, visibility: 'private' })
+    expect(await store.publish(publication)).toEqual(first)
+    await expect(store.get(publication, other)).rejects.toMatchObject({ status: 404 })
+    await expect(
+      store.publish({ ...publication, contentHash: 'tampered', visibility: 'public' })
+    ).rejects.toMatchObject({ status: 409 })
+    await expect(store.get(publication, other)).rejects.toMatchObject({ status: 404 })
+    expect(await store.publish({ ...publication, visibility: 'public' })).toEqual(first)
+    expect((await store.get(publication, other)).visibility).toBe('public')
+    expect((await store.releases(publication, other, 0)).items).toHaveLength(1)
+  })
+
+  it('applies visibility before pagination so hidden packages do not consume visible slots', async () => {
+    const search = publication.id
+    await store.publish({ ...publication, name: search })
+    await store.publish({
+      ...publication,
+      author: other,
+      publisher: other,
+      name: search,
+      visibility: 'private',
+      publishedOn: publication.publishedOn + 1
+    })
+    const page = await store.list({ viewer: author, search, offset: 0, limit: 1 })
+    expect(page.items).toHaveLength(1)
+    expect(page.items[0].author).toBe(author)
+    expect(page.nextOffset).toBeUndefined()
+  })
+
+  it('grants read-only access to all releases and revokes future access without changing release bytes', async () => {
+    await store.publish({ ...publication, visibility: 'private' })
+    await store.publish({ ...publication, version: '1.0.1', contentHash: 'new', source: 'new YAML' })
+    const reader: CatalogPackageReader = { account: other, email: 'reader@example.com' }
+    await store.grantRead(publication, author, reader)
+    await store.grantRead(publication, author, reader)
+    expect(await store.readers(publication, author)).toEqual([reader])
+    expect((await store.get(publication, other)).owner).toBe(author)
+    expect((await store.releases(publication, other, 0)).items).toHaveLength(2)
+    expect(await store.download(publication, other, '1.0.0')).toBe('original YAML')
+    expect((await store.list({ viewer: other, search: publication.name, offset: 0, limit: 100 })).items).toContainEqual(
+      expect.objectContaining({ id: publication.id, author })
+    )
+    await expect(store.readers(publication, other)).rejects.toMatchObject({ status: 404 })
+    await expect(
+      store.grantRead(publication, other, { account: author, email: 'author@example.com' })
+    ).rejects.toMatchObject({ status: 404 })
+    await expect(store.revokeRead(publication, other, author)).rejects.toMatchObject({ status: 404 })
+    await expect(store.setVisibility(publication, other, 'public')).rejects.toMatchObject({ status: 404 })
+    await expect(store.transferOwnership(publication, other, author)).rejects.toMatchObject({ status: 404 })
+    await expect(store.publish({ ...publication, publisher: other })).rejects.toMatchObject({ status: 403 })
+    await store.revokeRead(publication, author, other)
+    expect(await store.readers(publication, author)).toEqual([])
+    await expect(store.get(publication, other)).rejects.toMatchObject({ status: 404 })
+    await expect(store.releases(publication, other, 0)).rejects.toMatchObject({ status: 404 })
+    await expect(store.download(publication, other, '1.0.0')).rejects.toMatchObject({ status: 404 })
+    expect(await store.download(publication, author, '1.0.0')).toBe('original YAML')
+    await store.setVisibility(publication, author, 'public')
+    expect(await store.download(publication, other)).toBe('new YAML')
+  })
+
+  it('transfers ownership while preserving identities, releases and update compatibility', async () => {
+    const release = await store.publish({ ...publication, visibility: 'private', contactEmail: 'old@example.com' })
+    await store.grantRead(publication, author, { account: other, email: 'next@example.com' })
+    await store.transferOwnership(publication, author, other)
+    const entry = await store.get(publication, other)
+    expect(entry).toMatchObject({ id: publication.id, author, owner: other, authorName: 'Author' })
+    expect(entry.contactEmail).toBeUndefined()
+    expect(await store.readers(publication, other)).toEqual([])
+    expect((await store.releases(publication, other, 0)).items).toEqual([release])
+    expect(await store.download(publication, other)).toBe('original YAML')
+    await expect(store.get(publication, author)).rejects.toMatchObject({ status: 404 })
+    await expect(store.publish(publication)).rejects.toMatchObject({ status: 403 })
+    await expect(store.setVisibility(publication, author, 'public')).rejects.toMatchObject({ status: 404 })
+    await expect(store.transferOwnership(publication, author, author)).rejects.toMatchObject({ status: 400 })
+    const mine = await store.list({ viewer: other, owner: other, search: '', offset: 0, limit: 100 })
+    expect(mine.items).toContainEqual(expect.objectContaining({ id: publication.id, author, owner: other }))
+    const previous = await store.list({ viewer: author, owner: author, search: '', offset: 0, limit: 100 })
+    expect(previous.items.some((item) => item.id === publication.id)).toBe(false)
+    await store.publish({
+      ...publication,
+      publisher: other,
+      authorName: 'New publisher',
+      version: '1.0.1',
+      source: 'new YAML',
+      contentHash: 'new'
+    })
+    expect((await store.get(publication, other)).authorName).toBe('Author')
+    expect(await store.download(publication, other, '1.0.0')).toBe('original YAML')
+    expect(await store.download(publication, other)).toBe('new YAML')
+    await store.grantRead(publication, other, { account: author, email: 'old@example.com' })
+    expect(await store.download(publication, author)).toBe('new YAML')
+    await expect(store.publish(publication)).rejects.toMatchObject({ status: 403 })
+  })
+
+  it('never allows a publisher to reserve a previously unpublished identity of another author', async () => {
+    await expect(store.publish({ ...publication, publisher: other })).rejects.toMatchObject({ status: 403 })
+    await expect(store.get(publication, author)).rejects.toMatchObject({ status: 404 })
+    await store.publish(publication)
+    await store.setVisibility(publication, author, 'public')
+    await expect(store.publish({ ...publication, publisher: other })).rejects.toMatchObject({ status: 403 })
+  })
+
+  it('serializes competing ownership transfers so only the current owner can change access', async () => {
+    const third = '4b12bec4-af9a-4afc-9516-a9d572873f75' as AccountUuid
+    await store.publish({ ...publication, visibility: 'private' })
+    const results = await Promise.allSettled([
+      store.transferOwnership(publication, author, other),
+      store.transferOwnership(publication, author, third)
+    ])
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1)
+    await expect(store.publish(publication)).rejects.toMatchObject({ status: 403 })
   })
 })

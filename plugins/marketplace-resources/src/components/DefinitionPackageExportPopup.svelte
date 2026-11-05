@@ -25,7 +25,7 @@
   import process from '@hcengineering/process'
   import { Button, CheckBox, Dialog, Label, Notice, SettingsCard, TextArea, showPopup } from '@hcengineering/ui'
   import { createEventDispatcher, tick } from 'svelte'
-  import { hasMarketplace } from '../catalog'
+  import { getMarketplaceClient, hasMarketplace } from '../catalog'
   import PublishPackagePopup from './PublishPackagePopup.svelte'
 
   export let source: string
@@ -95,7 +95,15 @@
         }
         if (definitions.length === 0) throw new DefinitionPackageError('package.members', 'Select at least one process')
       }
-      const metadata = createDefinitionPackageMetadata(getCurrentAccount().uuid, description, info)
+      const account = getCurrentAccount().uuid
+      const author = info?.author ?? account
+      if (author !== account) {
+        const entry = await getMarketplaceClient().get({ id: info?.id ?? '', author })
+        if (entry.owner !== account) {
+          throw new DefinitionPackageError('package.author', 'Only the package owner can create a new version')
+        }
+      }
+      const metadata = createDefinitionPackageMetadata(author, description, info)
       if (getSource !== undefined) metadata.members = definitions.map((member) => member._id)
       const content = await createDefinitionPackageExport(
         getSource === undefined ? source : await getSource(definitions),
