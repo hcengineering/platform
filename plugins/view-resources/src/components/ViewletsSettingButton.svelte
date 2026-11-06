@@ -19,7 +19,8 @@
   import { ViewOptions, Viewlet, ViewletPreference } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import view from '../plugin'
-  import { getViewOptions, viewOptionStore } from '../viewOptions'
+  import { defaultOptions, getViewOptions, viewOptionStore } from '../viewOptions'
+  import { getViewletDefaultOptions } from '../viewletDefaultOptions'
   import ViewOptionsButton from './ViewOptionsButton.svelte'
   import ViewletSetting from './ViewletSetting.svelte'
   import { restrictionStore } from '../utils'
@@ -33,6 +34,12 @@
   export let preference: ViewletPreference | undefined = undefined
   export let loading = true
   export let disabled: boolean = false
+  /**
+   * When true, a viewlet without saved view options starts with the grouping,
+   * ordering and option defaults declared on the viewlet (as the main views do)
+   * instead of the generic "No grouping" defaults.
+   */
+  export let useViewletDefaults: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -47,7 +54,12 @@
     })
   }
 
-  $: viewOptions = getViewOptions(viewlet, $viewOptionStore)
+  function getDefaultOptions (viewlet: Viewlet | undefined): ViewOptions {
+    if (!useViewletDefaults || viewlet?.viewOptions == null) return defaultOptions
+    return getViewletDefaultOptions(viewlet.viewOptions, defaultOptions)
+  }
+
+  $: viewOptions = getViewOptions(viewlet, $viewOptionStore, getDefaultOptions(viewlet))
 
   const query = createQuery()
 
