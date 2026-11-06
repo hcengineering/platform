@@ -76,3 +76,29 @@ the original download, reopening a cached preview, changing file versions,
 switching documents while loading, and retry after a converter failure. Test with
 the deployment's actual fonts and browser PDF settings; browsers configured to
 download PDFs instead of displaying them may not provide inline preview.
+
+# Print links
+
+`GET /print?link=...` only renders `http` and `https` links to an allowed target.
+By default the only allowed target is the origin (scheme, host and port) of the
+service's `FRONT_URL`, so links to other hosts, other ports of the front host,
+internal services or cloud metadata endpoints are rejected with 403.
+`GET /print/:objectClass/:objectId` applies the same checks to the generated
+public link.
+
+While a page is rendered, redirects and all navigations, including frames, are
+checked against the same list. Other requests (images, styles, scripts) are
+blocked when they address `localhost` or a loopback, private, link-local or
+unique-local IP address, unless they point to an allowed target. The checks
+apply to every request of the headless browser, including popups and service or
+shared workers started by the page. Popups and other additional pages are
+closed, and the rendered page bypasses service workers.
+
+These checks work on hostnames and do not cover WebSocket handshakes or public
+DNS names that resolve to internal addresses. Restrict the outbound network
+access of the print service as well if it can reach internal services.
+
+Set `ALLOWED_HOSTNAMES` to a comma-separated list of hostnames (without scheme or
+port) to replace the default, for example when public links are generated for
+additional branded front hosts. Configured hostnames are allowed on any port and
+scheme. Include the `FRONT_URL` hostname in that list if it should stay allowed.

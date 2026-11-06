@@ -35,6 +35,7 @@ import config from './config'
 import { convertToHtml } from './convert'
 import { convertToPdf, createPreviewQueue, getPreviewId, maxDocumentBytes } from './preview'
 import { ApiError } from './error'
+import { getAllowedTargets, isAllowedLink, isAllowedRequest } from './hostnames'
 import { PrintOptions, print, validKinds, validPageOrientations } from './print'
 import { withMeasureContext } from './middleware'
 
@@ -192,7 +193,10 @@ export function createServer (
         })
       )
   })
-  const whitelistedHostnames = allowedHostnames.length > 0 ? new Set(allowedHostnames) : null
+  // Without an explicit list of hostnames only the configured front origin may be rendered
+  const allowedTargets = getAllowedTargets(allowedHostnames, config.FrontUrl)
+  const checkRequest = (link: string, isNavigation: boolean): boolean =>
+    isAllowedRequest(link, isNavigation, allowedTargets)
 
   const app = express()
   app.use(cors())
@@ -206,22 +210,19 @@ export function createServer (
       const rawlink = req.query.link as string
       const link = decodeURIComponent(rawlink)
 
-      // Verify that link is from the same host and protocol is among the allowed
-      const url = new URL(link)
-      if (
-        !['http:', 'https:'].includes(url.protocol) ||
-        (whitelistedHostnames != null && !whitelistedHostnames.has(url.hostname))
-      ) {
+      // Verify that link is from an allowed host and protocol is among the allowed
+      if (!isAllowedLink(link, allowedTargets)) {
         ctx.error('Rejected processing unexpected link', { link })
         throw new ApiError(403, 'Cannot process provided link')
       }
+      const url = new URL(link)
 
       const options = parsePrintOptions(req.query)
 
       const printRes = await ctx.with(
         'print',
         { kind: options.kind, orientation: options.orientation },
-        (ctx) => print(ctx, link, options),
+        (ctx) => print(ctx, link, options, checkRequest),
         {
           url,
           viewport: options.viewport
@@ -324,7 +325,7 @@ export function createServer (
         const printRes = await ctx.with(
           'print',
           { kind: options.kind, orientation: options.orientation },
-          (ctx) => print(ctx, link, options),
+          (ctx) => print(ctx, link, options, checkRequest),
           {
             link,
             viewport: options.viewport
