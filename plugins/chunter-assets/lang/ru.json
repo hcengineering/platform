@@ -8,6 +8,7 @@
     "NewDirectMessage": "Создать личное сообщение",
     "ChannelName": "Название",
     "ChannelNamePlaceholder": "Канал",
+    "ChannelNameAlreadyExists": "Канал с таким названием уже существует",
     "ChannelDescription": "Описание",
     "Channel": "Канал ",
     "DirectMessage": "Личное сообщение",

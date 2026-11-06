@@ -8,6 +8,7 @@
     "NewDirectMessage": "Neue Direktnachricht",
     "ChannelName": "Name",
     "ChannelNamePlaceholder": "Kanal",
+    "ChannelNameAlreadyExists": "Ein Kanal mit diesem Namen existiert bereits",
     "ChannelDescription": "Beschreibung",
     "Channel": "Kanal",
     "DirectMessage": "Direktnachricht",
