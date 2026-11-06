@@ -120,6 +120,7 @@
     "TableCopiedToClipboard": "Table copied to clipboard",
     "TableCopyFailed": "Failed to copy table to clipboard",
     "PublicView": "Public",
+    "OverwriteWithCurrentFilters": "Overwrite with current filters",
 
     "ChooseIcon": "Choose icon",
     "IconColor": "Choose icon color",

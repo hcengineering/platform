@@ -116,6 +116,7 @@
         "TableCopiedToClipboard": "표를 클립보드에 복사했습니다",
         "TableCopyFailed": "표를 클립보드에 복사하는 데 실패했습니다",
         "PublicView": "공개",
+        "OverwriteWithCurrentFilters": "현재 필터로 덮어쓰기",
         "ChooseIcon": "아이콘 선택",
         "IconColor": "아이콘 색상 선택",
         "IconCategory": "아이콘",
