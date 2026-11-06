@@ -3,7 +3,9 @@
     "RequiredField": "{field} - pole wymagane",
     "FieldsDoNotMatch": "Pole {field} nie pasuje do pola {field2}",
     "ConnectingToServer": "Łączenie z serwerem....",
-    "IncorrectValue": "{field} - nieprawidłowa wartość"
+    "IncorrectValue": "{field} - nieprawidłowa wartość",
+    "OidcGroupNotAllowed": "Twoje konto nie ma uprawnień do logowania.",
+    "OidcRoleSyncFailed": "Nie udało się zsynchronizować dostępu do obszaru roboczego. Spróbuj zalogować się ponownie."
   },
   "string": {
     "ChangePassword": "Zmień hasło",

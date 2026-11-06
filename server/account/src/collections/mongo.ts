@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 import {
-  type AccountRole,
+  AccountRole,
   type Data,
   type Person,
   type Version,
@@ -620,6 +620,28 @@ export class MongoAccountDB implements AccountDB {
       workspaceUuid: workspaceId,
       accountUuid: accountId
     })
+  }
+
+  /**
+   * Mongo stores workspace members in separate documents. Without a Mongo
+   * transaction this count-and-mutate operation cannot be made race-free, so
+   * this is intentionally best effort. PostgreSQL/Cockroach deployments use a
+   * serialized conditional mutation for OIDC owner changes.
+   */
+  async updateOrUnassignWorkspaceOwnerIfNotLast (
+    accountId: AccountUuid,
+    workspaceId: WorkspaceUuid,
+    role: AccountRole | null
+  ): Promise<boolean> {
+    const owners = await this.workspaceMembers.find({ workspaceUuid: workspaceId, role: AccountRole.Owner })
+    if (!owners.some((owner) => owner.accountUuid !== accountId)) return false
+
+    if (role == null) {
+      await this.unassignWorkspace(accountId, workspaceId)
+    } else {
+      await this.updateWorkspaceRole(accountId, workspaceId, role)
+    }
+    return true
   }
 
   async createWorkspace (data: WorkspaceData, status: WorkspaceStatusData): Promise<WorkspaceUuid> {

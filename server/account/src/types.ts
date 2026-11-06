@@ -360,6 +360,17 @@ export interface AccountDB {
   batchAssignWorkspace: (data: [AccountUuid, WorkspaceUuid, AccountRole][]) => Promise<void>
   updateWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
   unassignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<void>
+  /**
+   * Changes or removes an OWNER only when another OWNER remains. SQL
+   * implementations make the check and mutation one serialized operation.
+   * Mongo's members are separate documents, so its implementation is only a
+   * best-effort check unless deployments enable Mongo transactions.
+   */
+  updateOrUnassignWorkspaceOwnerIfNotLast: (
+    accountId: AccountUuid,
+    workspaceId: WorkspaceUuid,
+    role: AccountRole | null
+  ) => Promise<boolean>
   getWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid) => Promise<AccountRole | null>
   getWorkspaceRoles: (accountId: AccountUuid) => Promise<Map<WorkspaceUuid, AccountRole>>
   getWorkspaceMembers: (workspaceId: WorkspaceUuid) => Promise<WorkspaceMemberInfo[]>

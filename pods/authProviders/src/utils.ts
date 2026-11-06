@@ -34,6 +34,18 @@ export interface AuthState {
   navigateUrl?: string
 }
 
+/**
+ * Separates failures from post-authentication work from account-resolution
+ * failures. OIDC uses this to fail the login closed with a useful message when
+ * workspace role synchronization cannot be completed.
+ */
+export class ProviderAuthenticationHookError extends Error {
+  constructor (readonly cause: unknown) {
+    super('Provider authentication hook failed')
+    this.name = 'ProviderAuthenticationHookError'
+  }
+}
+
 export function safeParseAuthState (rawState: string | undefined): AuthState {
   if (rawState == null) {
     return {}
@@ -71,13 +83,17 @@ export async function handleProviderAuth (
   first: string,
   last: string,
   socialKey: SocialKey,
-  signUpDisabled: boolean | undefined
+  signUpDisabled: boolean | undefined,
+  onAuthenticated?: (loginInfo: LoginInfo) => Promise<void>
 ): Promise<string> {
+  let loginInfo: LoginInfo | null
+  let state: AuthState
+  let branding: ReturnType<typeof getBranding>
+
   try {
     measureCtx.info('Provider auth handler', { email, type: providerType })
-    let loginInfo: LoginInfo | null
-    const state = safeParseAuthState(rawState)
-    const branding = getBranding(brandings, state?.branding)
+    state = safeParseAuthState(rawState)
+    branding = getBranding(brandings, state?.branding)
 
     if (state.inviteId != null && state.inviteId !== '' && state.autoJoin !== true) {
       loginInfo = await joinWithProvider(
@@ -103,31 +119,36 @@ export async function handleProviderAuth (
         signUpDisabled === true || state.autoJoin === true
       )
     }
-
-    if (loginInfo === null) {
-      measureCtx.info('Failed to auth: no associated account found', {
-        email,
-        type: providerType,
-        user
-      })
-      return concatLink(branding?.front ?? frontUrl, '/login')
-    } else {
-      const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
-      const queryObj: any = { token: loginInfo.token }
-      if (state.autoJoin === true) {
-        queryObj.autoJoin = state.autoJoin
-        queryObj.inviteId = state.inviteId
-        queryObj.navigateUrl = state.navigateUrl
-      }
-
-      const query = encodeURIComponent(qs.stringify(queryObj))
-
-      // Successful authentication, redirect to your application
-      measureCtx.info('Success auth, redirect', { email, type: providerType, target: origin })
-      return `${origin}?${query}`
-    }
   } catch (err: any) {
-    measureCtx.error('failed to auth', { err, type: providerType, user })
+    measureCtx.error('failed to auth', { err, type: providerType })
     return ''
   }
+
+  if (loginInfo === null) {
+    measureCtx.info('Failed to auth: no associated account found', {
+      email,
+      type: providerType
+    })
+    return concatLink(branding?.front ?? frontUrl, '/login')
+  }
+
+  try {
+    await onAuthenticated?.(loginInfo)
+  } catch (err) {
+    throw new ProviderAuthenticationHookError(err)
+  }
+
+  const origin = concatLink(branding?.front ?? frontUrl, '/login/auth')
+  const queryObj: any = { token: loginInfo.token }
+  if (state.autoJoin === true) {
+    queryObj.autoJoin = state.autoJoin
+    queryObj.inviteId = state.inviteId
+    queryObj.navigateUrl = state.navigateUrl
+  }
+
+  const query = encodeURIComponent(qs.stringify(queryObj))
+
+  // Successful authentication, redirect to your application
+  measureCtx.info('Success auth, redirect', { email, type: providerType, target: origin })
+  return `${origin}?${query}`
 }

@@ -2,7 +2,7 @@
  * A set of tests against a real PostgreSQL database, for both CorockachDB and pure.
  */
 
-import { generateUuid, SocialIdType, type AccountUuid, type PersonId } from '@hcengineering/core'
+import { AccountRole, generateUuid, SocialIdType, type AccountUuid, type PersonId } from '@hcengineering/core'
 import { getDBClient, shutdownPostgres, type PostgresClientReference } from '@hcengineering/postgres'
 import { PostgresAccountDB } from '../collections/postgres/postgres'
 import { type SocialId } from '../types'
@@ -223,6 +223,46 @@ describe('real-account', () => {
     })
     expect(inviteLinkPG).toBeDefined()
   })
+
+  const ownerRaceDatabases: Array<[string, () => PostgresAccountDB]> = [
+    ['CockroachDB', () => crAccount],
+    ['PostgreSQL', () => pgAccount]
+  ]
+
+  it.each(ownerRaceDatabases)(
+    '%s retains an owner during concurrent OIDC owner demotions',
+    async (_name, getAccount) => {
+      const account = getAccount()
+      const workspaceUuid = await account.createWorkspace(
+        {
+          url: `owner-race-${generateUuid()}`,
+          name: 'owner race',
+          allowGuestSignUp: false,
+          allowReadOnlyGuest: false
+        },
+        {
+          isDisabled: false,
+          mode: 'active',
+          versionMajor: 0,
+          versionMinor: 7,
+          versionPatch: 0
+        }
+      )
+      await Promise.all([
+        account.assignWorkspace(users[0].uuid, workspaceUuid, AccountRole.Owner),
+        account.assignWorkspace(users[1].uuid, workspaceUuid, AccountRole.Owner)
+      ])
+
+      const changed = await Promise.all([
+        account.updateOrUnassignWorkspaceOwnerIfNotLast(users[0].uuid, workspaceUuid, AccountRole.User),
+        account.updateOrUnassignWorkspaceOwnerIfNotLast(users[1].uuid, workspaceUuid, AccountRole.Guest)
+      ])
+      const members = await account.getWorkspaceMembers(workspaceUuid)
+
+      expect(changed.filter(Boolean)).toHaveLength(1)
+      expect(members.filter((member) => member.role === AccountRole.Owner)).toHaveLength(1)
+    }
+  )
 })
 
 async function migratePostgreSQL (pgAccount: PostgresAccountDB, pgDbUri: string): Promise<void> {

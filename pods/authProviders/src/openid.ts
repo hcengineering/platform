@@ -12,14 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-import { type AccountDB } from '@hcengineering/account'
+import { synchronizeOidcWorkspaceRoles, type AccountDB } from '@hcengineering/account'
 import { type ProviderInfo } from '@hcengineering/account-client'
 import { BrandingMap, concatLink, MeasureContext, getBranding, SocialIdType } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Issuer, Strategy } from 'openid-client'
 
 import { Passport } from '.'
-import { encodeState, handleProviderAuth, safeParseAuthState } from './utils'
+import { authorizeOpenidUser, type OpenidUser } from './oidcAuthorization'
+import { type OidcClaims } from './oidcClaims'
+import { getOidcGroups } from './oidcGroups'
+import {
+  getAllowedGroups,
+  getOidcWorkspaceRoles,
+  resolveOidcRoleGroupRules,
+  warnOnEmptyAutoAllowedGroups
+} from './oidcRoleGroups'
+import { encodeState, handleProviderAuth, ProviderAuthenticationHookError, safeParseAuthState } from './utils'
+
+const validOpenidPrompts = new Set(['select_account', 'login', 'consent', 'none'])
+
+function getOpenidPrompt (measureCtx: MeasureContext): string | undefined {
+  const configuredPrompt = process.env.OPENID_PROMPT?.trim()
+  if (configuredPrompt === undefined || configuredPrompt === '') return
+
+  const prompts = configuredPrompt.split(/\s+/)
+  const isValid =
+    prompts.every((prompt) => validOpenidPrompts.has(prompt)) &&
+    new Set(prompts).size === prompts.length &&
+    (!prompts.includes('none') || prompts.length === 1)
+
+  if (!isValid) {
+    measureCtx.warn('Ignoring invalid OPENID_PROMPT configuration')
+    return
+  }
+
+  return prompts.join(' ')
+}
 
 const DISCOVERY_INITIAL_DELAY_MS = 5_000
 const DISCOVERY_MAX_DELAY_MS = 60_000
@@ -151,7 +180,24 @@ export async function registerOidcStrategyWithRetry (
       passport.use(
         'oidc',
         new Strategy({ client, passReqToCallback: true }, (req: any, tokenSet: any, userinfo: any, done: any) => {
-          return done(null, userinfo)
+          const claims = tokenSet.claims()
+          const idClaims: OidcClaims = {
+            sub: claims.sub,
+            email: claims.email,
+            preferred_username: claims.preferred_username,
+            upn: claims.upn,
+            idp: claims.idp,
+            acct: claims.acct,
+            email_verified: claims.email_verified,
+            xms_edov: claims.xms_edov,
+            tid: claims.tid,
+            iss: claims.iss,
+            groups: claims.groups,
+            _claim_names: claims._claim_names,
+            _claim_sources: claims._claim_sources,
+            hasgroups: claims.hasgroups
+          }
+          return done(null, { ...userinfo, sub: userinfo?.sub ?? claims.sub, _idClaims: idClaims })
         })
       )
       // passport.use has run: the strategy is now registered exactly once. A throw
@@ -224,6 +270,10 @@ function logOidcCallbackFailure (
   }
 }
 
+function callbackRedirect (frontUrl: string, redirectUrl: string): string {
+  return URL.canParse(redirectUrl) ? redirectUrl : concatLink(frontUrl, redirectUrl)
+}
+
 const openidRouters = new WeakSet<object>()
 
 /**
@@ -250,6 +300,26 @@ export function registerOpenid (
 
   const redirectURL = '/auth/openid/callback'
   if (openidClientId === undefined || openidClientSecret === undefined || issuer === undefined) return
+  const prompt = getOpenidPrompt(measureCtx)
+  let roleRules: Promise<Awaited<ReturnType<typeof resolveOidcRoleGroupRules>>> | undefined
+  const getRoleRules = async (): Promise<Awaited<ReturnType<typeof resolveOidcRoleGroupRules>>> => {
+    if (roleRules === undefined) {
+      roleRules = dbPromise
+        .then(async (db) => {
+          const rules = await resolveOidcRoleGroupRules(measureCtx, db, process.env.OPENID_ROLE_GROUPS)
+          warnOnEmptyAutoAllowedGroups(measureCtx, process.env.OPENID_ALLOWED_GROUPS, rules)
+          return rules
+        })
+        .catch((err) => {
+          // Cache successful resolution only. A transient database error must
+          // not make every future OIDC callback fail until the pod restarts.
+          roleRules = undefined
+          measureCtx.error('OIDC role-group rules could not be resolved; retrying on the next login', { err })
+          throw err
+        })
+    }
+    return await roleRules
+  }
   if (openidRouters.has(router)) {
     throw new Error('OIDC provider is already registered on this router')
   }
@@ -297,13 +367,16 @@ export function registerOpenid (
     measureCtx.info('try auth via', { provider: 'openid' })
     const state = encodeState(ctx, brandings)
 
-    await passport.authenticate('oidc', {
+    const options = {
       scope: 'openid profile email',
-      state
-    })(ctx, next)
+      state,
+      ...(prompt !== undefined ? { prompt } : {})
+    }
+
+    await passport.authenticate('oidc', options)(ctx, next)
   })
 
-  router.get(redirectURL, async (ctx, next) => {
+  router.get(redirectURL, async (ctx) => {
     const state = safeParseAuthState(ctx.query?.state)
     const branding = getBranding(brandings, state?.branding)
     const loginUrl = concatLink(branding?.front ?? frontUrl, '/login')
@@ -314,6 +387,13 @@ export function registerOpenid (
       // PRIVACY: never log raw code, raw state, tokens, or full ctx.state.user.
       await new Promise<void>((resolve, reject) => {
         try {
+          let settled = false
+          const finish = (): void => {
+            if (!settled) {
+              settled = true
+              resolve()
+            }
+          }
           const middleware = passport.authenticate(
             'oidc',
             { failureRedirect: loginUrl },
@@ -329,14 +409,17 @@ export function registerOpenid (
                 })
                 ctx.state.user = user
               }
-              resolve()
+              finish()
             }
           )
-          // Koa passport middleware can reject before it calls its explicit
-          // callback (for example while the strategy is not registered). Do
-          // not discard that promise: rejecting here lets the outer guard turn
-          // it into the same safe login redirect instead of hanging the request.
-          void Promise.resolve(middleware(ctx, async () => {})).catch(reject)
+          // koa-passport invokes the explicit callback above rather than next.
+          // Test adapters or middleware that call next must also settle this
+          // wrapper so they cannot leave the request hanging.
+          void Promise.resolve(
+            middleware(ctx, async () => {
+              finish()
+            })
+          ).catch(reject)
         } catch (err) {
           reject(err)
         }
@@ -348,38 +431,71 @@ export function registerOpenid (
         return
       }
 
-      const email = ctx.state.user.email
-      const verifiedEmail = (ctx.state.user.email_verified as boolean) ? email : ''
-      const nameParts = (ctx.state.user.name ?? ctx.state.user.username ?? '').split(' ')
-      const first: string = ctx.state.user.given_name ?? nameParts[0] ?? ''
-      const last: string = ctx.state.user.family_name ?? nameParts.slice(1).join(' ')
-
+      const user = ctx.state.user as OpenidUser
       const db = await dbPromise
-      const redirectUrl = await handleProviderAuth(
+      const resolvedRoleRules = await getRoleRules()
+      const allowedGroups = getAllowedGroups(process.env.OPENID_ALLOWED_GROUPS, resolvedRoleRules)
+      const oidcGroups = getOidcGroups(user._idClaims)
+      const workspaceRoles = getOidcWorkspaceRoles(user._idClaims, resolvedRoleRules)
+      const subject = typeof user._idClaims?.sub === 'string' ? user._idClaims.sub : undefined
+      if (resolvedRoleRules.length > 0 && oidcGroups.state !== 'available') {
+        measureCtx.warn(
+          oidcGroups.state === 'overage'
+            ? 'oidc_workspace_role_sync_groups_overage'
+            : 'oidc_workspace_role_sync_groups_missing',
+          { sub: subject }
+        )
+      }
+      const redirectUrl = await authorizeOpenidUser(
         measureCtx,
-        db,
-        brandings,
-        frontUrl,
-        'openid',
-        ctx.query?.state,
-        ctx.state?.user,
-        verifiedEmail,
-        first,
-        last,
-        { type: SocialIdType.OIDC, value: ctx.state.user.sub },
-        signUpDisabled
+        user,
+        issuer,
+        signUpDisabled,
+        async (verifiedEmail, effectiveSignUpDisabled) => {
+          const name =
+            typeof user.name === 'string' ? user.name : typeof user.username === 'string' ? user.username : ''
+          const nameParts = name.split(' ')
+          const first = typeof user.given_name === 'string' ? user.given_name : (nameParts[0] ?? '')
+          const last = typeof user.family_name === 'string' ? user.family_name : nameParts.slice(1).join(' ')
+          try {
+            return await handleProviderAuth(
+              measureCtx,
+              db,
+              brandings,
+              frontUrl,
+              'openid',
+              ctx.query?.state,
+              undefined,
+              verifiedEmail,
+              first,
+              last,
+              { type: SocialIdType.OIDC, value: user.sub as string },
+              effectiveSignUpDisabled,
+              async (loginInfo) => {
+                if (workspaceRoles !== undefined) {
+                  await synchronizeOidcWorkspaceRoles(measureCtx, db, loginInfo.account, subject, workspaceRoles)
+                }
+              }
+            )
+          } catch (err) {
+            if (err instanceof ProviderAuthenticationHookError) {
+              measureCtx.error('OIDC workspace role synchronization failed', { err: err.cause })
+              return '/login?error=oidc_role_sync_failed'
+            }
+            throw err
+          }
+        },
+        allowedGroups
       )
 
       if (redirectUrl !== '') {
-        ctx.redirect(redirectUrl)
+        ctx.redirect(callbackRedirect(branding?.front ?? frontUrl, redirectUrl))
       } else {
         // L-AUTH-4: handleProviderAuth signals an unresolvable login with '' (e.g.
         // no account + signup disabled). Terminate fail-closed with an explicit
         // 302 to /login instead of leaving a hanging/empty response.
         ctx.redirect(loginUrl + '?error=oidc_no_account')
       }
-
-      await next()
     } catch (err: any) {
       // Permanent invalid-callback guard: ANY failure → 302 to /login, never 500.
       logOidcCallbackFailure(

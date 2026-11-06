@@ -18,7 +18,7 @@ import {
   type Version,
   type Person,
   type WorkspaceMemberInfo,
-  type AccountRole,
+  AccountRole,
   type WorkspaceUuid,
   type AccountUuid,
   type PersonUuid
@@ -860,6 +860,48 @@ export class PostgresAccountDB implements AccountDB {
       async (rTx) =>
         await rTx`DELETE FROM ${this.client(this.getWsMembersTableName())} WHERE workspace_uuid = ${workspaceUuid} AND account_uuid = ${accountUuid}`
     )
+  }
+
+  /**
+   * Keeps the last-owner guard in the same serialized operation as the role
+   * change. Locking the workspace row serializes OIDC syncs for a workspace on
+   * both PostgreSQL and CockroachDB; the conditional mutation remains the
+   * authoritative guard after the lock is acquired.
+   */
+  async updateOrUnassignWorkspaceOwnerIfNotLast (
+    accountUuid: AccountUuid,
+    workspaceUuid: WorkspaceUuid,
+    role: AccountRole | null
+  ): Promise<boolean> {
+    return await this.withRetry(async (rTx) => {
+      await rTx`SELECT uuid FROM ${this.client(this.workspace.getTableName())} WHERE uuid = ${workspaceUuid} FOR UPDATE`
+
+      const members = this.client(this.getWsMembersTableName())
+      const result =
+        role == null
+          ? await rTx`DELETE FROM ${members}
+              WHERE workspace_uuid = ${workspaceUuid}
+                AND account_uuid = ${accountUuid}
+                AND role = ${AccountRole.Owner}
+                AND EXISTS (
+                  SELECT 1 FROM ${members} AS other
+                  WHERE other.workspace_uuid = ${workspaceUuid}
+                    AND other.role = ${AccountRole.Owner}
+                    AND other.account_uuid <> ${accountUuid}
+                )`
+          : await rTx`UPDATE ${members} SET role = ${role}
+              WHERE workspace_uuid = ${workspaceUuid}
+                AND account_uuid = ${accountUuid}
+                AND role = ${AccountRole.Owner}
+                AND EXISTS (
+                  SELECT 1 FROM ${members} AS other
+                  WHERE other.workspace_uuid = ${workspaceUuid}
+                    AND other.role = ${AccountRole.Owner}
+                    AND other.account_uuid <> ${accountUuid}
+                )`
+
+      return result.count > 0
+    })
   }
 
   async updateWorkspaceRole (accountUuid: AccountUuid, workspaceUuid: WorkspaceUuid, role: AccountRole): Promise<void> {
