@@ -2,11 +2,12 @@
   import calendar from '@hcengineering/calendar'
   import { ScheduleNavSection } from '@hcengineering/calendar-resources'
   import { getCurrentEmployee } from '@hcengineering/contact'
-  import { Ref, getCurrentAccount } from '@hcengineering/core'
+  import core, { Ref, Space, Timestamp, WithLookup, getCurrentAccount } from '@hcengineering/core'
   import { Asset, getMetadata, getResource, IntlString } from '@hcengineering/platform'
   import { createQuery } from '@hcengineering/presentation'
   import { NavFooter } from '@hcengineering/workbench-resources'
   import tagsPlugin, { TagElement as TagElementType } from '@hcengineering/tags'
+  import type { ToDo, WorkSlot } from '@hcengineering/time'
   import ui, {
     Label,
     Separator,
@@ -25,6 +26,7 @@
     Action
   } from '@hcengineering/ui'
   import { ToDosMode } from '..'
+  import { getDayStart, getMarkedDays, getMonthRange } from '../calendarMarks'
   import time from '../plugin'
 
   export let mode: ToDosMode
@@ -110,6 +112,68 @@
   const counters: Record<string, number> = {}
   const today: Date = new Date()
 
+  // The Month component keeps its own view date, initialized from currentDate on creation
+  let visibleMonth: Date = new Date(mode === 'date' ? currentDate : today)
+  $: monthRange = getMonthRange(visibleMonth)
+
+  let archivedSpaces = new Set<Ref<Space>>()
+  let dueToDos: ToDo[] = []
+  let workSlots: Array<WithLookup<WorkSlot>> = []
+  const archivedQuery = createQuery()
+  const dueQuery = createQuery()
+  const workSlotsQuery = createQuery()
+
+  archivedQuery.query(
+    core.class.Space,
+    { archived: true },
+    (res) => {
+      archivedSpaces = new Set(res.map((p) => p._id))
+    },
+    { showArchived: true, projection: { _id: 1, archived: 1, _class: 1 } }
+  )
+
+  $: dueQuery.query(
+    time.class.ToDo,
+    {
+      user: currentUser,
+      doneOn: null,
+      dueDate: { $gte: monthRange.from, $lt: monthRange.to }
+    },
+    (res) => {
+      dueToDos = res
+    }
+  )
+
+  $: workSlotsQuery.query(
+    time.class.WorkSlot,
+    {
+      user: { $in: currentAccount.socialIds },
+      date: { $lt: monthRange.to },
+      dueDate: { $gt: monthRange.from }
+    },
+    (res) => {
+      workSlots = res
+    },
+    { lookup: { attachedTo: time.class.ToDo } }
+  )
+
+  $: dueDays = getMarkedDays(
+    dueToDos.map((p) => ({ date: p.dueDate ?? 0, space: p.attachedSpace })),
+    monthRange.from,
+    monthRange.to,
+    archivedSpaces
+  )
+  $: scheduledDays = getMarkedDays(
+    workSlots.map((p) => ({ date: p.date, dueDate: p.dueDate, space: p.$lookup?.attachedTo?.attachedSpace })),
+    monthRange.from,
+    monthRange.to,
+    archivedSpaces
+  )
+
+  function hasMark (days: Set<Timestamp>, date: Date): boolean {
+    return days.has(getDayStart(date))
+  }
+
   let pressed: boolean = false
 
   $: actions = getHeaderMenuActions()
@@ -171,6 +235,9 @@
       <div class="hulyAccordionItem-container border" class:noBorder={tags.length === 0}>
         <Month
           currentDate={mode === 'date' ? currentDate : null}
+          on:changeMonth={(event) => {
+            visibleMonth = event.detail
+          }}
           on:update={(event) => {
             if (event.detail) {
               tag = undefined
@@ -194,12 +261,12 @@
             </div>
           </svelte:fragment>
           <svelte:fragment let:day>
-            <!-- {#if areDatesEqual(day.date, today)}
+            {#if hasMark(dueDays, day.date) || hasMark(scheduledDays, day.date)}
               <div class="dots">
-                <div class="dot red" />
-                <div class="dot blue" />
+                {#if hasMark(dueDays, day.date)}<div class="dot red" />{/if}
+                {#if hasMark(scheduledDays, day.date)}<div class="dot blue" />{/if}
               </div>
-            {/if} -->
+            {/if}
           </svelte:fragment>
         </Month>
       </div>
