@@ -71,7 +71,7 @@ export function PasteTextAsMarkdownPlugin (): Plugin {
             const content = Node.fromJSON(view.state.schema, markupNode)
             content.check()
 
-            const transaction = view.state.tr.replaceSelectionWith(content)
+            const transaction = view.state.tr.replaceSelectionWith(content).scrollIntoView()
             view.dispatch(transaction)
             return true
           }

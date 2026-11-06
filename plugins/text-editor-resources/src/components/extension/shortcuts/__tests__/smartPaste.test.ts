@@ -214,6 +214,7 @@ describe('SmartPaste handlePaste transform scenarios', () => {
 
     expect(handled).toBe(true)
     expect(dispatch).toHaveBeenCalledTimes(1)
+    expect(dispatch.mock.calls[0][0].scrolledIntoView).toBe(true)
   })
 
   it('transforms when explicit markdown is present even with rich clipboard types', () => {

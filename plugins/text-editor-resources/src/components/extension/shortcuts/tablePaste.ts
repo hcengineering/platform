@@ -206,7 +206,7 @@ function TableMetadataPastePlugin (): Plugin {
             }
 
             const modifiedContent = rebuildNode(content)
-            const transaction = view.state.tr.replaceSelectionWith(modifiedContent)
+            const transaction = view.state.tr.replaceSelectionWith(modifiedContent).scrollIntoView()
             view.dispatch(transaction)
             return true // Handled
           }
