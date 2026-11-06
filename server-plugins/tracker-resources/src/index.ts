@@ -20,7 +20,6 @@ import core, {
   concatLink,
   Data,
   Doc,
-  DocumentUpdate,
   generateId,
   Ref,
   Space,
@@ -51,18 +50,70 @@ import tracker, {
   type Project
 } from '@hcengineering/tracker'
 import { workbenchId } from '@hcengineering/workbench'
+import { buildParentInfo, parentInfoEquals } from './utils'
 
-async function updateSubIssues (
-  updateTx: TxUpdateDoc<Issue>,
-  control: TriggerControl,
-  update: DocumentUpdate<Issue> | ((node: Issue) => DocumentUpdate<Issue>)
-): Promise<TxUpdateDoc<Issue>[]> {
-  const subIssues = await control.findAll(control.ctx, tracker.class.Issue, { 'parents.parentId': updateTx.objectId })
+/**
+ * Re-syncs the denormalised `parents` info of the given issues and of all
+ * their descendants with the current state of storage.
+ *
+ * `parents` holds the title, identifier and space of every ancestor, so it is
+ * stale when an ancestor is renamed, moved to another project (new identifier
+ * and space) or re-parented. Moving a tree changes several issues of one chain
+ * in a single batch, so instead of patching single entries every chain is
+ * rebuilt by walking the real `attachedTo` links; the result does not depend
+ * on the order of the transactions. Only `attachedTo` is queried (never the
+ * nested `parents` array), so it works on every storage backend.
+ */
+async function refreshIssueParents (roots: Ref<Issue>[], control: TriggerControl): Promise<Tx[]> {
+  if (roots.length === 0) {
+    return []
+  }
+  const docs = new Map<Ref<Issue>, Issue>()
+  const add = (issues: Issue[]): Array<Ref<Issue>> => {
+    const added: Array<Ref<Issue>> = []
+    for (const issue of issues) {
+      if (!docs.has(issue._id)) {
+        docs.set(issue._id, issue)
+        added.push(issue._id)
+      }
+    }
+    return added
+  }
+  const targets = add(await control.findAll(control.ctx, tracker.class.Issue, { _id: { $in: roots } }))
 
-  return subIssues.map((issue) => {
-    const docUpdate = typeof update === 'function' ? update(issue) : update
-    return control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, docUpdate)
-  })
+  // Collect all descendants.
+  let frontier = targets
+  while (frontier.length > 0) {
+    frontier = add(await control.findAll(control.ctx, tracker.class.Issue, { attachedTo: { $in: frontier } }))
+    targets.push(...frontier)
+  }
+
+  // Load the ancestors of the roots that are not part of the collected trees.
+  for (let missing = missingParents(docs); missing.length > 0; missing = missingParents(docs)) {
+    if (add(await control.findAll(control.ctx, tracker.class.Issue, { _id: { $in: missing } })).length === 0) {
+      break
+    }
+  }
+
+  const res: Tx[] = []
+  for (const _id of targets) {
+    const issue = docs.get(_id) as Issue
+    const parents = buildParentInfo(issue, docs)
+    if (!parentInfoEquals(parents, issue.parents ?? [])) {
+      res.push(control.txFactory.createTxUpdateDoc(issue._class, issue.space, issue._id, { parents }))
+    }
+  }
+  return res
+}
+
+function missingParents (docs: Map<Ref<Issue>, Issue>): Array<Ref<Issue>> {
+  const missing = new Set<Ref<Issue>>()
+  for (const issue of docs.values()) {
+    if (issue.attachedTo != null && issue.attachedTo !== tracker.ids.NoParent && !docs.has(issue.attachedTo)) {
+      missing.add(issue.attachedTo)
+    }
+  }
+  return Array.from(missing)
 }
 
 /**
@@ -214,6 +265,11 @@ export async function OnComponentRemove (txes: Tx[], control: TriggerControl): P
  */
 export async function OnIssueUpdate (txes: Tx[], control: TriggerControl): Promise<Tx[]> {
   const result: Tx[] = []
+  // Issues whose parents info, or that of their descendants, may be stale:
+  // title, identifier and space are denormalised into the descendants'
+  // parents info (identifier and space change when an issue tree is moved to
+  // another project), and a new attachedTo changes the issue's own chain.
+  const changedParents = new Set<Ref<Issue>>()
   for (const actualTx of txes) {
     // Check TimeReport operations
     if (
@@ -240,6 +296,14 @@ export async function OnIssueUpdate (txes: Tx[], control: TriggerControl): Promi
       const updateTx = actualTx as TxUpdateDoc<Issue>
       if (control.hierarchy.isDerived(updateTx.objectClass, tracker.class.Issue)) {
         result.push(...(await doIssueUpdate(updateTx, control)))
+        if (
+          Object.prototype.hasOwnProperty.call(updateTx.operations, 'title') ||
+          Object.prototype.hasOwnProperty.call(updateTx.operations, 'identifier') ||
+          Object.prototype.hasOwnProperty.call(updateTx.operations, 'space') ||
+          Object.prototype.hasOwnProperty.call(updateTx.operations, 'attachedTo')
+        ) {
+          changedParents.add(updateTx.objectId)
+        }
         continue
       }
     }
@@ -270,6 +334,7 @@ export async function OnIssueUpdate (txes: Tx[], control: TriggerControl): Promi
       }
     }
   }
+  result.push(...(await refreshIssueParents(Array.from(changedParents), control)))
   return result
 }
 
@@ -413,22 +478,8 @@ async function doIssueUpdate (updateTx: TxUpdateDoc<Issue>, control: TriggerCont
           ]
         : []
 
-    function update (issue: Issue): DocumentUpdate<Issue> {
-      const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
-      const parentsUpdate =
-        parentInfoIndex === -1
-          ? {}
-          : { parents: [...issue.parents].slice(0, parentInfoIndex + 1).concat(updatedParents) }
-
-      return { ...parentsUpdate }
-    }
-
-    res.push(
-      control.txFactory.createTxUpdateDoc(updateTx.objectClass, updateTx.objectSpace, updateTx.objectId, {
-        parents: updatedParents
-      }),
-      ...(await updateSubIssues(updateTx, control, update))
-    )
+    // The parents info of the issue and its sub-issues is re-synced by
+    // refreshIssueParents once the whole batch has been processed.
 
     // Remove from parent estimation list.
     const issue = await getCurrentIssue()
@@ -454,20 +505,6 @@ async function doIssueUpdate (updateTx: TxUpdateDoc<Issue>, control: TriggerCont
     )
 
     updateIssueParentEstimations(issue, res, control, issue.parents, issue.parents)
-  }
-
-  if (Object.prototype.hasOwnProperty.call(updateTx.operations, 'title')) {
-    function update (issue: Issue): DocumentUpdate<Issue> {
-      const parentInfoIndex = issue.parents.findIndex(({ parentId }) => parentId === updateTx.objectId)
-      const updatedParentInfo = { ...issue.parents[parentInfoIndex], parentTitle: updateTx.operations.title as string }
-      const updatedParents = [...issue.parents]
-
-      updatedParents[parentInfoIndex] = updatedParentInfo
-
-      return { parents: updatedParents }
-    }
-
-    res.push(...(await updateSubIssues(updateTx, control, update)))
   }
 
   return res
