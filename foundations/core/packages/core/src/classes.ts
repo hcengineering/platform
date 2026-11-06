@@ -559,6 +559,30 @@ export interface Role extends AttachedDoc<SpaceType, 'roles'> {
 
 /**
  * @public
+ * ObjectRole is a named, app-declared set of object-scoped permissions
+ * (`Permission.scope === 'object'`) for documents of `objectClass`.
+ * It is granted to an account on a single document via `Collaborator.role`.
+ *
+ * Read access semantics: an object role implies read access to the document, so
+ * there is no separate read permission. Only a collaborator record that carries a
+ * `role` grants it; structural collaborators (no `role`) grant nothing beyond
+ * today's behaviour. Per-action permissions describe the write path.
+ *
+ * Object roles live in `DOMAIN_MODEL` intentionally: like space `Role`s they are
+ * declared by apps in the model, and workspace-defined roles can later be created
+ * via model transactions in the same way as space roles.
+ *
+ * Declarations only for now - no middleware evaluates object roles yet.
+ */
+export interface ObjectRole extends Doc {
+  name: IntlString
+  description?: IntlString
+  objectClass: Ref<Class<Doc>>
+  permissions: Ref<Permission>[]
+}
+
+/**
+ * @public
  * Defines assignment of employees to a role within a space
  */
 export type RolesAssignment = Record<Ref<Role>, AccountUuid[] | undefined>
@@ -572,7 +596,13 @@ export interface Permission extends Doc {
   txClass?: Ref<Class<Tx>>
   forbid?: boolean
   objectClass?: Ref<Class<Doc>>
-  scope?: 'space' | 'workspace'
+  /**
+   * - 'space': granted through a space role
+   * - 'workspace': applies workspace-wide
+   * - 'object': granted on a single document through an `ObjectRole` (`Collaborator.role`);
+   *   not evaluated by any enforcement path yet
+   */
+  scope?: 'space' | 'workspace' | 'object'
   txMatch?: DocumentQuery<Tx>
   description?: IntlString
   icon?: Asset
@@ -1043,6 +1073,11 @@ export interface ClassCollaborators<T extends Doc> extends Doc {
 
 export interface Collaborator extends AttachedDoc {
   collaborator: AccountUuid
+  /**
+   * Object role granted to the collaborator on the attached document.
+   * `undefined` keeps today's structural collaborator semantics (fields, notifications, mentions).
+   */
+  role?: Ref<ObjectRole>
 }
 
 /**
