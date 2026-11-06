@@ -39,6 +39,8 @@
   import view from '@hcengineering/view-resources/src/plugin'
   import type { ToDosMode } from '..'
   import time from '../plugin'
+  import { filterArchivedToDos } from '../archived'
+  import { archivedSpacesStore } from '../archivedSpaces'
   import { getNearest } from '../utils'
   import CreateToDo from './CreateToDo.svelte'
   import ToDoGroup from './ToDoGroup.svelte'
@@ -199,9 +201,14 @@
   let rawActive: WithLookup<ToDo>[] = []
   let todoValue: string = ''
 
-  $: active = filterActive(mode, rawActive, currentDate)
+  $: active = filterActive(mode, filterArchivedToDos(rawActive, $archivedSpacesStore), currentDate)
 
-  $: groups = group(inbox, done, active, todoValue)
+  $: groups = group(
+    filterArchivedToDos(inbox, $archivedSpacesStore),
+    filterArchivedToDos(done, $archivedSpacesStore),
+    active,
+    todoValue
+  )
 
   function filterActive (mode: ToDosMode, raw: WithLookup<ToDo>[], currentDate: Date): WithLookup<ToDo>[] {
     if (mode === 'planned') {

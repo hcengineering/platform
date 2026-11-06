@@ -22,6 +22,8 @@
   } from '@hcengineering/ui'
   import { ToDo, WorkSlot } from '@hcengineering/time'
   import time from '../plugin'
+  import { filterArchivedWorkSlots } from '../archived'
+  import { archivedSpacesStore } from '../archivedSpaces'
   import IconSun from './icons/Sun.svelte'
 
   export let dragItem: ToDo | null = null
@@ -31,6 +33,25 @@
   export let createComponent: AnyComponent | undefined = calendar.component.CreateEvent
 
   const q = createQuery()
+  const archivedToDosQuery = createQuery()
+
+  let archivedToDos = new Set<Ref<ToDo>>()
+
+  // Work slots of ToDos attached to archived spaces are hidden, like the ToDos themselves.
+  $: archivedSpaces = Array.from($archivedSpacesStore)
+  $: if (archivedSpaces.length > 0) {
+    archivedToDosQuery.query(
+      time.class.ToDo,
+      { user: getCurrentEmployee(), attachedSpace: { $in: archivedSpaces } },
+      (res) => {
+        archivedToDos = new Set(res.map((it) => it._id))
+      },
+      { projection: { _id: 1, attachedSpace: 1 } }
+    )
+  } else {
+    archivedToDosQuery.unsubscribe()
+    archivedToDos = new Set()
+  }
 
   function getFrom (date: Date): Timestamp {
     return new Date(date).setHours(0, 0, 0, 0)
@@ -223,7 +244,7 @@
   <div class="hulyComponent-content__container">
     <DayCalendar
       bind:this={dayCalendar}
-      events={objects}
+      events={filterArchivedWorkSlots(objects, archivedToDos)}
       bind:displayedDaysCount
       startFromWeekStart={false}
       clearCells={dragItem !== null}
