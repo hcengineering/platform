@@ -11,6 +11,7 @@
         "LabelNo": "아니요",
         "LabelNA": "해당 없음",
         "ChooseAColor": "색상 선택",
+        "ResetToDefault": "기본값으로 재설정",
         "Table": "표",
         "Role": "역할",
         "DeleteObject": "객체 삭제",

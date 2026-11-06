@@ -67,7 +67,7 @@
         object.color = result.color
       }
     }
-    showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
+    showPopup(IconPicker, { icon, color, icons, showReset: true }, 'top', update, update)
   }
 
   function getTitle (value: string): string {
