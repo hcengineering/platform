@@ -32,6 +32,8 @@
   export let label: IntlString
   export let labelProps: any | undefined = undefined
   export let okAction: () => Promise<void> | void
+  // Opt out when the action closes the card itself only after a successful submission.
+  export let closeOnSave: boolean = true
   export let canSave: boolean = false
   export let okLabel: IntlString = presentation.string.Create
   export let onCancel: (() => void) | undefined = undefined
@@ -85,11 +87,11 @@
       if (r instanceof Promise) {
         r.then(() => {
           okProcessing = false
-          dispatch('close')
+          if (closeOnSave) dispatch('close')
         })
       } else {
         okProcessing = false
-        dispatch('close')
+        if (closeOnSave) dispatch('close')
       }
     }
   }
