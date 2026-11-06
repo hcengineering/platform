@@ -2,7 +2,13 @@ import { type Doc, type DocumentUpdate, type Ref, type RelatedDocument, type TxO
 import { getMetadata } from '@hcengineering/platform'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { trackerId, type Component, type Issue, type Milestone } from '@hcengineering/tracker'
-import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import {
+  getCurrentResolvedLocation,
+  getPanelURI,
+  type Location,
+  type LocationResolutionOptions,
+  type ResolvedLocation
+} from '@hcengineering/ui'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import { writable } from 'svelte/store'
@@ -70,11 +76,15 @@ export function generateIssueShortLink (issueId: string): string {
   return `${protocolAndHost}/${workbenchId}/${location.path[1]}/${trackerId}/${issueId}`
 }
 
-export async function generateIssueLocation (loc: Location, issueId: string): Promise<ResolvedLocation | undefined> {
+export async function generateIssueLocation (
+  loc: Location,
+  issueId: string,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const client = getClient()
   const issue = await client.findOne(tracker.class.Issue, { identifier: issueId }, { showArchived: true })
   if (issue === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find issue ${issueId}.`)
     return undefined
   }
@@ -92,7 +102,10 @@ export async function generateIssueLocation (loc: Location, issueId: string): Pr
   }
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+export async function resolveLocation (
+  loc: Location,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const app = loc.path[2]
   if (app !== trackerId) {
     return undefined
@@ -102,7 +115,7 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
 
   // issue shortlink
   if (isIssueId(shortLink)) {
-    return await generateIssueLocation(loc, shortLink)
+    return await generateIssueLocation(loc, shortLink, options)
   }
 
   return undefined

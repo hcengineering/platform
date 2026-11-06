@@ -25,6 +25,7 @@ import {
   getLocation,
   getPanelURI,
   type Location,
+  type LocationResolutionOptions,
   type ResolvedLocation,
   navigate
 } from '@hcengineering/ui'
@@ -43,13 +44,14 @@ export function getPanelFragment<T extends Doc> (object: Pick<T, '_class' | '_id
 
 async function generateProjectLocation (
   loc: Location,
-  project: Ref<TestProject>
+  project: Ref<TestProject>,
+  options?: LocationResolutionOptions
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
   const doc = await client.findOne(testManagement.class.TestProject, { _id: project }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find test project ${project}.`)
     return undefined
   }
@@ -137,14 +139,17 @@ export function getCurrentMode (loc: Location): string {
   return assignee === getCurrentEmployee() ? testManagement.mode.MyTests : testManagement.mode.AllTests
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+export async function resolveLocation (
+  loc: Location,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== testManagementId) {
     return undefined
   }
 
   const projectId = loc.path[3] as Ref<TestProject>
   if (projectId !== undefined) {
-    return await generateProjectLocation(loc, projectId)
+    return await generateProjectLocation(loc, projectId, options)
   }
   return undefined
 }

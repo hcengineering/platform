@@ -12,7 +12,13 @@ import {
 } from '@hcengineering/recruit'
 import { type Poll } from '@hcengineering/survey'
 import { generatePollLocation } from '@hcengineering/survey-resources'
-import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import {
+  getCurrentResolvedLocation,
+  getPanelURI,
+  type Location,
+  type LocationResolutionOptions,
+  type ResolvedLocation
+} from '@hcengineering/ui'
 import view from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
@@ -31,26 +37,33 @@ function isShortId (shortLink: string): boolean {
   return /^\w+-\d+$/.test(shortLink)
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+export async function resolveLocation (
+  loc: Location,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== recruitId) {
     return undefined
   }
 
   if (loc.path[3] === 'poll') {
-    return await generatePollLocation(loc, loc.path[4] as Ref<Poll>)
+    return await generatePollLocation(loc, loc.path[4] as Ref<Poll>, options)
   }
 
   const shortLink = loc.path[3]
 
   // shortlink
   if (isShortId(shortLink)) {
-    return await generateLocation(loc, shortLink)
+    return await generateLocation(loc, shortLink, options)
   } else if (shortLink !== undefined) {
-    return await generateIdLocation(loc, shortLink)
+    return await generateIdLocation(loc, shortLink, options)
   }
 }
 
-async function generateIdLocation (loc: Location, shortLink: string): Promise<ResolvedLocation | undefined> {
+async function generateIdLocation (
+  loc: Location,
+  shortLink: string,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const tokens = shortLink.split('-')
   if (tokens.length < 2) {
     return undefined
@@ -74,7 +87,7 @@ async function generateIdLocation (loc: Location, shortLink: string): Promise<Re
   }
   const doc = await client.findOne(_class, { _id: _id as Ref<Doc> }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find ${_class} with id ${_id}.`)
     return undefined
   }
@@ -145,7 +158,11 @@ function getShortLinkData (
   return [_class, classLabel, number]
 }
 
-async function generateLocation (loc: Location, shortLink: string): Promise<ResolvedLocation | undefined> {
+async function generateLocation (
+  loc: Location,
+  shortLink: string,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const data = getShortLinkData(hierarchy, shortLink)
@@ -162,7 +179,7 @@ async function generateLocation (loc: Location, shortLink: string): Promise<Reso
   }
   const doc = await client.findOne(_class, { number }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find ${_class} with number ${number}.`)
     return undefined
   }
