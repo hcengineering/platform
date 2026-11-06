@@ -1,13 +1,14 @@
 import core, {
+  AccountRole,
   ClientConnectEvent,
   WorkspaceEvent,
   generateId,
   getTypeOf,
   platformNow,
+  roleOrder,
   systemAccount,
   toFindResult,
   type Account,
-  type AccountRole,
   type AccountUuid,
   type BackupClient,
   type BrandingMap,
@@ -31,6 +32,7 @@ import core, {
   type Ref,
   type SearchResult,
   type SessionData,
+  type Space,
   type Tx,
   type TxResult,
   type TxWorkspaceEvent,
@@ -41,7 +43,47 @@ import { createHash, type Hash } from 'crypto'
 import fs from 'fs'
 import type { DbAdapter } from './adapter'
 import { BackupClientOps } from './storage'
-import type { OneSecondCounters, Pipeline } from './types'
+import type { OneSecondCounters, Pipeline, TriggerControl } from './types'
+
+/**
+ * A mention can create a Collaborator record that grants access to a protected
+ * document. Resolve the transaction author from the trigger context and allow
+ * that grant only for a user who may share the target document's space.
+ */
+export async function canAuthorGrantMentionAccess (
+  ctx: MeasureContext,
+  senderId: PersonId,
+  target: Doc,
+  control: Pick<TriggerControl, 'ctx' | 'findAll'>
+): Promise<boolean> {
+  const senderSession = control.ctx.contextData.socialStringsToUsers.get(senderId)
+  const contextAccount = control.ctx.contextData.account
+  // Only fall back to the executing account when the sender is one of its own
+  // social ids; otherwise (system, import or bot transactions on behalf of
+  // another person) the author is unknown and the grant is refused.
+  const contextIsSender = contextAccount?.socialIds?.includes(senderId)
+  const authorAccount = senderSession?.accontUuid ?? (contextIsSender ? contextAccount?.uuid : undefined)
+  const authorRole = senderSession?.role ?? (contextIsSender ? contextAccount?.role : undefined)
+
+  if (
+    authorAccount === undefined ||
+    authorRole === undefined ||
+    roleOrder[authorRole] < roleOrder[AccountRole.User]
+  ) {
+    return false
+  }
+
+  if (roleOrder[authorRole] >= roleOrder[AccountRole.Maintainer]) {
+    return true
+  }
+
+  const targetSpace = (
+    await control.findAll<Space>(ctx, core.class.Space, { _id: target.space }, { limit: 1 })
+  )[0]
+  if (targetSpace === undefined) return false
+
+  return targetSpace.members.includes(authorAccount) || (targetSpace.owners?.includes(authorAccount) ?? false)
+}
 
 /**
  * Return some estimation for object size

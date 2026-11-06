@@ -93,5 +93,11 @@ export interface LinkMark extends MarkupMark {
 /** @public */
 export interface ReferenceMarkupNode extends MarkupNode {
   type: MarkupNodeType.reference
-  attrs: { id: string, label: string, objectclass: string }
+  /**
+   * grantsAccess: when 'false', the chunter mention-grants trigger skips
+   * Collaborator creation for this mention. undefined means "grant"
+   * (the default). Stored as a string because markup attrs
+   * serialize through HTML where boolean coercion is unreliable.
+   */
+  attrs: { id: string, label: string, objectclass: string, grantsAccess?: 'true' | 'false' }
 }

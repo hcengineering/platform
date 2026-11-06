@@ -13,11 +13,11 @@
 // limitations under the License.
 //
 
-import { getClassCollaborators } from '../collaborators'
+import { getClassCollaborators, resolveMentionGrantTarget } from '../collaborators'
 import { ModelDb } from '../memdb'
 import { Hierarchy } from '../hierarchy'
 import core from '../component'
-import type { Class, ClassCollaborators, Doc, Ref } from '../classes'
+import type { AttachedDoc, Class, ClassCollaborators, Doc, Ref } from '../classes'
 
 describe('collaborators', () => {
   let model: ModelDb
@@ -196,6 +196,111 @@ describe('collaborators', () => {
 
       // Should return collab2 (class2 comes before class3 in ancestors)
       expect(result).toBe(collab2)
+    })
+  })
+
+  describe('resolveMentionGrantTarget', () => {
+    const ISSUE = 'tracker:class:Issue' as Ref<Class<Doc>>
+    const THREAD = 'chunter:class:ThreadMessage' as Ref<Class<Doc>>
+    const MSG = 'chunter:class:ChatMessage' as Ref<Class<Doc>>
+
+    // Builds a findAll injector like the server/client pass in. `opted` is the
+    // set of _class refs whose ClassCollaborators is provideSecurity+mentionsGrantAccess.
+    // `docs` maps _id -> Doc for the attachedTo parent lookups.
+    function makeFindAll (
+      opted: Set<string>,
+      docs: Record<string, Doc>
+    ): jest.Mock<Promise<any[]>, [Ref<Class<Doc>>, any, any?]> {
+      return jest.fn(async (cls: Ref<Class<Doc>>, q: any, _options?: any) => {
+        if (cls === core.class.ClassCollaborators) {
+          const target = q.attachedTo as string
+          return opted.has(target) ? [{ provideSecurity: true, mentionsGrantAccess: true }] : []
+        }
+        const doc = docs[q._id as string]
+        return doc != null ? [doc] : []
+      })
+    }
+
+    it('returns the start doc when it is itself opted in', async () => {
+      const start: Doc = { _id: 'i1' as Ref<Doc>, _class: ISSUE } as unknown as Doc
+      const findAll = makeFindAll(new Set([ISSUE]), {})
+
+      const result = await resolveMentionGrantTarget(start, findAll)
+
+      expect(result).toBe(start)
+    })
+
+    it('walks the attachedTo chain to the first opted-in ancestor', async () => {
+      const issue: Doc = { _id: 'i1' as Ref<Doc>, _class: ISSUE } as unknown as Doc
+      const thread = {
+        _id: 'tm1' as Ref<Doc>,
+        _class: THREAD,
+        attachedTo: 'i1' as Ref<Doc>,
+        attachedToClass: ISSUE
+      } as unknown as AttachedDoc
+
+      // ThreadMessage + ChatMessage are NOT opted in; only the Issue ancestor is.
+      const findAll = makeFindAll(new Set([ISSUE]), { i1: issue })
+
+      const result = await resolveMentionGrantTarget(thread, findAll)
+
+      expect(result).toBe(issue)
+    })
+
+    it('returns null when nothing in the chain is opted in', async () => {
+      const parent = { _id: 'p1' as Ref<Doc>, _class: MSG } as unknown as Doc
+      const child = {
+        _id: 'c1' as Ref<Doc>,
+        _class: THREAD,
+        attachedTo: 'p1' as Ref<Doc>,
+        attachedToClass: MSG
+      } as unknown as AttachedDoc
+
+      const findAll = makeFindAll(new Set(), { p1: parent })
+
+      const result = await resolveMentionGrantTarget(child, findAll)
+
+      expect(result).toBeNull()
+    })
+
+    it('returns null on an attachedTo cycle (depth cap 8)', async () => {
+      // Self-referential doc: attachedTo points back at itself, never opted in.
+      const node = {
+        _id: 'x' as Ref<Doc>,
+        _class: THREAD,
+        attachedTo: 'x' as Ref<Doc>,
+        attachedToClass: THREAD
+      } as unknown as AttachedDoc
+      const findAll = makeFindAll(new Set(), { x: node as unknown as Doc })
+
+      const result = await resolveMentionGrantTarget(node, findAll)
+
+      expect(result).toBeNull()
+      // Depth cap 8: exactly 8 ClassCollaborators probes (one per loop turn).
+      const ccProbes = findAll.mock.calls.filter((c) => c[0] === core.class.ClassCollaborators)
+      expect(ccProbes.length).toBe(8)
+    })
+
+    it('passes { limit: 1 } as the third arg on every findAll lookup (fix guard)', async () => {
+      const issue: Doc = { _id: 'i1' as Ref<Doc>, _class: ISSUE } as unknown as Doc
+      const thread = {
+        _id: 'tm1' as Ref<Doc>,
+        _class: THREAD,
+        attachedTo: 'i1' as Ref<Doc>,
+        attachedToClass: ISSUE
+      } as unknown as AttachedDoc
+      const findAll = makeFindAll(new Set([ISSUE]), { i1: issue })
+
+      await resolveMentionGrantTarget(thread, findAll)
+
+      // Both the ClassCollaborators probe and the parent lookup must be bounded.
+      expect(findAll).toHaveBeenCalled()
+      for (const call of findAll.mock.calls) {
+        expect(call[2]).toEqual({ limit: 1 })
+      }
+      // Sanity: at least one ClassCollaborators probe and one parent lookup ran.
+      expect(findAll.mock.calls.some((c) => c[0] === core.class.ClassCollaborators)).toBe(true)
+      expect(findAll.mock.calls.some((c) => c[0] === ISSUE)).toBe(true)
     })
   })
 })
