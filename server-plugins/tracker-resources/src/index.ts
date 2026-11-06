@@ -246,15 +246,7 @@ export async function OnIssueUpdate (txes: Tx[], control: TriggerControl): Promi
     if (actualTx._class === core.class.TxRemoveDoc) {
       const removeTx = actualTx as TxRemoveDoc<Issue>
       if (control.hierarchy.isDerived(removeTx.objectClass, tracker.class.Issue)) {
-        const parentIssue = await control.findAll(control.ctx, tracker.class.Issue, {
-          'childInfo.childId': removeTx.objectId
-        })
-        const parents: IssueParentInfo[] = parentIssue.map((it) => ({
-          parentId: it._id,
-          parentTitle: it.title,
-          identifier: it.identifier,
-          space: it.space
-        }))
+        const parents = await findRemovedIssueParents(removeTx, control)
         updateIssueParentEstimations(
           {
             _id: removeTx.objectId,
@@ -271,6 +263,41 @@ export async function OnIssueUpdate (txes: Tx[], control: TriggerControl): Promi
     }
   }
   return result
+}
+
+/**
+ * Ancestors still holding a `childInfo` entry of a removed issue.
+ *
+ * `childInfo` is an array, so a `childInfo.childId` query does not match on Postgres;
+ * the removed issue's own `parents` are used instead.
+ */
+async function findRemovedIssueParents (
+  removeTx: TxRemoveDoc<Issue>,
+  control: TriggerControl
+): Promise<IssueParentInfo[]> {
+  let parents = (control.removedMap.get(removeTx.objectId) as Issue | undefined)?.parents
+  if (parents === undefined && removeTx.attachedTo !== undefined) {
+    const [parent] = await control.findAll(
+      control.ctx,
+      tracker.class.Issue,
+      { _id: removeTx.attachedTo as Ref<Issue> },
+      { limit: 1 }
+    )
+    parents =
+      parent !== undefined
+        ? [
+            {
+              parentId: parent._id,
+              parentTitle: parent.title,
+              space: parent.space,
+              identifier: parent.identifier
+            },
+            ...parent.parents
+          ]
+        : []
+  }
+  // Ancestors removed together with the issue need no update.
+  return (parents ?? []).filter((it) => !control.removedMap.has(it.parentId))
 }
 
 async function doTimeReportUpdate (cud: TxCUD<TimeSpendReport>, control: TriggerControl): Promise<Tx[]> {
