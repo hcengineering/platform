@@ -13,9 +13,9 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, getCurrentEmployee } from '@hcengineering/contact'
+  import contact, { Employee, getCurrentEmployee, getFieldSearch } from '@hcengineering/contact'
   import { Class, flipSet, getObjectValue, Ref } from '@hcengineering/core'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { CheckBox, createFocusManager, FocusHandler, ListView } from '@hcengineering/ui'
   import { createEventDispatcher } from 'svelte'
 
@@ -45,13 +45,17 @@
   $: selectedItems = new Set<Ref<Employee>>(selected)
 
   let persons: Employee[] = []
+  let queryResult: Employee[] = []
+  $: nameSearch = getFieldSearch(getClient().getHierarchy(), _class, searchField, search)
+  $: matchesSearch = (it: Employee): boolean =>
+    searchMode !== 'field' || nameSearch.matches(getObjectValue(searchField, it))
   $: query.query(
     _class,
     {
       ...(searchMode !== 'disabled' && search !== ''
         ? searchMode === 'fulltext'
           ? { $search: search }
-          : { [searchField]: { $like: '%' + search + '%' } }
+          : { [searchField]: { $like: nameSearch.like } }
         : {}),
       ...{ _id: { $nin: skipCurrentAccount ? [...skipAccounts, me] : [...skipAccounts] } },
       ...(skipInactive ? { active: true } : {}),
@@ -63,10 +67,12 @@
         const bval: string = `${getObjectValue(groupBy, b as any)}`
         return aval.localeCompare(bval)
       })
-      persons = result
+      queryResult = result
     },
     { limit: 200 }
   )
+  // Filter outside of the query callback: the live query is not re-run when only the client side part changes
+  $: persons = queryResult.filter(matchesSearch)
 
   function handleSelection (contacts: Employee[], index: number) {
     const contact = contacts[index]

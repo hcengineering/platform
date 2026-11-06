@@ -51,6 +51,7 @@ import contact, {
 } from '.'
 
 import { AVATAR_COLORS, GravatarPlaceholderType } from './types'
+import { getNameSearch, getPlainSearch, type NameSearch } from './nameSearch'
 import ContactCache from './cache'
 
 let currentEmployee: Ref<Employee>
@@ -292,6 +293,20 @@ export function getName (hierarchy: Hierarchy, value: Contact, lastNameFirst?: s
     return formatName(value.name, lastNameFirst)
   }
   return value.name
+}
+
+/**
+ * Search for a field of a class: person names (`Last,First`) are matched word by word in any order,
+ * any other field keeps the plain `%search%` substring search.
+ * @public
+ */
+export function getFieldSearch (
+  hierarchy: Hierarchy,
+  _class: Ref<Class<Doc>>,
+  field: string,
+  search: string
+): NameSearch {
+  return field === 'name' && isPersonClass(hierarchy, _class) ? getNameSearch(search) : getPlainSearch(search)
 }
 
 function isPerson (hierarchy: Hierarchy, value: Contact): value is Person {
