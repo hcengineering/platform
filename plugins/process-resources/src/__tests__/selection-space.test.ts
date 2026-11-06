@@ -65,6 +65,13 @@ test('preserves fixed spaces and an explicitly unrestricted selection', async ()
   expect(findOne).not.toHaveBeenCalled()
 })
 
+test.each([undefined, null])('does not add a space filter for an unconfigured selection: %p', async (configured) => {
+  const context: ExecutionContext = { __contextId: true }
+  const selectionSpace = await resolveSelectionSpace(client, definition, doc, context, configured)
+  await expect(resolveSelectionQuery(client, doc._id, selectionSpace)).resolves.toEqual({})
+  expect(findOne).not.toHaveBeenCalled()
+})
+
 test('uses the current card space', async () => {
   await expect(resolve({ type: 'attribute', key: 'space' })).resolves.toBe(targetSpace)
 })
