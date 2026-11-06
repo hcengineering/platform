@@ -3,7 +3,8 @@
         "RequiredField": "필수 항목: {field}",
         "FieldsDoNotMatch": "{field}이(가) {field2}와(과) 일치하지 않습니다",
         "ConnectingToServer": "서버에 연결 중...",
-        "IncorrectValue": "잘못된 값: {field}"
+        "IncorrectValue": "잘못된 값: {field}",
+        "OidcGroupNotAllowed": "이 계정은 로그인할 권한이 없습니다."
     },
     "string": {
         "ChangePassword": "비밀번호 변경",

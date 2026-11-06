@@ -3,7 +3,8 @@
     "RequiredField": "Povinné pole {field}",
     "FieldsDoNotMatch": "{field} se neshoduje s {field2}",
     "ConnectingToServer": "Připojování k serveru....",
-    "IncorrectValue": "Nesprávná hodnota {field}"
+    "IncorrectValue": "Nesprávná hodnota {field}",
+    "OidcGroupNotAllowed": "Váš účet nemá oprávnění k přihlášení."
   },
   "string": {
     "LogIn": "Přihlásit se",
