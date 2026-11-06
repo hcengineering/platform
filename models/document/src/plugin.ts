@@ -48,7 +48,8 @@ export default mergeIds(documentId, document, {
   action: {
     PublicLink: '' as Ref<Action<Doc, any>>,
     LockContent: '' as Ref<Action<Doc, any>>,
-    UnlockContent: '' as Ref<Action<Doc, any>>
+    UnlockContent: '' as Ref<Action<Doc, any>>,
+    CopyDocumentMarkdown: '' as Ref<Action<Doc, any>>
   },
   function: {
     CanLockDocument: '' as Resource<(doc?: Doc | Doc[]) => Promise<boolean>>,
