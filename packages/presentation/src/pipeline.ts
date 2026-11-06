@@ -4,6 +4,7 @@ import {
   type Client,
   type Doc,
   type DocumentQuery,
+  type DocumentUpdate,
   type DomainParams,
   type DomainRequestOptions,
   type DomainResult,
@@ -18,10 +19,37 @@ import {
   type SearchQuery,
   type SearchResult,
   type Tx,
+  type TxOperations,
   type TxResult,
   type WithLookup
 } from '@hcengineering/core'
 import platform, { PlatformError, setPlatformStatus, unknownError, type Resource } from '@hcengineering/platform'
+
+// Opt-in only: callers that reconcile failed optimistic edits need a rejection,
+// including ConnectionClosed. Ordinary presentation transactions still report and resolve.
+const propagateTxError = 'presentation:propagateTxError'
+
+/**
+ * Permission middleware must also reject flagged writes after showing its notification.
+ * @public
+ */
+export function shouldPropagateTxError (tx: Tx): boolean {
+  return tx.meta?.[propagateTxError] === true
+}
+
+/**
+ * Updates a standalone document through the normal UI/middleware path, propagating write failures.
+ * @public
+ */
+export async function updateDocWithError<T extends Doc> (
+  client: Pick<TxOperations, 'txFactory' | 'tx'>,
+  doc: T,
+  changes: DocumentUpdate<T>
+): Promise<TxResult> {
+  const tx = client.txFactory.createTxUpdateDoc(doc._class, doc.space, doc._id, changes)
+  tx.meta = { ...tx.meta, [propagateTxError]: true }
+  return await client.tx(tx)
+}
 
 /**
  * @public
@@ -203,11 +231,15 @@ export class PresentationPipelineImpl implements PresentationPipeline {
     } catch (err) {
       if (err instanceof PlatformError) {
         if (err.status.code === platform.status.ConnectionClosed) {
+          if (shouldPropagateTxError(tx)) throw err
           return {}
         }
+        // Permission middleware already notified; opted-in editors report the failure inline.
+        if (err.status.code === platform.status.Forbidden && shouldPropagateTxError(tx)) throw err
       }
       const status = unknownError(err)
       await setPlatformStatus(status)
+      if (shouldPropagateTxError(tx)) throw err
       return {}
     }
   }
