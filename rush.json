@@ -548,6 +548,16 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@hcengineering/opensearch",
+      "projectFolder": "foundations/server/packages/opensearch",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@hcengineering/typesense",
+      "projectFolder": "foundations/server/packages/typesense",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/kafka",
       "projectFolder": "foundations/server/packages/kafka",
       "shouldPublish": true

@@ -105,6 +105,8 @@ export class WorkspaceManager {
       }
     }
 
+    await this.checkAndTriggerReindex()
+
     this.shutdownInterval = setInterval(() => {
       for (const [k, v] of [...this.indexers.entries()]) {
         if (v instanceof Promise) {
@@ -157,6 +159,36 @@ export class WorkspaceManager {
       this.ctx,
       getDeadletterTopic(QueueTopic.Tx)
     )
+  }
+
+  private async checkAndTriggerReindex (): Promise<void> {
+    if (this.fulltextAdapter.getDocCount === undefined) {
+      return
+    }
+
+    const docCount = await this.fulltextAdapter.getDocCount(this.ctx)
+    if (docCount < 0) {
+      this.ctx.warn('Could not determine backend doc count, skipping auto-reindex check')
+      return
+    }
+    if (docCount > 0) {
+      this.ctx.info('Fulltext backend has documents, skipping auto-reindex', { docCount })
+      return
+    }
+
+    this.ctx.warn('Fulltext backend is empty (0 documents), triggering auto-reindex for all workspaces')
+    try {
+      const token = generateToken(systemAccountUuid, undefined, { service: 'tool' })
+      const accountClient = getAccountClient(token)
+      const workspaces = await accountClient.listWorkspaces(null, 'active')
+      this.ctx.info('Auto-reindex: found workspaces', { count: workspaces.length })
+      for (const ws of workspaces) {
+        await this.fulltextProducer.send(this.ctx, ws.uuid, [workspaceEvents.fullReindex()])
+        this.ctx.info('Queued full reindex', { workspace: ws.uuid })
+      }
+    } catch (err: any) {
+      this.ctx.error('Failed to trigger auto-reindex', { error: err })
+    }
   }
 
   private async processTransactions (
