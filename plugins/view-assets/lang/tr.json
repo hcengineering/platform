@@ -76,6 +76,8 @@
     "Grouping": "Gruplama",
     "Ordering": "Sıralama",
     "Manual": "Manuel",
+    "Ascending": "Artan",
+    "Descending": "Azalan",
     "FilteredViews": "Filtreli görünümler",
     "NewFilteredView": "Yeni filtreli görünüm",
     "FilteredViewName": "Filtreli görünüm adı",

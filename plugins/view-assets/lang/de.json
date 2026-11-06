@@ -79,6 +79,8 @@
     "Grouping": "Gruppierung",
     "Ordering": "Sortierung",
     "Manual": "Manuell",
+    "Ascending": "Aufsteigend",
+    "Descending": "Absteigend",
 
     "FilteredViews": "Gefilterte Ansichten",
     "NewFilteredView": "Neue gefilterte Ansicht",

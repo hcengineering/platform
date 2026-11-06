@@ -76,6 +76,8 @@
         "Grouping": "그룹화",
         "Ordering": "정렬",
         "Manual": "수동",
+        "Ascending": "오름차순",
+        "Descending": "내림차순",
         "FilteredViews": "필터링된 뷰",
         "NewFilteredView": "새 필터링된 뷰",
         "FilteredViewName": "필터링된 뷰 이름",
