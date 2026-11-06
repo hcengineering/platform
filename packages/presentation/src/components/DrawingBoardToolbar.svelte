@@ -38,6 +38,7 @@
   import { ColorMetaName, ColorMetaNameOrHex } from '../drawingUtils'
   import DrawingBoardToolbarColorIcon from './DrawingBoardToolbarColorIcon.svelte'
   import DrawingBoardColorSelectorIcon from './DrawingBoardColorSelectorIcon.svelte'
+  import MessageBox from './MessageBox.svelte'
   import { ColorsList, DrawingBoardColoringSetup } from '../drawingColors'
   import { Analytics } from '@hcengineering/analytics'
   import type { IntlString } from '@hcengineering/platform'
@@ -234,6 +235,23 @@
     focusEditor()
   }
 
+  function confirmClear (): void {
+    showPopup(
+      MessageBox,
+      {
+        label: presentation.string.ClearCanvas,
+        message: presentation.string.ClearCanvasConfirm,
+        dangerous: true
+      },
+      undefined,
+      (result?: boolean) => {
+        if (result === true) {
+          dispatch('clear')
+        }
+      }
+    )
+  }
+
   function focusEditor (): void {
     setTimeout(() => {
       if (cmdEditor !== undefined) {
@@ -276,9 +294,7 @@
     kind="icon"
     showTooltip={{ label: presentation.string.ClearCanvas }}
     noFocus
-    on:click={() => {
-      dispatch('clear')
-    }}
+    on:click={confirmClear}
   />
   <div class="divider buttons-divider" />
   {#if tool !== 'erase' && tool !== 'pan' && tool !== 'text'}
