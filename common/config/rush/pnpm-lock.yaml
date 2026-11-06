@@ -37680,12 +37680,21 @@ importers:
 
   ../../services/ai-bot/ai-tools:
     dependencies:
+      '@hcengineering/activity':
+        specifier: workspace:^0.7.0
+        version: link:../../../plugins/activity
       '@hcengineering/ai-core':
         specifier: workspace:^0.7.0
         version: link:../ai-core
+      '@hcengineering/attachment':
+        specifier: workspace:^0.7.0
+        version: link:../../../plugins/attachment
       '@hcengineering/card':
         specifier: workspace:^0.7.0
         version: link:../../../plugins/card
+      '@hcengineering/chunter':
+        specifier: workspace:^0.7.0
+        version: link:../../../plugins/chunter
       '@hcengineering/collaborator-client':
         specifier: workspace:^0.7.18
         version: link:../../../foundations/core/packages/collaborator-client
@@ -37713,6 +37722,12 @@ importers:
       '@hcengineering/text':
         specifier: workspace:^0.7.19
         version: link:../../../foundations/core/packages/text
+      '@hcengineering/text-core':
+        specifier: workspace:^0.7.19
+        version: link:../../../foundations/core/packages/text-core
+      '@hcengineering/text-markdown':
+        specifier: workspace:^0.7.21
+        version: link:../../../foundations/core/packages/text-markdown
       typebox:
         specifier: ^1.3.6
         version: 1.4.3

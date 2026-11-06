@@ -6,11 +6,24 @@
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
 //
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 import { createRestTxOperations } from '@hcengineering/api-client'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { getClient as getCollaboratorClient, type CollaboratorClient } from '@hcengineering/collaborator-client'
-import { type MeasureContext, type TxOperations, type WorkspaceUuid } from '@hcengineering/core'
+import {
+  type MeasureContext,
+  type TxOperations,
+  type WorkspaceDataId,
+  type WorkspaceIds,
+  type WorkspaceUuid
+} from '@hcengineering/core'
 import { type StorageAdapter } from '@hcengineering/server-core'
 import { decodeToken, type Token } from '@hcengineering/server-token'
 
@@ -25,6 +38,7 @@ export interface WorkspaceConnection {
   workspace: WorkspaceUuid
   workspaceName: string
   workspaceUrl: string
+  workspaceIds?: WorkspaceIds
   close: () => Promise<void>
 }
 
@@ -80,7 +94,7 @@ export class WorkspaceManager {
       throw new Error('Workspace token exchange returned a different account or workspace')
     }
     if (this.config.WorkspaceClientCacheMs <= 0) {
-      return await this.createConnection(token, rawToken, login.endpoint, workspace)
+      return await this.createConnection(token, rawToken, login.endpoint, workspace, login.workspaceDataId)
     }
 
     const key = `${token.workspace}:${token.account}:${rawToken}`
@@ -99,7 +113,7 @@ export class WorkspaceManager {
       })
     }
 
-    const connection = this.createConnection(token, rawToken, login.endpoint, workspace)
+    const connection = this.createConnection(token, rawToken, login.endpoint, workspace, login.workspaceDataId)
     this.clients.set(key, {
       connection,
       expiresAt: now + this.config.WorkspaceClientCacheMs
@@ -130,7 +144,8 @@ export class WorkspaceManager {
     token: Token,
     rawToken: string,
     transactorUrl: string,
-    workspace: { name: string, url: string }
+    workspace: { name: string, url: string },
+    dataId?: WorkspaceDataId
   ): Promise<WorkspaceConnection> {
     const client = await createRestTxOperations(transactorUrl, token.workspace, rawToken, true)
     const collaborator = getCollaboratorClient(token.workspace, rawToken, this.config.CollaboratorURL)
@@ -144,6 +159,7 @@ export class WorkspaceManager {
       workspace: token.workspace,
       workspaceName: workspace.name,
       workspaceUrl: workspace.url,
+      workspaceIds: { uuid: token.workspace, url: workspace.url, dataId },
       close: async () => {
         await client.close()
       }

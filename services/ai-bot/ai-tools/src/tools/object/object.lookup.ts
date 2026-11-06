@@ -1,9 +1,17 @@
 //
 // Copyright © 2026 TraceX.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
 // obtain a copy of the License at https://www.eclipse.org/legal/epl-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //
 
 import { type PlatformContext, createTool, toolOk } from '@hcengineering/ai-core'
@@ -13,14 +21,17 @@ import core, {
   type Doc,
   type DocumentQuery,
   type Ref,
-  type SortingQuery,
-  type Space
+  type SortingQuery
 } from '@hcengineering/core'
-import { getResource } from '@hcengineering/platform'
-import serverNotification, { type Presenter } from '@hcengineering/server-notification'
 import { Type, type Static } from 'typebox'
 
-import { buildClassSummary, buildSpaceSummary, ClassSummarySchema, SpaceSummarySchema } from '../shared'
+import {
+  buildClassSummary,
+  buildSpaceSummary,
+  ClassSummarySchema,
+  getDocumentTitle,
+  SpaceSummarySchema
+} from '../shared'
 import { objectLookupToolId } from './tool-ids'
 
 const ObjectQueryFilterSchema = Type.Object(
@@ -114,8 +125,6 @@ type ObjectLookupOutput = Static<typeof ObjectLookupOutputSchema>
 type ObjectQueryEntry = Static<typeof ObjectQueryFilterSchema>
 type ObjectSortEntry = Static<typeof ObjectQuerySortSchema>
 
-type ObjectTitleProvider = (doc: Doc, space: Space | undefined) => Promise<string | undefined>
-
 export const objectLookupTool = createTool({
   name: objectLookupToolId,
   description: 'List workspace objects by class or mixin, optionally filtering and sorting by object fields.',
@@ -135,8 +144,6 @@ export const objectLookupTool = createTool({
       lookup: { space: core.class.Space }
     })
 
-    const titleProviders = [createTextPresenterTitleProvider(toolCtx, classId), createFallbackTitleProvider()]
-
     const output: ObjectLookupOutput = {
       results: await Promise.all(
         docs.map(async (doc) => {
@@ -146,7 +153,7 @@ export const objectLookupTool = createTool({
 
           return {
             id: doc._id,
-            title: await getLookupTitle(titleProviders, doc, space),
+            title: await getDocumentTitle(toolCtx, doc),
             class: classSummary,
             space: buildSpaceSummary(doc.space, space)
           }
@@ -167,50 +174,4 @@ function toSortRecord (sort: ObjectSortEntry[] | undefined): SortingQuery<Doc> {
   return Object.fromEntries(
     entries.map(({ key, value }) => [key, value === 'asc' ? SortingOrder.Ascending : SortingOrder.Descending])
   ) as SortingQuery<Doc>
-}
-
-async function getLookupTitle (providers: ObjectTitleProvider[], doc: Doc, space: Space | undefined): Promise<string> {
-  for (const provider of providers) {
-    const title = await provider(doc, space)
-    if (title !== undefined && title.length > 0) {
-      return title
-    }
-  }
-
-  return doc._id
-}
-
-function createTextPresenterTitleProvider (toolCtx: PlatformContext, classId: Ref<Class<Doc>>): ObjectTitleProvider {
-  const presenter = toolCtx.hierarchy.classHierarchyMixin(classId, serverNotification.mixin.TextPresenter)
-
-  return async (doc) => {
-    if (presenter === undefined) return undefined
-
-    try {
-      const fn = await getResource<Presenter>(presenter.presenter)
-      return await fn(doc, toolCtx as any)
-    } catch (err) {
-      toolCtx.ctx.warn('Failed to format text presenter title', errorLog(err, classId, doc))
-      return undefined
-    }
-  }
-}
-
-function createFallbackTitleProvider (): ObjectTitleProvider {
-  return async (doc) => {
-    const title = (doc as any).title ?? (doc as any).name
-    return typeof title === 'string' && title.length > 0 ? title : doc._id
-  }
-}
-
-function errorLog (
-  err: unknown,
-  effectiveClass: Ref<Class<Doc>>,
-  doc: Doc
-): { error: string, class: string, id: string } {
-  return {
-    error: err instanceof Error ? err.message : String(err),
-    class: effectiveClass,
-    id: doc._id
-  }
 }
