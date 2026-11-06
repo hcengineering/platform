@@ -22,6 +22,24 @@ export * from './rest'
 export const aiBotId = 'ai-bot' as Plugin
 
 export const aiBotAccountEmail = 'huly.ai.bot@hc.engineering'
+
+let _aiBotAccountEmail: string = aiBotAccountEmail
+
+export function getAiBotAccountEmail (): string {
+  return _aiBotAccountEmail
+}
+
+export function setAiBotAccountEmail (email: string): void {
+  _aiBotAccountEmail = email
+}
+
+export function getAiBotEmailSocialKey (): string {
+  return buildSocialIdString({
+    type: SocialIdType.EMAIL,
+    value: _aiBotAccountEmail
+  })
+}
+
 export const aiBotEmailSocialKey = buildSocialIdString({
   type: SocialIdType.EMAIL,
   value: aiBotAccountEmail

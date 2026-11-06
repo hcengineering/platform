@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
+import { setAiBotAccountEmail } from '@hcengineering/ai-bot'
 import { setMetadata } from '@hcengineering/platform'
 import serverClient, { withRetry } from '@hcengineering/server-client'
 import { initStatisticsContext } from '@hcengineering/server-core'
@@ -30,6 +31,7 @@ import { getAccountUuid } from './utils/account'
 import { updateDeepgramBilling } from './billing'
 
 export const start = async (): Promise<void> => {
+  setAiBotAccountEmail(config.Email)
   setMetadata(serverToken.metadata.Secret, config.ServerSecret)
   setMetadata(serverToken.metadata.Service, 'ai-bot-service')
   setMetadata(serverClient.metadata.UserAgent, config.ServiceID)
