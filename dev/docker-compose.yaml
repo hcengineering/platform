@@ -58,7 +58,7 @@ services:
       timeout: 5s
       retries: 10
     volumes:
-      - postgres_db:/var/lib/postgresql/data
+      - postgres_db:/var/lib/postgresql
     ports:
       - 5432:5432
     environment:
