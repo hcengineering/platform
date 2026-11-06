@@ -684,6 +684,9 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
       actionProps: {
         component: tracker.component.CreateIssue,
         element: 'top',
+        props: {
+          shouldSaveDraft: false
+        },
         fillProps: {
           _object: 'originalIssue',
           space: 'space'
