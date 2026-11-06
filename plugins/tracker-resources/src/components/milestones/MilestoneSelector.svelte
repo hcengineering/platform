@@ -13,14 +13,26 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { permissionsStore } from '@hcengineering/contact-resources'
   import { DocumentQuery, Ref, SortingOrder } from '@hcengineering/core'
   import { IntlString, getEmbeddedLabel, translateCB } from '@hcengineering/platform'
-  import { createQuery } from '@hcengineering/presentation'
+  import { createQuery, getClient } from '@hcengineering/presentation'
   import { Milestone } from '@hcengineering/tracker'
   import type { ButtonKind, ButtonSize, LabelAndProps, PopupResult } from '@hcengineering/ui'
-  import { Button, ButtonShape, Label, SelectPopup, eventToHTMLElement, showPopup, themeStore } from '@hcengineering/ui'
+  import {
+    Button,
+    ButtonShape,
+    IconAdd,
+    Label,
+    SelectPopup,
+    eventToHTMLElement,
+    showPopup,
+    themeStore
+  } from '@hcengineering/ui'
   import tracker from '../../plugin'
   import { milestoneStatusAssets } from '../../types'
+  import { canCreateMilestone } from './milestonePermissions'
+  import NewMilestone from './NewMilestone.svelte'
 
   export let value: Ref<Milestone> | null | undefined
   export let space: DocumentQuery<Milestone>['space'] | undefined = undefined
@@ -76,7 +88,12 @@
     selectedMilestone = milestones.find((it) => it._id === newMilestoneId)
   }
 
-  const getMilestoneInfo = (rawMilestones: Milestone[], sp: Milestone | undefined) => {
+  const createMilestoneId = '#createMilestone'
+  // A new milestone can be created only when the selector is bound to a single project
+  // and the user may create milestones in it
+  $: canCreate = canCreateMilestone(space, isEditable, isAction, $permissionsStore)
+
+  const getMilestoneInfo = (rawMilestones: Milestone[], sp: Milestone | undefined, canCreate: boolean) => {
     return [
       {
         id: null,
@@ -84,6 +101,7 @@
         label: tracker.string.NoMilestone,
         isSelected: sp === undefined
       },
+      ...(canCreate ? [{ id: createMilestoneId, icon: IconAdd, label: tracker.string.NewMilestone }] : []),
       ...rawMilestones.map((p) => ({
         id: p._id,
         icon: tracker.icon.Milestone,
@@ -94,7 +112,22 @@
     ]
   }
 
-  $: milestones = getMilestoneInfo(rawMilestones, selectedMilestone)
+  $: milestones = getMilestoneInfo(rawMilestones, selectedMilestone, canCreate)
+
+  const client = getClient()
+
+  function createMilestone (): void {
+    if (!canCreate || typeof space !== 'string') return
+    const project = space
+    showPopup(NewMilestone, { space: project }, 'top', async (milestoneId: Ref<Milestone> | undefined) => {
+      if (milestoneId == null) return
+      // The project can be changed inside the dialog, select the milestone only if it belongs to our project
+      const milestone = await client.findOne(tracker.class.Milestone, { _id: milestoneId })
+      if (milestone?.space === project) {
+        onChange?.(milestoneId)
+      }
+    })
+  }
 
   let milestonePopup: PopupResult | undefined
   const handleMilestoneEditorOpened = async (event: MouseEvent): Promise<void> => {
@@ -108,8 +141,12 @@
       { value: milestones, placeholder: popupPlaceholder, searchable: true },
       eventToHTMLElement(event),
       (evt) => {
-        onChange?.(evt)
         milestonePopup = undefined
+        if (evt === createMilestoneId) {
+          createMilestone()
+          return
+        }
+        onChange?.(evt)
       }
     )
   }
