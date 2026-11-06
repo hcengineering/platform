@@ -122,6 +122,11 @@ export interface Project extends TaskProject, IconProps {
    * `undefined` means "every day is a working day" (legacy behaviour).
    */
   workingDaysConfig?: WorkingDaysConfig
+  /**
+   * Optional length of a working day in hours, used to display estimation
+   * and reported time as days. `undefined` means 8 hours.
+   */
+  hoursPerDay?: number
 }
 
 /**
@@ -771,6 +776,8 @@ const pluginState = plugin(trackerId, {
     WorkingDaysDepartment: '' as IntlString,
     WorkingDaysCompanyWide: '' as IntlString,
     WorkingDaysAtLeastOneDay: '' as IntlString,
+    HoursPerDay: '' as IntlString,
+    HoursPerDayDescription: '' as IntlString,
     WorkingDayMon: '' as IntlString,
     WorkingDayTue: '' as IntlString,
     WorkingDayWed: '' as IntlString,

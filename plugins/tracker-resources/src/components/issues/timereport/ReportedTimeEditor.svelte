@@ -74,9 +74,9 @@
   >
     {#if value !== undefined}
       <span class="flex-row-center">
-        <TimePresenter {value} />
+        <TimePresenter {value} space={object.space} />
         {#if childTime !== 0}
-          / <TimePresenter value={childTime} />
+          / <TimePresenter value={childTime} space={object.space} />
         {/if}
       </span>
     {:else}
@@ -90,9 +90,9 @@
   </div>
 {:else if value !== undefined}
   <span class="flex-row-center">
-    <TimePresenter {value} />
+    <TimePresenter {value} space={object.space} />
     {#if childTime !== 0}
-      / <TimePresenter value={childTime} />
+      / <TimePresenter value={childTime} space={object.space} />
     {/if}
   </span>
 {:else}

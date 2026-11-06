@@ -51,9 +51,9 @@
     <svelte:fragment slot="title">
       <span class="overflow-label flex-nowrap">
         <Label label={tracker.string.ReportedTime} />:
-        <span class="caption-color"><TimePresenter value={reportedTime} /></span>.
+        <span class="caption-color"><TimePresenter value={reportedTime} space={issue.space} /></span>.
         <Label label={tracker.string.TimeSpendReports} />:
-        <span class="caption-color"><TimePresenter value={floorFractionDigits(total, 3)} /></span>
+        <span class="caption-color"><TimePresenter value={floorFractionDigits(total, 3)} space={issue.space} /></span>
       </span>
     </svelte:fragment>
     <TimeSpendReportsList {reports} />

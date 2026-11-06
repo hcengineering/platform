@@ -145,6 +145,9 @@ export class TProject extends TTaskProject implements Project {
 
   @Prop(TypeRecord(), tracker.string.WorkingDaysConfig)
     workingDaysConfig?: WorkingDaysConfig
+
+  @Prop(TypeNumber(), tracker.string.HoursPerDay)
+    hoursPerDay?: number
 }
 /**
  * @public

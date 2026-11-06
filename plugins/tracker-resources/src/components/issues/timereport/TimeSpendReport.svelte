@@ -54,5 +54,12 @@
 </script>
 
 {#if value?.value}
-  <TimePresenter id="TimeSpendReportValue" kind="link" value={value.value} on:click={editSpendReport} {accent} />
+  <TimePresenter
+    id="TimeSpendReportValue"
+    kind="link"
+    value={value.value}
+    space={value.space}
+    on:click={editSpendReport}
+    {accent}
+  />
 {/if}

@@ -75,6 +75,6 @@
     disabled={!isEditable}
     on:click={handleestimationEditorOpened}
   >
-    <TimePresenter slot="content" value={value.estimation} />
+    <TimePresenter slot="content" value={value.estimation} space={'space' in value ? value.space : undefined} />
   </Button>
 {/if}
