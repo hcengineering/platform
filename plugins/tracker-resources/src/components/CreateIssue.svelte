@@ -85,6 +85,7 @@
 
   import { activeComponent, activeMilestone, generateIssueShortLink, updateIssueRelation } from '../issues'
   import tracker from '../plugin'
+  import { createIssueTypeMixinDefaults } from '../utils'
   import SetParentIssueActionPopup from './SetParentIssueActionPopup.svelte'
   import SubIssues from './SubIssues.svelte'
   import ComponentSelector from './components/ComponentSelector.svelte'
@@ -525,6 +526,7 @@
       }
 
       await docCreateManager.commit(operations, _id, currentProject, value, 'pre')
+      fillDefaults(hierarchy, value, tracker.class.Issue)
 
       await operations.addCollection(
         tracker.class.Issue,
@@ -535,6 +537,7 @@
         value,
         _id
       )
+      await createIssueTypeMixinDefaults(operations, _id, _space, kind)
       await docCreateManager.commit(operations, _id, currentProject, value, 'post')
       for (const label of object.labels) {
         await operations.addCollection(label._class, label.space, _id, tracker.class.Issue, 'labels', {

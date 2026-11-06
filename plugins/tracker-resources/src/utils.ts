@@ -726,3 +726,32 @@ onClient(() => {
     }
   )
 })
+
+/**
+ * Create the task type mixin of a new issue with the default values of its attributes.
+ * `overrides` (e.g. values copied from another issue) take precedence over the defaults.
+ */
+export async function createIssueTypeMixinDefaults (
+  client: TxOperations,
+  issue: Ref<Issue>,
+  space: Ref<Project>,
+  kind: Ref<TaskType>,
+  overrides?: Record<string, any>
+): Promise<void> {
+  const hierarchy = client.getHierarchy()
+  const targetClass = client.getModel().findObject(kind)?.targetClass
+  if (targetClass === undefined || !hierarchy.isMixin(targetClass)) {
+    return
+  }
+  const defaults: Record<string, any> = {}
+  const parent = hierarchy.getClass(targetClass).extends
+  for (const [key, attr] of hierarchy.getAllAttributes(targetClass, parent)) {
+    if (attr.defaultValue != null) {
+      defaults[key] = attr.defaultValue
+    }
+  }
+  const data = { ...defaults, ...overrides }
+  if (Object.keys(data).length > 0) {
+    await client.createMixin(issue, tracker.class.Issue, space, targetClass, data)
+  }
+}
