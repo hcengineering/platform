@@ -33,6 +33,7 @@
     saveCollapsedCategories,
     type SelectPopupRow
   } from '../selectPopupCategories'
+  import { matchesSearch } from '../search'
   import { translate } from '@hcengineering/platform'
   import { themeStore } from '@hcengineering/theme'
 
@@ -140,7 +141,7 @@
   $: void translateLabels(value)
 
   $: filteredObjects = value.filter((el) =>
-    (itemLabelsTranslation.get(el.label ?? '') ?? el.text ?? '').toLowerCase().includes(search.toLowerCase())
+    matchesSearch(itemLabelsTranslation.get(el.label ?? '') ?? el.text ?? '', el.keywords, search)
   )
 
   $: rows = collapsibleCategories
