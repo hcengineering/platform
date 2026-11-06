@@ -1250,3 +1250,87 @@ describe('normalizeMarkdown', () => {
     expect(normalizeMarkdown(input)).toBe(expected)
   })
 })
+
+describe('markupToMarkdown with unsupported content', () => {
+  it('keeps text of inline comments', () => {
+    const markup: MarkupNode = {
+      type: MarkupNodeType.doc,
+      content: [
+        {
+          type: MarkupNodeType.paragraph,
+          content: [
+            { type: MarkupNodeType.text, text: 'Hello ' },
+            {
+              type: MarkupNodeType.text,
+              text: 'commented',
+              marks: [{ type: 'inline-comment' as MarkupMarkType, attrs: { thread: '123' } }]
+            },
+            {
+              type: MarkupNodeType.text,
+              text: ' bold',
+              marks: [
+                { type: MarkupMarkType.bold, attrs: {} },
+                { type: 'inline-comment' as MarkupMarkType, attrs: { thread: '123' } }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    expect(markupToMarkdown(markup, options)).toEqual('Hello commented **bold**')
+  })
+
+  it('ignores unknown marks', () => {
+    const markup: MarkupNode = {
+      type: MarkupNodeType.doc,
+      content: [
+        {
+          type: MarkupNodeType.paragraph,
+          content: [
+            {
+              type: MarkupNodeType.text,
+              text: 'unknown',
+              marks: [{ type: 'unknown-mark' as MarkupMarkType, attrs: {} }]
+            },
+            {
+              type: MarkupNodeType.text,
+              text: ' and italic',
+              marks: [
+                { type: 'unknown-mark' as MarkupMarkType, attrs: {} },
+                { type: MarkupMarkType.em, attrs: {} }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+    expect(markupToMarkdown(markup, options)).toEqual('unknown *and italic*')
+  })
+
+  it('renders content of unknown nodes', () => {
+    const markup: MarkupNode = {
+      type: MarkupNodeType.doc,
+      content: [
+        {
+          type: 'unknownBlock' as MarkupNodeType,
+          content: [
+            {
+              type: MarkupNodeType.paragraph,
+              content: [{ type: MarkupNodeType.text, text: 'Inside unknown block' }]
+            }
+          ]
+        },
+        {
+          type: MarkupNodeType.paragraph,
+          content: [
+            { type: MarkupNodeType.text, text: 'Before ' },
+            { type: 'unknownInline' as MarkupNodeType, content: [{ type: MarkupNodeType.text, text: 'inner' }] },
+            { type: undefined as unknown as MarkupNodeType },
+            { type: MarkupNodeType.text, text: ' after' }
+          ]
+        }
+      ]
+    }
+    expect(markupToMarkdown(markup, options)).toEqual('Inside unknown block\n\nBefore inner after')
+  })
+})
