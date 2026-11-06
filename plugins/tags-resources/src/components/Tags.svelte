@@ -39,6 +39,7 @@
   )
 
   async function addRef (tag: TagElement): Promise<void> {
+    if (items.some((it) => it.tag === tag._id)) return
     await client.addCollection(tags.class.TagReference, object.space, object._id, _class, key.key, {
       title: tag.title,
       tag: tag._id,

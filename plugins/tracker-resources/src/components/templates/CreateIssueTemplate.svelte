@@ -121,6 +121,7 @@
   }
 
   function addTagRef (tag: TagElement): void {
+    if (labels.some((it) => it._id === tag._id)) return
     labels = [...labels, tag]
   }
 
