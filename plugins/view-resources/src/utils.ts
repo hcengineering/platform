@@ -108,6 +108,7 @@ import contact, {
 } from '@hcengineering/contact'
 import { get, writable } from 'svelte/store'
 import plugin from './plugin'
+import { isDefaultHidden } from './defaultHidden'
 import { noCategory } from './viewOptions'
 
 export { getFiltredKeys, isCollectionAttr } from '@hcengineering/presentation'
@@ -588,6 +589,7 @@ export function buildConfigLookup<T extends Doc> (
 export async function buildModel (options: BuildModelOptions): Promise<AttributeModel[]> {
   // eslint-disable-next-line array-callback-return
   const model = options.keys
+    .filter((key) => !isDefaultHidden(key))
     .map((key) => (typeof key === 'string' ? { key } : key))
     .map(async (key) => {
       try {
