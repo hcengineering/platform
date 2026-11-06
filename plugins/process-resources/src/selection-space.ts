@@ -75,9 +75,9 @@ export async function resolveSelectionSpace (
   definition: Process,
   doc: Doc | undefined,
   executionContext: ExecutionContext,
-  configured: string | undefined
+  configured: string | null | undefined
 ): Promise<Ref<Space> | undefined> {
-  if (configured === undefined) return undefined
+  if (configured == null) return undefined
   const source = parseContext(configured)
   if (source === undefined) return configured as Ref<Space>
 
