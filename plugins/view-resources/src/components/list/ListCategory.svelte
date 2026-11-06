@@ -159,6 +159,8 @@
     docsQuery.unsubscribe()
   }
 
+  $: categoryQuery = { ...resultQuery, ...docKeys }
+
   $: categoryCollapseKey = `list_collapsing_${location.pathname}_${groupPersistKey}`
   $: storedCollapseState = localStorage.getItem(categoryCollapseKey)
 
@@ -477,6 +479,7 @@
       {lastCat}
       {viewOptions}
       {loading}
+      {categoryQuery}
       on:collapse={() => {
         collapsed = !collapsed
         if (collapsed) {
