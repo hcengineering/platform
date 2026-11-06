@@ -127,6 +127,7 @@
         "DeleteRoleConfirmation": "이 역할을 삭제하시겠습니까? 이 역할을 가진 모든 사용자가 권한을 잃게 됩니다.",
         "DeleteWorkspace": "워크스페이스 삭제",
         "DeleteWorkspaceConfirm": "이 워크스페이스를 삭제하시겠습니까? 본인과 다른 모든 멤버가 이 워크스페이스에 접근할 수 없게 되며, 워크스페이스의 모든 정보가 손실됩니다. 이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?",
+        "EnterWorkspaceNameToConfirmDeletion": "워크스페이스 삭제를 확인하려면 {value}을(를) 입력하세요.",
         "DeleteWorkspaceDescription": "이 워크스페이스와 그 안에 저장된 모든 정보를 영구적으로 삭제합니다.",
         "DeleteSpaceType": "스페이스 유형 삭제",
         "DeleteSpaceTypeConfirm": "이 스페이스 유형을 삭제하시겠습니까?",

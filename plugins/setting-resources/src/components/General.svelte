@@ -1,6 +1,7 @@
 <!--
 // Copyright © 2022-2024 Hardcore Engineering Inc.
 // Copyright © 2026 TraceX
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -74,7 +75,7 @@
 
   let loading = true
   let isEditingName = false
-  let oldName: string
+  let oldName = ''
   let name: string = ''
   let workspaceUrl = ''
   let workspaceId = ''
@@ -115,7 +116,10 @@
     }
 
     if (isEditingName) {
-      await accountClient.updateWorkspaceName(name.trim())
+      const updatedName = name.trim()
+      await accountClient.updateWorkspaceName(updatedName)
+      oldName = updatedName
+      name = updatedName
     }
 
     isEditingName = !isEditingName
@@ -127,9 +131,13 @@
   }
 
   async function handleDelete (): Promise<void> {
+    if (oldName.trim() === '') return
     showPopup(MessageBox, {
       label: settingsRes.string.DeleteWorkspace,
       message: settingsRes.string.DeleteWorkspaceConfirm,
+      okLabel: settingsRes.string.DeleteWorkspace,
+      confirmationValue: oldName.trim(),
+      confirmationLabel: settingsRes.string.EnterWorkspaceNameToConfirmDeletion,
       dangerous: true,
       action: async () => {
         await accountClient.deleteWorkspace()
@@ -421,6 +429,7 @@
                   slot="footer"
                   label={settingsRes.string.DeleteWorkspace}
                   color="dangerous"
+                  disabled={oldName.trim() === ''}
                   on:click={handleDelete}
                 />
               </SettingsCard>

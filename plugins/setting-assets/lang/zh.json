@@ -127,6 +127,7 @@
     "DeleteRoleConfirmation": "您确定要删除此角色吗？拥有此角色的所有用户将失去其权限。",
     "DeleteWorkspace": "删除工作区",
     "DeleteWorkspaceConfirm": "您确定要删除此工作区吗？您和所有其他成员将失去对此工作区的访问权限。工作区中的所有信息将丢失。此操作无法撤销。您要继续吗？",
+    "EnterWorkspaceNameToConfirmDeletion": "请输入 {value} 以确认删除工作区。",
     "DeleteWorkspaceDescription": "永久删除此工作区及其中存储的所有信息。",
     "DeleteSpaceType": "删除空间类型",
     "DeleteSpaceTypeConfirm": "您确定要删除此空间类型吗？",
