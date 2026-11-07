@@ -472,6 +472,14 @@
     },
     {
       "commandKind": "global",
+      "name": "fast-validate",
+      "summary": "Validate changed projects",
+      "description": "Run the validation phase in changed projects using existing build artifacts",
+      "safeForSimultaneousRushProcesses": true,
+      "shellCommand": "./common/scripts/fast-validate.sh"
+    },
+    {
+      "commandKind": "global",
       "name": "fast-svelte-check",
       "summary": "Run svelte-check in changed projects",
       "description": "Run svelte-check only in changed projects that define it",
@@ -538,6 +546,7 @@
       "description": "Use a branch as the base for changed-project commands",
       "associatedCommands": [
         "fast-format",
+        "fast-validate",
         "fast-svelte-check"
       ]
     },
