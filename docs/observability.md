@@ -124,6 +124,16 @@ The shared base context isolates failures during completion and logging and repo
 through its diagnostic helper. This is not a blanket guarantee for every observability call: direct
 metric calls, child creation, and alternative implementations have their own behavior.
 
+### Recording audit events
+
+Use `recordAuditEvent` from `@hcengineering/server-core` after an applied domain change, or
+`withAuditEvent` to record an asynchronous action's outcome. Await publication and explicitly
+select safe attributes; never include credentials, request bodies or raw errors.
+
+Audit events use a separate Redpanda → PostgreSQL delivery path. Delivery failures do not
+change the business result; events can be lost before broker acceptance.
+See [Audit events](./audit.md) for API examples, the record schema, topic provisioning and recovery.
+
 ## Explicit metrics and dimensions
 
 Explicit metrics accept a third argument containing scalar dimensions, using `Readonly<ParamsType>`.

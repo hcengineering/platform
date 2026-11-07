@@ -36128,6 +36128,9 @@ importers:
         specifier: ^3.4.9
         version: 3.4.9
     devDependencies:
+      '@hcengineering/kafka':
+        specifier: workspace:^0.7.20
+        version: link:../../foundations/server/packages/kafka
       '@hcengineering/platform-rig':
         specifier: workspace:^0.7.21
         version: link:../../foundations/utils/packages/platform-rig

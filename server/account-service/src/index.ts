@@ -45,7 +45,7 @@ import { Analytics } from '@hcengineering/analytics'
 import { registerProviders } from '@hcengineering/auth-providers'
 import { metricsAggregate, type Branding, type BrandingMap, type MeasureContext } from '@hcengineering/core'
 import { getPlatformQueue } from '@hcengineering/kafka'
-import { type ConsumerHandle, type PlatformQueue } from '@hcengineering/server-core'
+import { startAuditPublisher, type ConsumerHandle, type PlatformQueue } from '@hcengineering/server-core'
 import platform, {
   Severity,
   Status,
@@ -62,6 +62,7 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import Router from 'koa-router'
 import os from 'os'
+import { startAuditConsumer } from './audit'
 import { startWorkspaceMemberUnreadConsumer } from './unread'
 
 const AUTH_TOKEN_COOKIE = 'account-metadata-Token'
@@ -232,13 +233,21 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   // queue is configured — deployments without one simply don't light the dot.
   let unreadQueue: PlatformQueue | undefined
   let unreadConsumer: ConsumerHandle | undefined
+  let closeAuditPublisher: (() => Promise<void>) | undefined
   if (process.env.QUEUE_CONFIG !== undefined) {
     unreadQueue = getPlatformQueue('account')
-    void accountsDb.then((res) => {
-      const [db] = res
-      unreadConsumer = startWorkspaceMemberUnreadConsumer(measureCtx, unreadQueue as PlatformQueue, db)
-    })
+    closeAuditPublisher = startAuditPublisher(measureCtx, unreadQueue, 'account')
+    void accountsDb
+      .then((res) => {
+        const [db] = res
+        startAuditConsumer(measureCtx, unreadQueue as PlatformQueue, db.audit)
+        unreadConsumer = startWorkspaceMemberUnreadConsumer(measureCtx, unreadQueue as PlatformQueue, db)
+      })
+      .catch((error) => {
+        measureCtx.error('Failed to initialize account queue consumers', { error })
+      })
   } else {
+    measureCtx.error('QUEUE_CONFIG is not set; audit delivery is unavailable')
     measureCtx.warn('QUEUE_CONFIG is not set, cross-workspace unread indicator will not be updated')
   }
 
@@ -508,16 +517,25 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   })
 
   const close = (): void => {
+    if (isClosing) return
     isClosing = true
     clearTimeout(accountMetricsTimer)
     accountMetricsTimer = undefined
-    onClose?.()
-    void unreadConsumer?.close()
-    void unreadQueue?.shutdown()
-    void accountsDb.then(([, closeAccountsDb]) => {
-      closeAccountsDb()
+    server.close(() => {
+      void (async () => {
+        try {
+          await closeAuditPublisher?.()
+          await unreadConsumer?.close()
+          await unreadQueue?.shutdown()
+          const [, closeAccountsDb] = await accountsDb
+          closeAccountsDb()
+        } finally {
+          onClose?.()
+        }
+      })().catch((error) => {
+        measureCtx.error('Account shutdown failed', { error })
+      })
     })
-    server.close()
   }
 
   process.on('uncaughtException', (e) => {

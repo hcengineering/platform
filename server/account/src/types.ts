@@ -36,6 +36,7 @@ import {
   type WorkspaceInfo,
   type IntegrationKind
 } from '@hcengineering/core'
+import type { AuditRecord } from '@hcengineering/server-core'
 import type { EndpointInfo } from './utils'
 
 /* ========= D A T A B A S E  E N T I T I E S ========= */
@@ -328,7 +329,13 @@ export type WorkspaceStatusData = Omit<WorkspaceStatus, 'workspaceUuid'>
 export type WorkspaceInviteData = Omit<WorkspaceInvite, 'id'>
 
 /* ========= D A T A B A S E  C O L L E C T I O N S ========= */
+/** Append-only audit storage, independent of account/workspace lifecycle. */
+export interface AuditEventStore {
+  insert: (record: AuditRecord) => Promise<void>
+}
+
 export interface AccountDB {
+  audit: AuditEventStore
   person: DbCollection<Person>
   account: DbCollection<Account>
   socialId: DbCollection<SocialId>

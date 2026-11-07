@@ -67,7 +67,8 @@ export function getMigrations (ns: string): [string, string][] {
     getV31Migration(ns),
     getV32Migration(ns),
     getV33Migration(ns),
-    getV34Migration(ns)
+    getV34Migration(ns),
+    getV35Migration(ns)
   ]
 }
 
@@ -855,6 +856,34 @@ function getV34Migration (ns: string): [string, string] {
     CREATE INDEX IF NOT EXISTS active_share_invite_idx
       ON ${ns}.invite (workspace_uuid, created_on DESC)
       WHERE is_share_link = TRUE AND revoked_on IS NULL;
+    `
+  ]
+}
+
+function getV35Migration (ns: string): [string, string] {
+  return [
+    'account_db_v35_audit_events',
+    `
+    CREATE TABLE IF NOT EXISTS ${ns}.audit_events (
+      event_id UUID PRIMARY KEY,
+      schema_version INTEGER NOT NULL,
+      occurred_at BIGINT NOT NULL,
+      recorded_at BIGINT NOT NULL DEFAULT current_epoch_ms(),
+      source_service TEXT NOT NULL,
+      event TEXT NOT NULL,
+      outcome TEXT NOT NULL CHECK (outcome IN ('succeeded', 'denied', 'failed')),
+      actor_account_uuid TEXT,
+      actor_service TEXT,
+      workspace_uuid TEXT,
+      target_type TEXT,
+      target_id TEXT,
+      operation_id TEXT,
+      attributes JSONB NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS audit_events_time_idx ON ${ns}.audit_events (occurred_at DESC, event_id DESC);
+    CREATE INDEX IF NOT EXISTS audit_events_workspace_time_idx ON ${ns}.audit_events (workspace_uuid, occurred_at DESC, event_id DESC);
+    CREATE INDEX IF NOT EXISTS audit_events_actor_time_idx ON ${ns}.audit_events (actor_account_uuid, occurred_at DESC, event_id DESC);
+    CREATE INDEX IF NOT EXISTS audit_events_event_time_idx ON ${ns}.audit_events (event, occurred_at DESC, event_id DESC);
     `
   ]
 }

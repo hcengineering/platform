@@ -53,6 +53,7 @@ import {
 } from '@hcengineering/postgres'
 import { doBackupWorkspace, doRestoreWorkspace } from '@hcengineering/server-backup'
 import {
+  withAuditEvent,
   workspaceEvents,
   type PipelineFactory,
   type PlatformQueueProducer,
@@ -71,6 +72,7 @@ import {
   setAdapterSecurity
 } from '@hcengineering/server-pipeline'
 import { buildStorageFromConfig, storageConfigFromEnv } from '@hcengineering/server-storage'
+import { runWorkspaceHandshake } from './lifecycle'
 import { createWorkspace, upgradeWorkspace } from './ws-operations'
 
 export interface WorkspaceOptions {
@@ -134,7 +136,12 @@ export class WorkspaceWorker {
   wakeup: () => void = () => {}
   defaultWakeup: () => void = () => {}
 
-  async start (ctx: MeasureContext, opt: WorkspaceOptions, isCanceled: () => boolean): Promise<void> {
+  async start (
+    ctx: MeasureContext,
+    opt: WorkspaceOptions,
+    isCanceled: () => boolean,
+    signal: AbortSignal = new AbortController().signal
+  ): Promise<void> {
     this.defaultWakeup = () => {
       ctx.info("I'm busy", { version: this.version, region: this.region })
     }
@@ -145,18 +152,15 @@ export class WorkspaceWorker {
     ctx.info('Sending a handshake to the account service...')
     const accountClient = getAccountClient(this.accountsUrl, token)
 
-    while (true) {
-      try {
-        await withRetryConnUntilSuccess(accountClient.workerHandshake.bind(accountClient))(
-          this.region,
-          this.version,
-          this.operation
-        )
-        break
-      } catch (err: any) {
-        ctx.error('error during handshake', { err })
-      }
-    }
+    if (isCanceled()) return
+    const connected = await runWorkspaceHandshake(
+      ctx,
+      async () => {
+        await accountClient.workerHandshake(this.region, this.version, this.operation, signal)
+      },
+      signal
+    )
+    if (!connected || isCanceled()) return
 
     ctx.info('Successfully connected to the account service')
 
@@ -172,6 +176,7 @@ export class WorkspaceWorker {
 
     while (!isCanceled()) {
       await this.waitForAvailableThread()
+      if (isCanceled()) break
 
       const workspace = await ctx.with('get-pending-workspace', {}, async (ctx) => {
         try {
@@ -180,6 +185,7 @@ export class WorkspaceWorker {
           ctx.error('Error getting pending workspace:', { origErr: err })
         }
       })
+      if (isCanceled()) break
       if (workspace == null) {
         // no workspaces available, sleep before another attempt
         await this.doSleep(ctx, opt)
@@ -197,6 +203,10 @@ export class WorkspaceWorker {
         // sleep for a little bit to avoid bombarding the account service, also add jitter to avoid simultaneous requests from multiple workspace services
         await new Promise((resolve) => setTimeout(resolve, Math.random() * 400 + 200))
       }
+    }
+    // Finish in-flight operations before the service drains its audit publisher.
+    while (this.runningTasks > 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 50))
     }
   }
 
@@ -411,7 +421,19 @@ export class WorkspaceWorker {
   async doCleanup (ctx: MeasureContext, workspace: WorkspaceInfoWithStatus, cleanIndexes: boolean): Promise<void> {
     const { dbUrl } = prepareTools([])
     const adapter = getWorkspaceDestroyAdapter(dbUrl)
-    await adapter.deleteWorkspace(ctx, workspace.uuid, workspace.dataId)
+    await withAuditEvent(
+      ctx,
+      {
+        event: 'workspace.data.cleanup',
+        actorAccountUuid: systemAccountUuid,
+        actorService: 'workspace',
+        workspaceUuid: workspace.uuid,
+        mode: workspace.mode
+      },
+      async () => {
+        await adapter.deleteWorkspace(ctx, workspace.uuid, workspace.dataId)
+      }
+    )
 
     await this.workspaceQueue.send(ctx, workspace.uuid, [workspaceEvents.clearIndex()])
   }

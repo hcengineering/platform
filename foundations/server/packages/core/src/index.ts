@@ -1,6 +1,7 @@
 //
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 // Copyright © 2021 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -16,6 +17,8 @@
 
 export type { StorageAdapter } from '@hcengineering/storage'
 export type * from './adapter'
+export { recordAuditEvent, withAuditEvent, hashAuditValue, setAuditEventWriter, startAuditPublisher } from './audit'
+export type { AuditEvent, AuditRecord, AuditEventWriter, AuditAttributeValue } from './audit'
 export * from './base'
 export * from './benchmark'
 export type * from './configuration'

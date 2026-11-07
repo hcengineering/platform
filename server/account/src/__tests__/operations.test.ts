@@ -1564,10 +1564,12 @@ describe('account operations', () => {
   })
 
   describe('authentication operations', () => {
-    const mockCtx = {
+    const contextMethods: Pick<MeasureContext, 'error' | 'info' | 'warn'> = {
       error: jest.fn(),
-      info: jest.fn()
-    } as unknown as MeasureContext
+      info: jest.fn(),
+      warn: jest.fn()
+    }
+    const mockCtx = contextMethods as MeasureContext
 
     const mockBranding = null
     const mockToken = 'test-token'

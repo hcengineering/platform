@@ -17,6 +17,7 @@ import { AccountRole, docGuestAccountUuid, readOnlyGuestAccountUuid, systemAccou
 import platform, { Severity, Status } from '@hcengineering/platform'
 import { decodeTokenVerbose } from '@hcengineering/server-token'
 
+import { auditAccountEvent } from './audit'
 import type { AccountDB, AccountMethodHandler } from './types'
 
 export type GuestAccessPolicy =
@@ -73,6 +74,12 @@ export function guardGuestMethod (
 
   return async (ctx, db, branding, request, token, params, meta) => {
     if (token == null || token === '') {
+      await auditAccountEvent(ctx, {
+        event: 'account.rpc',
+        method: request.method,
+        outcome: 'denied',
+        errorCode: platform.status.Unauthorized
+      })
       return { id: request.id, error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
     }
 
@@ -82,6 +89,12 @@ export function guardGuestMethod (
       decoded = decodeTokenVerbose(ctx, token)
       guestRole = await getGuestRole(db, decoded)
     } catch (error) {
+      await auditAccountEvent(ctx, {
+        event: 'account.rpc',
+        method: request.method,
+        outcome: 'denied',
+        errorCode: platform.status.Unauthorized
+      })
       ctx.error('Failed to determine guest access', { error })
       return { id: request.id, error: new Status(Severity.ERROR, platform.status.Unauthorized, {}) }
     }
@@ -98,6 +111,16 @@ export function guardGuestMethod (
       (guestRole === AccountRole.ReadOnlyGuest && policy === 'joinWorkspace' && !isSharedAnonymous(decoded))
 
     if (!allowed) {
+      await auditAccountEvent(
+        ctx,
+        {
+          event: 'account.rpc',
+          method: request.method,
+          outcome: 'denied',
+          errorCode: platform.status.Forbidden
+        },
+        token
+      )
       ctx.warn('Guest access to account method denied', {
         method: request.method,
         policy,

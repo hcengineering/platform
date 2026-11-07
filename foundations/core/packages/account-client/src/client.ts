@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2024 Hardcore Engineering Inc.
 // Copyright © 2026 TraceX
 // Copyright © 2026 TraceX SAS.
@@ -185,7 +186,13 @@ export interface AccountClient {
   listAccounts: (search?: string, skip?: number, limit?: number) => Promise<AccountAggregatedInfo[]>
   deleteAccount: (uuid: AccountUuid) => Promise<void>
 
-  workerHandshake: (region: string, version: Data<Version>, operation: WorkspaceOperation) => Promise<void>
+  /** An optional signal cancels a single handshake attempt; the caller owns retries. */
+  workerHandshake: (
+    region: string,
+    version: Data<Version>,
+    operation: WorkspaceOperation,
+    signal?: AbortSignal
+  ) => Promise<void>
   getPendingWorkspace: (
     region: string,
     version: Data<Version>,
@@ -333,11 +340,12 @@ class AccountClientImpl implements AccountClient {
     })()
   }
 
-  private async _rpc<T>(request: Request): Promise<T> {
+  private async _rpc<T>(request: Request, signal?: AbortSignal): Promise<T> {
     const timezone = getClientTimezone()
     const meta: Record<string, string> = timezone !== undefined ? { 'x-timezone': timezone } : {}
     const response = await fetch(this.url, {
       ...this.request,
+      ...(signal !== undefined ? { signal } : {}),
       headers: {
         ...this.request.headers,
         'Content-Type': 'application/json',
@@ -787,13 +795,19 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async workerHandshake (region: string, version: Data<Version>, operation: WorkspaceOperation): Promise<void> {
+  async workerHandshake (
+    region: string,
+    version: Data<Version>,
+    operation: WorkspaceOperation,
+    signal?: AbortSignal
+  ): Promise<void> {
     const request = {
       method: 'workerHandshake' as const,
       params: { region, version, operation }
     }
 
-    await this.rpc(request)
+    if (signal === undefined) await this.rpc(request)
+    else await this._rpc(request, signal)
   }
 
   async getPendingWorkspace (

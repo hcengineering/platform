@@ -18,6 +18,7 @@
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
+    "@hcengineering/kafka": "workspace:^0.7.20",
     "@hcengineering/platform-rig": "workspace:^0.7.21",
     "@typescript-eslint/eslint-plugin": "^8.67.0",
     "eslint-plugin-promise": "^7.3.0",

@@ -25,6 +25,7 @@ import {
   type PersonUuid
 } from '@hcengineering/core'
 
+import { PostgresAuditEventStore } from './audit-store'
 import { getMigrations } from './migrations'
 import type {
   DbCollection,
@@ -530,6 +531,7 @@ export class AccountPostgresDbCollection
 }
 
 export class PostgresAccountDB implements AccountDB {
+  readonly audit: PostgresAuditEventStore
   private readonly retryOptions = {
     maxAttempts: 5,
     initialDelayMs: 100,
@@ -560,6 +562,7 @@ export class PostgresAccountDB implements AccountDB {
     readonly client: Sql,
     readonly ns: string = 'global_account'
   ) {
+    this.audit = new PostgresAuditEventStore(client, ns)
     const withRetryClient = this.withRetry
     this.person = new PostgresDbCollection<Person, 'uuid'>('person', client, { ns, idKey: 'uuid', withRetryClient })
     this.account = new AccountPostgresDbCollection(client, ns, withRetryClient)
