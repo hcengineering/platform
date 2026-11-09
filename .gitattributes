@@ -12,3 +12,7 @@ yarn.lock                    merge=binary
 # For more information, see this issue: https://github.com/microsoft/rushstack/issues/1088
 #
 *.json                       linguist-language=JSON-with-Comments
+
+# Shell scripts are run by bash (Git Bash on Windows, see common/scripts/bash.js),
+# which fails on CRLF line endings, so keep them LF regardless of core.autocrlf.
+*.sh                         text eol=lf

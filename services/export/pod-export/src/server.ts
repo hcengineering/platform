@@ -67,7 +67,7 @@ import archiver from 'archiver'
 import { sendExportCompletionNotification } from './notifications'
 import cors from 'cors'
 import express, { type Express, type NextFunction, type Request, type Response } from 'express'
-import { createWriteStream } from 'fs'
+import { createReadStream, createWriteStream } from 'fs'
 import fs from 'fs/promises'
 import { IncomingHttpHeaders, type Server } from 'http'
 import { tmpdir } from 'os'
@@ -78,6 +78,7 @@ import envConfig from './config'
 import { ApiError } from './error'
 import { ExportFormat, WorkspaceExporter } from './exporter'
 import { CrossWorkspaceExporter, type ExportOptions, type ExportResult } from './workspace'
+import { createProductVersionHandler } from './handlers/product-version-handler'
 
 const extractCookieToken = (cookie?: string): string | null => {
   if (cookie === undefined || cookie === null) {
@@ -253,6 +254,27 @@ const wrapRequest = (fn: AsyncRequestHandler) => (req: Request, res: Response, n
   handleRequest(fn, req, res, next)
 }
 
+// Only formats actually supported by WorkspaceExporter
+const supportedExportFormats: readonly ExportFormat[] = [ExportFormat.JSON, ExportFormat.CSV]
+
+function parseExportFormat (rawFormat: unknown): ExportFormat {
+  if (typeof rawFormat !== 'string' || !supportedExportFormats.includes(rawFormat as ExportFormat)) {
+    throw new ApiError(400, `Invalid format. Supported formats: ${supportedExportFormats.join(', ')}`)
+  }
+  return rawFormat as ExportFormat
+}
+
+function toSafeFormatFileToken (format: ExportFormat): 'json' | 'csv' {
+  switch (format) {
+    case ExportFormat.JSON:
+      return 'json'
+    case ExportFormat.CSV:
+      return 'csv'
+    default:
+      throw new ApiError(400, `Invalid format. Supported formats: ${supportedExportFormats.join(', ')}`)
+  }
+}
+
 export function createServer (
   storageConfig: StorageConfiguration,
   dbUrl: string,
@@ -268,7 +290,7 @@ export function createServer (
   app.post(
     '/exportAsync',
     wrapRequest(async (req, res, wsIds, token, socialId) => {
-      const format = req.query.format as ExportFormat
+      const format = parseExportFormat(req.query.format)
 
       const {
         _class,
@@ -280,7 +302,7 @@ export function createServer (
         attributesOnly: boolean
       } = req.body
 
-      if (_class == null || format == null) {
+      if (_class == null) {
         throw new ApiError(400, 'Missing required parameters')
       }
 
@@ -342,9 +364,23 @@ export function createServer (
           await sendSuccessNotification(txOperations, account, exportDrive, archiveName)
         } catch (err: any) {
           measureCtx.error('Export failed:', err)
-          await sendFailureNotification(txOperations, account, err.message ?? 'Unknown error when exporting')
+          try {
+            // Attach the failure notification to the export drive, otherwise
+            // the user is never notified that the export has failed
+            const exportDrive = await ensureExportDrive(txOperations, account)
+            await sendFailureNotification(
+              txOperations,
+              account,
+              err.message ?? 'Unknown error when exporting',
+              drive.class.Drive,
+              exportDrive,
+              core.space.Space
+            )
+          } catch (notifyErr: any) {
+            measureCtx.error('Failed to send export failure notification:', notifyErr)
+          }
         } finally {
-          await fs.rmdir(exportDir, { recursive: true })
+          await fs.rm(exportDir, { recursive: true, force: true })
         }
       })()
     })
@@ -353,7 +389,7 @@ export function createServer (
   app.post(
     '/exportSync',
     wrapRequest(async (req, res, wsIds, token, socialId) => {
-      const format = req.query.format as ExportFormat
+      const format = parseExportFormat(req.query.format)
       const {
         _class,
         query,
@@ -366,7 +402,7 @@ export function createServer (
         config?: TransformConfig
       } = req.body
 
-      if (_class == null || format == null) {
+      if (_class == null) {
         throw new ApiError(400, 'Missing required parameters')
       }
 
@@ -374,6 +410,7 @@ export function createServer (
       const txOperations = new TxOperations(platformClient, socialId)
 
       const exportDir = await fs.mkdtemp(join(tmpdir(), 'export-'))
+      let archiveDir: string | undefined
       try {
         const exporter = new WorkspaceExporter(measureCtx, txOperations, storageAdapter, wsIds, config)
         await exporter.export(_class, exportDir, { format, attributesOnly: attributesOnly ?? false, query })
@@ -383,17 +420,36 @@ export function createServer (
           throw new ApiError(400, 'No data to export')
         }
 
-        if (files.length !== 1) {
-          throw new ApiError(400, 'Unexpected number of files exported')
+        let exportedFile: string
+        if (files.length === 1) {
+          // Single space exported: return its file directly.
+          exportedFile = join(exportDir, files[0])
+        } else {
+          // Pack all spaces into a single archive so the sync endpoint can still return exactly one downloadable file.
+          archiveDir = await fs.mkdtemp(join(tmpdir(), 'export-archive-'))
+          const safeFormatToken = toSafeFormatFileToken(format)
+          const archiveName = `export-${wsIds.uuid}-${safeFormatToken}-${Date.now()}.zip`
+          exportedFile = join(archiveDir, archiveName)
+          await saveToArchive(exportDir, exportedFile)
         }
 
-        const exportedFile = join(exportDir, files[0])
-        res.download(exportedFile, basename(exportedFile), () => {})
+        await new Promise<void>((resolve, reject) => {
+          res.download(exportedFile, basename(exportedFile), (err) => {
+            if (err != null && !res.headersSent) {
+              reject(err)
+            } else {
+              resolve()
+            }
+          })
+        })
       } catch (err: any) {
         measureCtx.error('Export failed:', err)
         throw err
       } finally {
-        void fs.rmdir(exportDir, { recursive: true })
+        void fs.rm(exportDir, { recursive: true, force: true })
+        if (archiveDir !== undefined) {
+          void fs.rm(archiveDir, { recursive: true, force: true })
+        }
       }
     })
   )
@@ -413,7 +469,8 @@ export function createServer (
           relations: rawRelations,
           fieldMappers,
           skipDeletedObsolete,
-          exportOnlyEffective
+          exportOnlyEffective,
+          includeChildren
         }: {
           targetWorkspace: WorkspaceUuid
           _class: Ref<Class<Doc>>
@@ -426,6 +483,7 @@ export function createServer (
           fieldMappers?: Record<string, Record<string, any>>
           skipDeletedObsolete?: boolean
           exportOnlyEffective?: boolean
+          includeChildren?: boolean
         } = req.body
 
         // Validate required parameters
@@ -541,7 +599,9 @@ export function createServer (
             relations,
             fieldMappers,
             skipDeletedObsolete: skipDeletedObsolete ?? true,
-            exportOnlyEffective: exportOnlyEffective ?? false
+            exportOnlyEffective: exportOnlyEffective ?? false,
+            includeChildren: includeChildren ?? false,
+            customHandlers: [createProductVersionHandler()]
           }
 
           const exportResult: ExportResult = await exporter.export(options)
@@ -650,14 +710,16 @@ async function saveToDrive (
 ): Promise<Ref<Drive>> {
   const exportDrive = await ensureExportDrive(client, account)
 
-  const fileContent = await fs.readFile(archivePath)
+  // Stream the archive instead of reading it into memory:
+  // fs.readFile fails with ERR_FS_FILE_TOO_LARGE for archives larger than 2 GiB
+  const { size } = await fs.stat(archivePath)
   const blobId = uuid() as Ref<Blob>
-  await storage.put(ctx, wsIds, blobId, fileContent, 'application/zip', fileContent.length)
+  await storage.put(ctx, wsIds, blobId, createReadStream(archivePath), 'application/zip', size)
 
   await createFile(client, exportDrive, drive.ids.Root, {
     title: basename(archivePath),
     file: blobId,
-    size: fileContent.length,
+    size,
     type: 'application/zip',
     lastModified: Date.now()
   })

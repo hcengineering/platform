@@ -40,6 +40,7 @@
     "Expert": "Odborník",
     "Meaningfull": "Smysluplné",
     "Initial": "Počáteční",
-    "NumberLabels": "{count, plural, =0 {žádné štítky} =1 {1 štítek} other {# štítků}}"
+    "NumberLabels": "{count, plural, =0 {žádné štítky} =1 {1 štítek} other {# štítků}}",
+    "UsageCount": "Počet použití"
   }
 }

@@ -46,6 +46,10 @@ export class UnifiedConverter {
   // Fields that should not be resolved
   private readonly skipResolveFields = new Set(['_class', '_id', 'collection', 'attachedTo', 'attachedToClass'])
 
+  // Deduplication sets to avoid flooding logs with repeated warnings
+  private readonly reportedMissingRefs = new Set<string>()
+  private readonly reportedMissingBlobs = new Set<string>()
+
   constructor (
     private readonly context: MeasureContext,
     private readonly client: Client,
@@ -264,12 +268,21 @@ export class UnifiedConverter {
   private async resolveReference (ref: Ref<Doc>, to: Ref<Class<Doc>>): Promise<string> {
     if (!isId(ref)) return ref
 
+    // References to abstract classes (e.g. core:class:Doc) cannot be resolved
+    // via findAll since they have no associated domain, keep the raw identifier
+    if (this.client.getHierarchy().findDomain(to) === undefined) {
+      return ref
+    }
+
     try {
       const { byId } = await this.getCache(to)
 
       const doc = byId.get(ref)
       if (doc === undefined) {
-        this.context.warn(`Referenced document not found: ${ref}`)
+        if (!this.reportedMissingRefs.has(ref)) {
+          this.reportedMissingRefs.add(ref)
+          this.context.warn(`Referenced document not found: ${ref}`)
+        }
         return ref
       }
 
@@ -290,7 +303,15 @@ export class UnifiedConverter {
       p = await p
     }
     if (p === undefined) {
-      p = this.loadCache(to)
+      p = this.loadCache(to).catch((err) => {
+        // Cache an empty result on failure, otherwise every reference
+        // to this class retries the query and floods logs with errors
+        this.context.error(`Failed to load document cache for ${to}`, {
+          error: err instanceof Error ? err.message : String(err)
+        })
+        const empty: DocCache = { byId: new Map(), byAttached: new Map() }
+        return empty
+      })
       this.documentCache.set(to, p)
       p = await p
       this.documentCache.set(to, p)
@@ -324,6 +345,17 @@ export class UnifiedConverter {
 
   private async resolveMarkdown (blobRef: MarkupBlobRef): Promise<string> {
     try {
+      // Check blob existence first: storage adapters throw on missing blobs,
+      // and a missing description blob should not be treated as an export error
+      const stat = await this.storage.stat(this.context, this.wsIds, blobRef)
+      if (stat === undefined) {
+        if (!this.reportedMissingBlobs.has(blobRef)) {
+          this.reportedMissingBlobs.add(blobRef)
+          this.context.warn(`Blob not found: ${blobRef}`)
+        }
+        return ''
+      }
+
       const buffer = await this.storage.read(this.context, this.wsIds, blobRef)
       if (buffer === undefined) {
         this.context.warn(`Blob not found: ${blobRef}`)
@@ -334,10 +366,19 @@ export class UnifiedConverter {
       // const markdown = await markupToMarkdown(markup, '', '')
       return markup // todo: test it is a markdown
     } catch (err) {
-      this.context.error(`Failed to resolve markup content: ${blobRef}`, {
-        error: err instanceof Error ? err.message : String(err),
-        blobRef
-      })
+      const message = err instanceof Error ? err.message : String(err)
+      // Missing blob content is a data consistency issue, not an export failure
+      if (message.includes('missing')) {
+        if (!this.reportedMissingBlobs.has(blobRef)) {
+          this.reportedMissingBlobs.add(blobRef)
+          this.context.warn(`Blob content not found: ${blobRef}`)
+        }
+      } else {
+        this.context.error(`Failed to resolve markup content: ${blobRef}`, {
+          error: message,
+          blobRef
+        })
+      }
       return ''
     }
   }
@@ -371,14 +412,21 @@ export class UnifiedConverter {
         size: att.size,
         contentType: att.type,
         getData: async () => {
-          const buffer = await this.storage.read(this.context, this.wsIds, att.file)
+          try {
+            const buffer = await this.storage.read(this.context, this.wsIds, att.file)
 
-          if (buffer === undefined) {
-            this.context.warn(`Attachment not found: ${att._id}`)
+            if (buffer === undefined) {
+              this.context.warn(`Attachment not found: ${att._id}`)
+              return Buffer.from([])
+            }
+
+            return Buffer.concat(buffer as any)
+          } catch (err) {
+            this.context.warn(`Failed to read attachment: ${att._id}`, {
+              error: err instanceof Error ? err.message : String(err)
+            })
             return Buffer.from([])
           }
-
-          return Buffer.concat(buffer as any)
         }
       })
     )

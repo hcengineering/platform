@@ -190,6 +190,19 @@ export function defineFunctions (builder: Builder): void {
     core.space.Model,
     {
       of: core.class.ArrOf,
+      category: 'array',
+      label: process.string.AllMatchValue,
+      type: 'reduce',
+      editor: process.transformEditor.FilterEditor
+    },
+    process.function.AllMatchValue
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.ArrOf,
       category: undefined,
       label: process.string.FirstMatchValue,
       type: 'reduce',
@@ -598,6 +611,19 @@ export function defineFunctions (builder: Builder): void {
       type: 'convert'
     },
     process.function.StringFromNumber
+  )
+
+  builder.createDoc(
+    process.class.ProcessFunction,
+    core.space.Model,
+    {
+      of: core.class.TypeIdentifier,
+      to: core.class.TypeString,
+      category: 'attribute',
+      label: process.string.TextFromIdentifier,
+      type: 'convert'
+    },
+    process.function.StringFromIdentifier
   )
 
   builder.createDoc(

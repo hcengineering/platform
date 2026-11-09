@@ -30,12 +30,15 @@
     twoPanelsSeparators
   } from '@hcengineering/ui'
   import presentation from '@hcengineering/presentation'
+  import { getCurrentAccount } from '@hcengineering/core'
   import { onDestroy } from 'svelte'
 
   // import ResourceUsage from './ResourceUsage.svelte'
+  import StorageUsage from './StorageUsage.svelte'
   import Subscriptions from './Subscriptions.svelte'
 
   import plugin from '../plugin'
+  import { canManageStorage } from '../utils'
 
   interface SettingGroup {
     key: string
@@ -50,6 +53,12 @@
       icon: plugin.icon.Subscriptions,
       label: plugin.string.Subscriptions,
       component: Subscriptions
+    },
+    {
+      key: 'storage',
+      icon: plugin.icon.Billing,
+      label: plugin.string.StorageUsageTab,
+      component: StorageUsage
     }
     // {
     //   key: 'usage',
@@ -59,10 +68,17 @@
     // }
   ]
 
-  // Only include subscriptions group if payment URL is configured
+  // Only include subscriptions group if payment URL is configured.
+  // Storage usage is available regardless of payment configuration but
+  // requires Maintainer-or-higher account role.
   const paymentUrl = getMetadata(presentation.metadata.PaymentUrl)
-  const groups =
-    paymentUrl != null && paymentUrl !== '' ? baseGroups : baseGroups.filter((g) => g.key !== 'subscriptions')
+  const showSubscriptions = paymentUrl != null && paymentUrl !== ''
+  const showStorage = canManageStorage(getCurrentAccount())
+  const groups = baseGroups.filter((g) => {
+    if (g.key === 'subscriptions') return showSubscriptions
+    if (g.key === 'storage') return showStorage
+    return true
+  })
 
   let currentGroupKey = groups[0]?.key
   let currentGroup = groups[0]

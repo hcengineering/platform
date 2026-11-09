@@ -39,7 +39,7 @@
     "IsThinking": "{count, plural, =1 {está pensando} other {estão pensando}}",
     "Loading": "Carregando...",
     "MessageIn": "Mensagem #{title}",
-    "ThreadWasDeleted": "Este thread foi excluído.",
+    "ThreadWasRemoved": "Este thread foi excluído.",
     "MessageWasRemoved": "Este mensagem foi removida.",
     "JoinedThe": "Juntou-se ao",
     "LeftThe": "Deixou o",

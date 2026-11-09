@@ -82,6 +82,8 @@
     "SectionUnlocked": "Seção {section} desbloqueada",
     "LayoutAuto": "Automático",
     "SingleColumn": "Uma coluna",
+    "BaseType": "Tipo base",
+    "BaseTypeDescription": "Use este tipo apenas como pai. Os cartões só podem ser criados a partir de seus subtipos.",
     "TwoColumns": "Duas colunas",
     "Grid": "Grade",
     "RichtextProperties": "Campos de texto",

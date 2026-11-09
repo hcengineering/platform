@@ -54,7 +54,12 @@
   let keys = Object.keys(params)
 
   $: allAttrs = getKeys(process.masterTag)
-  $: possibleAttrs = allAttrs.filter((attr) => !keys.includes(attr.name))
+  $: slots = Object.entries(process.requiredSlots ?? {}).map(([id, s]) => ({
+    name: id,
+    label: (s as any).label,
+    isSlot: true
+  }))
+  $: possibleAttrs = [...allAttrs, ...slots].filter((attr) => !keys.includes(attr.name))
 
   function addKey (key: string): void {
     keys = [...keys, key]

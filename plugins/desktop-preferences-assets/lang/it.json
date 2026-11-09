@@ -1,0 +1,11 @@
+{
+  "string": {
+    "ShowNotifications": "Mostra notifiche",
+    "PlaySound": "Riproduci suono",
+    "BounceAppIcon": "Fai rimbalzare l'icona dell'app (solo Mac)",
+    "ShowBadge": "Mostra un badge sull'icona dell'app",
+    "SoundAndAppearance": "Suono e aspetto",
+    "HaveGotANotification": "Hai ricevuto una notifica",
+    "TotalNotificationsCount": "Hai {count, plural, =1 {# notifica} other {# notifiche}} in totale"
+  }
+}

@@ -387,6 +387,16 @@ export function createModel (builder: Builder): void {
           label: recruit.string.Applications
         },
         'comments',
+        {
+          key: '',
+          presenter: tags.component.TagsPresenter,
+          label: task.string.TaskLabels,
+          sortingKey: 'labels',
+          props: {
+            _class: recruit.class.Vacancy,
+            key: 'labels'
+          }
+        },
         '$lookup.company',
         '$lookup.company.$lookup.channels',
         {

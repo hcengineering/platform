@@ -26,7 +26,8 @@ export async function exportToWorkspace (
   targetWorkspace: string | undefined,
   relations?: RelationDefinition[] | undefined,
   skipDeletedObsolete?: boolean,
-  exportOnlyEffective?: boolean
+  exportOnlyEffective?: boolean,
+  includeChildren?: boolean
 ): Promise<void> {
   const lang = getCurrentLanguage()
 
@@ -73,7 +74,8 @@ export async function exportToWorkspace (
       _class,
       fieldMappers,
       skipDeletedObsolete,
-      exportOnlyEffective
+      exportOnlyEffective,
+      includeChildren
     }
     if (relations != null) {
       body.relations = relations

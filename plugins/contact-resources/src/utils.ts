@@ -53,6 +53,7 @@ import {
   type SocialIdentity
 } from '@hcengineering/contact'
 import core, {
+  AccountRole,
   type AccountUuid,
   type AggregateValue,
   type Class,
@@ -60,6 +61,7 @@ import core, {
   type Doc,
   type DocumentQuery,
   getCurrentAccount,
+  hasAccountRole,
   type Hierarchy,
   type IdMap,
   notEmpty,
@@ -108,6 +110,18 @@ export function formatDate (dueDateMs: Timestamp): string {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+export function canEditPersonContactDetails (person: Person): boolean {
+  const currentEmployee = getCurrentEmployee()
+  if (currentEmployee === person._id) return true
+
+  const account = getCurrentAccount()
+  if (person.personUuid === account.uuid) return true
+
+  if (!getClient().getHierarchy().hasMixin(person, contact.mixin.Employee)) return true
+
+  return hasAccountRole(account, AccountRole.Maintainer)
 }
 
 export async function employeeSort (client: TxOperations, value: Array<Ref<Employee>>): Promise<Array<Ref<Employee>>> {
@@ -363,6 +377,39 @@ export const myEmployeeStore = derived(
     return currentEmployeeRef !== undefined ? employeeById.get(currentEmployeeRef) : undefined
   }
 )
+
+function detectBrowserTimezone (): string | undefined {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    return tz !== '' ? tz : undefined
+  } catch {
+    return undefined
+  }
+}
+
+let timezoneSyncInFlight = false
+
+async function syncMyEmployeeTimezone (employee: WithLookup<Employee> | undefined): Promise<void> {
+  if (timezoneSyncInFlight || employee === undefined) return
+  const browserTz = detectBrowserTimezone()
+  if (browserTz === undefined || employee.timezone === browserTz) return
+
+  timezoneSyncInFlight = true
+  try {
+    const client = getClient()
+    await client.updateMixin(employee._id, contact.class.Person, employee.space, contact.mixin.Employee, {
+      timezone: browserTz
+    })
+  } catch (err) {
+    console.error('Failed to sync employee timezone', err)
+  } finally {
+    timezoneSyncInFlight = false
+  }
+}
+
+myEmployeeStore.subscribe((employee) => {
+  void syncMyEmployeeTimezone(employee)
+})
 
 /**
  * [Ref<Employee> => PersonId (primary)] mapping

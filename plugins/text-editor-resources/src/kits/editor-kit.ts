@@ -24,7 +24,9 @@ import {
   extensionKit,
   mergeKitOptions,
   TextColorStylingKit,
+  Heading,
   Highlight,
+  Paragraph,
   Subscript,
   Superscript
 } from '@hcengineering/text'
@@ -61,6 +63,7 @@ import { ImageUploadExtension } from '../components/extension/shortcuts/imageUpl
 import { IndentExtension, indentExtensionOptions } from '../components/extension/shortcuts/indent'
 import { LinkKeymapExtension } from '../components/extension/shortcuts/linkKeymap'
 import { ParagraphKeymapExtension } from '../components/extension/shortcuts/paragraphKeymap'
+import { SelectAllExtension } from '../components/extension/shortcuts/selectAll'
 import { SmartPasteExtension } from '../components/extension/shortcuts/smartPaste'
 import { TableMetadataPasteExtension } from '../components/extension/shortcuts/tablePaste'
 import { HandleSubmitExtension } from '../components/extension/shortcuts/handleSubmit'
@@ -88,6 +91,11 @@ const StaticEditorKit = extensionKit(
   (e, context: EditorKitContext) =>
     ({
       ...CommonKitFactory(e),
+
+      // Let each text block take its direction from its first strong character,
+      // so RTL and mixed RTL/LTR text is rendered correctly (client-side only, stored content is unchanged)
+      paragraph: e(Paragraph, { HTMLAttributes: { dir: 'auto' } }),
+      heading: e(Heading, { HTMLAttributes: { dir: 'auto' } }),
 
       shortcuts: e(subKits.shortcuts, context), // needs to be loaded as early as possible to override the default behavior
 
@@ -197,6 +205,7 @@ const subKits = {
         tableMetadataPaste: e(TableMetadataPasteExtension),
         paragraphKeymap: e(ParagraphKeymapExtension, context.mode === 'compact'),
         linkKeymap: e(LinkKeymapExtension),
+        selectAll: e(SelectAllExtension),
         listKeymap: e(ListKeymapExtension, {
           listTypes: [
             { itemName: 'listItem', wrapperNames: ['bulletList', 'orderedList'] },

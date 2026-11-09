@@ -47,6 +47,7 @@
     // line-height: 1.75rem;
     vertical-align: middle;
     font-size: inherit;
+    -webkit-user-select: none;
     user-select: none;
     cursor: pointer;
 

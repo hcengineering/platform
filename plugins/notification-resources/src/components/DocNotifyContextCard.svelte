@@ -349,6 +349,7 @@
   .notification {
     position: relative;
     cursor: pointer;
+    -webkit-user-select: none;
     user-select: none;
 
     .embeddedMarker {

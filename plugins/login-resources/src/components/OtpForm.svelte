@@ -22,7 +22,7 @@
 
   import Tabs from './Tabs.svelte'
   import { loginFormMinHeight, loginFormPadding } from '../loginFormLayout'
-  import { BottomAction, doLoginNavigate, doValidateOtp, OtpLoginSteps, loginOtp } from '../index'
+  import { BottomAction, doLoginNavigate, doValidateOtp, OtpLoginSteps, loginOtp, signUpOtp } from '../index'
   import login from '../plugin'
   import BottomActionComponent from './BottomAction.svelte'
   import StatusControl from './StatusControl.svelte'
@@ -34,6 +34,8 @@
   export let loginState: 'login' | 'signup' | 'none' = 'none'
   export let canChangeEmail = true
   export let password: string | undefined = undefined
+  export let firstName = ''
+  export let lastName = ''
   export let onLogin: ((loginInfo: LoginInfo | null, status: Status) => void | Promise<void>) | undefined = undefined
 
   const dispatch = createEventDispatcher()
@@ -205,7 +207,10 @@
 
   async function resendCode (): Promise<void> {
     status = new Status(Severity.INFO, login.status.ConnectingToServer, {})
-    const [otpStatus, result] = await loginOtp(email)
+    // The account does not exist until the sign-up OTP is validated, so a resend
+    // during sign-up has to go through the sign-up OTP path, not the login one.
+    const [otpStatus, result] =
+      loginState === 'signup' ? await signUpOtp(email, firstName, lastName) : await loginOtp(email)
     status = otpStatus
 
     if (result?.sent === true && otpStatus === OK) {

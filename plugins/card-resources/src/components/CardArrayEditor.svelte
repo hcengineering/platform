@@ -24,7 +24,7 @@
   import CardsPopup from './CardsPopup.svelte'
 
   export let _class: Ref<Class<Card>> | undefined = undefined
-  export let value: Ref<Card>[] | undefined
+  export let value: Ref<Card>[] | Ref<Card> | undefined
   export let readonly: boolean = false
   export let label: IntlString | undefined
   export let onChange: ((value: any) => void) | undefined
@@ -60,11 +60,21 @@
 
     showPopup(
       CardsPopup,
-      { selectedObjects: value, _class, multiSelect: true },
+      { selectedObjects: toArray(value), _class, multiSelect: true },
       eventToHTMLElement(event),
       undefined,
       change
     )
+  }
+
+  function toArray (value: Ref<Card>[] | Ref<Card> | undefined): Ref<Card>[] {
+    if (Array.isArray(value)) {
+      return value
+    }
+    if (value === undefined) {
+      return []
+    }
+    return [value]
   }
 
   const change = (value: Ref<Card>[]): void => {
@@ -75,7 +85,7 @@
   let docs: Card[] = []
 
   const query = createQuery()
-  $: query.query(card.class.Card, { _id: { $in: value ?? [] } }, (res) => {
+  $: query.query(card.class.Card, { _id: { $in: toArray(value) } }, (res) => {
     docs = res
   })
 

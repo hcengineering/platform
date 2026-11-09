@@ -124,7 +124,8 @@
     "CreateNewSkills": "Vytvořit nové dovednosti, pokud neexistují",
     "SwapFirstAndLastNames": "Vyměňte jméno a příjmení",
     "ForbidCreateVacancyPermission": "Zakázat vytvoření pozice",
-    "ForbidCreateVacancyPermissionDescription": "Zakazuje uživatelům vytvářet nové volné pozice"
+    "ForbidCreateVacancyPermissionDescription": "Zakazuje uživatelům vytvářet nové volné pozice",
+    "NumberLabels": "{count, plural, =0 {žádné štítky} =1 {1 štítek} other {# štítků}}"
   },
   "status": {
     "ApplicationExists": "Přihláška již existuje",

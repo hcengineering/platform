@@ -45,6 +45,7 @@
     font-weight: 400;
     font-size: 2rem;
     color: var(--theme-caption-color);
+    -webkit-user-select: none;
     user-select: none;
   }
 </style>

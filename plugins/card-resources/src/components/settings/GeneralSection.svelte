@@ -26,10 +26,13 @@
     getCurrentLocation,
     getPlatformColorDef,
     IconDelete,
+    IconInfo,
+    Label,
     ModernEditbox,
     navigate,
     showPopup,
     themeStore,
+    Toggle,
     ToggleWithLabel
   } from '@hcengineering/ui'
   import view from '@hcengineering/view'
@@ -37,6 +40,8 @@
   import { exportModule } from '../../exporter'
   import card from '../../plugin'
   import { deleteMasterTag } from '../../utils'
+  import VersioningSetting from './VersioningSetting.svelte'
+  import DuplicateSetting from './DuplicateSetting.svelte'
 
   export let masterTag: MasterTag
 
@@ -143,8 +148,23 @@
     })
   }
 
+  function versioningSetting (): void {
+    showPopup(VersioningSetting, {
+      masterTag: masterTag._id
+    })
+  }
+
+  function duplicateSetting (): void {
+    showPopup(DuplicateSetting, {
+      masterTag: masterTag._id
+    })
+  }
+
   let versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
   $: versioningEnabled = h.classHierarchyMixin(masterTag._id, core.mixin.VersionableClass)?.enabled
+  $: hasSubtypes = h
+    .getDescendants(masterTag._id)
+    .some((it) => it !== masterTag._id && !h.isMixin(it) && h.getClass(it).extends === masterTag._id)
 </script>
 
 <div class="hulyComponent-content__column-group">
@@ -191,20 +211,41 @@
     {/if}
   </div>
   {#if !h.isMixin(masterTag._id)}
-    <div class="mx-2">
-      <ToggleWithLabel
-        label={card.string.Versioning}
-        on={versioningEnabled}
-        disabled={versioningEnabled}
-        on:change={enableVersioning}
-      />
+    <div class="mx-2 flex-between items-center">
+      <Label label={card.string.Versioning} />
+      <div class="flex items-center gap-1">
+        {#if versioningEnabled}
+          <ButtonIcon icon={setting.icon.Setting} size="extra-small" on:click={versioningSetting} />
+        {/if}
+        <Toggle on={versioningEnabled} disabled={versioningEnabled} on:change={enableVersioning} />
+      </div>
     </div>
-    <div class="mx-2">
+    <div class="mx-2 pt-2">
       <ToggleWithLabel
         label={card.string.SingleColumn}
         on={masterTag.singleColumn}
         on:change={(e) => attributeUpdated('singleColumn', e.detail)}
       />
+    </div>
+    {#if hasSubtypes}
+      <div class="mx-2 pt-2 flex-between items-center">
+        <div class="flex items-center gap-1 caption">
+          <Label label={card.string.BaseType} />
+          <ButtonIcon
+            icon={IconInfo}
+            size="extra-small"
+            kind="tertiary"
+            tooltip={{ label: card.string.BaseTypeDescription }}
+          />
+        </div>
+        <Toggle on={masterTag.baseType} on:change={(e) => attributeUpdated('baseType', e.detail)} />
+      </div>
+    {/if}
+    <div class="mx-2 flex-between items-center">
+      <Label label={card.string.Duplicate} />
+      <div class="flex items-center gap-1">
+        <ButtonIcon icon={setting.icon.Setting} size="extra-small" on:click={duplicateSetting} />
+      </div>
     </div>
   {/if}
 </div>

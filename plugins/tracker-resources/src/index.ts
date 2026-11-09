@@ -52,11 +52,13 @@ import ProjectComponents from './components/components/ProjectComponents.svelte'
 import CreateIssue from './components/CreateIssue.svelte'
 import EditRelatedTargets from './components/EditRelatedTargets.svelte'
 import EditRelatedTargetsPopup from './components/EditRelatedTargetsPopup.svelte'
+import GanttView from './components/gantt/GanttView.svelte'
 import AssigneeEditor from './components/issues/AssigneeEditor.svelte'
 import DueDatePresenter from './components/issues/DueDatePresenter.svelte'
 import EditIssue from './components/issues/edit/EditIssue.svelte'
 import IssueExtra from './components/issues/IssueExtra.svelte'
 import IssueItem from './components/issues/IssueItem.svelte'
+import MilestoneSearchItem from './components/milestones/MilestoneSearchItem.svelte'
 import IssuePresenter from './components/issues/IssuePresenter.svelte'
 import IssuePreview from './components/issues/IssuePreview.svelte'
 import Issues from './components/issues/Issues.svelte'
@@ -88,6 +90,7 @@ import ProjectFilterValuePresenter from './components/projects/ProjectFilterValu
 import RelationsPopup from './components/RelationsPopup.svelte'
 import SetDueDateActionPopup from './components/SetDueDateActionPopup.svelte'
 import SetParentIssueActionPopup from './components/SetParentIssueActionPopup.svelte'
+import LinkSubIssueActionPopup from './components/LinkSubIssueActionPopup.svelte'
 import SettingsRelatedTargets from './components/SettingsRelatedTargets.svelte'
 import CreateIssueTemplate from './components/templates/CreateIssueTemplate.svelte'
 import {
@@ -119,6 +122,10 @@ import TimeSpendReport from './components/issues/timereport/TimeSpendReport.svel
 
 import RelatedIssues from './components/issues/related/RelatedIssues.svelte'
 import RelatedIssueTemplates from './components/issues/related/RelatedIssueTemplates.svelte'
+import IssueRelationPresenter from './components/IssueRelationPresenter.svelte'
+import RelationActivityPresenter from './components/activity/RelationActivityPresenter.svelte'
+import DependencyShiftedPresenter from './components/notifications/DependencyShiftedPresenter.svelte'
+import PredecessorsColumnPresenter from './components/issues/PredecessorsColumnPresenter.svelte'
 
 import ComponentSelector from './components/components/ComponentSelector.svelte'
 
@@ -228,6 +235,30 @@ export async function queryIssue<D extends Issue> (
     title: e.identifier,
     icon: tracker.icon.TrackerApplication,
     component: IssueItem
+  }))
+}
+
+export async function queryMilestone (
+  client: Client,
+  search: string,
+  filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+): Promise<ObjectSearchResult[]> {
+  const q: DocumentQuery<Milestone> = { label: { $like: `%${search}%` } }
+  if (filter?.in !== undefined || filter?.nin !== undefined) {
+    q._id = {}
+    if (filter.in !== undefined) {
+      q._id.$in = filter.in?.map((it) => it._id as Ref<Milestone>)
+    }
+    if (filter.nin !== undefined) {
+      q._id.$nin = filter.nin?.map((it) => it._id as Ref<Milestone>)
+    }
+  }
+
+  return (await client.findAll(tracker.class.Milestone, q, { limit: 200 })).map((e) => ({
+    doc: e,
+    title: e.label,
+    icon: tracker.icon.Milestone,
+    component: MilestoneSearchItem
   }))
 }
 
@@ -431,9 +462,11 @@ export default async (): Promise<Resources> => ({
     LeadPresenter,
     SetDueDateActionPopup,
     SetParentIssueActionPopup,
+    LinkSubIssueActionPopup,
     EditComponent,
     IssuesView,
     KanbanView,
+    GanttView,
     ProjectComponents,
     IssuePreview,
     RelationsPopup,
@@ -453,6 +486,10 @@ export default async (): Promise<Resources> => ({
     SubIssuesSelector,
     RelatedIssues,
     RelatedIssueTemplates,
+    IssueRelationPresenter,
+    RelationActivityPresenter,
+    DependencyShiftedPresenter,
+    PredecessorsColumn: PredecessorsColumnPresenter,
     ComponentSelector,
     IssueTemplates,
     IssueTemplatePresenter,
@@ -490,7 +527,12 @@ export default async (): Promise<Resources> => ({
   },
   completion: {
     IssueQuery: async (client: Client, query: string, filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }) =>
-      await queryIssue(tracker.class.Issue, client, query, filter)
+      await queryIssue(tracker.class.Issue, client, query, filter),
+    MilestoneQuery: async (
+      client: Client,
+      query: string,
+      filter?: { in?: RelatedDocument[], nin?: RelatedDocument[] }
+    ) => await queryMilestone(client, query, filter)
   },
   function: {
     IssueIdentifierProvider: issueIdentifierProvider,

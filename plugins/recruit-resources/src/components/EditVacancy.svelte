@@ -134,6 +134,7 @@
           {mixins}
           {readonly}
           ignoreKeys={['name', 'fullDescription', 'private', 'archived', 'type', 'owners']}
+          allowedCollections={['labels']}
         />
       {/if}
     </svelte:fragment>

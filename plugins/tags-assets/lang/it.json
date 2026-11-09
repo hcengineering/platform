@@ -39,6 +39,7 @@
     "Expert": "Esperto",
     "Meaningfull": "Significativo",
     "Initial": "Iniziale",
-    "NumberLabels": "{count, plural, =0 {nessuna etichetta} =1 {1 etichetta} other {# etichette}}"
+    "NumberLabels": "{count, plural, =0 {nessuna etichetta} =1 {1 etichetta} other {# etichette}}",
+    "UsageCount": "Numero di utilizzi"
   }
 }

@@ -1198,3 +1198,21 @@ describe('MongoAccountDB', () => {
     })
   })
 })
+
+describe('MongoAccountDB.hasWorkspacePermission', () => {
+  function createDb (doc: unknown): MongoAccountDB {
+    const db = new MongoAccountDB({ collection: jest.fn().mockReturnValue({}) } as unknown as Db)
+    ;(db as any).workspacePermission = { findOne: jest.fn().mockResolvedValue(doc) }
+    return db
+  }
+
+  it('returns false when no permission document exists', async () => {
+    const db = createDb(null)
+    expect(await db.hasWorkspacePermission('acc' as AccountUuid, 'ws' as WorkspaceUuid, 'perm')).toBe(false)
+  })
+
+  it('returns true when a permission document exists', async () => {
+    const db = createDb({ workspaceUuid: 'ws', accountUuid: 'acc', permission: 'perm' })
+    expect(await db.hasWorkspacePermission('acc' as AccountUuid, 'ws' as WorkspaceUuid, 'perm')).toBe(true)
+  })
+})

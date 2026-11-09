@@ -454,7 +454,12 @@ export async function configurePlatform() {
     for (const link of links) {
       const htmlLink = document.createElement('link')
       htmlLink.rel = link.rel
-      htmlLink.href = link.href
+      if (link.rel.split(/\s+/).includes('icon') && document.getElementById('workspace-favicon') !== null) {
+        // Preserve the startup icon until workspace settings are available.
+        htmlLink.dataset.defaultHref = link.href
+      } else {
+        htmlLink.href = link.href
+      }
 
       if (link.type !== undefined) {
         htmlLink.type = link.type
@@ -545,7 +550,7 @@ export async function configurePlatform() {
 
   const languages = myBranding.languages
     ? myBranding.languages.split(',').map((l) => l.trim())
-    : ['en', 'ru', 'es', 'pt', 'pt-br', 'zh', 'fr', 'cs', 'it', 'de', 'ja', 'ko', 'tr']
+    : ['en', 'ru', 'es', 'pl', 'pt', 'pt-br', 'zh', 'fr', 'cs', 'it', 'de', 'ja', 'ko', 'tr']
 
   setMetadata(uiPlugin.metadata.Languages, languages)
 

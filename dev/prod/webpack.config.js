@@ -67,11 +67,6 @@ const devProxy = {
     changeOrigin: true,
     logLevel: 'debug'
   },
-  '/import': {
-    target: 'http://huly.local:8087',
-    changeOrigin: true,
-    logLevel: 'debug'
-  },
   '/rekoni/recognize': {
     target: 'http://huly.local:4004',
     changeOrigin: true,
@@ -93,11 +88,6 @@ const devProxyTest = {
     logLevel: 'debug'
   },
   '/api/v1': {
-    target: 'http://huly.local:8083',
-    changeOrigin: true,
-    logLevel: 'debug'
-  },
-  '/import': {
     target: 'http://huly.local:8083',
     changeOrigin: true,
     logLevel: 'debug'

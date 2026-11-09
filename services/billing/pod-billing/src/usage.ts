@@ -14,6 +14,7 @@
 //
 
 import { type AccountClient, type Subscription, getClient } from '@hcengineering/account-client'
+import { getTierLimitsBytes } from '@hcengineering/billing'
 import {
   type MeasureContext,
   type UsageStatus,
@@ -93,7 +94,7 @@ export class UsageWorker {
             'update workspace usage statistics',
             {},
             async (ctx) => {
-              await this.updateWorkspaceUsageStatistics(ctx, now, workspace.uuid)
+              await this.updateWorkspaceUsageStatistics(ctx, now, workspace.uuid, workspace.usageInfo)
             },
             { workspace: workspace.uuid }
           )
@@ -104,7 +105,12 @@ export class UsageWorker {
     }
   }
 
-  async updateWorkspaceUsageStatistics (ctx: MeasureContext, now: number, workspace: WorkspaceUuid): Promise<void> {
+  async updateWorkspaceUsageStatistics (
+    ctx: MeasureContext,
+    now: number,
+    workspace: WorkspaceUuid,
+    prevUsage: UsageStatus | undefined
+  ): Promise<void> {
     const account = getAccountClient(this.config.AccountsUrl, workspace)
 
     const subscriptions = await account.getSubscriptions(workspace)
@@ -133,14 +139,28 @@ export class UsageWorker {
     const livekitTrafficBytes = liveKitUsage.sessions.reduce((acc, session) => acc + session.bandwidth, 0)
     const storageBytes = storageUsage.size
 
+    const limits = getTierLimitsBytes(subscription?.plan)
+    const exceeded = storageBytes > limits.storageBytes || livekitTrafficBytes > limits.trafficBytes
+    const limitsExceededSince = computeLimitsExceededSince(prevUsage?.limitsExceededSince, exceeded, now)
+
     const usage: UsageStatus = {
       usage: { livekitTrafficBytes, storageBytes },
       startTime: periodStart.getTime(),
-      updateTime: periodEnd.getTime()
+      updateTime: periodEnd.getTime(),
+      limitsExceededSince
     }
 
     await account.updateUsageInfo(usage)
   }
+}
+
+export function computeLimitsExceededSince (
+  prev: number | undefined,
+  exceeded: boolean,
+  now: number
+): number | undefined {
+  if (!exceeded) return undefined
+  return prev ?? now
 }
 
 function getPeriodStartDate (subscription: Subscription | undefined): Date {

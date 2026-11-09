@@ -106,6 +106,7 @@
     row-gap: 0.25rem;
     min-width: 0;
     min-height: 0;
+    -webkit-user-select: none;
     user-select: none;
 
     .counter {

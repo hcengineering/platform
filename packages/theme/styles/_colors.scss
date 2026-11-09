@@ -147,6 +147,14 @@
   --theme-button-attention-active-shadow: 0 4px 12px rgba(124, 58, 237, 0.6);
   --theme-button-attention-focus-shadow: 0 0 0 3px rgba(124, 58, 237, 0.3);
 
+  --theme-button-warning-color: #FB923C;
+  --theme-button-warning-bg: rgba(249, 115, 22, 0.12);
+  --theme-button-warning-border: rgba(249, 115, 22, 0.32);
+  --theme-button-warning-hover-bg: rgba(249, 115, 22, 0.18);
+  --theme-button-warning-hover-border: rgba(249, 115, 22, 0.45);
+  --theme-button-warning-active-bg: rgba(249, 115, 22, 0.24);
+  --theme-button-warning-focus-ring: 0 0 0 2px rgba(249, 115, 22, 0.35);
+
   --theme-refinput-divider: rgba(255, 255, 255, .07);
   --theme-refinput-border: rgba(255, 255, 255, .1);
 
@@ -466,6 +474,17 @@
   --theme-button-attention-hover-shadow: 0 8px 24px rgba(236, 72, 153, 0.3);
   --theme-button-attention-active-shadow: 0 4px 12px rgba(236, 72, 153, 0.5);
   --theme-button-attention-focus-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
+
+  // Warning button — subdued, tinted-orange variant for persistent slots
+  // (e.g. sidebar footer). Designed to read as "heads up" without competing
+  // for attention with primary actions. No gradients, no lift, no pulse.
+  --theme-button-warning-color: #C2410C;
+  --theme-button-warning-bg: rgba(249, 115, 22, 0.10);
+  --theme-button-warning-border: rgba(249, 115, 22, 0.30);
+  --theme-button-warning-hover-bg: rgba(249, 115, 22, 0.16);
+  --theme-button-warning-hover-border: rgba(249, 115, 22, 0.45);
+  --theme-button-warning-active-bg: rgba(249, 115, 22, 0.22);
+  --theme-button-warning-focus-ring: 0 0 0 2px rgba(249, 115, 22, 0.3);
 
   --theme-refinput-divider: rgba(0, 0, 0, .07);
   --theme-refinput-border: rgba(0, 0, 0, .1);

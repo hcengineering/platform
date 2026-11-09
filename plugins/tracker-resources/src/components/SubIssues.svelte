@@ -86,6 +86,7 @@
         rank: '',
         comments: 0,
         subIssues: 0,
+        startDate: subIssue.startDate ?? null,
         dueDate: null,
         parents,
         reportedTime: 0,

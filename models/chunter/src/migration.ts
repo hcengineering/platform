@@ -156,16 +156,20 @@ export async function createRandom (client: MigrationUpgradeClient, tx: TxOperat
 }
 
 async function convertCommentsToChatMessages (client: MigrationClient): Promise<void> {
-  await client.update(
-    DOMAIN_COMMENT,
-    { _class: 'chunter:class:Comment' as Ref<Class<Doc>> },
-    { _class: chunter.class.ChatMessage }
-  )
-  await client.move(DOMAIN_COMMENT, { _class: chunter.class.ChatMessage }, DOMAIN_ACTIVITY)
+  if (await client.domainExists(DOMAIN_COMMENT)) {
+    await client.update(
+      DOMAIN_COMMENT,
+      { _class: 'chunter:class:Comment' as Ref<Class<Doc>> },
+      { _class: chunter.class.ChatMessage }
+    )
+    await client.move(DOMAIN_COMMENT, { _class: chunter.class.ChatMessage }, DOMAIN_ACTIVITY)
+  }
 }
 
 async function removeBacklinks (client: MigrationClient): Promise<void> {
-  await client.deleteMany(DOMAIN_COMMENT, { _class: 'chunter:class:Backlink' as Ref<Class<Doc>> })
+  if (await client.domainExists(DOMAIN_COMMENT)) {
+    await client.deleteMany(DOMAIN_COMMENT, { _class: 'chunter:class:Backlink' as Ref<Class<Doc>> })
+  }
   await client.deleteMany(DOMAIN_ACTIVITY, {
     _class: activity.class.DocUpdateMessage,
     objectClass: 'chunter:class:Backlink' as Ref<Class<Doc>>

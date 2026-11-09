@@ -42,6 +42,7 @@
     "SearchDocument": "Vyhledat dokument...",
     "CreateEnVersion": "Vytvořit verzi pro revizi",
     "Approvers": "Schvalovatelé",
+    "ExternalApprovers": "Externí schvalovatelé",
     "CoAuthors": "Spoluautoři",
     "Status": "Stav",
     "TemplateName": "Název šablony",

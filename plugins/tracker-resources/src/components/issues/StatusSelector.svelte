@@ -14,6 +14,7 @@
 -->
 <script lang="ts">
   import { IdMap, Ref, Status, WithLookup } from '@hcengineering/core'
+  import { getClient } from '@hcengineering/presentation'
   import { ProjectType, TaskType } from '@hcengineering/task'
   import { typeStore } from '@hcengineering/task-resources'
   import { IssueStatus } from '@hcengineering/tracker'
@@ -31,6 +32,7 @@
   import { statusStore } from '@hcengineering/view-resources'
   import { createEventDispatcher } from 'svelte'
   import tracker from '../../plugin'
+  import { groupStatusesByCategory, statusCategoriesCollapseKey } from '../../statusCategories'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
@@ -52,6 +54,7 @@
   export let short: boolean = false
 
   const dispatch = createEventDispatcher()
+  const client = getClient()
 
   const changeStatus = async (newStatus: Ref<IssueStatus> | undefined) => {
     if (!isEditable || newStatus === undefined || value === newStatus) {
@@ -100,15 +103,17 @@
 
   $: selectedStatus = getSelectedStatus(statuses, value)
   $: selectedStatusLabel = selectedStatus?.name
-  $: statusesInfo =
-    statuses?.map((s) => {
+  $: statusesInfo = groupStatusesByCategory(statuses ?? [], (c) => client.getModel().findObject(c)).map(
+    ({ status: s, category }) => {
       return {
         id: s._id,
         component: StatusPresenter,
         props: { value: s, size: 'small' },
-        isSelected: selectedStatus?._id === s._id
+        isSelected: selectedStatus?._id === s._id,
+        category: category !== undefined ? { label: category.label, icon: category.icon } : undefined
       }
-    }) ?? []
+    }
+  )
   const handleStatusEditorOpened = (event: MouseEvent) => {
     if (!isEditable) {
       return
@@ -116,7 +121,12 @@
 
     showPopup(
       SelectPopup,
-      { value: statusesInfo, placeholder: tracker.string.SetStatus },
+      {
+        value: statusesInfo,
+        placeholder: tracker.string.SetStatus,
+        collapsibleCategories: true,
+        collapsedCategoriesKey: statusCategoriesCollapseKey
+      },
       eventToHTMLElement(event),
       changeStatus
     )

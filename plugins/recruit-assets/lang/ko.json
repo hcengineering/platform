@@ -121,7 +121,8 @@
         "CreateNewSkills": "기존 스킬이 없으면 새로 만들기",
         "SwapFirstAndLastNames": "이름과 성 바꾸기",
         "ForbidCreateVacancyPermission": "채용 공고 생성 금지",
-        "ForbidCreateVacancyPermissionDescription": "사용자의 새 채용 공고 생성을 금지합니다"
+        "ForbidCreateVacancyPermissionDescription": "사용자의 새 채용 공고 생성을 금지합니다",
+        "NumberLabels": "{count, plural, =0 {라벨 없음} =1 {라벨 1개} other {라벨 #개}}"
     },
     "status": {
         "ApplicationExists": "이미 존재하는 지원입니다",

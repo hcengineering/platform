@@ -1,9 +1,15 @@
 <script lang="ts">
+  import { formatName, Person } from '@hcengineering/contact'
+  import { getPersonByPersonRefStore } from '@hcengineering/contact-resources'
+  import { Ref } from '@hcengineering/core'
+  import { Label } from '@hcengineering/ui'
   import { onDestroy, onMount } from 'svelte'
+  import love from '../../plugin'
   import { liveKitClient, lk } from '../../utils'
   import {
     LocalParticipant,
     LocalTrackPublication,
+    Participant,
     RemoteParticipant,
     RemoteTrack,
     RemoteTrackPublication,
@@ -15,13 +21,21 @@
   export let showLocalTrack: boolean = true
 
   let activeTrack: Track | null = null
+  let activeParticipant: Participant | null = null
   let screen: HTMLVideoElement
 
-  function trySetActiveTrack (track: Track | undefined): boolean {
+  $: personByRefStore = getPersonByPersonRefStore(
+    activeParticipant != null ? [activeParticipant.identity as Ref<Person>] : []
+  )
+  $: person = activeParticipant != null ? $personByRefStore.get(activeParticipant.identity as Ref<Person>) : undefined
+  $: sharerName = (person !== undefined ? person.name : activeParticipant?.name) ?? ''
+
+  function trySetActiveTrack (track: Track | undefined, participant: Participant): boolean {
     if (track === undefined) return false
     if (track.kind !== Track.Kind.Video || track.source !== Track.Source.ScreenShare) return false
     hasActiveTrack = true
     activeTrack = track
+    activeParticipant = participant
     track.attach(screen)
     return true
   }
@@ -31,6 +45,7 @@
     hasActiveTrack = false
     activeTrack?.detach()
     activeTrack = null
+    activeParticipant = null
   }
 
   function onTrackSubscribed (
@@ -38,7 +53,7 @@
     publication: RemoteTrackPublication,
     participant: RemoteParticipant
   ): void {
-    trySetActiveTrack(track)
+    trySetActiveTrack(track, participant)
   }
 
   function onTrackUnsubscribed (
@@ -50,7 +65,7 @@
   }
 
   function onLocalTrackPublished (publication: LocalTrackPublication, participant: LocalParticipant): void {
-    trySetActiveTrack(publication.track)
+    trySetActiveTrack(publication.track, participant)
   }
 
   function onLocalTrackUnpublished (publication: LocalTrackPublication, participant: LocalParticipant): void {
@@ -64,7 +79,7 @@
     lk.on(RoomEvent.TrackUnsubscribed, onTrackUnsubscribed)
     for (const participant of lk.remoteParticipants.values()) {
       for (const publication of participant.trackPublications.values()) {
-        if (trySetActiveTrack(publication.track)) break
+        if (trySetActiveTrack(publication.track, participant)) break
       }
     }
 
@@ -72,7 +87,7 @@
       lk.on(RoomEvent.LocalTrackPublished, onLocalTrackPublished)
       lk.on(RoomEvent.LocalTrackUnpublished, onLocalTrackUnpublished)
       for (const publication of lk.localParticipant.trackPublications.values()) {
-        if (trySetActiveTrack(publication.track)) break
+        if (trySetActiveTrack(publication.track, lk.localParticipant)) break
       }
     }
   })
@@ -89,6 +104,11 @@
 </script>
 
 <video class="screen" bind:this={screen}></video>
+{#if activeParticipant != null && sharerName !== ''}
+  <div class="label overflow-label">
+    <Label label={love.string.ScreenSharedBy} params={{ name: formatName(sharerName) }} />
+  </div>
+{/if}
 
 <style lang="scss">
   .screen {
@@ -98,5 +118,20 @@
     height: 100%;
     width: 100%;
     border-radius: 0.75rem;
+  }
+  .label {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    max-width: calc(100% - 1rem);
+    font-weight: 500;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--white-color);
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 0.5rem;
+    backdrop-filter: blur(3px);
+    pointer-events: none;
   }
 </style>

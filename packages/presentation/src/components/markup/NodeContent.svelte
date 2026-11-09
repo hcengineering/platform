@@ -112,7 +112,7 @@
       {/if}
     </span>
   {:else if node.type === MarkupNodeType.paragraph}
-    <p class="p-inline contrast" class:overflow-label={preview}>
+    <p class="p-inline contrast" class:overflow-label={preview} dir="auto">
       {#if nodes.length > 0}
         {#each nodes as node}
           <Node {parseEmojisFunction} {node} {preview} singleTextNode={singleTextNode && nodes.length === 1} />
@@ -132,7 +132,7 @@
   {:else if node.type === MarkupNodeType.heading}
     {@const level = toNumber(node.attrs?.level) ?? 1}
     {@const element = `h${level}`}
-    <svelte:element this={element}>
+    <svelte:element this={element} dir="auto">
       {#if nodes.length > 0}
         {#each nodes as node}
           <Node {node} {preview} />

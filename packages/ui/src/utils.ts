@@ -229,6 +229,10 @@ export interface IModeSelector<Mode extends string = string> {
   mode: Mode
   config: Array<[Mode, IntlString, object]>
   onChange: (mode: Mode) => void
+  /** When set, all mode buttons render in a disabled style and ignore clicks. */
+  disabled?: boolean
+  /** Tooltip shown on hover when `disabled` is true. */
+  disabledReason?: IntlString
 }
 
 /**
@@ -382,6 +386,32 @@ export function removeRootBarComponent (id: string): void {
   rootBarExtensions.update((cur) => {
     return cur.filter((p) => p[1].id !== id)
   })
+}
+
+export const navFooterExtensions = writable<
+Array<{
+  id: string
+  component: AnyComponent | AnySvelteComponent
+  props?: Record<string, any>
+  order: number
+}>
+>([])
+
+export function pushNavFooterComponent (component: AnyComponent, order?: number): void {
+  navFooterExtensions.update((cur) => {
+    if (cur.find((p) => p.component === component) === undefined) {
+      cur.push({
+        id: component,
+        component,
+        order: order ?? 1000
+      })
+    }
+    return cur
+  })
+}
+
+export function removeNavFooterComponent (id: string): void {
+  navFooterExtensions.update((cur) => cur.filter((p) => p.id !== id))
 }
 
 export function pushRootBarProgressComponent (

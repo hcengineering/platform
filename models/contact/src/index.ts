@@ -274,6 +274,10 @@ export class TEmployee extends TPerson implements Employee {
     position?: string | null
 
   declare personUuid?: AccountUuid
+
+  @Prop(TypeString(), contact.string.Timezone)
+  @Hidden()
+    timezone?: string
 }
 
 @Model(contact.class.ContactsTab, core.class.Doc, DOMAIN_MODEL)
@@ -762,7 +766,8 @@ export function createModel (builder: Builder): void {
     {
       label: contact.string.Phone,
       icon: contact.icon.Phone,
-      placeholder: contact.string.PhonePlaceholder
+      placeholder: contact.string.PhonePlaceholder,
+      action: contact.action.OpenChannel
     },
     contact.channelProvider.Phone
   )
@@ -1153,7 +1158,8 @@ export function createModel (builder: Builder): void {
         mode: ['context'],
         group: 'remove'
       },
-      secured: true
+      secured: true,
+      visibilityTester: contact.function.CanKickEmployee
     },
     contact.action.KickEmployee
   )

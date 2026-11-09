@@ -259,9 +259,14 @@ class PlatformQueueConsumerImpl implements ConsumerHandle {
       maxRetryDelay?: number // Maximum retry delay in seconds (default 10)
     }
   ) {
+    // Long handlers must call ConsumerControl.heartbeat(); these timeouts still help under broker/load jitter (e.g. Redpanda in Docker).
+    const sessionTimeout = parseInt(process.env.KAFKA_CONSUMER_SESSION_TIMEOUT_MS ?? '90000', 10)
     this.cc = this.kafka.consumer({
       groupId: `${getKafkaTopicId(this.topic, this.config)}-${groupId}`,
-      allowAutoTopicCreation: true
+      allowAutoTopicCreation: true,
+      sessionTimeout,
+      rebalanceTimeout: Math.min(sessionTimeout * 2, 300000),
+      heartbeatInterval: 3000
     })
 
     void this.start().catch((err) => {

@@ -24,12 +24,10 @@ import cors from 'cors'
 import express, { Request, Response } from 'express'
 import fileUpload, { UploadedFile } from 'express-fileupload'
 import expressStaticGzip from 'express-static-gzip'
-import https from 'https'
 import morgan from 'morgan'
 import { join, normalize, resolve } from 'path'
 import { cwd } from 'process'
 import sharp, { type Sharp } from 'sharp'
-import { v4 as uuid } from 'uuid'
 import { getClient as getAccountClient } from '@hcengineering/account-client'
 import { preConditions } from './utils'
 
@@ -676,188 +674,11 @@ export function start (
     }
   }
 
-  const handleImportGet = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const authHeader = req.headers.authorization
-      if (authHeader === undefined) {
-        res.status(403).send()
-        return
-      }
-      const token = authHeader.split(' ')[1]
-      const workspaceDataId = await getWorkspaceIds(ctx, token)
-      if (workspaceDataId === null) {
-        res.status(403).send()
-        return
-      }
-      const url = req.query.url as string
-      const cookie = req.query.cookie as string | undefined
-      // const attachedTo = req.query.attachedTo as Ref<Doc> | undefined
-      if (url === undefined) {
-        res.status(500).send('URL param is not defined')
-        return
-      }
-
-      console.log('importing from', url)
-      console.log('cookie', cookie)
-
-      const options =
-        cookie !== undefined
-          ? {
-              headers: {
-                Cookie: cookie
-              }
-            }
-          : {}
-
-      https
-        .get(url, options, (response) => {
-          if (response.statusCode !== 200) {
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            res.status(500).send(`server returned ${response.statusCode}`)
-            return
-          }
-          const id = uuid()
-          const contentType = response.headers['content-type'] ?? 'application/octet-stream'
-          const data: Uint8Array[] = []
-          response
-            .on('data', function (chunk) {
-              data.push(chunk)
-            })
-            .on('end', function () {
-              const buffer = Buffer.concat(data as unknown as Uint8Array[])
-              config.storageAdapter
-                .put(ctx, workspaceDataId, id, buffer, contentType, buffer.length)
-                .then(async () => {
-                  res.status(200).send({
-                    id,
-                    contentType,
-                    size: buffer.length
-                  })
-                })
-                .catch((err: any) => {
-                  if (err !== null) {
-                    Analytics.handleError(err)
-                    ctx.error('error', { err })
-                    res.status(500).send(err)
-                  }
-                })
-            })
-            .on('error', function (err) {
-              Analytics.handleError(err)
-              ctx.error('error', { err })
-              res.status(500).send(err)
-            })
-        })
-        .on('error', (e) => {
-          Analytics.handleError(e)
-          ctx.error('error', { e })
-          res.status(500).send(e)
-        })
-    } catch (error: any) {
-      if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
-        res.status(401).send()
-        return
-      }
-      Analytics.handleError(error)
-      ctx.error('error', { error })
-      res.status(500).send()
-    }
-  }
-
-  const handleImportPost = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const authHeader = req.headers.authorization
-      if (authHeader === undefined) {
-        res.status(403).send()
-        return
-      }
-      const token = authHeader.split(' ')[1]
-      const workspaceDataId = await getWorkspaceIds(ctx, token)
-      if (workspaceDataId === null) {
-        res.status(403).send()
-        return
-      }
-      const { url, cookie } = req.body
-      if (url === undefined) {
-        res.status(500).send('URL param is not defined')
-        return
-      }
-
-      console.log('importing from', url)
-      console.log('cookie', cookie)
-
-      const options =
-        cookie !== undefined
-          ? {
-              headers: {
-                Cookie: cookie
-              }
-            }
-          : {}
-
-      https.get(url, options, (response) => {
-        console.log('status', response.statusCode)
-        if (response.statusCode !== 200) {
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          res.status(500).send(`server returned ${response.statusCode}`)
-          return
-        }
-        const id = uuid()
-        const contentType = response.headers['content-type']
-        const data: Uint8Array[] = []
-        response
-          .on('data', function (chunk) {
-            data.push(chunk)
-          })
-          .on('end', function () {
-            const buffer = Buffer.concat(data as unknown as Uint8Array[])
-            // eslint-disable-next-line @typescript-eslint/no-misused-promises
-            config.storageAdapter
-              .put(ctx, workspaceDataId, id, buffer, contentType ?? 'application/octet-stream', buffer.length)
-              .then(async () => {
-                res.status(200).send({
-                  id,
-                  contentType,
-                  size: buffer.length
-                })
-              })
-              .catch((err: any) => {
-                Analytics.handleError(err)
-                ctx.error('error', { err })
-                res.status(500).send(err)
-              })
-          })
-          .on('error', function (err) {
-            Analytics.handleError(err)
-            ctx.error('error', { err })
-            res.status(500).send(err)
-          })
-      })
-    } catch (error: any) {
-      if (error instanceof PlatformError && error.status.code === platform.status.Unauthorized) {
-        res.status(401).send()
-        return
-      }
-      Analytics.handleError(error)
-      ctx.error('error', { error })
-      res.status(500).send()
-    }
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.delete('/files', handleDelete)
 
   // eslint-disable-next-line @typescript-eslint/no-misused-promises
   app.delete('/files/*', handleDelete)
-
-  // todo remove it after update all customers chrome extensions
-  app.get('/import', (req, res) => {
-    void handleImportGet(req, res)
-  })
-
-  app.post('/import', (req, res) => {
-    void handleImportPost(req, res)
-  })
 
   const filesPatterns = [
     '.js',

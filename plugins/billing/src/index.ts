@@ -14,6 +14,7 @@
 //
 import { billingId, billingPlugin } from './plugin'
 
+export * from './limits'
 export * from './types'
 
 export { billingId }

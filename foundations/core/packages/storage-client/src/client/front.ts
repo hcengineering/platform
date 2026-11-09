@@ -16,6 +16,7 @@
 import { concatLink } from '@hcengineering/core'
 import { FileStorage, FileStorageUploadOptions } from '../types'
 import { uploadXhr } from '../upload'
+import { encodePathSegment } from './utils'
 
 const getPathname = (url: string): string => {
   const base = window?.location?.href !== undefined ? window.location.href : 'http://localhost'
@@ -27,7 +28,10 @@ export class FrontStorage implements FileStorage {
   constructor (private readonly baseUrl: string) {}
 
   getFileUrl (workspace: string, file: string, filename?: string): string {
-    const path = `/${workspace}/${filename ?? file}?file=${file}&workspace=${workspace}`
+    const encodedWorkspace = encodePathSegment(workspace)
+    const encodedFile = encodePathSegment(file)
+    const encodedFilename = encodePathSegment(filename ?? file)
+    const path = `/${encodedWorkspace}/${encodedFilename}?file=${encodedFile}&workspace=${encodedWorkspace}`
     return concatLink(this.baseUrl, path)
   }
 

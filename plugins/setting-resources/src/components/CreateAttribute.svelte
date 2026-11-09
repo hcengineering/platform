@@ -57,6 +57,7 @@
   let extra: Record<string, any> = {}
   let is: AnyComponent | undefined
   let readonly: boolean = false
+  let required: boolean = false
   const client = getClient()
   const hierarchy = client.getHierarchy()
 
@@ -72,7 +73,8 @@
       type,
       defaultValue,
       readonly,
-      automationOnly: readonly
+      automationOnly: readonly,
+      required
     }
     if (index !== undefined) {
       data.index = index
@@ -196,6 +198,10 @@
       <Label label={view.string.AutomationOnly} />
     </span>
     <Toggle bind:on={readonly} />
+    <span class="label">
+      <Label label={setting.string.Required} />
+    </span>
+    <Toggle bind:on={required} />
   </div>
 </Modal>
 

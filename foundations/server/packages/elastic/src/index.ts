@@ -15,3 +15,4 @@
 //
 
 export { createElasticAdapter } from './adapter'
+export { getElasticTlsOptions, type ElasticTlsOptions } from './tls'

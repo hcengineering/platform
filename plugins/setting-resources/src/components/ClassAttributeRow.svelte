@@ -18,6 +18,7 @@
   import { getClient } from '@hcengineering/presentation'
   import { AnySvelteComponent, Icon, IconMoreV2, IconOpenedArrow, Label, tooltip } from '@hcengineering/ui'
   import view from '@hcengineering/view'
+  import setting from '../plugin'
 
   export let attribute: AnyAttribute
   export let attributeType: IntlString | undefined = undefined
@@ -64,6 +65,9 @@
   {/if}
   <div class="hulyTableAttr-content__row-label font-regular-14 grow" class:accent={!attribute.hidden}>
     <Label label={attribute.label} />
+    {#if attribute.required === true}
+      <span class="required-marker font-medium-12" use:tooltip={{ label: setting.string.Required }}>*</span>
+    {/if}
   </div>
   {#if attributeMapper}
     <svelte:component this={attributeMapper.component} {...attributeMapper.props} {attribute} />
@@ -91,3 +95,18 @@
     <IconOpenedArrow size={'small'} />
   </div>
 </button>
+
+<style lang="scss">
+  .hulyTableAttr-content__row-label {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: var(--spacing-0_5);
+  }
+
+  .required-marker {
+    flex-shrink: 0;
+    color: var(--global-error-TextColor);
+    line-height: 1;
+  }
+</style>

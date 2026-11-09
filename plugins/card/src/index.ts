@@ -40,12 +40,19 @@ export interface MasterTag extends Class<Card> {
   removed?: boolean
   roles?: CollectionSize<Role>
   singleColumn?: boolean
+  baseType?: boolean
 }
 
 export interface Tag extends MasterTag, Mixin<Card> {}
 
 export interface Role extends BaseRole {
   types: Ref<MasterTag | Tag>[]
+}
+
+export interface DuplicateSetting extends Class<MasterTag> {
+  excludedProperties?: string[]
+  excludedRelations?: string[] // ${associationId}_${a|b}
+  excludeMixins?: Ref<Mixin<Doc>>[]
 }
 
 export interface Card extends Doc, IconProps, VersionableDoc {
@@ -157,7 +164,8 @@ const cardPlugin = plugin(cardId, {
   },
   mixin: {
     CardViewDefaults: '' as Ref<Mixin<CardViewDefaults>>,
-    CreateCardExtension: '' as Ref<Mixin<CreateCardExtension>>
+    CreateCardExtension: '' as Ref<Mixin<CreateCardExtension>>,
+    DuplicateSetting: '' as Ref<Mixin<DuplicateSetting>>
   },
   space: {
     Default: '' as Ref<CardSpace>

@@ -55,7 +55,6 @@ export default mergeIds(calendarId, calendar, {
   string: {
     ApplicationLabelCalendar: '' as IntlString,
     Event: '' as IntlString,
-    Reminder: '' as IntlString,
     Shift: '' as IntlString,
     State: '' as IntlString,
     CreatedReminder: '' as IntlString,

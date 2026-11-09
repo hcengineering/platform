@@ -72,6 +72,7 @@
     PopupPosAlignment,
     PopupResult,
     popupstore,
+    printModeStore,
     pushRootBarComponent,
     resizeObserver,
     ResolvedLocation,
@@ -110,6 +111,7 @@
   import AppSwitcher from './AppSwitcher.svelte'
   import Applications from './Applications.svelte'
   import Logo from './Logo.svelte'
+  import WorkspaceFavicon from './WorkspaceFavicon.svelte'
   import NavFooter from './NavFooter.svelte'
   import NavHeader from './NavHeader.svelte'
   import Navigator from './Navigator.svelte'
@@ -838,6 +840,7 @@
     />
   </div>
 {:else if $myEmployeeStore || account.role === AccountRole.Owner || isAdminUser()}
+  <WorkspaceFavicon />
   <ActionHandler {currentSpace} />
   <svg class="svg-mask">
     <clipPath id="notify-normal">
@@ -1119,7 +1122,7 @@
   <Dock />
   <div bind:this={cover} class="cover" />
   <TooltipInstance />
-  <PanelInstance bind:this={panelInstance} contentPanel={elementPanel}>
+  <PanelInstance bind:this={panelInstance} contentPanel={elementPanel} readonly={$printModeStore}>
     <svelte:fragment slot="panel-header">
       <ActionContext context={{ mode: 'panel' }} />
     </svelte:fragment>

@@ -118,6 +118,7 @@
     "UserProfile": "Profilo utente",
     "DeactivatedAccount": "Account disattivato",
     "LocalTime": "ora locale",
+    "Timezone": "Fuso orario",
     "Everyone": "Tutti",
     "Here": "Qui",
     "EveryoneDescription": "Notifica tutti in questo {title}",

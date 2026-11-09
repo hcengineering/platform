@@ -100,6 +100,7 @@
     "TwoFactorAuth": "Two-factor authentication",
     "EnterTwoFactorCode": "Enter two-factor authentication code",
     "TwoFactorCode": "Two-factor authentication code",
-    "Verify": "Verify"
+    "Verify": "Verify",
+    "CreateSampleProjects": "Create sample projects and demo content"
   }
 }

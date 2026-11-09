@@ -32,6 +32,7 @@ The service is configured via environment variables:
 | `PUSH_PUBLIC_KEY` | No | - | VAPID public key for web push |
 | `PUSH_PRIVATE_KEY` | No | - | VAPID private key for web push |
 | `PUSH_SUBJECT` | No | `mailto:hey@huly.io` | VAPID subject (email or URL) |
+| `PUSH_TTL` | No | `86400` | Seconds the push service keeps a notification for an offline device before dropping it |
 
 ### VAPID Keys
 

@@ -49,6 +49,7 @@
         "DueDatePopupOverdueDescription": "{value, plural, one {# день опоздания} few {# дня опоздания} other {# дней опоздания}}",
         "English": "English",
         "Russian": "Русский",
+        "Polish": "Polski",
         "Spanish": "Español",
         "Portuguese": "Português",
         "PortugueseBrazil": "Português (Brasil)",

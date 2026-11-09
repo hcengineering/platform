@@ -93,6 +93,7 @@
     "Window": "Finestra",
     "MeetingEmptyTitle": "Riunione terminata?",
     "MeetingEmptyMessage": "Tutti i partecipanti hanno abbandonato. Sarai disconnesso tra 1 minuto. Vuoi rimanere?",
-    "StayInRoom": "Rimani nella stanza"
+    "StayInRoom": "Rimani nella stanza",
+    "ScreenSharedBy": "{name} sta condividendo lo schermo"
   }
 }

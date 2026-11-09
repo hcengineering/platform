@@ -82,7 +82,9 @@ export function getMigrations (ns: string, flavor: DBFlavor): [string, string][]
     getV22Migration(ns, flavor),
     getV23Migration(ns, flavor),
     getV24Migration(ns, flavor),
-    getV25Migration(ns, flavor)
+    getV25Migration(ns, flavor),
+    getV26Migration(ns, flavor),
+    getV27Migration(ns, flavor)
   ]
 }
 
@@ -283,12 +285,11 @@ function getV2Migration2 (ns: string, flavor: DBFlavor): [string, string] {
     ALTER TABLE ${ns}.otp
     DROP CONSTRAINT IF EXISTS otp_social_id_fk;
 
-    -- Drop the existing primary key on social_id
+    -- Replace the primary key on social_id with a new one on _id.
+    -- Both changes must be in a single statement: CockroachDB v25+ commits DDL
+    -- statements individually and rejects a table left without a primary key.
     ALTER TABLE ${ns}.social_id
-    DROP CONSTRAINT IF EXISTS social_id_pk;
-
-    -- Add the new primary key on _id
-    ALTER TABLE ${ns}.social_id
+    DROP CONSTRAINT IF EXISTS social_id_pk,
     ADD CONSTRAINT social_id_pk PRIMARY KEY (_id);
     `
   ]
@@ -791,6 +792,51 @@ function getV25Migration (ns: string, flavor: DBFlavor): [string, string] {
     `
     ALTER TABLE ${ns}.account
     ADD COLUMN IF NOT EXISTS tfa_secret ${types.string};
+    `
+  ]
+}
+
+function getV26Migration (ns: string, flavor: DBFlavor): [string, string] {
+  return [
+    'account_db_v26_add_workspace_pending_configuration',
+    `
+    -- Captures the initial-state choices made by the user in the
+    -- workspace creation dialog (which apps to disable on first run,
+    -- whether to populate with demo content). Read once by workspace-service
+    -- after model init, then cleared back to NULL.
+    ALTER TABLE ${ns}.workspace
+    ADD COLUMN IF NOT EXISTS pending_configuration JSONB;
+    `
+  ]
+}
+
+function getV27Migration (ns: string, flavor: DBFlavor): [string, string] {
+  const types = dbTypes[flavor]
+  return [
+    'account_db_v27_add_api_tokens_table',
+    `
+    /* ======= A P I   T O K E N S ======= */
+    CREATE TABLE IF NOT EXISTS ${ns}.api_tokens (
+        id ${types.string} NOT NULL,
+        account_uuid UUID NOT NULL,
+        name ${types.string} NOT NULL,
+        workspace_uuid UUID NOT NULL,
+        created_on ${types.int8} NOT NULL DEFAULT current_epoch_ms(),
+        expires_on ${types.int8} NOT NULL,
+        revoked ${types.bool} NOT NULL DEFAULT false,
+        CONSTRAINT api_tokens_pk PRIMARY KEY (id),
+        CONSTRAINT api_tokens_account_fk FOREIGN KEY (account_uuid) REFERENCES ${ns}.person(uuid),
+        CONSTRAINT api_tokens_workspace_fk FOREIGN KEY (workspace_uuid) REFERENCES ${ns}.workspace(uuid)
+    );
+
+    CREATE INDEX IF NOT EXISTS api_tokens_account_idx
+    ON ${ns}.api_tokens (account_uuid);
+
+    CREATE INDEX IF NOT EXISTS api_tokens_workspace_idx
+    ON ${ns}.api_tokens (workspace_uuid);
+
+    CREATE INDEX IF NOT EXISTS api_tokens_expires_on_idx
+    ON ${ns}.api_tokens (expires_on);
     `
   ]
 }

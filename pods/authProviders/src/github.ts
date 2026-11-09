@@ -29,6 +29,9 @@ export function registerGithub (
         clientID: GITHUB_CLIENT_ID,
         clientSecret: GITHUB_CLIENT_SECRET,
         callbackURL: concatLink(accountsUrl, redirectURL),
+        // passport-github2 otherwise keeps only the primary address and drops
+        // the verification metadata returned by GitHub's emails API.
+        allRawEmails: true,
         passReqToCallback: true
       },
       function (req: any, accessToken: string, refreshToken: string, profile: any, done: any) {
@@ -56,7 +59,9 @@ export function registerGithub (
       })(ctx, next)
     },
     async (ctx, next) => {
-      const email = ctx.state.user.emails?.[0]?.value
+      const verifiedEmail = ctx.state.user.emails?.find(
+        (candidate: any) => candidate.primary === true && candidate.verified === true
+      )?.value
       const nameParts = (ctx.state.user.displayName ?? ctx.state.user.username ?? '').split(' ')
       const first: string = nameParts[0] ?? ''
       const last: string = nameParts.slice(1).join(' ')
@@ -70,7 +75,7 @@ export function registerGithub (
         'github',
         ctx.query?.state,
         ctx.state?.user,
-        email,
+        verifiedEmail,
         first,
         last,
         { type: SocialIdType.GITHUB, value: ctx.state.user.username },

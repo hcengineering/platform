@@ -43,6 +43,7 @@
   .radioButton-label {
     color: var(--global-primary-TextColor);
     user-select: none;
+    -webkit-user-select: none;
   }
   .radioButton {
     overflow: hidden;

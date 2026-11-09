@@ -47,6 +47,7 @@ import { BackupStorage } from './storage'
 import type {
   BackupDocId,
   BackupInfo,
+  BackupMigrations,
   BackupResult,
   BackupSnapshot,
   BlobData,
@@ -940,6 +941,51 @@ export function doTrimHash (s: string | undefined): string | undefined {
   return s
 }
 
+/**
+ * Compares a per-domain digest reconstructed from a backup with a digest read from a live
+ * workspace and reports the difference from the backup's point of view.
+ *
+ * - `missing` — documents present in the backup but absent from the workspace.
+ * - `modified` — documents present in both, but with a different content hash (the workspace
+ *   version diverged from the backed-up one).
+ *
+ * Documents present in the workspace but not in the backup are intentionally not reported here:
+ * this check only answers "is everything from the backup present in the workspace", not the
+ * reverse.
+ * @public
+ */
+export function compareDomainDigest (
+  backupDigest: Map<BackupDocId, string>,
+  workspaceDigest: Map<BackupDocId, string>
+): { missing: BackupDocId[], modified: BackupDocId[] } {
+  const missing: BackupDocId[] = []
+  const modified: BackupDocId[] = []
+  for (const [id, hash] of backupDigest) {
+    const workspaceHash = workspaceDigest.get(id)
+    if (workspaceHash === undefined) {
+      missing.push(id)
+    } else if (doTrimHash(workspaceHash) !== doTrimHash(hash)) {
+      modified.push(id)
+    }
+  }
+  return { missing, modified }
+}
+
+/**
+ * Finds blob ids that are recorded in a backup but do not exist in the workspace's blob storage
+ * (e.g. S3/minio/datalake), as opposed to just the blob metadata record in a domain.
+ * @public
+ */
+export function findMissingBlobs (backupBlobIds: Iterable<BackupDocId>, existingBlobIds: Set<string>): BackupDocId[] {
+  const missing: BackupDocId[] = []
+  for (const id of backupBlobIds) {
+    if (!existingBlobIds.has(id as string)) {
+      missing.push(id)
+    }
+  }
+  return missing
+}
+
 export async function loadDigest (
   ctx: MeasureContext,
   storage: BackupStorage,
@@ -1455,6 +1501,38 @@ export function toAccountDomain (domain: string): Domain {
 
 export function isAccountDomain (domain: Domain): boolean {
   return domain.startsWith(accountPrefix)
+}
+
+const uuidRegExp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/**
+ * Checks that a backup digest key is valid for the given account domain.
+ * Person records are keyed by UUID while socialId records are keyed by
+ * numeric (INT8) identifiers. Keys of the wrong shape (e.g. leaked from
+ * another domain by older backup versions) must be filtered out.
+ */
+export function isValidAccountDomainKey (domain: Domain, key: BackupDocId): boolean {
+  if (domain === toAccountDomain('person')) {
+    return uuidRegExp.test(key)
+  }
+  try {
+    BigInt(key)
+    return true
+  } catch (err: any) {
+    return false
+  }
+}
+
+/**
+ * Decides whether an account domain requires a full rescan of the workspace
+ * contact/channel domains to collect affected persons/social identities.
+ * A rescan is needed on explicit full check or until the initial rescan has
+ * been completed and recorded in backup info migrations — i.e. the very first
+ * accounts backup or a backup produced by a version which failed to dump
+ * account domains.
+ */
+export function shouldRescanAccountDomain (domain: Domain, fullCheck: boolean, migrations: BackupMigrations): boolean {
+  return fullCheck || migrations.accountsRescan?.[domain] !== true
 }
 
 export function getGetObjKey (domain: Domain): GetObjKeyFn {

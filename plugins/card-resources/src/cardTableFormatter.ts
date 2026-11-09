@@ -13,14 +13,44 @@
 // limitations under the License.
 //
 
-import { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
+import core, { type Class, type Doc, type Hierarchy, type Ref } from '@hcengineering/core'
 import { translate, type IntlString } from '@hcengineering/platform'
 import cardPlugin, { type Card, type CardSpace } from '@hcengineering/card'
 import { type AttributeModel } from '@hcengineering/view'
 import { getClient } from '@hcengineering/presentation'
 import { isIntlString } from '@hcengineering/converter-resources'
+import { markupToJSON } from '@hcengineering/text'
+import { markupToMarkdown } from '@hcengineering/text-markdown'
 import { getCardIds, getCardVersion } from './cardUtils'
 import { formatCardTagsForMarkdown, isTagsColumn } from './tagFormatter'
+
+const HTML_TAG_RE = /<\/?[a-zA-Z][a-zA-Z0-9-]*(?:\s[^>]*)?\/?>/g
+const HTML_COMMENT_RE = /<!--[\s\S]*?-->/g
+const HTML_ANCHOR_RE = /<a\b[^>]*?\bhref="([^"]*)"[^>]*?>([\s\S]*?)<\/a>/gi
+
+function stripInlineHtml (s: string): string {
+  return s.replace(HTML_COMMENT_RE, ' ').replace(HTML_TAG_RE, ' ').replace(/\s+/g, ' ').trim()
+}
+
+/**
+ * Convert a stored markup value (serialized ProseMirror JSON) into a single-line
+ * markdown string safe to embed inside an outer markdown table cell.
+ */
+export function formatMarkupForCell (markup: string): string {
+  const markdown = markupToMarkdown(markupToJSON(markup))
+  return markdown
+    .replace(HTML_ANCHOR_RE, (_match, href: string, inner: string) => {
+      const text = stripInlineHtml(inner)
+      if (text === '' || text === href) {
+        return href
+      }
+      return `[${text}](${href})`
+    })
+    .replace(HTML_COMMENT_RE, ' ')
+    .replace(HTML_TAG_RE, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
 
 /**
  * Cache for MasterTag ID -> label mappings to reduce database calls
@@ -117,9 +147,45 @@ export async function formatCardValue (
     return await formatCardTagsForMarkdown(card as Card, hierarchy, language)
   }
 
+  // Handle markup attribute - serialize stored markup JSON to inline-safe markdown
+  // so that copy-as-markdown produces readable text instead of raw ProseMirror JSON.
+  if (attr.attribute?.type?._class === core.class.TypeMarkup) {
+    const fieldName = attr.attribute.name
+    const markupValue: unknown = cardDoc[fieldName]
+    if (markupValue === undefined || markupValue === null || markupValue === '') {
+      return ''
+    }
+    if (typeof markupValue !== 'string') {
+      return ''
+    }
+    try {
+      return formatMarkupForCell(markupValue)
+    } catch (error) {
+      console.warn('Failed to convert markup to markdown for attribute:', fieldName, error)
+      return ''
+    }
+  }
+
   if (attr.key === '') {
     const labelStr = typeof attr.label === 'string' ? attr.label : ''
     if (labelStr.startsWith('custom')) {
+      const customAttr =
+        hierarchy.findAttribute(card._class, labelStr) ?? hierarchy.getAllAttributes(card._class).get(labelStr)
+      if (customAttr?.type?._class === core.class.TypeMarkup) {
+        const markupValue: unknown = cardDoc[labelStr]
+        if (markupValue === undefined || markupValue === null || markupValue === '') {
+          return ''
+        }
+        if (typeof markupValue !== 'string') {
+          return ''
+        }
+        try {
+          return formatMarkupForCell(markupValue)
+        } catch (error) {
+          console.warn('Failed to convert custom markup attribute to markdown:', labelStr, error)
+          return ''
+        }
+      }
       return undefined
     }
     const cardObj = card as unknown as Card

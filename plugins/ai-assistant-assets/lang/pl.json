@@ -1,0 +1,13 @@
+{
+  "string": {
+    "IntegrationLabel": "Asystent SI",
+    "IntegrationDescription": "Twój osobisty asystent zasilany przez duże modele językowe może pomóc Ci organizować, automatyzować i zwiększać efektywność Twojej codziennej pracy z platformą",
+    "ConfigLabel": "Asystent SI",
+    "ConfigDescription": "Osobisty asystent wspierany przez sztuczną inteligencję",
+    "Connect": "Połącz",
+    "Cancel": "Anuluj",
+    "Status": "Status",
+    "FailedToConnect": "Usługa asystenta SI niedostępna",
+    "Configure": "Skonfiguruj asystenta SI"
+  }
+}

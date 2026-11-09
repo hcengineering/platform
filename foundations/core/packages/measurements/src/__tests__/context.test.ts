@@ -21,6 +21,7 @@ describe('context', () => {
       expect(typeof logger.info).toBe('function')
       expect(typeof logger.error).toBe('function')
       expect(typeof logger.warn).toBe('function')
+      expect(typeof logger.debug).toBe('function')
       expect(typeof logger.close).toBe('function')
     })
 
@@ -49,6 +50,16 @@ describe('context', () => {
       const logger = consoleLogger({ service: 'test' })
 
       logger.warn('Warning message', { warning: 'info' })
+
+      expect(consoleSpy).toHaveBeenCalled()
+      consoleSpy.mockRestore()
+    })
+
+    it('should log debug messages', () => {
+      const consoleSpy = jest.spyOn(console, 'debug').mockImplementation()
+      const logger = consoleLogger({ service: 'test' })
+
+      logger.debug('Debug message', { detail: 'x' })
 
       expect(consoleSpy).toHaveBeenCalled()
       consoleSpy.mockRestore()
@@ -145,6 +156,7 @@ describe('context', () => {
         info: jest.fn(),
         error: jest.fn(),
         warn: jest.fn(),
+        debug: jest.fn(),
         close: jest.fn(async () => {}),
         logOperation: jest.fn()
       }
@@ -163,6 +175,7 @@ describe('context', () => {
         info: jest.fn(),
         error: jest.fn(),
         warn: jest.fn(),
+        debug: jest.fn(),
         close: jest.fn(async () => {}),
         logOperation: jest.fn()
       }
@@ -181,6 +194,7 @@ describe('context', () => {
         info: jest.fn(),
         error: jest.fn(),
         warn: jest.fn(),
+        debug: jest.fn(),
         close: jest.fn(async () => {}),
         logOperation: jest.fn()
       }
@@ -192,6 +206,47 @@ describe('context', () => {
         'Warning message',
         expect.objectContaining({ warning: 'info', op: 'test' })
       )
+    })
+
+    it('should not log debug when log level is info', () => {
+      const mockLogger: MeasureLogger = {
+        info: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        close: jest.fn(async () => {}),
+        logOperation: jest.fn()
+      }
+
+      const ctx = new MeasureMetricsContext('test', { op: 'test' }, {}, newMetrics(), mockLogger)
+      ctx.debug('Skip', { k: 1 })
+
+      expect(mockLogger.debug).not.toHaveBeenCalled()
+    })
+
+    it('should log debug when log level is debug', () => {
+      const mockLogger: MeasureLogger = {
+        info: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        debug: jest.fn(),
+        close: jest.fn(async () => {}),
+        logOperation: jest.fn()
+      }
+
+      const ctx = new MeasureMetricsContext(
+        'test',
+        { op: 'test' },
+        {},
+        newMetrics(),
+        mockLogger,
+        undefined,
+        undefined,
+        'debug'
+      )
+      ctx.debug('D', { k: 1 })
+
+      expect(mockLogger.debug).toHaveBeenCalledWith('D', expect.objectContaining({ k: 1, op: 'test' }))
     })
 
     it('should get params', () => {
@@ -440,6 +495,7 @@ describe('context', () => {
         info: jest.fn(),
         error: jest.fn(),
         warn: jest.fn(),
+        debug: jest.fn(),
         close: jest.fn(async () => {}),
         logOperation: jest.fn()
       }

@@ -1,6 +1,7 @@
 import { writable, derived, get } from 'svelte/store'
 import { isCustomEmoji, type EmojiWithGroup } from '@hcengineering/emoji'
 import { getCurrentAccount } from '@hcengineering/core'
+import { emojiMatchesSearch } from './search'
 
 export const unicodeEmojiStore = writable<EmojiWithGroup[]>([])
 export const customEmojiStore = writable<EmojiWithGroup[]>([])
@@ -8,17 +9,7 @@ export const searchEmoji = writable<string>('')
 
 export const resultEmojis = derived([unicodeEmojiStore, customEmojiStore, searchEmoji], ([unicode, custom, search]) => {
   return search !== ''
-    ? unicode.concat(custom).filter((emoji) => {
-      if (isCustomEmoji(emoji)) {
-        return emoji.shortcode.toLowerCase().includes(search.toLowerCase())
-      }
-      return (
-        (emoji.tags?.some((tag: string) => tag.toLowerCase().startsWith(search.toLowerCase())) ?? false) ||
-          (emoji.shortcodes?.some((shortcode: string) => shortcode.toLowerCase().startsWith(search.toLowerCase())) ??
-            false) ||
-          emoji.label.toLowerCase().includes(search.toLowerCase())
-      )
-    })
+    ? unicode.concat(custom).filter((emoji) => emojiMatchesSearch(emoji, search))
     : unicode.concat(custom)
 })
 

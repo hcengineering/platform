@@ -16,7 +16,7 @@
   import { getMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
-  import { Icon, Label, showPopup } from '@hcengineering/ui'
+  import { Component, Icon, Label, navFooterExtensions, showPopup } from '@hcengineering/ui'
   import workbench from '../plugin'
   import HelpAndSupport from './HelpAndSupport.svelte'
 
@@ -25,12 +25,17 @@
   let selected: boolean = false
 
   const version = getMetadata(presentation.metadata.FrontVersion)
+
+  $: extensions = [...$navFooterExtensions].sort((a, b) => a.order - b.order)
 </script>
 
 <div class="antiNav-footer-line" />
 <div class="antiNav-footer-grower" />
 <div class="antiNav-footer">
   <slot />
+  {#each extensions as ext (ext.id)}
+    <Component is={ext.component} props={ext.props ?? {}} />
+  {/each}
   {#if split}<div class="antiNav-space" />{/if}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <!-- svelte-ignore a11y-no-static-element-interactions -->

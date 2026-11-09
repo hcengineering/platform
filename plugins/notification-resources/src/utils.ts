@@ -66,6 +66,7 @@ import { getObjectLinkId, parseLinkId } from '@hcengineering/view-resources'
 import type { LocationData } from '@hcengineering/workbench'
 import { get, writable } from 'svelte/store'
 
+import { isDesktopClient } from './desktop'
 import { InboxNotificationsClientImpl } from './inboxNotificationsClient'
 import { type InboxData, type InboxNotificationsFilter } from './types'
 
@@ -689,6 +690,10 @@ export const pushAllowed = writable<boolean>(false)
 
 export async function checkPermission (value: boolean): Promise<boolean> {
   if (!value) return true
+  if (isDesktopClient()) {
+    pushAllowed.set(false)
+    return false
+  }
   if ('serviceWorker' in navigator && 'PushManager' in window) {
     try {
       const loc = getCurrentLocation()
@@ -725,20 +730,30 @@ function addWorkerListener (): void {
 }
 
 export function pushAvailable (): boolean {
-  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  if (isDesktopClient()) return false
+  const publicKey = getPushPublicKey()
   return (
     'serviceWorker' in navigator &&
     'PushManager' in window &&
-    publicKey !== undefined &&
+    hasValidPushPublicKeyFormat(publicKey) &&
     'Notification' in window &&
     Notification.permission !== 'denied'
   )
 }
 
 export async function subscribePush (): Promise<boolean> {
+  if (isDesktopClient()) {
+    pushAllowed.set(false)
+    return false
+  }
   const client = getClient()
-  const publicKey = getMetadata(notification.metadata.PushPublicKey)
-  if ('serviceWorker' in navigator && 'PushManager' in window && publicKey !== undefined) {
+  const publicKey = getPushPublicKey()
+  if ('serviceWorker' in navigator && 'PushManager' in window && hasValidPushPublicKeyFormat(publicKey)) {
+    if (!(await isValidPushPublicKey(publicKey))) {
+      pushAllowed.set(false)
+      return false
+    }
+
     try {
       const loc = getCurrentLocation()
       let registration = await navigator.serviceWorker.getRegistration(`/${loc.path[0]}/${loc.path[1]}`)
@@ -753,7 +768,7 @@ export async function subscribePush (): Promise<boolean> {
       if (current == null) {
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: publicKey
+          applicationServerKey: urlBase64ToUint8Array(publicKey)
         })
         await client.createDoc(notification.class.PushSubscription, core.space.Workspace, {
           user: getCurrentAccount().uuid,
@@ -790,6 +805,53 @@ export async function subscribePush (): Promise<boolean> {
   }
   pushAllowed.set(false)
   return false
+}
+
+function getPushPublicKey (): string | undefined {
+  const publicKey = getMetadata(notification.metadata.PushPublicKey)
+  if (publicKey === undefined) return undefined
+  return publicKey.trim() !== '' ? publicKey : undefined
+}
+
+function hasValidPushPublicKeyFormat (publicKey: string | undefined): publicKey is string {
+  if (publicKey === undefined || publicKey.trim() === '') return false
+
+  try {
+    const key = urlBase64ToUint8Array(publicKey)
+    return key.length === 65 && key[0] === 4
+  } catch {
+    return false
+  }
+}
+
+async function isValidPushPublicKey (publicKey: string): Promise<boolean> {
+  if (globalThis.crypto?.subtle === undefined) return false
+
+  try {
+    await globalThis.crypto.subtle.importKey(
+      'raw',
+      urlBase64ToUint8Array(publicKey),
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      false,
+      ['verify']
+    )
+    return true
+  } catch {
+    return false
+  }
+}
+
+function urlBase64ToUint8Array (value: string): Uint8Array<ArrayBuffer> {
+  const padding = '='.repeat((4 - (value.length % 4)) % 4)
+  const base64 = `${value}${padding}`.replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+
+  return outputArray
 }
 
 async function cleanTag (_id: Ref<Doc>): Promise<void> {

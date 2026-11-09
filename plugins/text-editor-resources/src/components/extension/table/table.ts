@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { translate } from '@hcengineering/platform'
 import textEditor, { type ActionContext } from '@hcengineering/text-editor'
 import { getEventPositionElement, SelectPopup, showPopup } from '@hcengineering/ui'
 import { type Editor } from '@tiptap/core'
@@ -41,6 +42,7 @@ import { TableSelection } from './types'
 import { findTable, isTableSelected, selectTable as selectTableNode } from './utils'
 import { getTableMetadata } from './tableMetadata'
 import { refreshTable, showTableDiff, seeOriginalTableData } from './actions'
+import { addRows, getSelectedRowCount } from './addRows'
 
 export const Table = TiptapTable.extend({
   draggable: true,
@@ -231,7 +233,8 @@ function handleModDelete (editor: Editor): boolean {
 interface TableAction {
   id: string
   icon?: any
-  label: any
+  label?: any
+  text?: string
   action: () => boolean | undefined
   category?: {
     label: any
@@ -244,6 +247,12 @@ export async function openTableOptions (editor: Editor, event: MouseEvent): Prom
   const metadata = table !== undefined ? getTableMetadata(table.node) : null
 
   const ops: TableAction[] = []
+
+  const rowCount = getSelectedRowCount(editor.state)
+  const addRowsBeforeText =
+    rowCount > 1 ? await translate(textEditor.string.AddRowsBefore, { count: rowCount }) : undefined
+  const addRowsAfterText =
+    rowCount > 1 ? await translate(textEditor.string.AddRowsAfter, { count: rowCount }) : undefined
 
   // Add refreshable table actions first if metadata exists
   if (metadata !== null && metadata !== undefined) {
@@ -319,8 +328,9 @@ export async function openTableOptions (editor: Editor, event: MouseEvent): Prom
     {
       id: '#addRowBefore',
       icon: AddRowBefore,
-      label: textEditor.string.AddRowBefore,
-      action: () => editor.commands.addRowBefore(),
+      label: addRowsBeforeText === undefined ? textEditor.string.AddRowBefore : undefined,
+      text: addRowsBeforeText,
+      action: () => addRows('before')(editor.state, editor.view.dispatch),
       category: {
         label: textEditor.string.CategoryRow
       }
@@ -328,8 +338,9 @@ export async function openTableOptions (editor: Editor, event: MouseEvent): Prom
     {
       id: '#addRowAfter',
       icon: AddRowAfter,
-      label: textEditor.string.AddRowAfter,
-      action: () => editor.commands.addRowAfter(),
+      label: addRowsAfterText === undefined ? textEditor.string.AddRowAfter : undefined,
+      text: addRowsAfterText,
+      action: () => addRows('after')(editor.state, editor.view.dispatch),
       category: {
         label: textEditor.string.CategoryRow
       }

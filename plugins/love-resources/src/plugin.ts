@@ -107,6 +107,7 @@ export default mergeIds(loveId, love, {
     Window: '' as IntlString,
     MeetingEmptyTitle: '' as IntlString,
     MeetingEmptyMessage: '' as IntlString,
-    StayInRoom: '' as IntlString
+    StayInRoom: '' as IntlString,
+    ScreenSharedBy: '' as IntlString
   }
 })

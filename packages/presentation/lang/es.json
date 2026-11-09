@@ -56,7 +56,8 @@
     "LineTool": "Línea",
     "RectangleTool": "Rectángulo",
     "EllipseTool": "Elipse",
-    "PaletteManagementMenu": "Gestionar preajustes de color"
+    "PaletteManagementMenu": "Gestionar preajustes de color",
+    "BetaVersion": "Versión beta"
   },
   "status": {
     "FileTooLarge": "Archivo demasiado grande"

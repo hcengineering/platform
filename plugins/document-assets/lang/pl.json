@@ -1,0 +1,64 @@
+{
+  "string": {
+    "Document": "Dokument",
+    "ParentDocument": "Dokument nadrzędny",
+    "ChildDocument": "Poddokument",
+    "CreateDocument": "Stwórz dokument",
+    "Documents": "Dokumenty",
+    "CreateAnVersion": "Utwórz nową wersję",
+    "DocumentNamePlaceholder": "Bez nazwy",
+    "Name": "Nazwa",
+    "Cancel": "Anuluj",
+    "Version": "Wersja",
+    "SearchDocument": "Znajdź dokument...",
+    "Snapshot": "Migawka",
+    "NoVersions": "Nie zdefiniowano wersji",
+    "DocumentApplication": "Dokumenty",
+    "MyDocuments": "Moje dokumenty",
+    "Teamspace": "Przestrzeń zespołowa",
+    "Teamspaces": "Przestrzenie zespołowe",
+    "Labels": "Etykiety",
+    "AddLabel": "Dodaj etykietę",
+    "Authors": "Autorzy",
+    "Backlinks": "Linki zwrotne",
+    "History": "Historia",
+    "DescriptionPlaceholder": "Uzupełnij szczegóły...",
+    "CreateTeamspace": "Utwórz przestrzeń zespołową",
+    "EditTeamspace": "Edytuj przestrzeń zespołową",
+    "NewTeamspace": "Nowa przestrzeń zespołowa",
+    "TeamspaceTitle": "Nazwa przestrzeni",
+    "TeamspaceTitlePlaceholder": "Nowa przestrzeń zespołowa",
+    "TeamspaceDescriptionPlaceholder": "Dodaj opis...",
+    "ChooseIcon": "Wybierz ikonę",
+    "TeamspaceMembers": "Uczestnicy",
+    "NoParentDocument": "Bez nadrzędnego dokumentu",
+    "NoBacklinks": "Brak linków zwrotnych",
+    "NoHistory": "Brak historii",
+    "Untitled": "Bez nazwy",
+
+    "Description": "Opis",
+
+    "CopyDocumentUrl": "Skopiuj URL dokumentu do schowka",
+    "DocumentUrlCopied": "Skopiowano!",
+
+    "ViewMode": "Podgląd",
+    "EditMode": "Edytuj",
+    "SuggestMode": "Zaproponuj",
+
+    "CompareTo": "Porównaj z...",
+    "Star": "Polub",
+    "Unstar": "Usuń z ulubionych",
+
+    "Lock": "Zablokuj",
+    "Unlock": "Odblokuj",
+    "Locked": "Zablokowane",
+
+    "ConfigLabel": "Dokumenty",
+    "ConfigDescription": "Rozszerzenie do wspólnej edycji dokumentów",
+
+    "Icon": "Ikona",
+    "Color": "Kolor",
+    "ForbidCreateTeamspacePermission": "Zabroń tworzenia przestrzeni zespołowych",
+    "ForbidCreateTeamspacePermissionDescription": "Zabrania użytkownikom tworzenia nowych przestrzeni zespołowych"
+  }
+}

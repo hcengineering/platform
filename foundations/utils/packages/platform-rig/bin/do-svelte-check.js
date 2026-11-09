@@ -3,7 +3,9 @@ const { readFileSync, existsSync, mkdirSync, createWriteStream } = require('fs')
 const { spawn } = require('child_process')
 
 function parseSvelteCheckLog(logContent) {
-  const lines = logContent.split('\n')
+  // Human output includes ANSI colors, even when redirected to a log file.
+  // Strip them before looking for "Error:" so failed checks report the errors.
+  const lines = logContent.replace(/\x1b\[[0-9;]*m/g, '').split('\n')
   const errors = []
   let currentError = null
 
@@ -47,7 +49,11 @@ async function execProcess(cmd, logFile, args, useConsole) {
     mkdirSync(join(process.cwd(), '.svelte-check'))
   }
 
-  const compileOut = spawn(cmd, args)
+  // pnpm exposes package binaries as .cmd shims on Windows. child_process.spawn
+  // cannot execute those shims directly, so delegate to cmd.exe there.
+  const compileOut = spawn(process.platform === 'win32' ? `${cmd}.cmd` : cmd, args, {
+    shell: process.platform === 'win32'
+  })
 
   const stdoutFilePath = `.svelte-check/${logFile}.log`
   const stderrFilePath = `.svelte-check/${logFile}-err.log`

@@ -1,0 +1,13 @@
+{
+  "string": {
+    "Inbox": "Skrzynka odbiorcza",
+    "ReactedToYourMessage": "zareagował na Twoją wiadomość",
+    "ClearAll": "Wyczyść wszystko",
+    "InboxIsClear": "Skrzynka odbiorcza jest pusta",
+    "YouDontHaveAnyNewMessages": "Nie masz żadnych nowych wiadomości",
+    "ReadAll": "Przeczytaj wszystkie",
+    "Clearing": "Czyszczenie...",
+    "Reading": "Odczytywanie...",
+    "HideUserNames": "Ukryj nazwy użytkowników"
+  }
+}

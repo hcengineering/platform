@@ -49,6 +49,8 @@
         "DeleteColumn": "삭제",
         "AddRowBefore": "위에 추가",
         "AddRowAfter": "아래에 추가",
+        "AddRowsBefore": "위에 {count}개 행 추가",
+        "AddRowsAfter": "아래에 {count}개 행 추가",
         "DeleteRow": "삭제",
         "DeleteTable": "삭제",
         "MergeCells": "셀 병합",
@@ -86,6 +88,7 @@
         "UnableToLoadEmbeddedContent": "권한 설정 또는 지원되지 않는 콘텐츠로 인해 링크 미리 보기를 불러올 수 없습니다",
         "CannotConnectToCollaborationService": "협업 서비스에 연결할 수 없습니다",
         "SourceURL": "원본 URL",
-        "SelectedDocuments": "선택한 문서 ({count, plural, =1 {1개 항목} other {#개 항목}})"
+        "SelectedDocuments": "선택한 문서 ({count, plural, =1 {1개 항목} other {#개 항목}})",
+        "LatestVersion": "최신"
     }
 }

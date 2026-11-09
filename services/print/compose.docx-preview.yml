@@ -1,0 +1,49 @@
+# Merge into a deployment that already defines the print service with the updated image:
+# docker compose -f compose.yml -f compose.docx-preview.yml up -d print gotenberg
+# The print service retains its existing network, storage, secret and account settings.
+services:
+  print:
+    environment:
+      GOTENBERG_URL: http://gotenberg:3000
+    networks:
+      default: {}
+      document-preview: {}
+    depends_on:
+      gotenberg:
+        condition: service_healthy
+
+  gotenberg:
+    # Gotenberg 8.37.0, pinned so conversion behavior does not change on restart.
+    image: gotenberg/gotenberg@sha256:f29984bd1e226bf1b93ba90af06000afa8b315853e99d27b9aaa41b93f15c769
+    restart: unless-stopped
+    cpus: 1
+    mem_limit: 1g
+    pids_limit: 256
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:rw,nosuid,size=512m
+    command:
+      - gotenberg
+      - --api-timeout=60s
+      - --api-body-limit=26MB
+      - --api-disable-download-from
+      - --webhook-disable
+      - --chromium-disable-routes
+      - --libreoffice-deny-list=.*
+      - --libreoffice-max-queue-size=4
+      - --libreoffice-idle-shutdown-timeout=30s
+    healthcheck:
+      test: [CMD, curl, --fail, --silent, http://localhost:3000/health]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      document-preview: {}
+
+networks:
+  document-preview:
+    internal: true

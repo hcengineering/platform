@@ -9,10 +9,12 @@
     "build:docs": "api-extractor run --local",
     "format": "format src",
     "svelte-check": "do-svelte-check",
+    "test": "jest --passWithNoTests --silent",
     "_phase:svelte-check": "do-svelte-check",
     "build:watch": "compile ui",
     "_phase:build": "compile ui",
     "_phase:format": "format src",
+    "_phase:test": "jest --passWithNoTests --silent",
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
@@ -48,6 +50,7 @@
     "@hcengineering/view": "workspace:^0.7.0",
     "@hcengineering/view-resources": "workspace:^0.7.0",
     "@hcengineering/billing-client": "workspace:^0.7.0",
+    "@hcengineering/attachment": "workspace:^0.7.0",
     "@hcengineering/drive": "workspace:^0.7.0",
     "@hcengineering/love": "workspace:^0.7.0",
     "@hcengineering/login": "workspace:^0.7.0",

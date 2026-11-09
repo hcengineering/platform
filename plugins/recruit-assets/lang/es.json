@@ -121,7 +121,8 @@
     "CreateNewSkills": "Crear nuevas habilidades si no se encuentran las existentes",
     "SwapFirstAndLastNames": "Intercambie nombres y apellidos",
     "ForbidCreateVacancyPermission": "Prohibir crear vacante",
-    "ForbidCreateVacancyPermissionDescription": "Prohíbe a los usuarios crear nuevas vacantes"
+    "ForbidCreateVacancyPermissionDescription": "Prohíbe a los usuarios crear nuevas vacantes",
+    "NumberLabels": "{count, plural, =0 {sin etiquetas} =1 {1 etiqueta} other {# etiquetas}}"
   },
   "status": {
     "ApplicationExists": "La solicitud ya existe",

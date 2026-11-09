@@ -30,7 +30,7 @@ test.describe('review tests', () => {
     await commonRecruitingPage.clickTalent()
     // Click button:has-text("Chen Rosamund")
     await commonRecruitingPage.clickChenRosamund()
-    await commonRecruitingPage.createApplication()
+    await commonRecruitingPage.createReview()
     await commonRecruitingPage.selectReviewItem(reviewId)
     await commonRecruitingPage.clickTwoMembers()
     await commonRecruitingPage.clickAppleseedJohn()

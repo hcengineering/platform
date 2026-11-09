@@ -42,6 +42,14 @@ export function createModel (builder: Builder): void {
   })
 
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverHr.trigger.OnDepartmentUpdate,
+    txMatch: {
+      objectClass: hr.class.Department,
+      _class: core.class.TxUpdateDoc
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverHr.trigger.OnRequestCreate,
     txMatch: {
       _class: core.class.TxCreateDoc,

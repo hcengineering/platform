@@ -124,7 +124,8 @@
     "CreateNewSkills": "如果未找到现有技能，则创建新技能",
     "SwapFirstAndLastNames": "交换名字和姓氏",
     "ForbidCreateVacancyPermission": "禁止创建职位",
-    "ForbidCreateVacancyPermissionDescription": "禁止用户创建新职位"
+    "ForbidCreateVacancyPermissionDescription": "禁止用户创建新职位",
+    "NumberLabels": "{count, plural, =0 {无标签} =1 {1 个标签} other {# 个标签}}"
   },
   "status": {
     "ApplicationExists": "申请已存在",

@@ -57,14 +57,24 @@ describe('DatalakeStorage', () => {
       expect(url).toBe(`${baseUrl}/blob/${workspace}/${file}`)
     })
 
-    it('should handle special characters in parameters', () => {
+    it('should encode special characters in parameters', () => {
       const workspace = 'test workspace'
       const file = 'file 123'
       const filename = 'my document.pdf'
 
       const url = storage.getFileUrl(workspace, file, filename)
 
-      expect(url).toBe(`${baseUrl}/blob/${workspace}/${file}/${filename}`)
+      expect(url).toBe(`${baseUrl}/blob/test%20workspace/file%20123/my%20document.pdf`)
+    })
+
+    it('should encode slash in filename as a single path segment', () => {
+      const workspace = 'test-workspace'
+      const file = 'file-123'
+      const filename = 'folder/document.pdf'
+
+      const url = storage.getFileUrl(workspace, file, filename)
+
+      expect(url).toBe(`${baseUrl}/blob/${workspace}/${file}/folder%2Fdocument.pdf`)
     })
 
     it('should handle base URL with trailing slash', () => {

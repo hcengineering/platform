@@ -35,6 +35,8 @@ export const emojiRegex = new RegExp(`(?:^|\\s)(${EMOJI_REGEX.source})$`)
 export const emojiGlobalRegex = new RegExp(EMOJI_REGEX.source, EMOJI_REGEX.flags + 'g')
 
 export const emoticonRegex = new RegExp(`(?:^|\\s)(${EMOTICON_REGEX.source})$`)
+// Emoticon followed by the whitespace that has just been typed
+export const emoticonBeforeSpaceRegex = new RegExp(`(?:^|\\s)(${EMOTICON_REGEX.source})\\s$`)
 export const emoticonGlobalRegex = new RegExp(EMOTICON_REGEX.source, EMOTICON_REGEX.flags + 'g')
 
 export const shortcodeRegex = new RegExp(`(?:^|\\s)(${SHORTCODE_REGEX.source})$`)

@@ -89,6 +89,8 @@ export default plugin(textEditorId, {
     DeleteColumn: '' as IntlString,
     AddRowBefore: '' as IntlString,
     AddRowAfter: '' as IntlString,
+    AddRowsBefore: '' as IntlString,
+    AddRowsAfter: '' as IntlString,
     MergeCells: '' as IntlString,
     SplitCells: '' as IntlString,
     DeleteRow: '' as IntlString,

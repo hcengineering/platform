@@ -127,7 +127,8 @@ describe('RelationExporter sourceClass', () => {
       hierarchy,
       lowLevel,
       expect.any(Map),
-      relations
+      relations,
+      false
     )
   })
 
@@ -178,7 +179,8 @@ describe('RelationExporter sourceClass', () => {
       hierarchy,
       lowLevel,
       expect.any(Map),
-      relations
+      relations,
+      false
     )
   })
 
@@ -219,7 +221,8 @@ describe('RelationExporter sourceClass', () => {
       hierarchy,
       lowLevel,
       expect.any(Map),
-      relations
+      relations,
+      false
     )
   })
 

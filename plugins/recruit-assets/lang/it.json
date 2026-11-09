@@ -98,7 +98,6 @@
     "HasNoActiveApplicant": "Nessuno attivo",
     "NoneApplications": "Nessuna",
     "VacancyList": "Posizioni aperte",
-    "MatchVacancy": "Corrispondi a posizione aperta",
     "VacancyMatching": "Corrispondi candidati a posizione aperta",
     "Score": "Punteggio",
     "Match": "Corrispondenza",
@@ -122,7 +121,8 @@
     "CreateNewSkills": "Crea nuove competenze se quelle esistenti non vengono trovate",
     "SwapFirstAndLastNames": "Scambia nome e cognome",
     "ForbidCreateVacancyPermission": "Vieta creazione posizione aperta",
-    "ForbidCreateVacancyPermissionDescription": "Vieta agli utenti di creare nuove posizioni aperte"
+    "ForbidCreateVacancyPermissionDescription": "Vieta agli utenti di creare nuove posizioni aperte",
+    "NumberLabels": "{count, plural, =0 {nessuna etichetta} =1 {1 etichetta} other {# etichette}}"
   },
   "status": {
     "ApplicationExists": "La candidatura esiste già",

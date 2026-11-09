@@ -142,9 +142,6 @@ export default mergeIds(settingId, setting, {
     GuestAutoJoinAvailableSpacesHint: '' as IntlString,
     GuestAnonymousVisibleSpaces: '' as IntlString,
     GuestAnonymousVisibleSpacesHint: '' as IntlString,
-    ApiAccess: '' as IntlString,
-    ApiToken: '' as IntlString,
-    GenerateApiToken: '' as IntlString,
     ImportDocumentPermission: '' as IntlString,
     ImportDocumentDescription: '' as IntlString,
     SelectUsers: '' as IntlString,
@@ -166,6 +163,8 @@ export default mergeIds(settingId, setting, {
     ShowInTitle: '' as IntlString,
     SpaceMembersOnly: '' as IntlString,
     LastOwnerLeaveTitle: '' as IntlString,
-    LastOwnerLeaveMessage: '' as IntlString
+    LastOwnerLeaveMessage: '' as IntlString,
+    OverrideAttribute: '' as IntlString,
+    Required: '' as IntlString
   }
 })

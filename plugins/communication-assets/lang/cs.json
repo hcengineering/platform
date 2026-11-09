@@ -39,7 +39,7 @@
     "IsThinking": "{count, plural, =1 {přemýšlí} other {přemýšlejí}}",
     "Loading": "Načítání...",
     "MessageIn": "Zpráva #{title}",
-    "ThreadWasDeleted": "Tato vlákno byla smazána.",
+    "ThreadWasRemoved": "Toto vlákno bylo odstraněno.",
     "MessageWasRemoved": "Tato zpráva byla odstraněna.",
     "JoinedThe": "Připojil se k",
     "LeftThe": "Opustil se z",

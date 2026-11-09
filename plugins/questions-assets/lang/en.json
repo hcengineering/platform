@@ -30,6 +30,8 @@
     "SingleChoiceQuestion": "Single selection (not rated)",
     "TypePercentage": "Percentage",
     "TypeQuestionOption": "Option",
-    "TypeRank": "Rank"
+    "TypeRank": "Rank",
+    "ConfigLabel": "Questions",
+    "ConfigDescription": "Question and assessment authoring used by training, quizzes and surveys"
   }
 }

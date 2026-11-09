@@ -72,7 +72,7 @@
   export let embedded: boolean = false
 
   $: locked = doc?.lockedBy != null
-  $: readonly = $restrictionStore.readonly || locked
+  $: effectiveReadonly = readonly || $restrictionStore.readonly || locked
 
   let useMaxWidth = getUseMaxWidth()
   $: saveUseMaxWidth(useMaxWidth)
@@ -271,6 +271,7 @@
     bind:useMaxWidth
     {sideContentSpace}
     printHeader={false}
+    printActivity={false}
     {embedded}
     adaptive={'default'}
     bind:content
@@ -308,7 +309,14 @@
       {#if doc}
         <ComponentExtensions
           extension={view.extensions.EditDocTitleExtension}
-          props={{ size: 'medium', kind: 'ghost', _id: doc._id, _class: doc._class, value: doc, readonly }}
+          props={{
+            size: 'medium',
+            kind: 'ghost',
+            _id: doc._id,
+            _class: doc._class,
+            value: doc,
+            readonly: effectiveReadonly
+          }}
         />
       {/if}
       {#if !$restrictionStore.disableActions}
@@ -349,7 +357,7 @@
                       ? getPlatformColorDef(doc.color, $themeStore.dark).icon
                       : 'currentColor'
                 }}
-            disabled={readonly}
+            disabled={effectiveReadonly}
             showTooltip={{ label: document.string.Icon, direction: 'bottom' }}
             on:click={chooseIcon}
           />
@@ -359,7 +367,7 @@
           focusIndex={1}
           fill
           bind:value={title}
-          {readonly}
+          readonly={effectiveReadonly}
           placeholder={document.string.DocumentNamePlaceholder}
           on:blur={(evt) => saveTitle(evt)}
           on:keydown={(evt) => {
@@ -388,7 +396,7 @@
           <DocumentEditor
             focusIndex={30}
             object={doc}
-            {readonly}
+            readonly={effectiveReadonly}
             boundary={content}
             overflow={'none'}
             editorAttributes={{ style: 'padding: 0 2em 2em; margin: 0 -2em; min-height: 30vh' }}
@@ -408,19 +416,25 @@
       </div>
     </div>
 
-    <RelationsEditor object={doc} {readonly} />
+    <RelationsEditor object={doc} readonly={effectiveReadonly} />
 
     <svelte:fragment slot="aside">
       {#if selectedAside === 'references'}
         <References doc={doc._id} />
       {:else if selectedAside === 'history'}
-        <History value={doc} {readonly} />
+        <History value={doc} readonly={effectiveReadonly} />
       {/if}
     </svelte:fragment>
 
     <svelte:fragment slot="custom-attributes">
       <!-- TODO show other properties -->
-      <ClassAttributeBar object={doc} _class={doc._class} to={core.class.Doc} ignoreKeys={['name']} {readonly} />
+      <ClassAttributeBar
+        object={doc}
+        _class={doc._class}
+        to={core.class.Doc}
+        ignoreKeys={['name']}
+        readonly={effectiveReadonly}
+      />
 
       <div class="doc-divider" />
 
@@ -438,7 +452,7 @@
         <div class="flex">
           <Component
             is={tags.component.TagsAttributeEditor}
-            props={{ object: doc, label: document.string.AddLabel, readonly }}
+            props={{ object: doc, label: document.string.AddLabel, readonly: effectiveReadonly }}
           />
         </div>
         <div class="divider" />

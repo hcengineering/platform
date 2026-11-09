@@ -85,6 +85,7 @@
     "ClassicProject": "Proyecto clásico",
     "LastSave": "Último guardado",
     "Published": "Publicado",
+    "CountTasks": "{count, plural, =0 {Sin tareas} =1 {# tarea} other {# tareas}}",
     "CountProjects": "{count, plural, =0 {No hay proyectos} =1 {# proyecto} other {# proyectos}}",
     "ProjectTypeTitle": "Título del tipo de proyecto",
     "ProcessStates": "Estados del proceso",

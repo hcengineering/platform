@@ -106,6 +106,7 @@ import {
   eventCheck,
   fieldChangesCheck,
   matchCardCheck,
+  requiredFieldsFilledCheck,
   showDoneQuery,
   subProcessesDoneCheck,
   subProcessMatchCheck,
@@ -212,6 +213,7 @@ export default async (): Promise<Resources> => ({
   triggerCheck: {
     MatchCheck: matchCardCheck,
     FieldChangedCheck: fieldChangesCheck,
+    RequiredFieldsFilledCheck: requiredFieldsFilledCheck,
     SubProcessesDoneCheck: subProcessesDoneCheck,
     SubProcessMatchCheck: subProcessMatchCheck,
     ToDo: todoTranstionCheck,

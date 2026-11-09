@@ -3,6 +3,7 @@ import core, {
   MeasureMetricsContext,
   ModelDb,
   TxFactory,
+  type Domain,
   type DocumentUpdate,
   type PersonId,
   type Ref,
@@ -134,6 +135,33 @@ describe('query to sql conversion tests', () => {
     expect(queries[0].query).toEqual(
       'UPDATE pg_testing SET "modifiedBy" = update_data."_modifiedBy", "modifiedOn" = update_data."_modifiedOn", "%hash%" = update_data."_%hash%", data = COALESCE(data || update_data._data)\n            FROM (values ($2::text, $3::text,$4::bigint,$5::text,$6::jsonb),($7::text, $8::text,$9::bigint,$10::text,$11::jsonb),($12::text, $13::text,$14::bigint,$15::text,$16::jsonb)) AS update_data(__id, "_modifiedBy","_modifiedOn","_%hash%","_data")\n            WHERE "workspaceId" = $1::uuid AND "_id" = update_data.__id'
     )
+  })
+  it('check $in with only null/undefined values', async () => {
+    const { adapter, queries } = createTestContext()
+
+    await adapter.rawFindAll('test' as Domain, { dueDate: { $in: [undefined, null] } } as any)
+    expect(queries[0].query).toEqual(
+      'SELECT test.* FROM test WHERE "workspaceId" = $1::uuid AND data#>>\'{dueDate}\' IS NULL'
+    )
+    expect(queries[0].params).toEqual(['workspace'])
+  })
+  it('check $in with null and other values', async () => {
+    const { adapter, queries } = createTestContext()
+
+    await adapter.rawFindAll('test' as Domain, { dueDate: { $in: [undefined, null, 1755561600000] } } as any)
+    expect(queries[0].query).toEqual(
+      "SELECT test.* FROM test WHERE \"workspaceId\" = $1::uuid AND (data#>>'{dueDate}' = ANY($2::text[]) OR data#>>'{dueDate}' IS NULL)"
+    )
+    expect(queries[0].params).toEqual(['workspace', ['1755561600000']])
+  })
+  it('check $nin with only null/undefined values', async () => {
+    const { adapter, queries } = createTestContext()
+
+    await adapter.rawFindAll('test' as Domain, { dueDate: { $nin: [undefined, null] } } as any)
+    expect(queries[0].query).toEqual(
+      'SELECT test.* FROM test WHERE "workspaceId" = $1::uuid AND data#>>\'{dueDate}\' IS NOT NULL'
+    )
+    expect(queries[0].params).toEqual(['workspace'])
   })
 })
 function createTestContext (): { adapter: PostgresAdapter, ctx: MeasureMetricsContext, queries: TypedQuery[] } {

@@ -20,10 +20,10 @@
     pluginConfigurationStore,
     hasResource,
     isDisabled,
-    isAdminUser
+    PluginConfigurationCard
   } from '@hcengineering/presentation'
   import ratingPlugin, { getRaiting, type PersonRating } from '@hcengineering/rating'
-  import { Breadcrumb, Button, Header, Icon, IconInfo, Label, Scroller } from '@hcengineering/ui'
+  import { Breadcrumb, Header, Label, Scroller } from '@hcengineering/ui'
   import setting from '../plugin'
 
   const client = getClient()
@@ -57,41 +57,20 @@
       <Label label={setting.string.BetaWarning} />
     </div>
     <Scroller align={'center'} padding={'var(--spacing-3)'} bottomPadding={'var(--spacing-3)'}>
-      <div class="flex-row-center flex-wrap gap-around-4">
+      <div class="modules-grid">
         {#each $pluginConfigurationStore.list as config}
           {#if config.hidden !== true && config.system !== true && !isDisabled(config.pluginId)}
             {@const pluginRating = getRaiting(totalVisible, sysRating, [config])}
-            <div class="cardBox flex-col clear-mins" class:enabled={config.enabled ?? true}>
-              <div class="flex-row-center">
-                <span class="mr-2">
-                  <Icon icon={config.icon ?? IconInfo} size={'medium'} />
-                </span>
-                <span class="fs-title">
-                  <Label label={config.label} />
-
-                  {#if hasResource(ratingPlugin.component.RatingRing)}
-                    - ({pluginRating}%)
-                  {/if}
-                </span>
-              </div>
-              {#if config.description}
-                <div class="my-3 flex-grow clear-mins">
-                  <Label label={config.description} />
-                </div>
-              {/if}
-              <div class="flex-between flex-row-center">
-                {#if config.beta}
-                  <Label label={setting.string.ConfigBeta} />
-                {/if}
-                <div class="flex-row-center flex-reverse flex-grow max-h-9">
-                  <Button
-                    label={(config.enabled ?? true) ? setting.string.ConfigDisable : setting.string.ConfigEnable}
-                    size={'large'}
-                    on:click={() => change(config, !(config.enabled ?? true))}
-                  />
-                </div>
-              </div>
-            </div>
+            {@const ratingSuffix = hasResource(ratingPlugin.component.RatingRing) ? `${pluginRating}%` : undefined}
+            <PluginConfigurationCard
+              label={config.label}
+              description={config.description}
+              icon={config.icon}
+              enabled={config.enabled ?? true}
+              beta={config.beta}
+              suffix={ratingSuffix}
+              on:toggle={(e) => change(config, e.detail.enabled)}
+            />
           {/if}
         {/each}
       </div>
@@ -100,16 +79,13 @@
 </div>
 
 <style lang="scss">
-  .cardBox {
-    flex-shrink: 0;
-    padding: 1rem;
-    width: 24rem;
-    height: 10rem;
-    background-color: var(--theme-button-default);
-    border: 1px solid var(--theme-button-border);
-    border-radius: 0.5rem;
-    &.enabled {
-      background-color: var(--theme-button-pressed);
+  .modules-grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: 1fr;
+
+    @media (min-width: 40rem) {
+      grid-template-columns: 1fr 1fr;
     }
   }
 </style>

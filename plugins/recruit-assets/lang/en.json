@@ -124,7 +124,8 @@
     "CreateNewSkills": "Create new skills if existing not found",
     "SwapFirstAndLastNames": "Swap first and last names",
     "ForbidCreateVacancyPermission": "Forbid create vacancy",
-    "ForbidCreateVacancyPermissionDescription": "Forbid users creating new vacancies"
+    "ForbidCreateVacancyPermissionDescription": "Forbid users creating new vacancies",
+    "NumberLabels": "{count, plural, =0 {no labels} =1 {1 label} other {# labels}}"
   },
   "status": {
     "ApplicationExists": "Application already exists",

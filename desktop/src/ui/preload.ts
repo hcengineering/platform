@@ -110,7 +110,7 @@ const expose: IPCMainExposed = {
               UPLOAD_URL: (serverConfig.UPLOAD_URL as string).includes('://')
                 ? serverConfig.UPLOAD_URL
                 : concatLink(mainConfig.FRONT_URL, serverConfig.UPLOAD_URL),
-              MODEL_VERSION: mainConfig.MODEL_VERSION,
+              MODEL_VERSION: serverConfig.MODEL_VERSION ?? mainConfig.MODEL_VERSION,
               VERSION: mainConfig.VERSION
             }
 

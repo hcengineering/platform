@@ -28,6 +28,7 @@ import {
   type PersonUuid,
   type SocialId as SocialIdBase,
   type UsageStatus,
+  type WorkspaceConfiguration,
   type WorkspaceDataId,
   type WorkspaceUuid,
   type WorkspaceInfo,
@@ -115,7 +116,7 @@ export interface Workspace {
   url: string
   allowReadOnlyGuest: boolean
   allowGuestSignUp: boolean
-  passwordAgingRule?: number // Number of days after which password must be changed
+  passwordAgingRule?: number | null // Number of days after which password must be changed
   dataId?: WorkspaceDataId // Old workspace identifier. E.g. Database name in Mongo, bucket in R2, etc.
   branding?: string
   location?: Location
@@ -123,6 +124,8 @@ export interface Workspace {
   createdBy?: PersonUuid
   billingAccount?: PersonUuid
   createdOn?: Timestamp
+  // Initial-state configuration captured at workspace creation
+  pendingConfiguration?: WorkspaceConfiguration | null
 }
 
 export interface OTP {
@@ -155,6 +158,28 @@ export interface WorkspaceJoinInfo {
   email: string
   workspace: Workspace
   invite?: WorkspaceInvite | null
+}
+
+/**
+ * Represents an API token record in the database.
+ * Timestamps are in milliseconds since Unix epoch.
+ *
+ * A token carries the full rights of the account that created it. Narrowing
+ * that down needs enforcement in the pipeline, where it applies to every
+ * transport, so it is deliberately not attempted here.
+ *
+ * @public
+ */
+export interface ApiToken {
+  id: string
+  accountUuid: PersonUuid
+  name: string
+  workspaceUuid: WorkspaceUuid
+  /** Milliseconds since epoch */
+  createdOn: number
+  /** Milliseconds since epoch */
+  expiresOn: number
+  revoked: boolean
 }
 
 export interface Mailbox {
@@ -324,12 +349,13 @@ export interface AccountDB {
   userProfile: DbCollection<UserProfile>
   subscription: DbCollection<Subscription>
   workspacePermission: DbCollection<WorkspacePermission>
+  apiToken: DbCollection<ApiToken>
 
   init: () => Promise<void>
   createWorkspace: (data: WorkspaceData, status: WorkspaceStatusData) => Promise<WorkspaceUuid>
   updateAllowReadOnlyGuests: (workspaceId: WorkspaceUuid, readOnlyGuestsAllowed: boolean) => Promise<void>
   updateAllowGuestSignUp: (workspaceId: WorkspaceUuid, guestSignUpAllowed: boolean) => Promise<void>
-  updatePasswordAgingRule: (workspaceId: WorkspaceUuid, days: number) => Promise<void>
+  updatePasswordAgingRule: (workspaceId: WorkspaceUuid, days: number | null) => Promise<void>
   assignWorkspace: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
   batchAssignWorkspace: (data: [AccountUuid, WorkspaceUuid, AccountRole][]) => Promise<void>
   updateWorkspaceRole: (accountId: AccountUuid, workspaceId: WorkspaceUuid, role: AccountRole) => Promise<void>
@@ -455,7 +481,7 @@ export interface LoginInfoWorkspace {
 
   progress?: number
   branding?: string
-  passwordAgingRule?: number
+  passwordAgingRule?: number | null
 }
 
 export interface LoginInfoWithWorkspaces extends LoginInfo {

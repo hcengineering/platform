@@ -22,6 +22,7 @@
   import {
     Component,
     deviceOptionsStore as deviceInfo,
+    printModeStore,
     Panel,
     Scroller,
     resizeObserver,
@@ -57,6 +58,7 @@
   export let selectedAside: string | boolean = customAside ? customAside[0].id : isAside
   export let printHeader: boolean = true
   export let printAside: boolean = false
+  export let printActivity: boolean = true
   export let adaptive: HeaderAdaptive = 'disabled'
   export let hideBefore: boolean = false
   export let hideSearch: boolean = true
@@ -122,6 +124,8 @@
       startScrollHeightCheck()
     }
   })
+
+  $: max = useMaxWidth === true || $printModeStore
 </script>
 
 <Panel
@@ -250,39 +254,43 @@
   </svelte:fragment>
 
   {#if $deviceInfo.isMobile}
-    <div bind:this={content} class="popupPanel-body__mobile-content clear-mins" class:max={useMaxWidth}>
+    <div bind:this={content} class="popupPanel-body__mobile-content clear-mins" class:max>
       <slot />
       {#if showActivity}
-        {#key object._id}
-          <Component
-            is={activity.component.Activity}
-            props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
-          />
-        {/key}
+        <div class="panel-activity" class:no-print={!printActivity}>
+          {#key object._id}
+            <Component
+              is={activity.component.Activity}
+              props={{ object, showCommenInput: !withoutInput, shouldScroll: embedded, focusIndex: 1000 }}
+            />
+          {/key}
+        </div>
       {/if}
     </div>
   {:else if withoutContentScroll}
     <div
       bind:this={content}
       class={contentClasses ?? 'popupPanel-body__main-content py-8 clear-mins'}
-      class:max={useMaxWidth}
+      class:max
       class:side-content-space={sideContentSpace > 0}
       style:--side-content-space={`${sideContentSpace}px`}
     >
       <slot />
       {#if showActivity}
-        {#key object._id}
-          <Component
-            is={activity.component.Activity}
-            props={{
-              object,
-              showCommenInput: !withoutInput,
-              shouldScroll: embedded,
-              focusIndex: 1000,
-              boundary: content
-            }}
-          />
-        {/key}
+        <div class="panel-activity" class:no-print={!printActivity}>
+          {#key object._id}
+            <Component
+              is={activity.component.Activity}
+              props={{
+                object,
+                showCommenInput: !withoutInput,
+                shouldScroll: embedded,
+                focusIndex: 1000,
+                boundary: content
+              }}
+            />
+          {/key}
+        </div>
       {/if}
     </div>
   {:else}
@@ -296,7 +304,7 @@
     >
       <div
         class={contentClasses ?? 'popupPanel-body__main-content py-8'}
-        class:max={useMaxWidth}
+        class:max
         class:side-content-space={sideContentSpace > 0}
         style:--side-content-space={`${sideContentSpace}px`}
         use:resizeObserver={(element) => {
@@ -305,21 +313,30 @@
       >
         <slot />
         {#if showActivity}
-          {#key object._id}
-            <Component
-              is={activity.component.Activity}
-              bind:innerRef={activityRef}
-              props={{
-                object,
-                showCommenInput: !withoutInput,
-                shouldScroll: embedded,
-                focusIndex: 1000,
-                boundary: content
-              }}
-            />
-          {/key}
+          <div class="panel-activity" class:no-print={!printActivity}>
+            {#key object._id}
+              <Component
+                is={activity.component.Activity}
+                bind:innerRef={activityRef}
+                props={{
+                  object,
+                  showCommenInput: !withoutInput,
+                  shouldScroll: embedded,
+                  focusIndex: 1000,
+                  boundary: content
+                }}
+              />
+            {/key}
+          </div>
         {/if}
       </div>
     </Scroller>
   {/if}
 </Panel>
+
+<style lang="scss">
+  // Keeps the layout of the activity section unchanged; only used to exclude it from printing.
+  .panel-activity {
+    display: contents;
+  }
+</style>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import contact from '@hcengineering/contact'
-  import { Ref, getCurrentAccount, toIdMap } from '@hcengineering/core'
+  import { AccountRole, Ref, getCurrentAccount, toIdMap } from '@hcengineering/core'
   import { copyTextToClipboard, createQuery, getClient } from '@hcengineering/presentation'
   import setting from '@hcengineering/setting'
   import {
@@ -42,11 +42,12 @@
   const dispatch = createEventDispatcher()
   const client = getClient()
   const myAcc = getCurrentAccount()
+  const canUseFilteredViews = myAcc.role !== AccountRole.ReadOnlyGuest && myAcc.role !== AccountRole.DocGuest
 
   const filteredViewsQuery = createQuery()
   let availableFilteredViews: FilteredView[] = []
   let myFilteredViews: FilteredView[] = []
-  $: if (alias !== undefined) {
+  $: if (alias !== undefined && canUseFilteredViews) {
     filteredViewsQuery.query<FilteredView>(view.class.FilteredView, { attachedTo: alias }, (result) => {
       myFilteredViews = result.filter((p) => p.users.includes(myAcc.uuid))
       availableFilteredViews = result.filter((p) => p.sharable && !p.users.includes(myAcc.uuid))

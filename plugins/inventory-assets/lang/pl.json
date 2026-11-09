@@ -1,0 +1,25 @@
+{
+  "status": {
+    "CategoryRequired": "Wymagana kategoria",
+    "NameRequired": "Wymagana nazwa"
+  },
+  "string": {
+    "Categories": "Kategorie",
+    "Category": "Kategoria",
+    "CategoryCreateLabel": "Kategoria",
+    "CreateCategory": "Stwórz kategorię",
+    "CreateSubcategory": "Stwórz podkategorię",
+    "Inventory": "Zasoby",
+    "ProductCreateLabel": "Produkt",
+    "CreateProduct": "Utwórz produkt",
+    "Products": "Produkty",
+    "Product": "Produkt",
+    "Variant": "Wariant",
+    "SKU": "Identyfikator magazynowy",
+    "Variants": "Warianty",
+    "NoVariantsForProduct": "Nie ma wariantów tego produktu.",
+    "CreateVariant": "Stwórz wariant",
+    "ConfigLabel": "Zasoby",
+    "ConfigDescription": "Rozszerzenie do zarządzania zasobami"
+  }
+}

@@ -25,7 +25,13 @@ import {
 } from '@hcengineering/account-client'
 import { getClient as getBillingClientRaw, type BillingClient } from '@hcengineering/billing-client'
 import { getClient as getPaymentClientRaw, type PaymentClient } from '@hcengineering/payment-client'
+import drive, { type File as DriveFile } from '@hcengineering/drive'
 import {
+  type Account,
+  type AttachedDoc,
+  type Class,
+  type Doc,
+  type Ref,
   type UsageStatus,
   type WorkspaceInfoWithStatus,
   AccountRole,
@@ -33,9 +39,12 @@ import {
   hasAccountRole
 } from '@hcengineering/core'
 import { showPopup } from '@hcengineering/ui'
-import { type Tier } from '@hcengineering/billing'
+import { getTierLimitsBytes, type RestrictedFeature, type Tier } from '@hcengineering/billing'
+
+import type { LargestFileRow } from './stores/largestFilesLogic'
 
 import { setSubscriptionState, updateLimitExceeded, subscriptionStore } from './stores/subscription'
+import { restrictionStore, isFeatureRestricted as isFeatureRestrictedIn } from './stores/restriction'
 import SubscriptionsModal from './components/SubscriptionsModal.svelte'
 
 export function getAccountClient (): AccountClient | null {
@@ -67,33 +76,8 @@ export function getPaymentClient (): PaymentClient | null {
   return getPaymentClientRaw(paymentUrl, token)
 }
 
-export async function isLimitExceeded (): Promise<boolean> {
-  try {
-    const accountClient = getAccountClient()
-    if (accountClient == null) return false
-
-    const workspaceInfo = await accountClient.getWorkspaceInfo(false)
-    const usageInfo = workspaceInfo?.usageInfo ?? null
-
-    if (usageInfo === null) {
-      return false
-    }
-
-    const subscription = await getCurrentSubscription(accountClient)
-    if (subscription == null) {
-      return true
-    }
-
-    const tier = await getTierByPlan(subscription.plan)
-    if (tier == null) {
-      return true
-    }
-
-    return checkUsageAgainstLimits(usageInfo, tier)
-  } catch (error) {
-    console.error('Error checking usage limits:', error)
-    return false
-  }
+export function isFeatureRestricted (feature: RestrictedFeature): boolean {
+  return isFeatureRestrictedIn(feature, get(restrictionStore))
 }
 
 export async function checkWorkspaceLimits (): Promise<void> {
@@ -150,12 +134,16 @@ function getTierPlan (tierId: string): string {
 }
 
 export function calculateLimits (tier: Tier | undefined): { storageLimit: number, trafficLimit: number } {
-  const DEFAULT_STORAGE_GB = 10
-  const DEFAULT_TRAFFIC_GB = 10
-
+  if (tier !== undefined) {
+    return {
+      storageLimit: tier.storageLimitGB * 1e9,
+      trafficLimit: tier.trafficLimitGB * 1e9
+    }
+  }
+  const fallback = getTierLimitsBytes(undefined)
   return {
-    storageLimit: (tier?.storageLimitGB ?? DEFAULT_STORAGE_GB) * 1e9,
-    trafficLimit: (tier?.trafficLimitGB ?? DEFAULT_TRAFFIC_GB) * 1e9
+    storageLimit: fallback.storageBytes,
+    trafficLimit: fallback.trafficBytes
   }
 }
 
@@ -178,6 +166,71 @@ export async function getWorkspaceInfo (): Promise<WorkspaceInfoWithStatus | und
   const accountClient = getAccountClient()
   if (accountClient == null) return undefined
   return await accountClient.getWorkspaceInfo(false)
+}
+
+export function canManageStorage (account: Account | undefined | null): boolean {
+  if (account == null) return false
+  return hasAccountRole(account, AccountRole.Maintainer)
+}
+
+const DELETE_CONCURRENCY = 5
+
+/** Result of a single delete attempt within a batch. */
+export interface FileDeleteResult {
+  row: LargestFileRow
+  success: boolean
+  error?: unknown
+}
+
+export async function deleteFilesBatch (
+  rows: LargestFileRow[],
+  onProgress?: (done: number, total: number) => void
+): Promise<FileDeleteResult[]> {
+  const client = getClient()
+  const total = rows.length
+  const results: FileDeleteResult[] = new Array(total)
+  let done = 0
+  let cursor = 0
+
+  async function worker (): Promise<void> {
+    while (true) {
+      const index = cursor++
+      if (index >= total) return
+      const row = rows[index]
+      try {
+        if (row.source === 'attachment') {
+          const ref = row.ref
+          if (ref.attachedTo === undefined || ref.attachedToClass === undefined) {
+            throw new Error('Attachment is missing parent reference')
+          }
+          await client.removeCollection<Doc, AttachedDoc>(
+            ref._class as Ref<Class<AttachedDoc>>,
+            ref.space,
+            ref._id as Ref<AttachedDoc>,
+            ref.attachedTo,
+            ref.attachedToClass,
+            'attachments'
+          )
+        } else {
+          await client.removeDoc(drive.class.File, row.ref.space, row.ref._id as Ref<DriveFile>)
+        }
+        results[index] = { row, success: true }
+      } catch (err) {
+        results[index] = { row, success: false, error: err }
+      } finally {
+        done++
+        onProgress?.(done, total)
+      }
+    }
+  }
+
+  const workers: Array<Promise<void>> = []
+  const workerCount = Math.min(DELETE_CONCURRENCY, Math.max(1, total))
+  for (let i = 0; i < workerCount; i++) {
+    workers.push(worker())
+  }
+  await Promise.all(workers)
+  return results
 }
 
 export async function upgradePlan (): Promise<void> {

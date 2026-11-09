@@ -28,13 +28,35 @@ import {
   type BlobType
 } from '@hcengineering/core'
 import { getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
-import { type FileOrBlob, getClient, getPreviewAlignment, uploadFile } from '@hcengineering/presentation'
+import {
+  type FileOrBlob,
+  getClient,
+  getPreviewAlignment,
+  uploadFile,
+  UploadRestrictedError
+} from '@hcengineering/presentation'
 import { closeTooltip, showPopup, type PopupResult } from '@hcengineering/ui'
 import workbench, { type WidgetTab } from '@hcengineering/workbench'
 import view from '@hcengineering/view'
 
 import attachment from './plugin'
 import AttachmentPreviewPopup from './components/AttachmentPreviewPopup.svelte'
+import { Analytics } from '@hcengineering/analytics'
+
+const UPLOAD_RESTRICTED_EVENT = 'attachment.UploadRestricted'
+
+/**
+ * Common dispatcher for errors raised inside an upload pipeline.
+ * Currently just delegates to the platform's generic error toast.
+ *
+ * @public
+ */
+export async function handleUploadError (err: unknown): Promise<void> {
+  if (err instanceof UploadRestrictedError) {
+    Analytics.handleEvent(UPLOAD_RESTRICTED_EVENT, { reason: err.reason })
+  }
+  await setPlatformStatus(unknownError(err))
+}
 
 export async function createAttachments (
   client: Client,
@@ -52,7 +74,7 @@ export async function createAttachments (
       }
     }
   } catch (err: any) {
-    await setPlatformStatus(unknownError(err))
+    await handleUploadError(err)
   }
 }
 

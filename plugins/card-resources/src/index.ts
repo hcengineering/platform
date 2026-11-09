@@ -28,6 +28,7 @@ import {
   editSpace,
   cardCustomLinkEncode,
   cardCustomLinkMatch,
+  cardReferenceObjectProvider,
   openCardInSidebar,
   checkRelationsSectionVisibility,
   checkOldMessagesSectionVisibility,
@@ -35,7 +36,6 @@ import {
   getSpaceAccessPublicLink,
   canGetSpaceAccessPublicLink,
   cardFactory,
-  duplicateCard,
   checkChildrenSectionVisibility,
   createChildAction,
   showAllVersions
@@ -58,6 +58,7 @@ import CardEditor from './components/CardEditor.svelte'
 import CardRefPresenter from './components/CardRefPresenter.svelte'
 import ChangeType from './components/ChangeType.svelte'
 import CreateCardButton from './components/CreateCardButton.svelte'
+import CreateCardPopup from './components/CreateCardPopup.svelte'
 import CardArrayEditor from './components/CardArrayEditor.svelte'
 import SpacePresenter from './components/navigator/SpacePresenter.svelte'
 import TypesNavigator from './components/navigator/TypesNavigator.svelte'
@@ -69,6 +70,7 @@ import CardWidget from './components/CardWidget.svelte'
 import CreateSpace from './components/navigator/CreateSpace.svelte'
 import CardHeaderButton from './components/navigator/CardHeaderButton.svelte'
 import MyCards from './components/navigator/MyCards.svelte'
+import DuplicateCard from './components/DuplicateCard.svelte'
 
 // Card Sections
 import AttachmentsCardSection from './components/sections/AttachmentsSection.svelte'
@@ -124,6 +126,7 @@ export default async (): Promise<Resources> => ({
     CardsPresenter,
     ChangeType,
     CreateCardButton,
+    CreateCard: CreateCardPopup,
     CardArrayEditor,
     SpacePresenter,
     TypesNavigator,
@@ -141,7 +144,8 @@ export default async (): Promise<Resources> => ({
     CreateSpace,
     CardHeaderButton,
     CreateRolePopup,
-    MyCards
+    MyCards,
+    DuplicateCard
   },
   sectionComponent: {
     AttachmentsSection: AttachmentsCardSection,
@@ -161,12 +165,12 @@ export default async (): Promise<Resources> => ({
   },
   actionImpl: {
     DeleteMasterTag: deleteMasterTag,
-    DuplicateCard: duplicateCard,
     EditSpace: editSpace,
     CreateChild: createChildAction
   },
   function: {
     CardTitleProvider: getCardTitle,
+    CardReferenceObjectProvider: cardReferenceObjectProvider,
     GetCardLink: getCardLink,
     CardCustomLinkMatch: cardCustomLinkMatch,
     CardCustomLinkEncode: cardCustomLinkEncode,

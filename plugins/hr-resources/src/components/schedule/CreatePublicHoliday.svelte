@@ -21,16 +21,46 @@
   import hr from '../../plugin'
   import DepartmentEditor from '../DepartmentEditor.svelte'
 
-  let description: string
-  let title: string
   export let date: Timestamp
   export let department: Ref<Department>
+
   const client = getClient()
-  let existingHoliday: PublicHoliday | undefined = undefined
   const dispatch = createEventDispatcher()
 
-  async function findHoliday () {
-    existingHoliday = await client.findOne(hr.class.PublicHoliday, { date: timeToTzDate(date) })
+  let description: string
+  let title: string
+  let existingHoliday: PublicHoliday | undefined = undefined
+
+  async function getAncestors (department: Ref<Department>): Promise<Ref<Department>[]> {
+    const departments = await client.findAll(hr.class.Department, {})
+    const byId = new Map<Ref<Department>, Ref<Department>>()
+    for (const doc of departments) {
+      byId.set(doc._id, doc.parent ?? hr.ids.Head)
+    }
+
+    const ancestors: Ref<Department>[] = []
+    let parent: Ref<Department> | undefined = department
+    while (parent !== undefined && parent !== hr.ids.Head) {
+      parent = byId.get(parent)
+      if (parent !== undefined) {
+        ancestors.push(parent)
+      }
+    }
+    return ancestors
+  }
+
+  async function findHoliday (): Promise<void> {
+    const holidays = await client.findAll(hr.class.PublicHoliday, { date: timeToTzDate(date) })
+
+    // look into current department first
+    let holiday = holidays.find((p) => p.department === department)
+    if (holiday === undefined) {
+      // if not found look at parent departments
+      const ancestors = await getAncestors(department)
+      holiday = holidays.find((p) => ancestors.includes(p.department))
+    }
+
+    existingHoliday = holiday
     if (existingHoliday !== undefined) {
       title = existingHoliday.title
       description = existingHoliday.description
@@ -38,7 +68,7 @@
     }
   }
 
-  async function saveHoliday () {
+  async function saveHoliday (): Promise<void> {
     if (existingHoliday !== undefined) {
       await client.updateDoc(hr.class.PublicHoliday, core.space.Workspace, existingHoliday._id, {
         title,
@@ -54,10 +84,16 @@
       await client.createDoc(hr.class.PublicHoliday, core.space.Workspace, holiday)
     }
   }
-  findHoliday()
 
-  function deleteHoliday () {
-    existingHoliday && client.remove(existingHoliday)
+  let loading = true
+  void findHoliday().then(() => {
+    loading = false
+  })
+
+  function deleteHoliday (): void {
+    if (existingHoliday !== undefined) {
+      void client.remove(existingHoliday)
+    }
     dispatch('close')
   }
 </script>
@@ -67,9 +103,9 @@
   on:close
   okLabel={existingHoliday ? presentation.string.Save : presentation.string.Ok}
   okAction={() => {
-    saveHoliday()
+    void saveHoliday()
   }}
-  canSave={true}
+  canSave={!loading}
   on:changeContent
 >
   <div class="flex-grow mt-4">

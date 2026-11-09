@@ -44,6 +44,7 @@ import { htmlToMarkup } from '@hcengineering/text'
 import { deepEqual } from 'fast-equals'
 import { calendar_v3 } from 'googleapis'
 import { getClient } from './client'
+import { getEventLocation } from './conference'
 import { getCalendarsSyncHistory, getEventHistory, setCalendarsSyncHistory, setEventHistory } from './kvsUtils'
 import { lock } from './mutex'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
@@ -401,7 +402,7 @@ export class IncomingSyncManager {
       allDay: event.start?.date != null,
       description: htmlToMarkup(event.description ?? ''),
       title: event.summary ?? '',
-      location: event.location ?? undefined,
+      location: getEventLocation(event),
       participants: participants[0],
       eventId: event.id ?? '',
       calendar: _calendar,
@@ -486,8 +487,9 @@ export class IncomingSyncManager {
         res.externalParticipants = participants[1]
       }
     }
-    if (event.location != null) {
-      res.location = event.location
+    const location = getEventLocation(event)
+    if (location != null) {
+      res.location = location
     }
     if (event.description != null) {
       res.description = htmlToMarkup(event.description)

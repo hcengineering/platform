@@ -14,12 +14,14 @@
 -->
 <script lang="ts">
   import { Analytics } from '@hcengineering/analytics'
-  import { Card, CardEvents } from '@hcengineering/card'
+  import { Card, CardEvents, MasterTag } from '@hcengineering/card'
   import core, { Class, Data, Doc, fillDefaults, MarkupBlobRef, Ref } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
-  import { ButtonIcon, getCurrentLocation, IconAdd, navigate } from '@hcengineering/ui'
+  import { ButtonIcon, getCurrentLocation, IconAdd, navigate, showPopup } from '@hcengineering/ui'
   import { getClient } from '@hcengineering/presentation'
   import card from '../plugin'
+  import { isBaseTypeWithSubtypes } from '../utils'
+  import CreateCardPopup from './CreateCardPopup.svelte'
 
   export let _class: Ref<Class<Doc>> | undefined
 
@@ -28,6 +30,22 @@
 
   async function createCard (): Promise<void> {
     if (_class === undefined) return
+    if (isBaseTypeWithSubtypes(hierarchy, _class as Ref<MasterTag>)) {
+      showPopup(
+        CreateCardPopup,
+        { type: _class, space: core.space.Workspace, changeType: true },
+        'center',
+        async (result) => {
+          if (result != null && result !== '') {
+            const loc = getCurrentLocation()
+            loc.path[3] = result
+            loc.path.length = 4
+            navigate(loc)
+          }
+        }
+      )
+      return
+    }
     const title = await translate(card.string.Card, {})
 
     const data: Data<Card> = {

@@ -25,6 +25,7 @@
     PanelInstance,
     Popup,
     PopupAlignment,
+    printModeStore,
     ResolvedLocation,
     TooltipInstance,
     areLocationsEqual,
@@ -287,7 +288,12 @@
     </div>
     <div bind:this={cover} class="cover" />
     <TooltipInstance />
-    <PanelInstance bind:this={panelInstance} {contentPanel} readonly={$restrictionStore.readonly} embedded>
+    <PanelInstance
+      bind:this={panelInstance}
+      {contentPanel}
+      readonly={$restrictionStore.readonly || $printModeStore}
+      embedded
+    >
       <svelte:fragment slot="panel-header">
         <ActionContext context={{ mode: 'panel' }} />
       </svelte:fragment>
