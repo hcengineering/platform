@@ -15,7 +15,7 @@
 
 import { randomUUID } from 'crypto'
 import postgres from 'postgres'
-import { MeasureMetricsContext } from '@hcengineering/core'
+import { type WorkspaceUuid, MeasureMetricsContext, OWNER_AUDIT_EVENTS } from '@hcengineering/core'
 import {
   recordAuditEvent,
   startAuditPublisher,
@@ -26,6 +26,7 @@ import {
 } from '@hcengineering/server-core'
 import { createPlatformQueue } from '@hcengineering/kafka'
 import { PostgresAuditEventStore } from '../collections/postgres/audit-store'
+import type { WorkspaceAuditQuery } from '../types'
 import { getMigrations } from '../collections/postgres/migrations'
 
 // Opt in: creates and removes only a randomly named schema and broker topic.
@@ -135,6 +136,44 @@ integration('audit PostgreSQL/Redpanda delivery', () => {
       })
       // No referenced account/workspace rows exist; audit survives their absence.
       expect(Number(rows[0].recorded_at)).toBeGreaterThan(0)
+      const workspace = 'deleted-workspace' as WorkspaceUuid
+      const other: AuditRecord = { ...original, eventId: randomUUID(), workspaceUuid: 'another-workspace' }
+      const global: AuditRecord = { ...original, eventId: randomUUID(), workspaceUuid: null }
+      const older: AuditRecord = { ...original, eventId: '00000000-0000-4000-8000-000000000001', occurredAt: 1000 }
+      const newer: AuditRecord = { ...older, eventId: '00000000-0000-4000-8000-000000000002', outcome: 'denied' }
+      await store.insert(other)
+      await store.insert(global)
+      await store.insert(older)
+      await store.insert(newer)
+      const query: WorkspaceAuditQuery = { from: 0, to: 2000, limit: 1 }
+      const first = await store.findWorkspace(workspace, query)
+      expect(first.map((event) => event.eventId)).toEqual([newer.eventId, older.eventId])
+      expect(first[0].occurredAt).toBe(1000)
+      const next = await store.findWorkspace(workspace, {
+        ...query,
+        cursor: { occurredAt: newer.occurredAt, eventId: newer.eventId }
+      })
+      expect(next.map((event) => event.eventId)).toEqual([older.eventId])
+      const filtered = await store.findWorkspace(workspace, { ...query, outcome: 'denied', event: newer.event })
+      expect(filtered.map((event) => event.eventId)).toEqual([newer.eventId])
+      expect(await store.findWorkspace(workspace, { ...query, from: 1001 })).toEqual([])
+      const ownerEvent: AuditRecord = {
+        ...older,
+        event: 'workspace.rename',
+        eventId: randomUUID(),
+        occurredAt: 900
+      }
+      await store.insert(ownerEvent)
+      // Newer technical records must not consume the owner's page or its lookahead row.
+      const visible = await store.findWorkspace(workspace, query, OWNER_AUDIT_EVENTS)
+      expect(visible.map((event) => event.eventId)).toEqual([ownerEvent.eventId])
+      expect(
+        await store.findWorkspace(workspace, { ...query, event: 'workspace.data.cleanup' }, OWNER_AUDIT_EVENTS)
+      ).toEqual([])
+      const all = await store.findWorkspace(workspace, { from: 0, to: Date.now() + 1 })
+      expect(all.map((event) => event.eventId).sort()).toEqual(
+        [original.eventId, newer.eventId, older.eventId, ownerEvent.eventId].sort()
+      )
     } finally {
       await closePublisher?.()
       await consumerQueue?.shutdown()

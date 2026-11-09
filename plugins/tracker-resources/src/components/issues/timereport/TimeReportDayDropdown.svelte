@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,6 +14,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { TimeReportDayType } from '@hcengineering/tracker'
   import { DropdownIntlItem, DropdownLabelsIntl } from '@hcengineering/ui'
   import type { ButtonKind, ButtonSize } from '@hcengineering/ui'
@@ -20,11 +22,17 @@
   import TimeReportDayIcon from './TimeReportDayIcon.svelte'
 
   export let label = tracker.string.TimeReportDayTypeLabel
+  const dispatch = createEventDispatcher<{ selected: TimeReportDayType }>()
+
+  function handleSelected (event: CustomEvent<TimeReportDayType>): void {
+    dispatch('selected', event.detail)
+  }
+
   export let selected: TimeReportDayType | undefined
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'small'
 
-  const workDaysDropdownItems: DropdownIntlItem[] = [
+  const workDaysDropdownItems: Array<DropdownIntlItem<TimeReportDayType>> = [
     {
       id: TimeReportDayType.CurrentWorkDay,
       label: tracker.string.CurrentWorkDay
@@ -44,5 +52,5 @@
   {label}
   items={workDaysDropdownItems}
   bind:selected
-  on:selected
+  on:selected={handleSelected}
 />

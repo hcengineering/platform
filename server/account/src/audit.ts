@@ -18,6 +18,7 @@ import type { MeasureContext } from '@hcengineering/core'
 import platform from '@hcengineering/platform'
 import { hashAuditValue, recordAuditEvent, type AuditEvent } from '@hcengineering/server-core'
 import { decodeToken } from '@hcengineering/server-token'
+import type { WorkspaceInvite } from './types'
 
 /** Add only verified caller identity to explicitly selected domain fields. */
 export async function auditAccountEvent (ctx: MeasureContext, event: AuditEvent, token?: string): Promise<void> {
@@ -39,6 +40,25 @@ export async function auditAccountEvent (ctx: MeasureContext, event: AuditEvent,
     }
   }
   await recordAuditEvent(ctx, { ...actor, ...event })
+}
+
+/** Attribute an exhausted invite to its persisted workspace, never to request parameters. */
+export async function auditInviteLimitExceeded (
+  ctx: MeasureContext,
+  invite: Pick<WorkspaceInvite, 'id' | 'workspaceUuid'>,
+  token: string
+): Promise<void> {
+  await auditAccountEvent(
+    ctx,
+    {
+      event: 'workspace.invite.limit.exceeded',
+      outcome: 'denied',
+      workspaceUuid: invite.workspaceUuid,
+      targetType: 'invite',
+      inviteIdHash: auditValueHash(invite.id, 'invite')
+    },
+    token
+  )
 }
 
 /** Publish bounded chunks while preserving every recipient of a bulk change. */

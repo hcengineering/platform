@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -12,7 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 -->
-<script lang="ts">
+<script
+  lang="ts"
+  generics="Id extends string | number = string | number, Selection extends string | number | Array<string | number> = Id, Multiple extends boolean = false"
+>
   import { IntlString, Asset } from '@hcengineering/platform'
   import { createEventDispatcher } from 'svelte'
   import { deepEqual } from 'fast-equals'
@@ -29,9 +33,16 @@
   export let iconProps: Record<string, any> = {}
   export let label: IntlString = ui.string.DropdownDefaultLabel
   export let params: Record<string, any> = {}
-  export let items: DropdownIntlItem[]
-  export let multiselect: boolean = false
-  export let selected: DropdownIntlItem['id'] | Array<DropdownIntlItem['id']> | undefined = multiselect ? [] : undefined
+  export let items: Array<DropdownIntlItem<Id>>
+  export let multiselect: Multiple = false as Multiple
+  // Preserve the selected value type; infer IDs from items when selection is omitted.
+  type SelectedEvent = Multiple extends true
+    ? Selection extends Array<string | number>
+      ? Selection
+      : Selection[]
+    : Selection
+  const emptySelection: Array<DropdownIntlItem['id']> = []
+  export let selected: Selection | undefined = multiselect ? (emptySelection as Selection) : undefined
   export let disabled: boolean = false
   export let kind: ButtonKind = 'regular'
   export let size: ButtonSize = 'small'
@@ -49,17 +60,19 @@
   let container: HTMLElement
   let opened: boolean = false
 
+  const dispatch = createEventDispatcher<{ selected: SelectedEvent }>()
+
   $: selectedItem = multiselect
     ? (items ?? []).filter((p) => (selected as Array<DropdownIntlItem['id']>)?.includes(p.id))
-    : (items ?? []).find((x) => x.id === selected)
+    : (items ?? []).find((x: DropdownIntlItem) => x.id === selected)
   $: if (shouldUpdateUndefined && selected === undefined && items?.[0] !== undefined) {
-    selected = multiselect ? [items[0].id] : items[0].id
-    dispatch('selected', selected)
+    const first: DropdownIntlItem = items[0]
+    const initial = multiselect ? [first.id] : first.id
+    selected = initial as Selection
+    dispatch('selected', selected as SelectedEvent)
   }
 
-  const dispatch = createEventDispatcher()
-
-  function openPopup () {
+  function openPopup (): void {
     if (!opened) {
       opened = true
       showPopup(
@@ -67,16 +80,16 @@
         { items, selected, params, withSearch, multiselect },
         container,
         (result) => {
-          if (result) {
-            selected = result
-            dispatch('selected', result)
+          if (result != null) {
+            selected = result as Selection
+            dispatch('selected', selected as SelectedEvent)
           }
           opened = false
         },
         (result) => {
           if (result != null) {
-            selected = result
-            dispatch('selected', result)
+            selected = result as Selection
+            dispatch('selected', selected as SelectedEvent)
           }
         }
       )
@@ -114,7 +127,7 @@
     <span slot="content" class="overflow-label disabled flex-grow text-left mr-2">
       {#if Array.isArray(selectedItem)}
         {#if selectedItem.length > 0}
-          {#each selectedItem as item}
+          {#each selectedItem as item (item.id)}
             <span class="step-row">
               <Label label={item.label} params={item.params ?? params} />
             </span>
@@ -130,7 +143,7 @@
     </span>
     <svelte:fragment slot="iconRight">
       <DropdownIcon
-        size={'small'}
+        size="small"
         fill={kind === 'primary' && !disabled ? 'var(--primary-button-content-color)' : 'var(--theme-dark-color)'}
       />
     </svelte:fragment>

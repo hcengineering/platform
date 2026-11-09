@@ -113,6 +113,9 @@
         "ThisYear": "This year",
         "EmojiStyle": "Emoji Style",
         "EmojiSystem": "System Default",
-        "EmojiNoto": "Noto Color"
+        "EmojiNoto": "Noto Color",
+        "Refresh": "Refresh",
+        "Retry": "Retry",
+        "LoadMore": "Load more"
     }
 }

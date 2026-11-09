@@ -53,6 +53,7 @@ import {
 } from '@hcengineering/server-token'
 
 import { isAdminEmail } from './admin'
+import { getWorkspaceAuditEvents } from './audit-operations'
 import {
   auditAccountBatchEvent,
   auditAccountEvent,
@@ -93,7 +94,7 @@ import {
 } from './types'
 import {
   addSocialIdBase,
-  checkInvite,
+  checkInviteForAccount,
   cleanEmail,
   confirmEmail,
   confirmHulyIds,
@@ -1331,7 +1332,7 @@ export async function checkJoin (
     verifiedOn: { $gt: 0 }
   })
   const email = emailSocialId?.value ?? ''
-  const workspaceUuid = await checkInvite(ctx, invite, email)
+  const workspaceUuid = await checkInviteForAccount(ctx, invite, email, token)
   const workspace = await getWorkspaceById(db, workspaceUuid)
 
   if (workspace === null) {
@@ -1386,7 +1387,7 @@ export async function joinByToken (
     verifiedOn: { $gt: 0 }
   })
   const email = emailSocialId?.value ?? ''
-  const workspaceUuid = await checkInvite(ctx, invite, email)
+  const workspaceUuid = await checkInviteForAccount(ctx, invite, email, token)
   const workspace = await getWorkspaceById(db, workspaceUuid)
 
   if (workspace === null) {
@@ -4017,6 +4018,7 @@ export type AccountMethods =
   | 'getLoginWithWorkspaceInfo'
   | 'getSocialIds'
   | 'getPerson'
+  | 'getWorkspaceAuditEvents'
   | 'getWorkspaceMembers'
   | 'updateWorkspaceRole'
   | 'setWorkspaceMemberUnread'
@@ -4146,6 +4148,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     findPersonBySocialId: wrap(findPersonBySocialId),
     resolveAccountByEmail: wrap(resolveAccountByEmail),
     findSocialIdBySocialKey: wrap(findSocialIdBySocialKey),
+    getWorkspaceAuditEvents: wrap(getWorkspaceAuditEvents),
     getWorkspaceMembers: wrap(getWorkspaceMembers),
     getMailboxOptions: wrap(getMailboxOptions),
     getMailboxSecret: wrap(getMailboxSecret),

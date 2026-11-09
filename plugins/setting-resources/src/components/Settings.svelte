@@ -1,4 +1,5 @@
 <!--
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2022 Hardcore Engineering Inc.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -65,7 +66,9 @@
     setting.class.SettingsCategory,
     {},
     (res) => {
-      categories = res.filter((p) => hasAccountRole(account, p.role) && !isDisabled(p.feature))
+      categories = res.filter(
+        (p) => (p.allowedRoles?.includes(account.role) ?? hasAccountRole(account, p.role)) && !isDisabled(p.feature)
+      )
       category = findCategory(categoryId)
     },
     { sort: { order: 1 } }

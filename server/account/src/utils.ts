@@ -73,7 +73,7 @@ import {
   type WorkspaceStatus
 } from './types'
 import { isAdminEmail } from './admin'
-import { auditAccountEvent, auditEmailHash, isAccountAuditDenial } from './audit'
+import { auditAccountEvent, auditEmailHash, auditInviteLimitExceeded, isAccountAuditDenial } from './audit'
 
 export async function getAccountDB (
   uri: string,
@@ -1365,6 +1365,27 @@ export async function checkInvite (ctx: MeasureContext, invite: WorkspaceInvite,
   return invite.workspaceUuid
 }
 
+/** Audit exhausted links only after the caller has verified an account token. */
+export async function checkInviteForAccount (
+  ctx: MeasureContext,
+  invite: WorkspaceInvite,
+  email: string,
+  token: string
+): Promise<WorkspaceUuid> {
+  const { account } = decodeTokenVerbose(ctx, token)
+  if (account === readOnlyGuestAccountUuid || account === docGuestAccountUuid) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  try {
+    return await checkInvite(ctx, invite, email)
+  } catch (error) {
+    if (invite.revokedOn == null && invite.remainingUses === 0) {
+      await auditInviteLimitExceeded(ctx, invite, token)
+    }
+    throw error
+  }
+}
+
 /**
  * How long an email confirmation link stays valid. Confirmation is idempotent within this window
  * (e.g. the email was already verified via OTP), so the link must not work forever.
@@ -1485,9 +1506,15 @@ export async function confirmHulyIds (ctx: MeasureContext, db: AccountDB, accoun
 }
 
 /** Takes one use of a limited invite. Unlimited invites (negative remainingUses) are not counted. */
-export async function useInvite (db: AccountDB, invite: WorkspaceInvite): Promise<void> {
+export async function useInvite (
+  ctx: MeasureContext,
+  db: AccountDB,
+  invite: WorkspaceInvite,
+  token: string
+): Promise<void> {
   if (invite.remainingUses == null || invite.remainingUses < 0) return
   if (!(await db.consumeInviteUse(invite.id))) {
+    await auditInviteLimitExceeded(ctx, invite, token)
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 }
@@ -1666,7 +1693,7 @@ export async function doJoinByInvite (
 
   if (invite !== undefined && invite != null) {
     // Take the use first so concurrent joins cannot exceed the invite limit.
-    await useInvite(db, invite)
+    await useInvite(ctx, db, invite, token)
     // TODO: should we re-join kicked users? How are they marked as inactive?
     if (role == null) {
       await db.assignWorkspace(account, workspace.uuid, invite.role)

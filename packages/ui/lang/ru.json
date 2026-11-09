@@ -113,6 +113,9 @@
         "ThisYear": "Этот год",
         "EmojiStyle": "Стиль эмодзи",
         "EmojiSystem": "Системный по умолчанию",
-        "EmojiNoto": "Noto Color"
+        "EmojiNoto": "Noto Color",
+        "Refresh": "Обновить",
+        "Retry": "Повторить",
+        "LoadMore": "Загрузить ещё"
     }
 }

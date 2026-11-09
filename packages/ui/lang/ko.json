@@ -113,6 +113,9 @@
         "ThisYear": "올해",
         "EmojiStyle": "이모지 스타일",
         "EmojiSystem": "시스템 기본",
-        "EmojiNoto": "Noto Color"
+        "EmojiNoto": "Noto Color",
+        "Refresh": "새로고침",
+        "Retry": "다시 시도",
+        "LoadMore": "더 불러오기"
     }
 }

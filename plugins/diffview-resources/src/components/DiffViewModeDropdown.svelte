@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2023 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,17 +14,24 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import { ButtonKind, ButtonSize, DropdownIntlItem, DropdownLabelsIntl } from '@hcengineering/ui'
   import { DiffViewMode } from '@hcengineering/diffview'
 
   import diffview from '../plugin'
+
+  const dispatch = createEventDispatcher<{ selected: DiffViewMode }>()
+
+  function handleSelected (event: CustomEvent<DiffViewMode>): void {
+    dispatch('selected', event.detail)
+  }
 
   export let selected: DiffViewMode | undefined
   export let kind: ButtonKind = 'link-bordered'
   export let size: ButtonSize = 'small'
   export let label = diffview.string.ViewMode
 
-  const viewModeDropdownItems: DropdownIntlItem[] = [
+  const viewModeDropdownItems: Array<DropdownIntlItem<DiffViewMode>> = [
     {
       id: 'unified',
       label: diffview.string.Unified
@@ -35,4 +43,12 @@
   ]
 </script>
 
-<DropdownLabelsIntl {kind} {size} {label} items={viewModeDropdownItems} width={'6rem'} bind:selected on:selected />
+<DropdownLabelsIntl
+  {kind}
+  {size}
+  {label}
+  items={viewModeDropdownItems}
+  width="6rem"
+  bind:selected
+  on:selected={handleSelected}
+/>

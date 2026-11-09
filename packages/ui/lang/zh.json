@@ -113,6 +113,9 @@
         "ThisYear": "今年",
         "EmojiStyle": "表情样式",
         "EmojiSystem": "系统默认",
-        "EmojiNoto": "Noto Color"
+        "EmojiNoto": "Noto Color",
+        "Refresh": "刷新",
+        "Retry": "重试",
+        "LoadMore": "加载更多"
     }
 }

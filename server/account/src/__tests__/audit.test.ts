@@ -15,6 +15,7 @@
 
 import {
   AccountRole,
+  readOnlyGuestAccountUuid,
   type AccountUuid,
   type MeasureContext,
   type Person,
@@ -28,9 +29,9 @@ import { decodeToken, decodeTokenVerbose, type Token } from '@hcengineering/serv
 import { setAuditEventWriter, type AuditRecord } from '@hcengineering/server-core'
 import { auditAccountBatchEvent, auditAccountEvent, auditEmailHash } from '../audit'
 import { guardGuestMethod } from '../guestAccess'
-import { deleteWorkspace, getMethods, login, validateOtp } from '../operations'
+import { deleteWorkspace, getMethods, join, joinByToken, login, validateOtp } from '../operations'
 import { assignWorkspace, updateWorkspaceInfo } from '../serviceOperations'
-import type { Account, AccountDB, AccountMethodHandler, OtpInfo, SocialId, Workspace } from '../types'
+import type { Account, AccountDB, AccountMethodHandler, OtpInfo, SocialId, Workspace, WorkspaceInvite } from '../types'
 import { hashWithSalt, wrap } from '../utils'
 import * as utils from '../utils'
 
@@ -377,4 +378,140 @@ test('bulk events retain every recipient in bounded correlated chunks', async ()
   expect(events().flatMap((record) => record.accountIds)).toEqual(accounts)
   expect(new Set(events().map((record) => record.operationId)).size).toBe(1)
   expect(new Set(events().map((record) => record.eventId)).size).toBe(3)
+})
+
+describe('exhausted invitation audit', () => {
+  const exhausted: WorkspaceInvite = {
+    id: 'private-invite-token',
+    workspaceUuid: workspace,
+    expiresOn: -1,
+    remainingUses: 0,
+    role: AccountRole.User,
+    email: 'private@example.com'
+  }
+
+  test('public join rejection does not add an owner-visible invite event', async () => {
+    const inviteCollection: Partial<AccountDB['invite']> = { findOne: jest.fn().mockResolvedValue(exhausted) }
+    const publicDb: Partial<AccountDB> = { ...db, invite: inviteCollection as AccountDB['invite'] }
+    const request: Record<string, unknown> = {
+      id: 1,
+      method: 'join',
+      params: {
+        email: 'private@example.com',
+        password: 'private-password',
+        inviteId: exhausted.id,
+        workspaceUrl: 'other-workspace'
+      }
+    }
+    const handler = getMethods().join
+    if (handler === undefined) throw new Error('Missing join handler')
+    const response = await handler(ctx, publicDb as AccountDB, null, request, undefined)
+    expect(response.error.code).toBe(platform.status.Forbidden)
+    const denials = events().filter((event) => event.event === 'workspace.invite.limit.exceeded')
+    expect(denials).toHaveLength(0)
+    expect(events().every((event) => event.event === 'account.rpc' && event.workspaceUuid == null)).toBe(true)
+    expect(JSON.stringify(events())).not.toMatch(/private-|example.com|other-workspace/)
+    expect(db.assignWorkspace).not.toHaveBeenCalled()
+  })
+
+  test('attributes an authenticated denial to the invite workspace rather than the browser token workspace', async () => {
+    const foreign: Token = { ...decoded, workspace: 'other-workspace' as WorkspaceUuid }
+    jest.mocked(decodeToken).mockReturnValue(foreign)
+    jest.mocked(decodeTokenVerbose).mockReturnValue(foreign)
+    const inviteCollection: Partial<AccountDB['invite']> = { findOne: jest.fn().mockResolvedValue(exhausted) }
+    const authenticatedDb: Partial<AccountDB> = { ...db, invite: inviteCollection as AccountDB['invite'] }
+    await expect(
+      joinByToken(ctx, authenticatedDb as AccountDB, null, 'private-token', { inviteId: exhausted.id })
+    ).rejects.toMatchObject({
+      status: { code: platform.status.Forbidden }
+    })
+    expect(events()).toHaveLength(1)
+    expect(events()[0]).toMatchObject({
+      event: 'workspace.invite.limit.exceeded',
+      outcome: 'denied',
+      workspaceUuid: workspace,
+      actorAccountUuid: actor
+    })
+    expect(JSON.stringify(events())).not.toMatch(/private-|example.com|other-workspace/)
+  })
+
+  test('wrong password with an exhausted invite writes no audit event before authentication', async () => {
+    const inviteCollection: Partial<AccountDB['invite']> = { findOne: jest.fn().mockResolvedValue(exhausted) }
+    const publicDb: Partial<AccountDB> = { ...db, invite: inviteCollection as AccountDB['invite'] }
+    await expect(
+      join(ctx, publicDb as AccountDB, null, '', {
+        email: 'private@example.com',
+        password: 'wrong-password',
+        inviteId: exhausted.id,
+        workspaceUrl: ''
+      })
+    ).rejects.toMatchObject({ status: { code: platform.status.Forbidden } })
+    expect(events()).toEqual([])
+    expect(accountCollection.findOne).not.toHaveBeenCalled()
+    expect(decodeToken).not.toHaveBeenCalled()
+  })
+
+  test('lookup-only validation writes no audit event', async () => {
+    await expect(utils.checkInvite(ctx, exhausted, 'private@example.com')).rejects.toBeDefined()
+    expect(events()).toEqual([])
+  })
+
+  test('an invalid or shared anonymous token cannot generate an invite denial', async () => {
+    jest.mocked(decodeTokenVerbose).mockImplementationOnce(() => {
+      throw new Error('invalid token')
+    })
+    await expect(utils.checkInviteForAccount(ctx, exhausted, 'private@example.com', 'invalid')).rejects.toBeDefined()
+    const anonymous: Token = { ...decoded, account: readOnlyGuestAccountUuid }
+    jest.mocked(decodeTokenVerbose).mockReturnValueOnce(anonymous)
+    await expect(utils.checkInviteForAccount(ctx, exhausted, 'private@example.com', 'anonymous')).rejects.toBeDefined()
+    expect(events()).toEqual([])
+  })
+
+  test('records a denied join when a concurrent request consumes the last remaining use', async () => {
+    const invite: WorkspaceInvite = { ...exhausted, remainingUses: 1 }
+    const racingDb: Partial<AccountDB> = { ...db, consumeInviteUse: jest.fn().mockResolvedValue(false) }
+    await expect(
+      utils.doJoinByInvite(
+        ctx,
+        racingDb as AccountDB,
+        null,
+        'private-token',
+        actor,
+        workspaceRecord as Workspace,
+        invite
+      )
+    ).rejects.toMatchObject({ status: { code: platform.status.Forbidden } })
+    expect(racingDb.consumeInviteUse).toHaveBeenCalledWith(invite.id)
+    expect(racingDb.assignWorkspace).not.toHaveBeenCalled()
+    expect(events()).toHaveLength(1)
+    expect(events()[0]).toMatchObject({
+      event: 'workspace.invite.limit.exceeded',
+      outcome: 'denied',
+      workspaceUuid: workspace,
+      actorAccountUuid: actor
+    })
+    expect(JSON.stringify(events())).not.toContain(invite.id)
+  })
+
+  test('successful and unlimited uses do not produce limit denials', async () => {
+    const consumeInviteUse = jest.fn().mockResolvedValue(true)
+    const availableDb: Partial<AccountDB> = { ...db, consumeInviteUse }
+    const limited: WorkspaceInvite = { ...exhausted, remainingUses: 1 }
+    const unlimited: WorkspaceInvite = { ...exhausted, remainingUses: -1 }
+    await utils.useInvite(ctx, availableDb as AccountDB, limited, 'private-token')
+    await utils.useInvite(ctx, availableDb as AccountDB, unlimited, 'private-token')
+    expect(consumeInviteUse).toHaveBeenCalledTimes(1)
+    expect(events()).toHaveLength(0)
+  })
+
+  test('publication failure preserves the original invite denial', async () => {
+    setAuditEventWriter('account', async () => {
+      throw new Error('broker unavailable')
+    })
+    await expect(
+      utils.checkInviteForAccount(ctx, exhausted, 'private@example.com', 'private-token')
+    ).rejects.toMatchObject({
+      status: { code: platform.status.Forbidden }
+    })
+  })
 })

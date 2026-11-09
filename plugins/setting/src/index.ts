@@ -1,4 +1,5 @@
 //
+// Copyright © 2026 TraceX SAS.
 // Copyright © 2020, 2021 Anticrm Platform Contributors.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
@@ -108,6 +109,8 @@ export interface SettingsCategory extends Doc {
   // If defined, will sort using order.
   order?: number
   role: AccountRole
+  /** Explicit role list; when set, replaces the minimum-role rule. */
+  allowedRoles?: AccountRole[]
 
   // A feature to be used with hides
   feature?: string
@@ -366,6 +369,7 @@ export default plugin(settingId, {
     AddRelationFilter: '' as IntlString
   },
   icon: {
+    History: '' as Asset,
     AccountSettings: '' as Asset,
     Members: '' as Asset,
     Password: '' as Asset,

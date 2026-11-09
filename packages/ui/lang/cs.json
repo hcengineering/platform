@@ -112,6 +112,9 @@
         "ThisYear": "Tento rok",
         "EmojiStyle": "Styl emoji",
         "EmojiSystem": "Výchozí systémové",
-        "EmojiNoto": "Noto Color"
+        "EmojiNoto": "Noto Color",
+        "Refresh": "Obnovit",
+        "Retry": "Zkusit znovu",
+        "LoadMore": "Načíst další"
     }
 }

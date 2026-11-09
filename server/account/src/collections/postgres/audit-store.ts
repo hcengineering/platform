@@ -14,8 +14,25 @@
 //
 
 import type { Sql } from 'postgres'
-import type { AuditRecord } from '@hcengineering/server-core'
-import type { AuditEventStore } from '../../types'
+import type { WorkspaceUuid } from '@hcengineering/core'
+import type { AuditAttributeValue, AuditRecord } from '@hcengineering/server-core'
+import type { AuditEventStore, WorkspaceAuditQuery } from '../../types'
+
+interface AuditEventRow {
+  schemaVersion: 1
+  eventId: string
+  occurredAt: number | string
+  sourceService: string
+  event: AuditRecord['event']
+  outcome: AuditRecord['outcome']
+  actorAccountUuid?: string
+  actorService?: string
+  workspaceUuid?: string
+  targetType?: string
+  targetId?: string
+  operationId?: string
+  attributes: Record<string, AuditAttributeValue>
+}
 
 /** Append-only PostgreSQL journal. Duplicate deliveries preserve the original record. */
 export class PostgresAuditEventStore implements AuditEventStore {
@@ -23,6 +40,47 @@ export class PostgresAuditEventStore implements AuditEventStore {
     private readonly client: Sql,
     private readonly ns: string
   ) {}
+
+  async findWorkspace (
+    workspace: WorkspaceUuid,
+    query: WorkspaceAuditQuery,
+    events?: readonly string[]
+  ): Promise<AuditRecord[]> {
+    const table = this.ns === '' ? 'audit_events' : `${this.ns}.audit_events`
+    const values: (string | number | string[])[] = [workspace, query.from, query.to]
+    const conditions = ['workspace_uuid = $1', 'occurred_at >= $2::int8', 'occurred_at < $3::int8']
+    // Apply visibility before LIMIT so technical records cannot create gaps in owner pagination.
+    if (events !== undefined) {
+      values.push([...events])
+      conditions.push(`event = ANY($${values.length}::text[])`)
+    }
+    if (query.event !== undefined) {
+      values.push(query.event)
+      conditions.push(`event = $${values.length}`)
+    }
+    if (query.outcome !== undefined) {
+      values.push(query.outcome)
+      conditions.push(`outcome = $${values.length}`)
+    }
+    if (query.cursor !== undefined) {
+      values.push(query.cursor.occurredAt, query.cursor.eventId)
+      conditions.push(`(occurred_at, event_id) < ($${values.length - 1}::int8, $${values.length}::uuid)`)
+    }
+    values.push((query.limit ?? 50) + 1)
+    const rows = await this.client.unsafe<AuditEventRow[]>(
+      `SELECT schema_version AS "schemaVersion", event_id AS "eventId", occurred_at AS "occurredAt",
+              source_service AS "sourceService", event, outcome, actor_account_uuid AS "actorAccountUuid",
+              actor_service AS "actorService", workspace_uuid AS "workspaceUuid", target_type AS "targetType",
+              target_id AS "targetId", operation_id AS "operationId", attributes
+       FROM ${table} WHERE ${conditions.join(' AND ')}
+       ORDER BY occurred_at DESC, event_id DESC LIMIT $${values.length}`,
+      values
+    )
+    return rows.map((row) => {
+      const { attributes, ...envelope } = row
+      return { ...attributes, ...envelope, occurredAt: Number(row.occurredAt) }
+    })
+  }
 
   async insert (record: AuditRecord): Promise<void> {
     const {

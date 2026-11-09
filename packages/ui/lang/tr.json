@@ -113,6 +113,9 @@
         "ThisYear": "Bu yıl",
         "EmojiStyle": "Emoji Stili",
         "EmojiSystem": "Sistem Varsayılanı",
-        "EmojiNoto": "Noto Color"
+        "EmojiNoto": "Noto Color",
+        "Refresh": "Yenile",
+        "Retry": "Yeniden dene",
+        "LoadMore": "Daha fazla yükle"
     }
 }

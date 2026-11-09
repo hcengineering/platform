@@ -207,6 +207,7 @@ const view = plugin(viewId, {
     IconWithEmoji: '' as Asset
   },
   string: {
+    ClearFilters: '' as IntlString,
     CustomizeView: '' as IntlString,
     LabelNA: '' as IntlString,
     View: '' as IntlString,

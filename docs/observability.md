@@ -130,6 +130,10 @@ Use `recordAuditEvent` from `@hcengineering/server-core` after an applied domain
 `withAuditEvent` to record an asynchronous action's outcome. Await publication and explicitly
 select safe attributes; never include credentials, request bodies or raw errors.
 
+Event names and workspace-owner visibility are defined in the shared `AUDIT_EVENT_CATALOG`
+in `@hcengineering/core`. New owner-visible events require a UI label; technical events remain
+in the permanent journal and are excluded from owner queries before pagination.
+
 Audit events use a separate Redpanda → PostgreSQL delivery path. Delivery failures do not
 change the business result; events can be lost before broker acceptance.
 See [Audit events](./audit.md) for API examples, the record schema, topic provisioning and recovery.

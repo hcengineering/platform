@@ -37,6 +37,8 @@ import {
 } from '@hcengineering/core'
 import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
 import type {
+  WorkspaceAuditQuery,
+  WorkspaceAuditPage,
   AccountAggregatedInfo,
   ApiKey,
   CreatedApiKey,
@@ -160,6 +162,8 @@ export interface AccountClient {
   getPerson: () => Promise<Person>
   getPersonInfo: (account: PersonUuid) => Promise<PersonInfo>
   getSocialIds: (includeDeleted?: boolean) => Promise<SocialId[]>
+  /** Read the journal of the token workspace; requires its current owner role. */
+  getWorkspaceAuditEvents: (query: WorkspaceAuditQuery) => Promise<WorkspaceAuditPage>
   getWorkspaceMembers: () => Promise<WorkspaceMemberInfo[]>
   updateWorkspaceRole: (account: string, role: AccountRole) => Promise<void>
   setWorkspaceMemberUnread: (targetAccount: string, hasUnread: boolean) => Promise<void>
@@ -861,6 +865,10 @@ class AccountClientImpl implements AccountClient {
     }
 
     await this.rpc(request)
+  }
+
+  async getWorkspaceAuditEvents (query: WorkspaceAuditQuery): Promise<WorkspaceAuditPage> {
+    return await this.rpc({ method: 'getWorkspaceAuditEvents', params: query })
   }
 
   async getWorkspaceMembers (): Promise<WorkspaceMemberInfo[]> {

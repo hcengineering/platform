@@ -54,7 +54,10 @@
     {},
     (res) => {
       categories = res.filter(
-        (p) => !deprecatedCategoryNames.has(p.name) && hasAccountRole(account, p.role) && !isDisabled(p.feature ?? '')
+        (p) =>
+          !deprecatedCategoryNames.has(p.name) &&
+          (p.allowedRoles?.includes(account.role) ?? hasAccountRole(account, p.role)) &&
+          !isDisabled(p.feature ?? '')
       )
       if (!admin) {
         categories = categories.filter((p) => !(p.adminOnly ?? false))

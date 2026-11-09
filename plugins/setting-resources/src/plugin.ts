@@ -15,16 +15,18 @@
 // limitations under the License.
 //
 
-import { type Ref } from '@hcengineering/core'
+import { type Doc, type Ref } from '@hcengineering/core'
 import type { IntlString } from '@hcengineering/platform'
 import { mergeIds } from '@hcengineering/platform'
+import { AUDIT_STRINGS } from './audit-strings'
 import setting, { settingId } from '@hcengineering/setting'
 import { type AnyComponent } from '@hcengineering/ui/src/types'
 import { type Widget } from '@hcengineering/workbench'
 
 export default mergeIds(settingId, setting, {
   ids: {
-    SettingsWidget: '' as Ref<Widget>
+    SettingsWidget: '' as Ref<Widget>,
+    AuditLog: '' as Ref<Doc>
   },
   component: {
     EditEnum: '' as AnyComponent,
@@ -33,9 +35,12 @@ export default mergeIds(settingId, setting, {
     ManageSpaceTypeContent: '' as AnyComponent,
     Spaces: '' as AnyComponent,
     AddSocialId: '' as AnyComponent,
-    SpaceAccessSettings: '' as AnyComponent
+    SpaceAccessSettings: '' as AnyComponent,
+    AuditLog: '' as AnyComponent
   },
   string: {
+    ...AUDIT_STRINGS,
+
     InviteDays: '' as IntlString<{ count: number }>,
     InviteHours: '' as IntlString<{ count: number }>,
     InviteSettingsSaveFailed: '' as IntlString,

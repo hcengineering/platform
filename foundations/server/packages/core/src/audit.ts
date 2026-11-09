@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import type { MeasureContext, WorkspaceUuid } from '@hcengineering/core'
+import type { AuditEventName, MeasureContext, WorkspaceUuid } from '@hcengineering/core'
 import { createHmac, randomUUID } from 'crypto'
 import { QueueTopic, type PlatformQueue } from './queue/types'
 
@@ -21,7 +21,7 @@ export type AuditAttributeValue = string | number | boolean | readonly string[] 
 
 /** Explicit domain attributes. Never pass request bodies, credentials or raw errors. */
 export interface AuditEvent {
-  event: string
+  event: AuditEventName
   outcome?: 'succeeded' | 'denied' | 'failed'
   actorAccountUuid?: string
   actorService?: string

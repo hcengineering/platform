@@ -25,7 +25,7 @@ The catalog is a discovery guide, not a duplicate API reference. Refer to the li
 | [`ButtonGroup`](../src/components/ButtonGroup.svelte) | Groups related buttons into a single control. |
 | [`ButtonMenu`](../src/components/ButtonMenu.svelte) | Button that exposes a menu of actions. |
 | [`SplitButton`](../src/components/SplitButton.svelte) | Separates a primary action from its secondary action menu. |
-| [`FilterButton`](../src/components/FilterButton.svelte) | Button specialized for enabling or configuring filters. |
+| [`FilterButton`](../src/components/FilterButton.svelte) | Button for category filters with individual removal, reset, and optional localized option search. |
 | [`StatusBarButton`](../src/components/StatusBarButton.svelte) | Compact action intended for a status bar. |
 
 ## Form controls and text input
@@ -72,7 +72,7 @@ The catalog is a discovery guide, not a duplicate API reference. Refer to the li
 | [`DropdownPopup`](../src/components/DropdownPopup.svelte) | Popup content used by a dropdown selector. |
 | [`DropdownLabels`](../src/components/DropdownLabels.svelte) | Dropdown for selecting label values. |
 | [`DropdownLabelsPopup`](../src/components/DropdownLabelsPopup.svelte) | Popup used to choose label values. |
-| [`DropdownLabelsIntl`](../src/components/DropdownLabelsIntl.svelte) | Label dropdown whose options use localized strings. |
+| [`DropdownLabelsIntl`](../src/components/DropdownLabelsIntl.svelte) | Localized dropdown with typed scalar/multiselect events; empty-string and zero IDs are valid selections. |
 | [`DropdownLabelsPopupIntl`](../src/components/DropdownLabelsPopupIntl.svelte) | Localized label-selection popup. |
 | [`SelectPopup`](../src/components/SelectPopup.svelte) | Generic popup for choosing one of a set of items. |
 | [`ColorPopup`](../src/components/ColorPopup.svelte) | Popup for choosing a color. |

@@ -339,8 +339,9 @@ export interface DropdownTextItem {
   label: string
 }
 
-export interface DropdownIntlItem {
-  id: string | number
+/** Localized option whose ID can retain a domain enum or branded string type. */
+export interface DropdownIntlItem<Id extends string | number = string | number> {
+  id: Id
   label: IntlString
   icon?: Asset | AnySvelteComponent | ComponentType
   iconProps?: Record<string, any>
@@ -584,6 +585,8 @@ export interface FilterCategory {
   id: string
   label: IntlString
   options: FilterOption[]
+  /** Enable localized option search for long categories. */
+  searchable?: boolean
 }
 
 export interface ActiveFilter {

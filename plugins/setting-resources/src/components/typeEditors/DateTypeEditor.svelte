@@ -1,5 +1,6 @@
 <!--
 // Copyright © 2022 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -27,8 +28,8 @@
   export let size: ButtonSize = 'medium'
   export let width: string | undefined = undefined
 
-  const dispatch = createEventDispatcher()
-  const items: DropdownIntlItem[] = [
+  const dispatch = createEventDispatcher<{ change: { type: DateType } }>()
+  const items: Array<DropdownIntlItem & { id: DateRangeMode }> = [
     {
       id: DateRangeMode.DATE,
       label: setting.string.DateOnly
@@ -45,6 +46,11 @@
 
   let selected = items.find((item) => item.id === type?.mode)?.id
   const label = items.find((item) => item.id === type?.mode)?.label ?? ('' as IntlString)
+
+  function handleSelected (event: CustomEvent<DateRangeMode>): void {
+    selected = event.detail
+    dispatch('change', { type: TypeDate(event.detail) })
+  }
 
   onMount(() => {
     if (type?._class !== core.class.TypeDate) {
@@ -64,10 +70,7 @@
     {size}
     {width}
     label={setting.string.DateMode}
-    on:selected={(res) => {
-      selected = res.detail
-      dispatch('change', { type: TypeDate(res.detail) })
-    }}
+    on:selected={handleSelected}
   />
 {:else}
   <Label {label} />

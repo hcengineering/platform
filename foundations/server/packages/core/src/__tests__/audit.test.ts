@@ -32,7 +32,7 @@ afterEach(() => {
   jest.useRealTimers()
 })
 
-test('publishes versioned custom events with distinct stable identities and explicit fields', async () => {
+test('publishes versioned catalog events with distinct stable identities and explicit fields', async () => {
   await recordAuditEvent(ctx, { event: 'document.publish', actorAccountUuid: 'actor', documentId: 'document' })
   await recordAuditEvent(ctx, { event: 'document.publish', actorAccountUuid: 'actor', documentId: 'document' })
   const records = write.mock.calls.map(([, record]) => record)
@@ -56,7 +56,7 @@ test('waits for the action and publication without exposing the returned credent
   const action = new Promise<string>((resolve) => {
     finish = resolve
   })
-  const pending = withAuditEvent(ctx, { event: 'custom.operation' }, async () => await action)
+  const pending = withAuditEvent(ctx, { event: 'document.publish' }, async () => await action)
   expect(write).not.toHaveBeenCalled()
   finish('private-token')
   expect(await pending).toBe('private-token')
@@ -67,7 +67,7 @@ test('waits for the action and publication without exposing the returned credent
 test('preserves action errors and exports only their type', async () => {
   const error = new TypeError('private database credentials')
   await expect(
-    withAuditEvent(ctx, { event: 'cleanup' }, async () => {
+    withAuditEvent(ctx, { event: 'workspace.data.cleanup' }, async () => {
       throw error
     })
   ).rejects.toBe(error)
@@ -80,12 +80,12 @@ test('transport and diagnostic failures neither replace results nor invent faile
   ;(logs.error as jest.Mock).mockImplementation(() => {
     throw new Error('logger unavailable')
   })
-  await expect(withAuditEvent(ctx, { event: 'custom.operation' }, async () => 42)).resolves.toBe(42)
+  await expect(withAuditEvent(ctx, { event: 'document.publish' }, async () => 42)).resolves.toBe(42)
   expect(write).toHaveBeenCalledTimes(1)
   expect(write.mock.calls[0][1].outcome).toBe('succeeded')
   const error = new Error('original action error')
   await expect(
-    withAuditEvent(ctx, { event: 'custom.operation' }, async () => {
+    withAuditEvent(ctx, { event: 'document.publish' }, async () => {
       throw error
     })
   ).rejects.toBe(error)
@@ -93,10 +93,10 @@ test('transport and diagnostic failures neither replace results nor invent faile
 
 test('reports an unconfigured writer without treating technical logs as saved audit', async () => {
   setAuditEventWriter('test', undefined)
-  await recordAuditEvent(ctx, { event: 'custom.operation' })
+  await recordAuditEvent(ctx, { event: 'document.publish' })
   expect(logs.error).toHaveBeenCalledWith(
     'Audit delivery failed',
-    expect.objectContaining({ event: 'custom.operation' })
+    expect.objectContaining({ event: 'document.publish' })
   )
   expect(write).not.toHaveBeenCalled()
 })
@@ -141,7 +141,7 @@ test('bounds broker wait without changing the action result or leaking timer rej
   })
   const close = jest.fn().mockResolvedValue(undefined)
   const stop = startAuditPublisher(ctx, publisherQueue(send, close), 'account')
-  const result = withAuditEvent(ctx, { event: 'custom.operation' }, async () => 42)
+  const result = withAuditEvent(ctx, { event: 'document.publish' }, async () => 42)
   await jest.advanceTimersByTimeAsync(10000)
   await expect(result).resolves.toBe(42)
   expect(logs.error).toHaveBeenCalledWith(

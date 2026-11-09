@@ -113,6 +113,9 @@
     "ThisYear": "Ten rok",
     "EmojiStyle": "Styl emotikonów",
     "EmojiSystem": "Domyślny dla systemu",
-    "EmojiNoto": "Kolor Noto"
+    "EmojiNoto": "Kolor Noto",
+    "Refresh": "Odśwież",
+    "Retry": "Spróbuj ponownie",
+    "LoadMore": "Wczytaj więcej"
   }
 }

@@ -14,8 +14,11 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte'
-  import type { FilterCategory, FilterOption, ActiveFilter } from '../types'
+  import { createEventDispatcher, onDestroy } from 'svelte'
+  import { getEmbeddedLabel } from '@hcengineering/platform'
+  import { LocalizedSearch } from '../search'
+  import SearchInput from './SearchInput.svelte'
+  import type { DropdownIntlItem, FilterCategory, FilterOption, ActiveFilter } from '../types'
   import IconChevronLeft from './icons/ChevronLeft.svelte'
   import IconCheck from './icons/Check.svelte'
   import Label from './Label.svelte'
@@ -27,19 +30,51 @@
   export let onFilterRemove: (categoryId: string) => void
   export let onFiltersClear: () => void
 
-  const dispatch = createEventDispatcher()
+  const dispatch = createEventDispatcher<{ close: void }>()
 
   // Navigation state
   let selectedCategory: FilterCategory | null = null
   let view: 'categories' | 'options' = 'categories'
+  let search = ''
+  let visibleOptions: FilterOption[] = []
+  let searchGeneration = 0
+  const localizedSearch = new LocalizedSearch()
+
+  async function updateOptions (category: FilterCategory | null, term: string): Promise<void> {
+    const generation = ++searchGeneration
+    const options = category?.options ?? []
+    if (category?.searchable !== true || term.trim() === '') {
+      visibleOptions = options
+      return
+    }
+    const items: Array<[DropdownIntlItem, DropdownIntlItem[]]> = options.map((option) => [
+      { id: option.id, label: option.text === undefined ? option.label : getEmbeddedLabel(option.text) },
+      []
+    ])
+    try {
+      const matches = await localizedSearch.filter(items, term)
+      if (generation !== searchGeneration) return
+      const ids = new Set(matches.map(([item]) => item.id))
+      visibleOptions = options.filter((option) => ids.has(option.id))
+    } catch {
+      if (generation === searchGeneration) visibleOptions = options
+    }
+  }
+
+  $: void updateOptions(selectedCategory, search)
+  onDestroy(() => {
+    searchGeneration++
+  })
 
   function selectCategory (category: FilterCategory): void {
     selectedCategory = category
+    search = ''
     view = 'options'
   }
 
   function goBackToCategories (): void {
     selectedCategory = null
+    search = ''
     view = 'categories'
   }
 
@@ -84,7 +119,7 @@
     return activeFilters.find((filter) => filter.categoryId === categoryId)
   }
 
-  $: currentActiveFilter = (() => {
+  $: currentActiveFilter = ((): ActiveFilter | null => {
     if (selectedCategory === null) return null
     return activeFilters.find((f) => f.categoryId === selectedCategory?.id) ?? null
   })()
@@ -131,12 +166,15 @@
     <!-- Options View -->
     <div class="popup-header">
       <button class="back-button" on:click={goBackToCategories}>
-        <IconChevronLeft size={'small'} />
+        <IconChevronLeft size="small" />
       </button>
       <span class="popup-title"><Label label={selectedCategory.label} /></span>
     </div>
+    {#if selectedCategory.searchable === true}
+      <div class="option-search"><SearchInput bind:value={search} width="100%" delay={150} /></div>
+    {/if}
     <div class="option-list">
-      {#each selectedCategory.options as option (option.id)}
+      {#each visibleOptions as option (option.id)}
         <button
           class="option-item"
           class:selected={isOptionSelected(option.id)}
@@ -152,10 +190,13 @@
             {/if}
           </span>
           {#if isOptionSelected(option.id)}
-            <IconCheck size={'small'} />
+            <IconCheck size="small" />
           {/if}
         </button>
       {/each}
+      {#if visibleOptions.length === 0}
+        <div class="no-results"><Label label={ui.string.NoResults} /></div>
+      {/if}
       {#if currentActiveFilter !== null}
         <div class="divider"></div>
         <button class="option-item clear-option" on:click={clearCategoryFilter}>
@@ -177,6 +218,7 @@
     min-width: 12rem;
     max-width: 20rem;
     overflow: hidden;
+    max-height: min(32rem, calc(100dvh - var(--spacing-4)));
   }
 
   .popup-header {
@@ -186,6 +228,16 @@
     border-bottom: 1px solid var(--theme-popup-divider);
     background: var(--theme-bg-accent-color);
     gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .option-search {
+    padding: var(--spacing-1);
+    flex-shrink: 0;
+  }
+  .no-results {
+    padding: var(--spacing-1) var(--spacing-2);
+    color: var(--theme-dark-color);
   }
 
   .back-button {
@@ -216,11 +268,14 @@
     display: flex;
     flex-direction: column;
     padding: 0.25rem 0;
+    overflow-y: auto;
+    min-height: 0;
   }
 
   .category-item,
   .option-item {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: space-between;
     padding: 0.5rem 1rem;

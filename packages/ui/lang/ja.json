@@ -113,6 +113,9 @@
     "ThisYear": "今年",
     "EmojiStyle": "絵文字スタイル",
     "EmojiSystem": "システムデフォルト",
-    "EmojiNoto": "Noto Color"
+    "EmojiNoto": "Noto Color",
+    "Refresh": "更新",
+    "Retry": "再試行",
+    "LoadMore": "さらに読み込む"
   }
 }

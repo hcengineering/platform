@@ -30,7 +30,7 @@ const record: AuditRecord = {
 }
 const message: Partial<ConsumerMessage<AuditRecord>> = { value: record }
 const insert = jest.fn()
-const store: AuditEventStore = { insert }
+const store: AuditEventStore = { insert, findWorkspace: jest.fn() }
 
 beforeEach(() => {
   jest.resetAllMocks()

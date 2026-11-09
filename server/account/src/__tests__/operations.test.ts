@@ -32,7 +32,7 @@ import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengin
 import { decodeToken, decodeTokenVerbose, TokenError } from '@hcengineering/server-token'
 
 import * as utils from '../utils'
-import { type AccountDB, type SocialId } from '../types'
+import { type AccountDB, type SocialId, type WorkspaceInvite } from '../types'
 import {
   createInvite,
   getActiveInviteLinks,
@@ -371,7 +371,14 @@ describe('account operations', () => {
     })
 
     test('does not count uses of unlimited invites', async () => {
-      await utils.useInvite(mockDb, { id: 'unlimited', remainingUses: -1 } as any)
+      const invite: WorkspaceInvite = {
+        id: 'unlimited',
+        workspaceUuid: mockWorkspace.uuid,
+        expiresOn: -1,
+        remainingUses: -1,
+        role: AccountRole.User
+      }
+      await utils.useInvite(mockCtx, mockDb, invite, 'verified-token')
 
       expect(mockDb.consumeInviteUse).not.toHaveBeenCalled()
     })
@@ -379,7 +386,14 @@ describe('account operations', () => {
     test('rejects a limited invite when its last use was already taken', async () => {
       ;(mockDb.consumeInviteUse as jest.Mock).mockResolvedValue(false)
 
-      await expect(utils.useInvite(mockDb, { id: 'single', remainingUses: 1 } as any)).rejects.toThrow(PlatformError)
+      const invite: WorkspaceInvite = {
+        id: 'single',
+        workspaceUuid: mockWorkspace.uuid,
+        expiresOn: -1,
+        remainingUses: 1,
+        role: AccountRole.User
+      }
+      await expect(utils.useInvite(mockCtx, mockDb, invite, 'verified-token')).rejects.toThrow(PlatformError)
       expect(mockDb.consumeInviteUse).toHaveBeenCalledWith('single')
     })
   })
