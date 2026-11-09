@@ -7,9 +7,6 @@
 
 > [!IMPORTANT]
 > **This repository is frozen and is no longer actively maintained.**
->
-> Development continues in [Platform-Collective/platform](https://github.com/Platform-Collective/platform).
-> Please use the new repository for current source code, issues, and pull requests.
 
 > [!IMPORTANT]
 > **Hosted Huly has shut down.**
