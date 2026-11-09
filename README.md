@@ -11,7 +11,7 @@
 > [!IMPORTANT]
 > **Hosted Huly has shut down.**
 >
-> The hosted Huly service has been discontinued because its hosting is no longer funded. The hosted platform is no longer available.
+> The hosted platform is no longer available.
 >
 > You can continue using Huly with a self-hosted setup or another hosted option. For backup and restoration instructions, see the [backup & restore guide](docs/guides/backup-restore.en.md).
 >
