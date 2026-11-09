@@ -141,20 +141,25 @@ export class HulypulseClient implements Disposable {
       this.ws = ws
 
       ws.onopen = () => {
+        if (this.ws !== ws) return
         this.resubscribe()
         this.startPing()
         resolve(undefined)
       }
 
+      // Ignore late events from a socket that was already replaced.
       ws.onerror = (event) => {
+        if (this.ws !== ws) return
         this.reconnect()
       }
 
       ws.onclose = (event) => {
+        if (this.ws !== ws) return
         this.reconnect()
       }
 
       ws.onmessage = (event) => {
+        if (this.ws !== ws) return
         try {
           if (event.data === 'ping') {
             this.ws?.send('pong')
@@ -227,15 +232,20 @@ export class HulypulseClient implements Disposable {
       if (this.ws?.readyState === WebSocket.OPEN) {
         this.ws.send('ping')
       }
+      // Keep the deadline of the oldest unanswered ping. Resetting it on every
+      // tick would push it back forever, because the interval is shorter than the timeout.
       if (this.pingTimeout !== undefined) {
-        clearTimeout(this.pingTimeout)
+        return
       }
       this.pingTimeout = setTimeout(() => {
-        if (this.ws?.readyState !== WebSocket.OPEN) {
-          console.warn('WS-server not responding to ping, closing connection')
-          clearInterval(this.pingInterval)
-          this.ws?.close(WS_CLOSE_NORMAL)
-        }
+        this.pingTimeout = undefined
+        console.warn('WS-server not responding to ping, closing connection')
+        // Detach the dead socket and reconnect now. On a half-open connection
+        // the close handshake can take a long time to fire onclose.
+        const ws = this.ws
+        this.ws = null
+        ws?.close(WS_CLOSE_NORMAL)
+        this.reconnect()
       }, this.PING_TIMEOUT_MS)
     }, this.PING_INTERVAL_MS)
   }
@@ -468,7 +478,6 @@ export class HulypulseClient implements Disposable {
       }, this.SEND_TIMEOUT_MS)
       this.pending.set(id, { resolve, reject, send_timeout: sendTimeout })
       this.ws.send(JSON.stringify(message))
-      this.startPing() // reset ping timer on any send
     })
   }
 }
