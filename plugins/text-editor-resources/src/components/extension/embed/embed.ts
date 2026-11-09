@@ -15,7 +15,7 @@
 //
 
 import { getMetadata, translate } from '@hcengineering/platform'
-import { type ActionContext, copyTextToClipboard, type PrintContext } from '@hcengineering/presentation'
+import { copyTextToClipboard, type PrintContext } from '@hcengineering/presentation'
 import { EmbedNode as BaseEmbedNode } from '@hcengineering/text'
 import textEditor, { type ActionContext } from '@hcengineering/text-editor'
 import { type Editor, type Range } from '@tiptap/core'
@@ -69,46 +69,6 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
     }
   },
 
-  addAttributes () {
-    return {
-      src: {
-        default: null
-      }
-    }
-  },
-
-  parseHTML () {
-    return [
-      {
-        priority: 60,
-        tag: `div[data-type="${this.name}"]`,
-        getAttrs (node) {
-          const src = node.dataset.embedSrc?.trim()
-          if (src === undefined) return false
-          return { src }
-        }
-      }
-    ]
-  },
-
-  renderHTML ({ HTMLAttributes, node }) {
-    return [
-      'div',
-      {
-        'data-type': this.name,
-        'data-embed-src': node.attrs.src,
-        class: 'embed-node'
-      },
-      [
-        'a',
-        {
-          href: node.attrs.src
-        },
-        node.attrs.src
-      ]
-    ]
-  },
-
   addNodeView () {
     return ({ node, editor, getPos }) => {
       const printContext = this.options.printContext
@@ -122,7 +82,9 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
       root.classList.add('embed-node')
 
       let isLoading = false
+      let destroyed = false
       const updateLoadingState = (loading: boolean): void => {
+        if (destroyed) return
         const pos = getPos()
         if (pos === undefined || isLoading === loading) return
 
@@ -136,7 +98,6 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
       root.setAttribute('block-editor-blur', 'true')
 
       let handle: EmbedNodeViewHandle | undefined
-      let destroyed = false
 
       void providerPromise
         .then(async (view) => {
@@ -155,8 +116,6 @@ export const EmbedNode = BaseEmbedNode.extend<EmbedNodeOptions>({
         })
         .finally(() => {
           finish()
-          const pos = typeof getPos === 'function' ? (getPos() ?? 0) : 0
-          setLoadingState(editor.view, pos, false)
           updateLoadingState(false)
         })
 

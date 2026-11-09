@@ -1,5 +1,6 @@
 //
 // Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -13,9 +14,9 @@
 // limitations under the License.
 //
 
-import { mergeAttributes, Node } from '@tiptap/core'
+import { Node } from '@tiptap/core'
 
-export const EmbedNode = Node.create<any>({
+export const EmbedNode = Node.create({
   name: 'embed',
 
   addOptions () {
@@ -39,12 +40,29 @@ export const EmbedNode = Node.create<any>({
     return [
       {
         priority: 60,
+        tag: `div[data-type="${this.name}"]`,
+        getAttrs (node) {
+          const src = node.getAttribute('data-embed-src')?.trim()
+          if (src === undefined) return false
+          return { src }
+        }
+      },
+      {
+        priority: 60,
         tag: `figure[data-type="${this.name}"] iframe[src]`
       }
     ]
   },
 
-  renderHTML ({ HTMLAttributes }) {
-    return ['figure', { 'data-type': this.name }, ['iframe', mergeAttributes(HTMLAttributes)]]
+  renderHTML ({ node }) {
+    return [
+      'div',
+      {
+        'data-type': this.name,
+        'data-embed-src': node.attrs.src,
+        class: 'embed-node'
+      },
+      ['a', { href: node.attrs.src }, node.attrs.src]
+    ]
   }
 })

@@ -15,7 +15,7 @@
 import { type AttributeSpec, Node, Schema } from '@tiptap/pm/model'
 import { EditorState, TextSelection } from '@tiptap/pm/state'
 import { addColumnBefore, addRowBefore, TableMap } from '@tiptap/pm/tables'
-import { ySyncPluginKey } from 'y-prosemirror'
+import { ySyncPluginKey } from '@tiptap/y-tiptap'
 import { MarkupNodeType } from '@hcengineering/text'
 import { markdownToMarkup } from '@hcengineering/text-markdown'
 import { tableColumnIds, tableSnapshotFromMarkup, type TableMetadata, type TableSnapshot } from '@hcengineering/view'

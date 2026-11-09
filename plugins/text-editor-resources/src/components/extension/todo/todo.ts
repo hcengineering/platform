@@ -1,5 +1,6 @@
 //
 // Copyright © 2025 Hardcore Engineering Inc.
+// Copyright © 2026 TraceX SAS.
 //
 // Licensed under the Eclipse Public License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License. You may
@@ -22,7 +23,7 @@ import {
   Fragment,
   NodeRange,
   Slice,
-  type NodeType,
+  type NodeType as ProseMirrorNodeType,
   type Node,
   DOMSerializer,
   type DOMOutputSpec,
@@ -51,7 +52,7 @@ import { editorContextPluginKey } from '../editorContext'
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     todoItem: {
-      convertListItems: (listItemTypeOrName: string | NodeType) => ReturnType
+      convertListItems: (listItemTypeOrName: string | ProseMirrorNodeType) => ReturnType
     }
   }
 }
@@ -337,7 +338,7 @@ function tryReplaceTodoItemWithListItem (
 }
 
 const convertListItems: RawCommands['convertListItems'] =
-  (listItemTypeOrName: string | NodeType) =>
+  (listItemTypeOrName: string | ProseMirrorNodeType) =>
   ({ editor, chain }) => {
     const listItemType = getNodeType(listItemTypeOrName, editor.schema)
     const { extensions } = editor.extensionManager
@@ -468,7 +469,7 @@ const toggleList: RawCommands['toggleList'] =
 
 // Fork of tiptap implementation with support for conversion-based transitions
 // https://github.com/ueberdosis/tiptap/blob/f3258d9ee5fb7979102fe63434f6ea4120507311/packages/core/src/commands/toggleList.ts
-const joinListBackwards = (tr: Transaction, listType: NodeType): boolean => {
+const joinListBackwards = (tr: Transaction, listType: ProseMirrorNodeType): boolean => {
   const list = findParentNode((node) => node.type === listType)(tr.selection)
   if (list === undefined) {
     return true
@@ -494,7 +495,7 @@ const joinListBackwards = (tr: Transaction, listType: NodeType): boolean => {
 
 // Fork of tiptap implementation with support for conversion-based transitions
 // https://github.com/ueberdosis/tiptap/blob/f3258d9ee5fb7979102fe63434f6ea4120507311/packages/core/src/commands/toggleList.ts
-const joinListForwards = (tr: Transaction, listType: NodeType): boolean => {
+const joinListForwards = (tr: Transaction, listType: ProseMirrorNodeType): boolean => {
   const list = findParentNode((node) => node.type === listType)(tr.selection)
   if (list === undefined) {
     return true
@@ -520,7 +521,7 @@ const joinListForwards = (tr: Transaction, listType: NodeType): boolean => {
 
 // Fork of prosemiror implementation with group matching support
 // https://github.com/ProseMirror/prosemirror-schema-list/blob/e65a144f2285178a20cbdea5b0ee16925be7d6c5/src/schema-list.ts
-export function liftListItem (type: NodeType, group: string): Command {
+export function liftListItem (type: ProseMirrorNodeType, group: string): Command {
   return function (state: EditorState, dispatch?: (tr: Transaction) => void) {
     const { $from, $to } = state.selection
     const range = $from.blockRange(
@@ -542,7 +543,7 @@ export function liftListItem (type: NodeType, group: string): Command {
 function liftToOuterList (
   state: EditorState,
   dispatch: (tr: Transaction) => void,
-  type: NodeType,
+  type: ProseMirrorNodeType,
   group: string,
   range: NodeRange
 ): boolean {
@@ -627,7 +628,7 @@ function liftOutOfList (state: EditorState, dispatch: (tr: Transaction) => void,
 
 // Fork of prosemiror implementation with group matching support
 // https://github.com/ProseMirror/prosemirror-schema-list/blob/e65a144f2285178a20cbdea5b0ee16925be7d6c5/src/schema-list.ts
-export function sinkListItem (itemType: NodeType, group: string): Command {
+export function sinkListItem (itemType: ProseMirrorNodeType, group: string): Command {
   return function (state, dispatch) {
     const { $from, $to } = state.selection
 

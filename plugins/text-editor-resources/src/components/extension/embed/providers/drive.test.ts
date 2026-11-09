@@ -20,6 +20,7 @@ import { getCurrentLocation, type Location } from '@hcengineering/ui'
 import type { Editor } from '@tiptap/core'
 import { SvelteRenderer } from '../../../node-view'
 import { parseReferenceUrl } from '../../reference'
+import { setLoadingState } from '../../toolbar/toolbar'
 import { DriveEmbedProvider } from './drive'
 
 jest.mock('@hcengineering/presentation', () => ({
@@ -39,41 +40,49 @@ jest.mock('../../reference', () => ({ parseReferenceUrl: jest.fn() }))
 jest.mock('../../toolbar/toolbar', () => ({ setLoadingState: jest.fn() }))
 
 describe('Drive embedded preview mounting', () => {
-  it('passes the inherited rendering context without selecting a print-specific viewer', async () => {
-    setMetadata(presentation.metadata.FrontUrl, 'https://front.example')
-    const file: Partial<File> = { _id: 'file' as File['_id'], version: 1 }
-    const version: Partial<FileVersion> = {
-      file: 'blob' as FileVersion['file'],
-      type: 'application/pdf',
-      title: 'file.pdf'
+  it.each(['application/pdf', 'application/octet-stream'])(
+    'mounts %s with the inherited rendering context',
+    async (contentType) => {
+      jest.clearAllMocks()
+      setMetadata(presentation.metadata.FrontUrl, 'https://front.example')
+      const file: Partial<File> = { _id: 'file' as File['_id'], version: 1 }
+      const version: Partial<FileVersion> = {
+        file: 'blob' as FileVersion['file'],
+        type: contentType,
+        title: 'file.pdf'
+      }
+      const reference: NonNullable<ReturnType<typeof parseReferenceUrl>> = {
+        id: file._id!,
+        objectclass: drive.class.File,
+        label: 'file'
+      }
+      const client: Partial<ReturnType<typeof getClient>> = {
+        findOne: jest.fn().mockResolvedValueOnce(file).mockResolvedValueOnce(version)
+      }
+      const location: Location = { path: ['print', 'workspace'] }
+      jest.mocked(getClient).mockReturnValue(client as ReturnType<typeof getClient>)
+      jest.mocked(getCurrentLocation).mockReturnValue(location)
+      jest.mocked(parseReferenceUrl).mockReturnValue(reference)
+      const view = await DriveEmbedProvider().buildView('reference')
+      expect(view).toBeDefined()
+      const context = new Map<unknown, unknown>([[Symbol('inherited-context'), 'value']])
+      const editor: Partial<Editor> = {}
+      const root: Partial<HTMLDivElement> = {}
+      view?.(editor as Editor, root as HTMLDivElement, () => undefined, context)
+      expect(SvelteRenderer).toHaveBeenCalledWith(
+        FilePreview,
+        expect.objectContaining({
+          context,
+          props: expect.objectContaining({ file: version.file, contentType: version.type })
+        })
+      )
+      const passed = jest.mocked(SvelteRenderer).mock.calls[0][1]
+      expect(passed.context).toBe(context)
+      expect(passed.props).not.toHaveProperty('printContext')
+      const setLoading: ((loading: boolean) => void) | undefined = passed.props?.setLoading
+      expect(setLoading).toBeDefined()
+      setLoading?.(false)
+      expect(setLoadingState).not.toHaveBeenCalled()
     }
-    const reference: NonNullable<ReturnType<typeof parseReferenceUrl>> = {
-      id: file._id!,
-      objectclass: drive.class.File,
-      label: 'file'
-    }
-    const client: Partial<ReturnType<typeof getClient>> = {
-      findOne: jest.fn().mockResolvedValueOnce(file).mockResolvedValueOnce(version)
-    }
-    const location: Location = { path: ['print', 'workspace'] }
-    jest.mocked(getClient).mockReturnValue(client as ReturnType<typeof getClient>)
-    jest.mocked(getCurrentLocation).mockReturnValue(location)
-    jest.mocked(parseReferenceUrl).mockReturnValue(reference)
-    const view = await DriveEmbedProvider().buildView('reference')
-    expect(view).toBeDefined()
-    const context = new Map<unknown, unknown>([[Symbol('inherited-context'), 'value']])
-    const editor: Partial<Editor> = {}
-    const root: Partial<HTMLDivElement> = {}
-    view?.(editor as Editor, root as HTMLDivElement, () => 0, context)
-    expect(SvelteRenderer).toHaveBeenCalledWith(
-      FilePreview,
-      expect.objectContaining({
-        context,
-        props: expect.objectContaining({ file: version.file, contentType: version.type })
-      })
-    )
-    const passed = jest.mocked(SvelteRenderer).mock.calls[0][1]
-    expect(passed.context).toBe(context)
-    expect(passed.props).not.toHaveProperty('printContext')
-  })
+  )
 })

@@ -47,12 +47,7 @@ export const DriveEmbedProvider = (): EmbedNodeProvider => ({
       locationToUrl(location)
     )
 
-    const allPreviewTypes = await allPreviewTypesPromise
-    const previewType = await getPreviewType(version.type, allPreviewTypes)
-
-    if (previewType === undefined) return
-
-    return (editor: Editor, root: HTMLDivElement, getPos: () => number, context: Map<unknown, unknown>) => {
+    return (editor: Editor, root: HTMLDivElement, getPos: () => number | undefined, context: Map<unknown, unknown>) => {
       const setLoading = (loading: boolean): void => {
         const pos = getPos()
         if (pos === undefined) return

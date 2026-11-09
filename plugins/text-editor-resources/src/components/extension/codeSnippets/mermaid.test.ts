@@ -66,6 +66,7 @@ function createView (
   const addNodeView = extension.config.addNodeView!
   const context: Partial<ThisParameterType<typeof addNodeView>> = { options: extension.options }
   const factory = addNodeView.call(context as ThisParameterType<typeof addNodeView>)
+  if (factory === null) throw new Error('Mermaid node view renderer is not configured')
   const node = schema.node('mermaid', undefined, code === '' ? undefined : schema.text(code))
   const editor: Partial<Editor> = {}
   const spec: DiagramDecoration = {
