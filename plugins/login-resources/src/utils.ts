@@ -18,6 +18,7 @@ import type {
   LoginInfo,
   OtpInfo,
   RegionInfo,
+  WorkspaceConfiguration,
   WorkspaceLoginInfo,
   WorkspaceInviteInfo,
   ProviderInfo,
@@ -76,6 +77,25 @@ export function getAccountClient (
   const accountsUrl = getMetadata(login.metadata.AccountsUrl)
 
   return getAccountClientRaw(accountsUrl, token !== null ? token : undefined)
+}
+
+/**
+ * Queries the account service for login affordance flags. Used by the login UI
+ * to hide the Sign Up tab and "Continue as guest" button when those flows are
+ * disabled server-side. Falls back to both available on any error to preserve
+ * backwards compatibility with account services that do not implement this
+ * endpoint yet.
+ */
+export async function fetchLoginCapabilities (): Promise<{
+  signUpEnabled: boolean
+  guestLoginAvailable: boolean
+}> {
+  try {
+    const accountClient = getAccountClient(null)
+    return await accountClient.getLoginCapabilities()
+  } catch {
+    return { signUpEnabled: true, guestLoginAvailable: true }
+  }
 }
 
 /**
@@ -177,7 +197,8 @@ export async function signUpOtp (email: string, first: string, last: string): Pr
 
 export async function createWorkspace (
   workspaceName: string,
-  region?: string
+  region?: string,
+  configuration?: WorkspaceConfiguration
 ): Promise<[Status, WorkspaceLoginInfo | null]> {
   const token = getMetadata(presentation.metadata.Token)
   if (token == null) {
@@ -190,7 +211,7 @@ export async function createWorkspace (
   }
 
   try {
-    const workspaceLoginInfo = await getAccountClient(token).createWorkspace(workspaceName, region)
+    const workspaceLoginInfo = await getAccountClient(token).createWorkspace(workspaceName, region, configuration)
 
     Analytics.handleEvent(LoginEvents.CreateWorkspace, { name: workspaceName, ok: true })
 

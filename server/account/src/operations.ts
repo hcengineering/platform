@@ -31,13 +31,21 @@ import {
   SocialIdType,
   systemAccountUuid,
   readOnlyGuestAccountUuid,
+  type WorkspaceConfiguration,
   type WorkspaceMemberInfo,
   type WorkspaceUuid,
   type IntegrationKind
 } from '@hcengineering/core'
 import platform, { getMetadata, PlatformError, Severity, Status, translate } from '@hcengineering/platform'
-import { decodeToken, decodeTokenVerbose, generateToken, type PermissionsGrant } from '@hcengineering/server-token'
+import {
+  decodeToken,
+  decodeTokenVerbose,
+  generateToken,
+  type PermissionsGrant,
+  type Token
+} from '@hcengineering/server-token'
 
+import { randomUUID } from 'crypto'
 import { isAdminEmail } from './admin'
 import { accountPlugin } from './plugin'
 import { type AccountServiceMethods, getServiceMethods } from './serviceOperations'
@@ -126,7 +134,9 @@ import {
   checkPasswordAging,
   generateTotpSecret,
   verifyTotpCode,
-  getTotpUrl
+  getTotpUrl,
+  reportInvalidToken,
+  tokenFingerprint
 } from './utils'
 
 const NIL_UUID = '00000000-0000-0000-0000-000000000000' as AccountUuid
@@ -151,6 +161,9 @@ export async function loginAsGuest (
   branding: Branding | null,
   token: string
 ): Promise<LoginInfo> {
+  if (process.env.DISABLE_GUEST_LOGIN === 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
   const guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
   if (guestPerson == null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -159,6 +172,43 @@ export async function loginAsGuest (
     account: guestPerson.uuid as AccountUuid,
     token: generateToken(guestPerson.uuid, undefined)
   }
+}
+
+/**
+ * Returns login affordance flags so clients can hide sign-up and guest-login
+ * controls when they are disabled by env vars or unavailable (no guest person).
+ */
+// L-AUTH-1: getLoginCapabilities is unauthenticated; without caching every
+// anonymous call hits the DB (db.person.findOne on the guest account) and lets
+// a caller probe the guest-person's existence at will. The guest-person state
+// changes practically never, so we cache the boolean with a short TTL.
+let guestPersonCache: { value: boolean, at: number } | undefined
+const GUEST_PERSON_CACHE_TTL_MS = 60_000
+
+/** Clears the getLoginCapabilities guest-person cache. For tests / ops. */
+export function resetGuestPersonCache (): void {
+  guestPersonCache = undefined
+}
+
+export async function getLoginCapabilities (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<{ signUpEnabled: boolean, guestLoginAvailable: boolean }> {
+  const signUpEnabled = process.env.DISABLE_SIGNUP !== 'true'
+
+  let guestLoginAvailable = false
+  if (process.env.DISABLE_GUEST_LOGIN !== 'true') {
+    const now = Date.now()
+    if (guestPersonCache === undefined || now - guestPersonCache.at > GUEST_PERSON_CACHE_TTL_MS) {
+      const guestPerson = await db.person.findOne({ uuid: readOnlyGuestAccountUuid as PersonUuid })
+      guestPersonCache = { value: guestPerson != null, at: now }
+    }
+    guestLoginAvailable = guestPersonCache.value
+  }
+
+  return { signUpEnabled, guestLoginAvailable }
 }
 
 /**
@@ -304,6 +354,9 @@ export async function signUp (
   },
   meta?: Meta
 ): Promise<LoginInfo> {
+  if (process.env.DISABLE_SIGNUP === 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
   const { email, password, firstName, lastName } = params
 
   if (email == null || password == null || firstName == null || email === '' || password === '' || firstName === '') {
@@ -348,6 +401,9 @@ export async function signUpOtp (
     lastName?: string
   }
 ): Promise<OtpInfo> {
+  if (process.env.DISABLE_SIGNUP === 'true') {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
   const { email, firstName, lastName } = params
 
   if (email == null || firstName == null || email === '' || firstName === '') {
@@ -556,9 +612,10 @@ export async function createWorkspace (
   params: {
     workspaceName: string
     region?: string
+    configuration?: WorkspaceConfiguration
   }
 ): Promise<WorkspaceLoginInfo> {
-  const { workspaceName, region } = params
+  const { workspaceName, region, configuration } = params
 
   if (workspaceName == null || workspaceName.length === 0) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
@@ -596,7 +653,23 @@ export async function createWorkspace (
     )
   }
 
-  const { workspaceUuid, workspaceUrl } = await createWorkspaceRecord(ctx, db, branding, workspaceName, account, region)
+  // Persist the client-provided configuration as-is. The only currently
+  // supported field is `withDemoContent`; future fields can be added without
+  // changing the wire shape.
+  const pendingConfiguration =
+    configuration?.withDemoContent !== undefined ? { withDemoContent: configuration.withDemoContent } : undefined
+
+  const { workspaceUuid, workspaceUrl } = await createWorkspaceRecord(
+    ctx,
+    db,
+    branding,
+    workspaceName,
+    account,
+    region,
+    'pending-creation',
+    undefined,
+    pendingConfiguration
+  )
 
   await db.assignWorkspace(account, workspaceUuid, AccountRole.Owner)
 
@@ -1086,6 +1159,11 @@ export async function checkJoin (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.WorkspaceNotFound, { workspaceUuid }))
   }
 
+  const role = await db.getWorkspaceRole(accountUuid, workspace.uuid)
+  if (role == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+
   const wsLoginInfo = await selectWorkspace(ctx, db, branding, token, { workspaceUrl: workspace.url, kind: 'external' })
 
   if (getRolePower(wsLoginInfo.role) < getRolePower(invite.role)) {
@@ -1268,7 +1346,7 @@ export async function signUpJoin (
     workspaceUrl: string
   },
   meta?: Meta
-): Promise<WorkspaceLoginInfo> {
+): Promise<WorkspaceLoginInfo | LoginInfo> {
   const { email, password, first, last, inviteId, workspaceUrl } = params
 
   if (password == null || password === '' || first == null || first === '') {
@@ -1284,8 +1362,47 @@ export async function signUpJoin (
     inviteId
   })
 
-  const { account } = await signUpByEmail(ctx, db, branding, email, password, first, last ?? '', true)
+  // Require email confirmation just like the regular signUp flow.
+  // Auto-confirm only when no mail service is configured (dev setups).
+  const mailURL = getMetadata(accountPlugin.metadata.MAIL_URL)
+  const forceConfirmation = mailURL !== undefined && mailURL !== ''
+
+  const { account, socialId } = await signUpByEmail(
+    ctx,
+    db,
+    branding,
+    email,
+    password,
+    first,
+    last ?? '',
+    !forceConfirmation
+  )
   void setTimezone(ctx, db, account, null, meta)
+
+  if (forceConfirmation) {
+    const person = await db.person.findOne({ uuid: account })
+    if (person == null) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.InternalServerError, {}))
+    }
+
+    const normalizedEmail = cleanEmail(email)
+    // Thread the invite info through the confirmation token so the user
+    // is auto-joined to the workspace once they confirm their email.
+    await sendEmailConfirmation(ctx, branding, account, normalizedEmail, {
+      inviteId,
+      workspaceUrl
+    })
+
+    return {
+      account,
+      name: getPersonName(person),
+      socialId,
+      token: undefined
+    }
+  }
+
+  ctx.warn('Please provide MAIL_URL to enable sign up email confirmations.')
+  await confirmHulyIds(ctx, db, account)
 
   return await doJoinByInvite(
     ctx,
@@ -1303,7 +1420,7 @@ export async function confirm (
   db: AccountDB,
   branding: Branding | null,
   token: string
-): Promise<LoginInfo> {
+): Promise<LoginInfo | WorkspaceLoginInfo> {
   const { account, extra } = decodeTokenVerbose(ctx, token)
 
   const email = extra?.confirmEmail
@@ -1321,11 +1438,42 @@ export async function confirm (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: account }))
   }
 
-  const result = {
+  const result: LoginInfo = {
     account,
     name: getPersonName(person),
     socialId,
     token: generateToken(account)
+  }
+
+  // If invite info was carried through the confirmation token (signUpJoin flow),
+  // finish the workspace join now that the email is verified.
+  const inviteId = typeof extra?.inviteId === 'string' ? extra.inviteId : ''
+  const workspaceUrl = typeof extra?.workspaceUrl === 'string' ? extra.workspaceUrl : ''
+  if (inviteId !== '' || workspaceUrl !== '') {
+    try {
+      const joinInfo = await getWorkspaceJoinInfo(ctx, db, email, inviteId, workspaceUrl)
+      const joinResult = await doJoinByInvite(
+        ctx,
+        db,
+        branding,
+        generateToken(account, joinInfo.workspace?.uuid),
+        account,
+        joinInfo.workspace,
+        joinInfo.invite
+      )
+      ctx.info('Email confirmed and workspace joined via invite', { account, email, inviteId })
+      return joinResult
+    } catch (err: any) {
+      // The email is now verified, but the invite is stale/expired/invalid.
+      // Fall back to returning the basic login info so the user is at least signed in.
+      ctx.error('Email confirmed but failed to auto-join workspace via invite', {
+        account,
+        email,
+        inviteId,
+        workspaceUrl,
+        err
+      })
+    }
   }
 
   ctx.info('Email confirmed', { account, email })
@@ -1868,7 +2016,7 @@ export async function getWorkspacesInfo (
   const { account } = decodeTokenVerbose(ctx, token)
 
   if (account !== systemAccountUuid) {
-    ctx.error('getWorkspaceInfos with wrong user', { account, token })
+    ctx.error('getWorkspaceInfos with wrong user', { account, token: tokenFingerprint(token) })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -1897,7 +2045,7 @@ export async function updateLastVisit (
   const { account } = decodeTokenVerbose(ctx, token)
 
   if (account !== systemAccountUuid) {
-    ctx.error('updateLastVisit with wrong user', { account, token })
+    ctx.error('updateLastVisit with wrong user', { account, token: tokenFingerprint(token) })
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
   }
 
@@ -1979,8 +2127,7 @@ export async function getLoginInfoByToken (
   } catch (err: any) {
     if (token !== undefined) {
       // do not spam errors as this is expected when we issue request with no token
-      Analytics.handleError(err)
-      ctx.error('Invalid token', { token, errMsg: err.message })
+      reportInvalidToken(ctx, token, err)
     }
     switch (err.message) {
       case 'Token not yet active': {
@@ -2164,8 +2311,7 @@ export async function getLoginWithWorkspaceInfo (
   try {
     ;({ account: accountUuid, extra, workspace } = decodeTokenVerbose(ctx, token))
   } catch (err: any) {
-    Analytics.handleError(err)
-    ctx.error('Invalid token', { token })
+    reportInvalidToken(ctx, token, err)
     throw new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
   }
 
@@ -2398,7 +2544,17 @@ export async function getAccountInfo (
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
 
-  decodeTokenVerbose(ctx, token)
+  const { account: caller, extra } = decodeTokenVerbose(ctx, token)
+
+  if (accountId !== caller) {
+    const isAdmin = extra?.admin === 'true'
+    const isAllowedService = verifyAllowedServices(['workspace', 'tool'], extra, false)
+
+    if (!isAdmin && !isAllowedService) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+  }
+
   const account = await getAccount(db, accountId)
   if (account === undefined || account === null) {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
@@ -2523,7 +2679,7 @@ async function getMailboxes (
   return await db.mailbox.find({ accountUuid: account })
 }
 
-async function getMailboxSecret (
+export async function getMailboxSecret (
   ctx: MeasureContext,
   db: AccountDB,
   branding: Branding | null,
@@ -2533,7 +2689,7 @@ async function getMailboxSecret (
   }
 ): Promise<MailboxSecret | null> {
   const { extra } = decodeTokenVerbose(ctx, token)
-  verifyAllowedServices(['huly-mail'], extra, false)
+  verifyAllowedServices(['huly-mail'], extra)
   return await db.mailboxSecret.findOne({ mailbox: params.mailbox })
 }
 
@@ -2564,6 +2720,169 @@ async function deleteMailbox (
   await db.mailbox.deleteMany({ mailbox })
   await doReleaseSocialId(db, account, SocialIdType.EMAIL, mailbox, `deleteMailbox@${account}`)
   ctx.info('Mailbox deleted', { mailbox, account })
+}
+
+// ── API Token Management ────────────────────────────────────────────
+
+const MAX_TOKENS_PER_ACCOUNT = 100
+
+/**
+ * API tokens carry the full rights of their account, so letting one manage tokens
+ * would make a leaked token self-renewing: it could mint a fresh token with a new
+ * expiry, or revoke the tokens its owner would use to cut it off. Token management
+ * stays with an interactive session.
+ */
+function verifyNotApiToken (extra: Record<string, any> | undefined): void {
+  if (extra?.apiTokenId !== undefined) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+}
+
+/**
+ * Creates a new API token for the authenticated user.
+ * @param params.name Human-readable token name (1–255 chars)
+ * @param params.workspaceUuid Target workspace — user must have access
+ * @param params.expiryDays Token validity period (1–365 days)
+ * @returns Token ID, signed JWT, and expiration timestamp (ms)
+ * @throws BadRequest if validation fails
+ * @throws Forbidden if user lacks workspace access
+ */
+async function createApiToken (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: {
+    name: string
+    workspaceUuid: WorkspaceUuid
+    expiryDays: number
+  }
+): Promise<{ id: string, token: string, expiresOn: number }> {
+  const { name, workspaceUuid, expiryDays } = params
+
+  if (
+    name == null ||
+    typeof name !== 'string' ||
+    name.trim() === '' ||
+    name.trim().length > 255 ||
+    workspaceUuid == null
+  ) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  if (typeof expiryDays !== 'number' || !Number.isFinite(expiryDays)) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const days = Math.floor(expiryDays)
+  if (days < 1 || days > 365) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  verifyNotApiToken(extra)
+
+  // Verify the user has access to this workspace and is at least a User (not a guest)
+  const role = await db.getWorkspaceRole(account, workspaceUuid)
+  if (role == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+  }
+  verifyAllowedRole(role, AccountRole.User, extra)
+
+  // Enforce per-account token limit. Revoked and expired tokens are kept for the
+  // audit trail, so counting them would eventually lock out anyone who rotates.
+  const now = Date.now()
+  const existingTokens = await db.apiToken.find({ accountUuid: account })
+  const usableTokens = existingTokens.filter((it) => !it.revoked && it.expiresOn > now)
+  if (usableTokens.length >= MAX_TOKENS_PER_ACCOUNT) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  const expiresOn = now + days * 86400000
+  const expSec = Math.floor(expiresOn / 1000)
+
+  const id = randomUUID()
+  const apiToken = generateToken(account, workspaceUuid, { apiTokenId: id }, undefined, { exp: expSec })
+
+  await db.apiToken.insertOne({
+    id,
+    accountUuid: account,
+    name,
+    workspaceUuid,
+    createdOn: now,
+    expiresOn,
+    revoked: false
+  })
+
+  ctx.info('API token created', { id, account, workspaceUuid, days })
+  return { id, token: apiToken, expiresOn }
+}
+
+/**
+ * Lists all API tokens for the authenticated user across all workspaces.
+ * Includes workspace names resolved from workspace UUIDs.
+ */
+async function listApiTokens (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string
+): Promise<
+  Array<{
+    id: string
+    name: string
+    workspaceUuid: WorkspaceUuid
+    workspaceName: string
+    createdOn: number
+    expiresOn: number
+    revoked: boolean
+  }>
+  > {
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  verifyNotApiToken(extra)
+
+  const tokens = await db.apiToken.find({ accountUuid: account })
+  const wsUuids = [...new Set(tokens.map((t) => t.workspaceUuid))]
+  const workspaces = await db.workspace.find({ uuid: { $in: wsUuids } as any })
+  const wsMap = new Map(workspaces.map((w) => [w.uuid, w.name ?? w.url]))
+
+  return tokens.map((t) => ({
+    id: t.id,
+    name: t.name,
+    workspaceUuid: t.workspaceUuid,
+    workspaceName: wsMap.get(t.workspaceUuid) ?? t.workspaceUuid,
+    createdOn: t.createdOn,
+    expiresOn: t.expiresOn,
+    revoked: t.revoked
+  }))
+}
+
+/**
+ * Revokes one of the caller's own API tokens. The record is kept so the token
+ * stays visible as revoked rather than silently disappearing.
+ */
+async function revokeApiToken (
+  ctx: MeasureContext,
+  db: AccountDB,
+  branding: Branding | null,
+  token: string,
+  params: { tokenId: string }
+): Promise<void> {
+  const { account, extra } = decodeTokenVerbose(ctx, token)
+  verifyNotApiToken(extra)
+  const { tokenId } = params
+
+  // Scoped to the caller's own tokens, which is the only authority revoking needs.
+  // Deliberately no workspace role check: leaving a workspace must not strand a
+  // credential its owner can no longer revoke.
+  const existing = await db.apiToken.findOne({ id: tokenId, accountUuid: account })
+  if (existing == null) {
+    throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+  }
+
+  await db.apiToken.update({ id: tokenId }, { revoked: true })
+
+  ctx.info('API token revoked', { id: tokenId, account })
 }
 
 async function exchangeGuestToken (
@@ -2774,6 +3093,79 @@ export async function deleteAccount (
   })
 }
 
+// Social ids that resolve to an account on their own, and therefore hand over the ability to
+// authenticate as its owner once they are re-pointed. Password recovery and OTP login look an
+// account up by social id value alone (see requestPasswordReset, loginOtp).
+const loginCapableSocialTypes = [SocialIdType.EMAIL, SocialIdType.HULY]
+
+/**
+ * Merging re-points the secondary person's social ids onto the primary person, so an unrestricted
+ * caller could both absorb the identifiers of a person they do not own and inject their own
+ * identifiers into somebody else's person. Restrict it to callers with authority over both persons.
+ */
+async function verifyMergePersonsAuthority (
+  db: AccountDB,
+  { account, workspace, extra }: Token,
+  primaryPerson: PersonUuid,
+  secondaryPerson: PersonUuid,
+  shouldThrow = true
+): Promise<boolean> {
+  // Global admins and the tool/workspace services act on behalf of the whole installation,
+  // the same way the account level merge (mergeSpecifiedAccounts) allows them to.
+  // Note this must precede the workspace check below: such tokens carry no workspace.
+  if (extra?.admin === 'true' || verifyAllowedServices(['tool', 'workspace'], extra, false)) {
+    return true
+  }
+
+  const forbidden = (): boolean => {
+    if (shouldThrow) {
+      throw new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+    }
+
+    return false
+  }
+
+  // Everybody else acts within a single workspace they maintain.
+  if (workspace == null) {
+    return forbidden()
+  }
+
+  if (!verifyAllowedRole(await db.getWorkspaceRole(account, workspace), AccountRole.Maintainer, extra, false)) {
+    return forbidden()
+  }
+
+  // The platform wide accounts are not anybody's to merge.
+  for (const person of [primaryPerson, secondaryPerson]) {
+    if (person === systemAccountUuid || person === readOnlyGuestAccountUuid) {
+      return forbidden()
+    }
+
+    if ((await db.getWorkspaceRole(person as AccountUuid, workspace)) != null) {
+      // A member of the caller's workspace.
+      continue
+    }
+
+    if ((await db.account.findOne({ uuid: person as AccountUuid })) != null) {
+      // An account outside of the caller's workspace: no workspace maintainer may take it over.
+      return forbidden()
+    }
+  }
+
+  // Both persons are in reach of the caller by now, but the primary keeps receiving the secondary's
+  // social ids. When the primary is somebody else's account, a login capable social id would grant
+  // whoever controls it access to that account, so leave those merges to the verification flows.
+  // Note doMergePersons only refuses *verified* secondary social ids, which does not cover this.
+  if (primaryPerson !== account && (await db.account.findOne({ uuid: primaryPerson as AccountUuid })) != null) {
+    const secondarySocialIds = await db.socialId.find({ personUuid: secondaryPerson })
+
+    if (secondarySocialIds.some((si) => loginCapableSocialTypes.includes(si.type))) {
+      return forbidden()
+    }
+  }
+
+  return true
+}
+
 export async function canMergeSpecifiedPersons (
   ctx: MeasureContext,
   db: AccountDB,
@@ -2784,7 +3176,7 @@ export async function canMergeSpecifiedPersons (
     secondaryPerson: PersonUuid
   }
 ): Promise<boolean> {
-  decodeTokenVerbose(ctx, token)
+  const decodedToken = decodeTokenVerbose(ctx, token)
 
   const { primaryPerson, secondaryPerson } = params
   if (primaryPerson == null || primaryPerson === '' || secondaryPerson == null || secondaryPerson === '') {
@@ -2793,6 +3185,12 @@ export async function canMergeSpecifiedPersons (
 
   if (primaryPerson === secondaryPerson) {
     // Nothing to do
+    return false
+  }
+
+  // This is a predicate the merge dialog polls, so an unauthorized caller is answered
+  // rather than thrown at. mergeSpecifiedPersons below enforces the same rules.
+  if (!(await verifyMergePersonsAuthority(db, decodedToken, primaryPerson, secondaryPerson, false))) {
     return false
   }
 
@@ -2825,12 +3223,14 @@ export async function mergeSpecifiedPersons (
     secondaryPerson: PersonUuid
   }
 ): Promise<void> {
-  decodeTokenVerbose(ctx, token)
+  const decodedToken = decodeTokenVerbose(ctx, token)
 
   const { primaryPerson, secondaryPerson } = params
   if (primaryPerson == null || primaryPerson === '' || secondaryPerson == null || secondaryPerson === '') {
     throw new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
   }
+
+  await verifyMergePersonsAuthority(db, decodedToken, primaryPerson, secondaryPerson)
 
   await doMergePersons(db, primaryPerson, secondaryPerson)
 }
@@ -3192,6 +3592,7 @@ export type AccountMethods =
   | 'login'
   | 'loginOtp'
   | 'loginAsGuest'
+  | 'getLoginCapabilities'
   | 'signUp'
   | 'signUpOtp'
   | 'validateOtp'
@@ -3264,6 +3665,9 @@ export type AccountMethods =
   | 'hasWorkspacePermission'
   | 'getWorkspacePermissions'
   | 'getWorkspaceUsersWithPermission'
+  | 'createApiToken'
+  | 'listApiTokens'
+  | 'revokeApiToken'
 
 /**
  * @public
@@ -3274,6 +3678,7 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     login: wrap(login),
     loginOtp: wrap(loginOtp),
     loginAsGuest: wrap(loginAsGuest),
+    getLoginCapabilities: wrap(getLoginCapabilities),
     ...(hasSignUp ? { signUp: wrap(signUp) } : {}),
     ...(hasSignUp ? { signUpOtp: wrap(signUpOtp) } : {}),
     validateOtp: wrap(validateOtp),
@@ -3330,6 +3735,11 @@ export function getMethods (hasSignUp: boolean = true): Partial<Record<AccountMe
     hasWorkspacePermission: wrap(hasWorkspacePermission),
     getWorkspacePermissions: wrap(getWorkspacePermissions),
     getWorkspaceUsersWithPermission: wrap(getWorkspaceUsersWithPermission),
+
+    /* API TOKENS */
+    createApiToken: wrap(createApiToken),
+    listApiTokens: wrap(listApiTokens),
+    revokeApiToken: wrap(revokeApiToken),
 
     /* READ OPERATIONS */
     getRegionInfo: wrap(getRegionInfo),

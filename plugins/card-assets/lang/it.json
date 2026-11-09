@@ -82,6 +82,8 @@
     "SectionUnlocked": "Sezione {section} sbloccata",
     "LayoutAuto": "Auto",
     "SingleColumn": "Una colonna",
+    "BaseType": "Tipo base",
+    "BaseTypeDescription": "Usa questo tipo solo come tipo padre. Le schede possono essere create solo dai suoi sottotipi.",
     "TwoColumns": "Due colonne",
     "Grid": "Griglia",
     "RichtextProperties": "Campo di testo",

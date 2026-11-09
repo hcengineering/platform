@@ -29,6 +29,7 @@ import activity, { type ActivityMessage } from '@hcengineering/activity'
 import contact from '@hcengineering/contact'
 import { parseLocation, showPopup, tooltip, type LabelAndProps, type Location, fromCodePoint } from '@hcengineering/ui'
 import workbench, { type Application } from '@hcengineering/workbench'
+import { canParseUrl } from '../url'
 
 export interface ReferenceExtensionOptions extends ReferenceOptions {
   suggestion: Omit<SuggestionOptions, 'editor'>
@@ -200,15 +201,21 @@ export const ReferenceExtension = ReferenceNode.extend<ReferenceExtensionOptions
             void renderLabel({ id, objectclass, label: node.attrs.label })
             resetTooltipHandle(undefined)
           } else {
-            const label = await getReferenceLabel(objectclass, id, obj)
+            const targetObj =
+              node.attrs.fixed === true ? obj : ((await getReferenceObject(objectclass, id, obj)) ?? obj)
+            const label = await getReferenceLabel(targetObj._class, targetObj._id, targetObj)
             if (label === '') return
 
-            let tooltipOptions: LabelAndProps | undefined = await getReferenceTooltip(objectclass, id, obj)
+            let tooltipOptions: LabelAndProps | undefined = await getReferenceTooltip(
+              targetObj._class,
+              targetObj._id,
+              targetObj
+            )
             if (tooltipOptions.component === undefined) {
               tooltipOptions = undefined
             }
             resetTooltipHandle(tooltip(root, tooltipOptions))
-            void renderLabel({ id, objectclass, label })
+            void renderLabel({ id: targetObj._id, objectclass: targetObj._class, label })
           }
         })
       } else if (withoutDoc) {
@@ -516,7 +523,7 @@ export async function getTargetObjectFromUrl (
 
   let location: Location
   if (typeof urlOrLocation === 'string') {
-    if (!URL.canParse(urlOrLocation)) return
+    if (!canParseUrl(urlOrLocation)) return
 
     const url = new URL(urlOrLocation)
 
@@ -596,7 +603,7 @@ export function buildReferenceUrl (props: Partial<ReferenceNodeProps>, refUrl: s
 
 export function parseReferenceUrl (urlString: string, refUrl: string = 'ref://'): ReferenceNodeProps | undefined {
   if (!urlString.startsWith(refUrl)) return
-  if (!URL.canParse(urlString)) return
+  if (!canParseUrl(urlString)) return
 
   const url = new URL(urlString)
   const label = url.searchParams?.get('label') ?? ''

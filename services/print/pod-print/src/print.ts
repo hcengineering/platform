@@ -8,12 +8,15 @@ import config from './config'
 
 export interface PrintOptions {
   kind?: ExportKind
+  orientation?: PageOrientation
   viewport?: Viewport
 }
 
 export const validKinds = ['pdf', 'jpeg', 'png', 'webp'] as const
+export const validPageOrientations = ['portrait', 'landscape'] as const
 
 export type ExportKind = (typeof validKinds)[number]
+export type PageOrientation = (typeof validPageOrientations)[number]
 
 /**
  * Prints a webpage with the specified options
@@ -24,9 +27,10 @@ export type ExportKind = (typeof validKinds)[number]
  */
 export async function print (ctx: MeasureContext, url: string, options?: PrintOptions): Promise<Buffer | undefined> {
   const kind = options?.kind ?? 'pdf'
+  const orientation = options?.orientation ?? 'portrait'
   const viewport = options?.viewport ?? { width: 1440, height: 900 }
 
-  ctx.info('print', { url, kind, viewport })
+  ctx.info('print', { url, kind, orientation, viewport })
 
   // TODO: think of having a "hot" browser instance to avoid the overhead of launching a new one every time
   const browser = await puppeteer.launch({
@@ -84,7 +88,7 @@ export async function print (ctx: MeasureContext, url: string, options?: PrintOp
     res = await ctx.with('pdf', {}, () =>
       page.pdf({
         format: 'A4',
-        landscape: false,
+        landscape: orientation === 'landscape',
         timeout: 0,
         headerTemplate: pageHeader,
         footerTemplate: pageFooter,

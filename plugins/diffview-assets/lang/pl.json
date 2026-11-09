@@ -1,0 +1,14 @@
+{
+  "string": {
+    "ViewMode": "Tryb podglądu",
+    "Unified": "Ujednolicony",
+    "Split": "Podzielony",
+    "Viewed": "Przejrzane",
+    "ShowDiff": "Pokaż różnicę",
+    "NoChanges": "Nie znaleziono różnic pomiędzy plikami",
+    "LargeDiffsAreHidden": "Duże różnice domyślnie nie są wyświetlane.",
+    "FileIsTooLarge": "Plik jest za duży, aby go wyświetlić.",
+    "FileWasRenamed": "Tylko nazwa pliku została zmieniona.",
+    "FileWasDeleted": "Plik został usunięty."
+  }
+}

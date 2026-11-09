@@ -15,6 +15,7 @@
 //
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  getCurrentEmployee,
   getGravatarUrl,
   getName,
   type AvatarInfo,
@@ -32,7 +33,8 @@ import {
   type DocumentQuery,
   type Ref,
   type RelatedDocument,
-  type WithLookup
+  type WithLookup,
+  getCurrentAccount
 } from '@hcengineering/core'
 import login from '@hcengineering/login'
 import { getResource, type IntlString, type Resources } from '@hcengineering/platform'
@@ -51,6 +53,7 @@ import {
   type TooltipAlignment
 } from '@hcengineering/ui'
 import { AggregationManager } from '@hcengineering/view-resources'
+import { getChannelProviderUrl } from './channelUrl'
 import PersonIdArrayEditor from './components/PersonIdArrayEditor.svelte'
 import AccountArrayEditor from './components/AccountArrayEditor.svelte'
 import AccountBox from './components/AccountBox.svelte'
@@ -130,7 +133,8 @@ import PersonPreviewProvider from './components/person/PersonPreviewProvider.sve
 import TranslationSettings from './components/TranslationSettings.svelte'
 
 import { get } from 'svelte/store'
-import { canMergePersons, canResendInvitation } from './visibilityTester'
+import { canKickEmployee, canMergePersons, canResendInvitation } from './visibilityTester'
+import { isCurrentUser } from './kickEmployee'
 import contact from './plugin'
 import {
   channelIdentifierProvider,
@@ -301,6 +305,10 @@ async function resendInvite (doc: Person): Promise<void> {
 }
 
 async function kickEmployee (doc: Person): Promise<void> {
+  if (isCurrentUser(doc, getCurrentAccount().uuid, getCurrentEmployee())) {
+    // Kicking yourself would lock you out of the workspace, use "Leave workspace" in the profile instead.
+    return
+  }
   showPopup(MessageBox, {
     label: contact.string.KickEmployee,
     message: contact.string.KickEmployeeDescr,
@@ -319,7 +327,13 @@ async function kickEmployee (doc: Person): Promise<void> {
 }
 
 async function openChannelURL (doc: Channel): Promise<void> {
-  const url = parseURL(doc.value)
+  const providerUrl = getChannelProviderUrl(doc.provider, doc.value)
+  if (providerUrl !== undefined && !providerUrl.startsWith('https://')) {
+    // tel: and mailto: links are handed over to the system handler without opening a new tab
+    window.open(providerUrl, '_self')
+    return
+  }
+  const url = providerUrl ?? parseURL(doc.value)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     window.open(url)
   }
@@ -471,6 +485,7 @@ export default async (): Promise<Resources> => ({
     ChannelIdentifierProvider: channelIdentifierProvider,
     CanResendInvitation: canResendInvitation,
     CanMergePersons: canMergePersons,
+    CanKickEmployee: canKickEmployee,
     HideInactive: hideInactive
   },
   resolver: {

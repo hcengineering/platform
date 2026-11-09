@@ -11,7 +11,8 @@ import account, {
   getAccountDB,
   getAllTransactors,
   getMethods,
-  cleanExpiredOtp
+  cleanExpiredOtp,
+  isProviderSignUpDisabled
 } from '@hcengineering/account'
 import accountEn from '@hcengineering/account/lang/en.json'
 import accountRu from '@hcengineering/account/lang/ru.json'
@@ -148,6 +149,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
 
   const app = new Koa()
   const router = new Router()
+  const authProviderShutdownController = new AbortController()
 
   app.use(
     cors({
@@ -169,7 +171,8 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
     serverSecret,
     frontURL,
     brandings,
-    !hasSignUp
+    isProviderSignUpDisabled(),
+    authProviderShutdownController.signal
   )
 
   void accountsDb.then((res) => {
@@ -452,6 +455,7 @@ export function serveAccount (measureCtx: MeasureContext, brandings: BrandingMap
   })
 
   const close = (): void => {
+    authProviderShutdownController.abort()
     onClose?.()
     void accountsDb.then(([, closeAccountsDb]) => {
       closeAccountsDb()

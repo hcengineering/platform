@@ -95,6 +95,7 @@
       flex-grow: 1;
       font-weight: 500;
       color: var(--caption-color);
+      -webkit-user-select: none;
       user-select: none;
     }
   }

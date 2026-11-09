@@ -32,7 +32,7 @@ import { type AttachmentExporter } from './attachment-exporter'
 import { type DataMapper } from './data-mapper'
 import { type RelationExporter } from './relation-exporter'
 import { type SpaceExporter } from './space-exporter'
-import { type ExportState, type RelationDefinition } from './types'
+import { type CustomExportHandler, type ExportState, type RelationDefinition } from './types'
 
 /**
  * Handles document export logic
@@ -40,6 +40,7 @@ import { type ExportState, type RelationDefinition } from './types'
 export class DocumentExporter {
   private relationExporter: RelationExporter | undefined
   private dataMapper: DataMapper
+  private customHandlers: CustomExportHandler[] = []
 
   constructor (
     private readonly context: MeasureContext,
@@ -60,6 +61,10 @@ export class DocumentExporter {
     this.dataMapper = dataMapper
   }
 
+  setCustomHandlers (handlers: CustomExportHandler[]): void {
+    this.customHandlers = handlers
+  }
+
   /**
    * Export a single document
    */
@@ -70,7 +75,8 @@ export class DocumentExporter {
     sourceHierarchy: Hierarchy,
     sourceLowLevel: LowLevelStorage,
     existingDocsMap: Map<Ref<Doc>, Doc>,
-    relations: RelationDefinition[]
+    relations: RelationDefinition[],
+    includeChildren: boolean = false
   ): Promise<boolean> {
     if (this.state.processingDocs.has(doc._id)) {
       return false
@@ -78,6 +84,13 @@ export class DocumentExporter {
 
     if (this.state.idMapping.has(doc._id)) {
       return false
+    }
+
+    // Class-specific custom handlers take precedence over the default flow.
+    const customTargetId = await this.runCustomHandlers(doc, sourceHierarchy, sourceLowLevel)
+    if (customTargetId !== undefined) {
+      this.state.idMapping.set(doc._id, customTargetId)
+      return true
     }
 
     if (conflictStrategy === 'skip') {
@@ -115,7 +128,8 @@ export class DocumentExporter {
         conflictStrategy,
         includeAttachments,
         sourceHierarchy,
-        sourceLowLevel
+        sourceLowLevel,
+        includeChildren
       )
 
       // Create the document
@@ -133,7 +147,8 @@ export class DocumentExporter {
         conflictStrategy,
         includeAttachments,
         sourceHierarchy,
-        sourceLowLevel
+        sourceLowLevel,
+        includeChildren
       )
       await this.exportSpaceRelations(
         doc,
@@ -142,7 +157,8 @@ export class DocumentExporter {
         includeAttachments,
         sourceHierarchy,
         sourceLowLevel,
-        relations
+        relations,
+        includeChildren
       )
 
       // Handle attachments
@@ -153,8 +169,12 @@ export class DocumentExporter {
       // Handle collaborative content blobs (e.g., document content)
       await this.attachmentExporter.exportCollaborativeContent(doc, sourceHierarchy)
 
-      // Handle collections (child documents)
-      await this.exportCollections(doc, targetId, sourceHierarchy, sourceLowLevel, relations)
+      // Handle collections (child documents) — only when explicitly requested.
+      // When disabled, only the top-level documents matched by the export query
+      // are exported and their attached collection items are skipped.
+      if (includeChildren) {
+        await this.exportCollections(doc, targetId, sourceHierarchy, sourceLowLevel, relations, includeChildren)
+      }
 
       return true
     } catch (err: any) {
@@ -166,6 +186,51 @@ export class DocumentExporter {
     }
   }
 
+  /**
+   * Run any registered custom handlers whose class matches `doc._class`.
+   * Returns the target id from the first handler that resolves the doc.
+   * Returns `undefined` when no handler matches or all handlers fall through.
+   */
+  private async runCustomHandlers (
+    doc: Doc,
+    sourceHierarchy: Hierarchy,
+    sourceLowLevel: LowLevelStorage
+  ): Promise<Ref<Doc> | undefined> {
+    if (this.customHandlers.length === 0) {
+      return undefined
+    }
+
+    const targetHierarchy = this.targetClient.getHierarchy()
+
+    for (const handler of this.customHandlers) {
+      if (!targetHierarchy.isDerived(doc._class, handler.class)) {
+        continue
+      }
+
+      try {
+        const targetId = await handler.resolve(doc, {
+          context: this.context,
+          targetClient: this.targetClient,
+          state: this.state,
+          spaceExporter: this.spaceExporter,
+          sourceHierarchy,
+          sourceLowLevel
+        })
+        if (targetId !== undefined) {
+          return targetId
+        }
+      } catch (err: any) {
+        this.context.error(`Custom export handler for ${handler.class} failed on ${doc._id}:`, {
+          error: err instanceof Error ? err.message : String(err),
+          docId: doc._id
+        })
+        throw err
+      }
+    }
+
+    return undefined
+  }
+
   private async exportSpaceRelations (
     doc: Doc,
     space: Ref<Space>,
@@ -173,7 +238,8 @@ export class DocumentExporter {
     includeAttachments: boolean,
     sourceHierarchy: Hierarchy,
     sourceLowLevel: LowLevelStorage,
-    relations: RelationDefinition[]
+    relations: RelationDefinition[],
+    includeChildren: boolean
   ): Promise<void> {
     try {
       if (this.relationExporter === undefined) {
@@ -199,7 +265,8 @@ export class DocumentExporter {
         conflictStrategy,
         includeAttachments,
         sourceHierarchy,
-        sourceLowLevel
+        sourceLowLevel,
+        includeChildren
       )
     } catch (err: any) {
       this.context.error(`Failed to export relations for space ${space}:`, {
@@ -253,7 +320,8 @@ export class DocumentExporter {
     targetDocId: Ref<Doc>,
     sourceHierarchy: Hierarchy,
     sourceLowLevel: LowLevelStorage,
-    relations: RelationDefinition[]
+    relations: RelationDefinition[],
+    includeChildren: boolean
   ): Promise<void> {
     const attributes = sourceHierarchy.getAllAttributes(sourceDoc._class)
 
@@ -292,7 +360,8 @@ export class DocumentExporter {
             sourceHierarchy,
             sourceLowLevel,
             new Map(),
-            relations
+            relations,
+            includeChildren
           )
         } catch (err: any) {
           this.context.error(`Failed to export collection item ${collectionDoc._id}:`, {

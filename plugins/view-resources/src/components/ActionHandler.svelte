@@ -21,6 +21,7 @@
   import { Action, ViewContextType } from '@hcengineering/view'
   import { fly } from 'svelte/transition'
   import { getContextActionsSync, getSelection } from '../actions'
+  import { withCurrentSpace } from '../actionSpace'
   import { ListSelectionProvider, SelectionStore, focusStore, previewDocument, selectionStore } from '../selection'
   import { getObjectPreview, restrictionStore } from '../utils'
 
@@ -181,12 +182,13 @@
       lastKey = undefined
       delayedAction = undefined
       Analytics.handleEvent(a._id)
-      const actionProps: Record<string, any> = {
-        ...a.actionProps,
-        ...(a.actionPopup !== undefined ? { actionPopup: a.actionPopup } : {})
-      }
-      if (!Object.prototype.hasOwnProperty.call(actionProps, 'props')) actionProps.props = {}
-      actionProps.props.space = currentSpace
+      const actionProps: Record<string, any> = withCurrentSpace(
+        {
+          ...a.actionProps,
+          ...(a.actionPopup !== undefined ? { actionPopup: a.actionPopup } : {})
+        },
+        currentSpace
+      )
       await action(selectionDocs, evt, actionProps)
     }
 

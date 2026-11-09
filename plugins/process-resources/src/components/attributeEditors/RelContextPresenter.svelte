@@ -20,16 +20,19 @@
   export let context: Context
 
   $: relation = context.relations[contextValue.name]
+
   $: attr = contextValue.key !== '_id' && relation?.attributes?.find((p) => p.name === contextValue.key)
 </script>
 
-{#if contextValue.key === '_id'}
-  {relation.name}
-{:else if relation !== undefined && attr}
-  {relation.name}
-  <span class="attr">
-    <Label label={attr.label} />
-  </span>
+{#if relation !== undefined}
+  {#if contextValue.key === '_id'}
+    {relation.name}
+  {:else if attr}
+    {relation.name}
+    <span class="attr">
+      <Label label={attr.label} />
+    </span>
+  {/if}
 {/if}
 
 <style lang="scss">

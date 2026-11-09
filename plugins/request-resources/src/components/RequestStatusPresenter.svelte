@@ -35,6 +35,7 @@
 <style lang="scss">
   .yesno-container {
     max-width: fit-content;
+    -webkit-user-select: none;
     user-select: none;
 
     span {

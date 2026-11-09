@@ -37,6 +37,24 @@
   export let hideExtra: boolean = false
   export let hidePresence: boolean = false
   export let overflowExtra: boolean = false
+  /**
+   * Opt-in: make the `search` group the row's designated shrink target and
+   * freeze the `extra` group.
+   *
+   * By default every `.hulyHeader-buttonsGroup` except `extra` is
+   * `flex-shrink: 0`, so a consumer that puts a wide control cluster into the
+   * `search` slot (the Tracker's Gantt toolbar) grew the row past its own
+   * `overflow: hidden` box: `extra` was squeezed to a few pixels and the
+   * buttons inside it ended up outside the viewport — in the DOM, but
+   * unclickable. With this flag the roles are swapped: `search` shrinks (and
+   * is expected to collapse its own content), `extra` keeps its natural
+   * width. Default `false`, so no existing consumer changes behaviour.
+   *
+   * Only honoured in the double-row layout; the single-row layout puts
+   * `search` between a growing title group and `actions`, where a second
+   * flexible item would fight the title for space.
+   */
+  export let shrinkSearch: boolean = false
   export let noPrint: boolean = false
   export let freezeBefore: boolean = false
   export let doubleRowWidth: number = 768
@@ -168,7 +186,7 @@
         </div>
       {/if}
       {#if $$slots.search}
-        <div class="hulyHeader-buttonsGroup search">
+        <div class="hulyHeader-buttonsGroup search" class:shrink={shrinkSearch}>
           <slot name="search" {doubleRow} />
         </div>
       {/if}
@@ -176,6 +194,7 @@
         <div
           class="hulyHeader-buttonsGroup extra"
           class:overflow={overflowExtra}
+          class:freeze={shrinkSearch}
           use:resizeObserver={(element) => {
             headerProps.extraOverflow = element.scrollWidth > element.clientWidth
             if (headerProps.extraWidth !== element.clientWidth) headerProps.extraWidth = element.clientWidth

@@ -121,7 +121,8 @@
     "CreateNewSkills": "既存のスキルが見つからない場合は新しいスキルを作成",
     "SwapFirstAndLastNames": "名と姓を入れ替える",
     "ForbidCreateVacancyPermission": "求人の作成禁止",
-    "ForbidCreateVacancyPermissionDescription": "ユーザーが新しい求人を作成することを禁止します"
+    "ForbidCreateVacancyPermissionDescription": "ユーザーが新しい求人を作成することを禁止します",
+    "NumberLabels": "{count, plural, =0 {ラベルなし} =1 {1 ラベル} other {# ラベル}}"
   },
   "status": {
     "ApplicationExists": "応募はすでに存在します",

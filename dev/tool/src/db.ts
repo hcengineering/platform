@@ -1755,7 +1755,7 @@ export async function restoreFromv6All (
         }
         await sendTransactorEvent(uuid, 'force-maintenance')
 
-        await restore(ctx, pipeline, wsIds, storage, {
+        await restore(ctx, pipeline, wsIds, storage, undefined, {
           date: -1,
           merge: false,
           parallel: 1,
@@ -1928,7 +1928,7 @@ export async function restoreTrustedV6Workspace (
       }
       await sendTransactorEvent(uuid, 'force-maintenance')
 
-      await restore(ctx, pipeline, wsIds, backupWsStorage, {
+      await restore(ctx, pipeline, wsIds, backupWsStorage, undefined, {
         date: -1,
         merge: false,
         parallel: 1,

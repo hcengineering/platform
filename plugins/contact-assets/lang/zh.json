@@ -118,6 +118,7 @@
     "UserProfile": "用户资料",
     "DeactivatedAccount": "已停用账户",
     "LocalTime": "当地时间",
+    "Timezone": "时区",
     "Everyone": "所有人",
     "Here": "这里",
     "EveryoneDescription": "通知所有人在此{title}",

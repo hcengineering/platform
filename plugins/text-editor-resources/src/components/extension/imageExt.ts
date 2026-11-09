@@ -47,7 +47,10 @@ export const ImageExtension = ImageNode.extend<ImageOptions>({
       inline: true,
       loadingImgSrc: _loadingImageSrc,
       HTMLAttributes: {},
-      getBlobRef
+      getBlobRef,
+      // The editor may render the document once before node views are attached (e.g. when
+      // collaborative content is already loaded), so the static HTML must use a loadable URL
+      getFileUrl: (fileId) => getFileUrl(fileId)
     }
   },
 

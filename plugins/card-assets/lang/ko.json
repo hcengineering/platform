@@ -82,6 +82,8 @@
         "SectionUnlocked": "{section} 섹션의 잠금이 해제되었습니다",
         "LayoutAuto": "자동",
         "SingleColumn": "1열",
+        "BaseType": "기본 유형",
+        "BaseTypeDescription": "이 유형은 부모 유형으로만 사용합니다. 카드는 해당 하위 유형에서만 만들 수 있습니다.",
         "TwoColumns": "2열",
         "Grid": "그리드",
         "RichtextProperties": "리치 텍스트 속성",

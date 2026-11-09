@@ -13,7 +13,10 @@ export const print = plugin(printId, {
     PrintToPDF: '' as IntlString,
     PrintingDocumentOf: '' as IntlString,
     DownloadAll: '' as IntlString,
-    PrintFailed: '' as IntlString
+    PrintFailed: '' as IntlString,
+    PrintSettings: '' as IntlString,
+    LandscapeMode: '' as IntlString,
+    Retry: '' as IntlString
   },
   component: {
     PrintToPDF: '' as AnyComponent,

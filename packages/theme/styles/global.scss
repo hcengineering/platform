@@ -156,6 +156,7 @@ body {
   color: var(--content-color);
   background-color: var(--theme-bg-color);
   user-select: none;
+  -webkit-user-select: none;
 
   --status-bar-height: 36px;
   --status-bar-normal-height: 36px;

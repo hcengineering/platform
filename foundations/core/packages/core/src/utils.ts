@@ -1008,3 +1008,13 @@ export function toRank (str: string | undefined): Rank | undefined {
   }
   return '0|' + str.replaceAll(/[-:_]/g, '').toLowerCase()
 }
+
+/**
+ * Escape a literal string for safe embedding inside a regular expression.
+ * Shared so that both the client search encoder and the server fulltext
+ * adapter derive their {@link fullTextSearchFields} regexes identically —
+ * keeping the field list AND its regex processing from drifting apart.
+ */
+export function escapeRegExp (value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}

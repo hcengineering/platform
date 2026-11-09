@@ -14,6 +14,8 @@ import {
   IntegrationKind
 } from '@hcengineering/core'
 
+export type { WorkspaceConfiguration } from '@hcengineering/core'
+
 export interface LoginInfo {
   account: AccountUuid
   name?: string
@@ -43,7 +45,7 @@ export interface LoginInfoWorkspace {
   role: AccountRole | null
   progress?: number
   branding?: string
-  passwordAgingRule?: number // in days
+  passwordAgingRule?: number | null // in days
 }
 
 export interface LoginInfoWithWorkspaces extends LoginInfo {
@@ -110,6 +112,22 @@ export interface MailboxInfo {
   mailbox: string
   aliases: string[]
   appPasswords: string[]
+}
+
+export interface ApiTokenInfo {
+  id: string
+  name: string
+  workspaceUuid: WorkspaceUuid
+  workspaceName: string
+  createdOn: number
+  expiresOn: number
+  revoked: boolean
+}
+
+export interface ApiTokenResult {
+  id: string
+  token: string
+  expiresOn: number
 }
 
 export interface MailboxSecret {

@@ -50,6 +50,11 @@ export function createModel (builder: Builder): void {
     title: [['title']]
   })
 
+  builder.mixin(tracker.class.Milestone, core.class.Class, serverCore.mixin.SearchPresenter, {
+    searchIcon: tracker.icon.Milestone,
+    title: [['label']]
+  })
+
   builder.createDoc(serverCore.class.Trigger, core.space.Model, {
     trigger: serverTracker.trigger.OnIssueUpdate,
     txMatch: {
@@ -70,6 +75,14 @@ export function createModel (builder: Builder): void {
     txMatch: {
       _class: core.class.TxRemoveDoc,
       objectClass: tracker.class.Project
+    }
+  })
+
+  builder.createDoc(serverCore.class.Trigger, core.space.Model, {
+    trigger: serverTracker.trigger.OnDependencyShiftRequest,
+    txMatch: {
+      _class: core.class.TxCreateDoc,
+      objectClass: tracker.class.DependencyShiftRequest
     }
   })
 

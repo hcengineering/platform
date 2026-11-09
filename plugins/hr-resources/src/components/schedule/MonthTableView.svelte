@@ -17,10 +17,9 @@
   import { Doc, Ref } from '@hcengineering/core'
   import type { Request, RequestType, Staff } from '@hcengineering/hr'
   import { Department } from '@hcengineering/hr'
-  import { getEmbeddedLabel } from '@hcengineering/platform'
-  import { Button, DropdownIntlItem, Label, Loading, showPopup, tableToCSV } from '@hcengineering/ui'
+  import { Label, Loading } from '@hcengineering/ui'
   import { BuildModelKey, Viewlet, ViewletPreference } from '@hcengineering/view'
-  import { TableBrowser, ViewletSelector, ViewletSettingButton } from '@hcengineering/view-resources'
+  import { TableBrowser } from '@hcengineering/view-resources'
   import hr from '../../plugin'
   import {
     EmployeeReports,
@@ -47,7 +46,7 @@
 
   export let employeeRequests: Map<Ref<Staff>, Request[]>
   export let timeReports: Map<Ref<Employee>, EmployeeReports>
-  export let holidays: Map<Ref<Department>, Date[]> = new Map<Ref<Department>, Date[]>()
+  export let holidaysMap: Map<Ref<Department>, Date[]> = new Map<Ref<Department>, Date[]>()
   export let getHolidays: (month: Date) => Promise<Map<Ref<Department>, Date[]>>
   $: month = getStartDate(currentDate.getFullYear(), currentDate.getMonth()) // getMonth(currentDate, currentDate.getMonth())
   $: wDays = weekDays(month.getFullYear(), month.getMonth())
@@ -60,7 +59,7 @@
       types,
       month.getFullYear(),
       month.getMonth(),
-      getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays)
+      getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidaysMap)
     )
     return ds.join(' ')
   }

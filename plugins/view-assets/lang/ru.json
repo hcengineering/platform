@@ -46,6 +46,7 @@
     "ShowActions": "Показать действия",
     "RestoreDefaults": "По умолчанию",
     "CustomizeView": "Настроить отображение",
+    "ConfigureColumns": "Настроить столбцы",
     "Filter": "Фильтр",
     "ClearFilters": "Очистить",
     "FilterLessThan": "Меньше чем",
@@ -155,6 +156,9 @@
     "RoleLabel": "Роль: {role}",
     "ForbidAttributeChanges": "Запретить изменение: ",
     "AllowAttributeChanges": "Разрешить изменение: ",
-    "RelationshipTable": "Таблица связей"
+    "RelationshipTable": "Таблица связей",
+    "FilterOverflowBadge": "+{count}",
+    "AddFilter": "Добавить фильтр",
+    "HiddenFilters": "Скрытые фильтры"
   }
 }

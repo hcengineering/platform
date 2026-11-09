@@ -30,6 +30,8 @@
         "SingleChoiceQuestion": "단일 선택 (평가 없음)",
         "TypePercentage": "비율",
         "TypeQuestionOption": "선택지",
-        "TypeRank": "순위"
+        "TypeRank": "순위",
+        "ConfigLabel": "질문",
+        "ConfigDescription": "교육, 퀴즈 및 설문조사에 사용되는 질문 및 평가 작성"
     }
 }

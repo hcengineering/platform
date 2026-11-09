@@ -86,6 +86,8 @@
     "ProvideRejectionReason": "输入拒绝原因...",
     "RejectionReason": "拒绝原因",
     "ConfirmReviewCompletion": "确认审查完成",
+    "ConfirmApprovalSubmission": "确认提交批准",
+    "ConfirmReviewSubmission": "确认提交审查",
     "AddApprovalTitle": "将您的文档发送给批准人",
     "AddApprovalDescription1": "准备您的文档以供批准，它需要符合以下要求：",
     "AddApprovalDescription2": "状态为 '草稿' 或 '已审查'",

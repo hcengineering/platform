@@ -144,6 +144,7 @@
   .draggable {
     position: absolute;
     cursor: grab;
+    -webkit-user-select: none;
     user-select: none;
 
     &.dragging {

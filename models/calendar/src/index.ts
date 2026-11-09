@@ -279,23 +279,32 @@ export function createModel (builder: Builder): void {
     {
       hidden: false,
       generated: false,
+      allowedForAuthor: true,
       label: calendar.string.Reminder,
       group: calendar.ids.CalendarNotificationGroup,
-      txClasses: [],
+      // Scheduled reminders are created by the events-processor worker, but provider/type settings still expect a
+      // tx class list. The notification doc itself is materialized via a direct createDoc, not by a tx trigger.
+      txClasses: [core.class.TxCreateDoc],
       objectClass: calendar.class.Event,
-      allowedForAuthor: true,
+      onlyOwn: true,
+      defaultEnabled: true,
       templates: {
-        textTemplate: 'Reminder: {doc}',
-        htmlTemplate: 'Reminder: {doc}',
-        subjectTemplate: 'Reminder: {doc}'
-      },
-      defaultEnabled: false
+        textTemplate: '{body}',
+        htmlTemplate: '<p>{body}</p><p>{link}</p>',
+        subjectTemplate: '{title}'
+      }
     },
     calendar.ids.ReminderNotification
   )
 
   builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
     provider: notification.providers.InboxNotificationProvider,
+    ignoredTypes: [],
+    enabledTypes: [calendar.ids.ReminderNotification]
+  })
+
+  builder.createDoc(notification.class.NotificationProviderDefaults, core.space.Model, {
+    provider: notification.providers.PushNotificationProvider,
     ignoredTypes: [],
     enabledTypes: [calendar.ids.ReminderNotification]
   })

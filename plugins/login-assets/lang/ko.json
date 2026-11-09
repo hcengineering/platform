@@ -100,6 +100,7 @@
         "TwoFactorAuth": "2단계 인증",
         "EnterTwoFactorCode": "2단계 인증 코드 입력",
         "TwoFactorCode": "2단계 인증 코드",
-        "Verify": "인증"
+        "Verify": "인증",
+        "CreateSampleProjects": "샘플 프로젝트 및 데모 콘텐츠 만들기"
     }
 }

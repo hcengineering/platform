@@ -218,14 +218,16 @@ export function getHolidayDatesForEmployee (
   const deps = departmentMap.get(employee)
   if (deps === undefined) return []
   if (holidays.size === 0) return []
-  const dates = []
+  const dates = new Map<string, Date>()
   for (const dep of deps) {
     const depDates = holidays?.get(dep._id)
     if (depDates !== undefined) {
-      dates.push(...depDates)
+      for (const date of depDates) {
+        dates.set(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`, date)
+      }
     }
   }
-  return dates
+  return [...dates.values()]
 }
 
 export interface EmployeeReports {

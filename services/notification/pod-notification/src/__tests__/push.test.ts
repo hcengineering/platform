@@ -16,7 +16,14 @@
 import type { MeasureContext, Ref } from '@hcengineering/core'
 import type { PushData, PushSubscription } from '@hcengineering/notification'
 import webpush, { WebPushError } from 'web-push'
-import { isDisposableSubscriptionError, sendPushToSubscription, webPushErrorBodyString } from '../push'
+import {
+  DEFAULT_PUSH_TTL_SECONDS,
+  getPushRequestOptions,
+  isDisposableSubscriptionError,
+  parsePushTtl,
+  sendPushToSubscription,
+  webPushErrorBodyString
+} from '../push'
 
 jest.mock('web-push', () => {
   const actual = jest.requireActual<typeof import('web-push')>('web-push')
@@ -67,6 +74,33 @@ function mkSubscription (id: string): PushSubscription {
 
 const sampleData: PushData = { title: 't', body: 'b' }
 
+describe('parsePushTtl', () => {
+  it('falls back to the default when not set', () => {
+    expect(parsePushTtl(undefined)).toBe(DEFAULT_PUSH_TTL_SECONDS)
+    expect(parsePushTtl('')).toBe(DEFAULT_PUSH_TTL_SECONDS)
+  })
+
+  it('accepts non-negative integer seconds', () => {
+    expect(parsePushTtl('0')).toBe(0)
+    expect(parsePushTtl('86400')).toBe(86400)
+  })
+
+  it.each(['abc', '-1', '1.5'])('falls back to the default for invalid value %s', (value) => {
+    expect(parsePushTtl(value)).toBe(DEFAULT_PUSH_TTL_SECONDS)
+  })
+})
+
+describe('getPushRequestOptions', () => {
+  it('uses a TTL far below the four-week web-push default', () => {
+    expect(getPushRequestOptions()).toEqual({ TTL: DEFAULT_PUSH_TTL_SECONDS })
+    expect(DEFAULT_PUSH_TTL_SECONDS).toBeLessThanOrEqual(24 * 60 * 60)
+  })
+
+  it('uses the given TTL', () => {
+    expect(getPushRequestOptions(120)).toEqual({ TTL: 120 })
+  })
+})
+
 describe('webPushErrorBodyString', () => {
   it('returns string body as-is', () => {
     const err = mkWebPushError('subscription expired')
@@ -100,8 +134,19 @@ describe('sendPushToSubscription', () => {
     const result = await sendPushToSubscription(ctx, subs, sampleData)
     expect(result).toEqual([])
     expect(sendNotificationMock).toHaveBeenCalledTimes(2)
+    expect(sendNotificationMock).toHaveBeenCalledWith(subs[0], JSON.stringify(sampleData), {
+      TTL: DEFAULT_PUSH_TTL_SECONDS
+    })
     expect(ctx.warn).not.toHaveBeenCalled()
     expect(ctx.error).not.toHaveBeenCalled()
+  })
+
+  it('passes the configured TTL to web-push', async () => {
+    sendNotificationMock.mockResolvedValue({ statusCode: 201, body: '', headers: {} })
+    const ctx = createMockMeasureContext()
+    const subs = [mkSubscription('s1')]
+    await sendPushToSubscription(ctx, subs, sampleData, 300)
+    expect(sendNotificationMock).toHaveBeenCalledWith(subs[0], JSON.stringify(sampleData), { TTL: 300 })
   })
 
   it('collects subscription id for disposable WebPushError', async () => {

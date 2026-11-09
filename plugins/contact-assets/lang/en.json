@@ -118,6 +118,7 @@
     "UserProfile": "User profile",
     "DeactivatedAccount": "Deactivated account",
     "LocalTime": "local time",
+    "Timezone": "Timezone",
     "Everyone": "Everyone",
     "Here": "Here",
     "EveryoneDescription": "Notify everyone in this {title}",

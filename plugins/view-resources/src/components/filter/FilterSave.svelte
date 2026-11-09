@@ -1,5 +1,5 @@
 <script lang="ts">
-  import core, { Class, Doc, Ref, getCurrentAccount } from '@hcengineering/core'
+  import core, { Class, Doc, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { Card, getClient } from '@hcengineering/presentation'
   import { Button, EditBox, ToggleWithLabel, getCurrentResolvedLocation } from '@hcengineering/ui'
   import { ViewOptions } from '@hcengineering/view'
@@ -16,11 +16,18 @@
   let filterName = ''
   const client = getClient()
 
+  async function getTargetSpace (spaceRef: string | undefined): Promise<Ref<Space>> {
+    // Store the filtered view in the space it is built on
+    if (spaceRef === undefined) return core.space.Workspace
+    const space = await client.findOne(core.class.Space, { _id: spaceRef as Ref<Space> })
+    return space?._id ?? core.space.Workspace
+  }
+
   async function saveFilter () {
     const loc = getCurrentResolvedLocation()
     loc.fragment = undefined
     const filters = JSON.stringify($filterStore)
-    await client.createDoc(view.class.FilteredView, core.space.Workspace, {
+    await client.createDoc(view.class.FilteredView, await getTargetSpace(loc.path[3]), {
       name: filterName,
       location: loc,
       filterClass: _class,

@@ -69,6 +69,7 @@ WithMarkup<Issue>,
 | 'reports'
 | 'childInfo'
 | 'dueDate'
+| 'startDate'
 | 'kind'
 | 'reviews'
 | 'reviewThreads'
@@ -539,7 +540,7 @@ export abstract class IssueSyncManagerBase {
         case task.statusCategory.Lost:
           if (issueExternal.state !== 'CLOSED' || issueExternal.stateReason !== 'NOT_PLANNED') {
             issueUpdate.state = 'CLOSED'
-            issueUpdate.stateReason = 'not_planed' // Not supported change to github
+            issueUpdate.stateReason = 'NOT_PLANNED'
           }
           break
       }

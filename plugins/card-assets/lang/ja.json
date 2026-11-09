@@ -82,6 +82,8 @@
     "SectionUnlocked": "セクション {section} アンロック済み",
     "LayoutAuto": "自動",
     "SingleColumn": "1列",
+    "BaseType": "基本タイプ",
+    "BaseTypeDescription": "このタイプは親としてのみ使用します。カードはそのサブタイプからのみ作成できます。",
     "TwoColumns": "2列",
     "Grid": "グリッド",
     "RichtextProperties": "リッチテキストフィールド",

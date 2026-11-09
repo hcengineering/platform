@@ -87,6 +87,7 @@
     border-radius: 2.5rem;
     // z-index: 1;
     user-select: none;
+    -webkit-user-select: none;
     cursor: pointer;
 
     &.outter {

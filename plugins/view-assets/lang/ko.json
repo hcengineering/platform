@@ -46,6 +46,7 @@
         "Editor": "편집기",
         "MarkdownFormatting": "서식",
         "CustomizeView": "뷰 사용자 지정",
+        "ConfigureColumns": "열 구성",
         "Filter": "필터",
         "ClearFilters": "필터 지우기",
         "FilterLessThan": "미만",
@@ -153,6 +154,9 @@
         "RoleLabel": "역할: {role}",
         "ForbidAttributeChanges": "변경 금지: ",
         "AllowAttributeChanges": "변경 허용: ",
-        "RelationshipTable": "추적 매트릭스"
+        "RelationshipTable": "추적 매트릭스",
+        "FilterOverflowBadge": "+{count}",
+        "AddFilter": "필터 추가",
+        "HiddenFilters": "숨겨진 필터"
     }
 }

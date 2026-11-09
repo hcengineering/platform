@@ -25,7 +25,8 @@ import {
   systemAccountUuid
 } from '@hcengineering/core'
 import platform, { PlatformError, Status, Severity, getMetadata } from '@hcengineering/platform'
-import { decodeToken, decodeTokenVerbose } from '@hcengineering/server-token'
+import serverToken, { decodeToken, decodeTokenVerbose, TokenError } from '@hcengineering/server-token'
+import { Analytics } from '@hcengineering/analytics'
 
 import * as utils from '../utils'
 import { type AccountDB, type SocialId } from '../types'
@@ -35,12 +36,18 @@ import {
   sendInvite,
   resendInvite,
   getLoginInfoByToken,
+  getLoginWithWorkspaceInfo,
+  getWorkspacesInfo,
+  updateLastVisit,
   releaseSocialId,
   loginAsGuest,
+  getLoginCapabilities,
+  resetGuestPersonCache,
   loginOtp,
   login,
   confirm,
   signUp,
+  signUpJoin,
   validateOtp,
   signUpOtp,
   restorePassword,
@@ -48,9 +55,14 @@ import {
   changePassword,
   getPerson,
   getSocialIds,
+  getAccountInfo,
   createAccessLink,
   getSubscriptions,
-  leaveWorkspace
+  leaveWorkspace,
+  checkJoin,
+  mergeSpecifiedPersons,
+  canMergeSpecifiedPersons,
+  getMailboxSecret
 } from '../operations'
 import { accountPlugin } from '../plugin'
 
@@ -67,6 +79,9 @@ jest.mock('@hcengineering/platform', () => {
 
 // Mock server-token
 jest.mock('@hcengineering/server-token', () => ({
+  __esModule: true,
+  default: jest.requireActual('@hcengineering/server-token').default,
+  TokenError: jest.requireActual('@hcengineering/server-token').TokenError,
   decodeTokenVerbose: jest.fn(),
   decodeToken: jest.fn(),
   generateToken: jest.fn().mockImplementation((account, workspace, extra, _, options) => {
@@ -84,7 +99,18 @@ jest.mock('@hcengineering/server-token', () => ({
   })
 }))
 
+// Mock analytics
+jest.mock('@hcengineering/analytics', () => ({
+  Analytics: {
+    handleError: jest.fn()
+  }
+}))
+
 describe('account operations', () => {
+  // The mocked function is a plain jest.fn(), so referencing it unbound is safe.
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  const handleError = Analytics.handleError as jest.Mock
+
   const mockCtx = {
     error: jest.fn(),
     info: jest.fn(),
@@ -108,7 +134,11 @@ describe('account operations', () => {
     getWorkspaceRole: jest.fn(),
     getWorkspaceMembers: jest.fn(),
     unassignWorkspace: jest.fn(),
+    updateWorkspaceRole: jest.fn(),
     person: {
+      findOne: jest.fn()
+    },
+    socialId: {
       findOne: jest.fn()
     },
     generatePersonUuid: jest.fn().mockResolvedValue('generated-person-uuid' as PersonUuid)
@@ -999,7 +1029,7 @@ describe('account operations', () => {
 
       ;(decodeToken as jest.Mock).mockReturnValue({ nbf: futureTime })
       ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
-        throw new Error('Token not yet active')
+        throw new TokenError('Token not yet active')
       })
 
       await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
@@ -1009,12 +1039,224 @@ describe('account operations', () => {
 
     test('should throw error when token has expired', async () => {
       ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
-        throw new Error('Token expired')
+        throw new TokenError('Token expired')
       })
 
       await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
         new PlatformError(new Status(Severity.ERROR, platform.status.TokenExpired, {}))
       )
+    })
+
+    describe('invalid token logging', () => {
+      const allLogged = (): string =>
+        JSON.stringify([
+          (mockCtx.warn as jest.Mock).mock.calls,
+          (mockCtx.error as jest.Mock).mock.calls,
+          (mockCtx.info as jest.Mock).mock.calls,
+          handleError.mock.calls.map((c) => [
+            String(c[0]),
+            c[0]?.name,
+            c[0]?.message,
+            c[0]?.stack,
+            String(c[0]?.cause),
+            { ...c[0] }
+          ])
+        ])
+
+      beforeEach(() => {
+        ;(getMetadata as jest.Mock).mockImplementation((key) =>
+          key === serverToken.metadata.Secret ? 'test-secret' : undefined
+        )
+      })
+
+      test('logs an expired token with a fingerprint and a reason only and does not report it', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+          throw new TokenError('Token expired')
+        })
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.TokenExpired, {}))
+        )
+
+        expect(handleError).not.toHaveBeenCalled()
+        expect(mockCtx.error).not.toHaveBeenCalled()
+        expect(mockCtx.warn).toHaveBeenCalledWith('Invalid token', {
+          token: utils.tokenFingerprint(mockToken),
+          error: 'TokenError',
+          reason: 'Token expired'
+        })
+        expect(utils.tokenFingerprint(mockToken)).toMatch(/^[0-9a-f]{16}$/)
+        expect(allLogged()).not.toContain(mockToken)
+      })
+
+      test('does not log a decoder message that quotes the token', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+          throw new TokenError(`Unexpected token ${mockToken} in JSON at position 0`)
+        })
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+        )
+
+        expect(mockCtx.warn).toHaveBeenCalledWith('Invalid token', {
+          token: utils.tokenFingerprint(mockToken),
+          error: 'TokenError',
+          reason: 'other'
+        })
+        expect(handleError).not.toHaveBeenCalled()
+        expect(allLogged()).not.toContain(mockToken)
+      })
+
+      test('still reports a non-token failure without leaking the token', async () => {
+        // Grant token without `sub`: the only other await inside the try block.
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: 'test-account',
+          grant: { workspace: 'test-workspace', role: AccountRole.User }
+        })
+        const dbErr = Object.assign(new Error(`connection reset while handling ${mockToken}`), { token: mockToken })
+        ;(mockDb.generatePersonUuid as jest.Mock).mockRejectedValueOnce(dbErr)
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+        )
+
+        expect(handleError).toHaveBeenCalledTimes(1)
+        expect(handleError.mock.calls[0][0]).not.toBe(dbErr)
+        expect(mockCtx.error).toHaveBeenCalledWith('Invalid token', {
+          token: utils.tokenFingerprint(mockToken),
+          error: 'Error',
+          reason: 'unexpected'
+        })
+        expect(mockCtx.warn).not.toHaveBeenCalled()
+        expect(allLogged()).not.toContain(mockToken)
+      })
+
+      test('does not log anything when no token was supplied', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+          throw new TokenError('Not enough or too many segments')
+        })
+
+        await expect(getLoginInfoByToken(mockCtx, mockDb, mockBranding, undefined as any)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+        )
+
+        expect(mockCtx.warn).not.toHaveBeenCalled()
+        expect(mockCtx.error).not.toHaveBeenCalled()
+        expect(handleError).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('getLoginWithWorkspaceInfo', () => {
+    const mockCtx = {
+      error: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn()
+    } as unknown as MeasureContext
+    const mockDb = {} as unknown as AccountDB
+    const mockToken = 'test-token'
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      ;(getMetadata as jest.Mock).mockImplementation((key) =>
+        key === serverToken.metadata.Secret ? 'test-secret' : undefined
+      )
+    })
+
+    test.each([
+      ['Signature verification failed', 'Signature verification failed'],
+      [`Signature verification failed ${mockToken}`, 'other']
+    ])(
+      'rejects an invalid token (%s) with Unauthorized, logs a fingerprint and reason only and skips Analytics',
+      async (message, reason) => {
+        ;(decodeTokenVerbose as jest.Mock).mockImplementation(() => {
+          throw new TokenError(message)
+        })
+
+        await expect(getLoginWithWorkspaceInfo(mockCtx, mockDb, null, mockToken)).rejects.toThrow(
+          new PlatformError(new Status(Severity.ERROR, platform.status.Unauthorized, {}))
+        )
+
+        expect(handleError).not.toHaveBeenCalled()
+        expect(mockCtx.error).not.toHaveBeenCalled()
+        expect(mockCtx.warn).toHaveBeenCalledWith('Invalid token', {
+          token: utils.tokenFingerprint(mockToken),
+          error: 'TokenError',
+          reason
+        })
+        expect(JSON.stringify((mockCtx.warn as jest.Mock).mock.calls)).not.toContain(mockToken)
+      }
+    )
+  })
+
+  describe('getWorkspacesInfo / updateLastVisit caller check', () => {
+    const mockCtx = {
+      error: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn()
+    } as unknown as MeasureContext
+    const mockDb = {} as unknown as AccountDB
+    const mockToken = 'test-token'
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      ;(getMetadata as jest.Mock).mockImplementation((key) =>
+        key === serverToken.metadata.Secret ? 'test-secret' : undefined
+      )
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: 'not-system' })
+    })
+
+    test.each([
+      ['getWorkspacesInfo', getWorkspacesInfo],
+      ['updateLastVisit', updateLastVisit]
+    ])('%s rejects a non-system caller without logging the token', async (_, method) => {
+      await expect(method(mockCtx, mockDb, null, mockToken, { ids: ['ws' as WorkspaceUuid] })).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(mockCtx.error).toHaveBeenCalledWith(expect.any(String), {
+        account: 'not-system',
+        token: utils.tokenFingerprint(mockToken)
+      })
+      expect(JSON.stringify((mockCtx.error as jest.Mock).mock.calls)).not.toContain(mockToken)
+    })
+  })
+
+  describe('getMailboxSecret', () => {
+    const mailbox = 'user@example.com'
+    const mailboxSecret = { mailbox, secret: 'smtp-secret' }
+    let mailboxDb: AccountDB
+
+    beforeEach(() => {
+      mailboxDb = {
+        mailboxSecret: {
+          findOne: jest.fn().mockResolvedValue(mailboxSecret)
+        }
+      } as unknown as AccountDB
+    })
+
+    test('returns the secret to the mail service', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: systemAccountUuid,
+        extra: { service: 'huly-mail' }
+      })
+
+      const result = await getMailboxSecret(mockCtx, mailboxDb, mockBranding, mockToken, { mailbox })
+
+      expect(result).toEqual(mailboxSecret)
+      expect(mailboxDb.mailboxSecret.findOne).toHaveBeenCalledWith({ mailbox })
+    })
+
+    test.each([
+      ['a regular user', {}],
+      ['another service', { service: 'github' }]
+    ])('rejects %s without reading the secret', async (_, extra) => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: mockAccount.uuid, extra })
+
+      await expect(getMailboxSecret(mockCtx, mailboxDb, mockBranding, mockToken, { mailbox })).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+      expect(mailboxDb.mailboxSecret.findOne).not.toHaveBeenCalled()
     })
   })
 
@@ -1555,6 +1797,129 @@ describe('account operations', () => {
           new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {}))
         )
       })
+
+      test('should fail with Forbidden when DISABLE_GUEST_LOGIN=true', async () => {
+        const prev = process.env.DISABLE_GUEST_LOGIN
+        process.env.DISABLE_GUEST_LOGIN = 'true'
+        try {
+          await expect(loginAsGuest(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
+            new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+          )
+          expect(mockDb.person.findOne).not.toHaveBeenCalled()
+        } finally {
+          if (prev === undefined) {
+            delete process.env.DISABLE_GUEST_LOGIN
+          } else {
+            process.env.DISABLE_GUEST_LOGIN = prev
+          }
+        }
+      })
+    })
+
+    describe('getLoginCapabilities', () => {
+      // L-AUTH-1: the guest-person lookup is cached module-wide; reset before
+      // each test so per-test mock return values are observed deterministically.
+      beforeEach(() => {
+        resetGuestPersonCache()
+      })
+      const restoreEnv = (key: string, prev: string | undefined): void => {
+        if (prev === undefined) {
+          Reflect.deleteProperty(process.env, key)
+        } else {
+          process.env[key] = prev
+        }
+      }
+
+      test('should report both signUp and guest available by default when guest person exists', async () => {
+        const prevSignup = process.env.DISABLE_SIGNUP
+        const prevGuest = process.env.DISABLE_GUEST_LOGIN
+        delete process.env.DISABLE_SIGNUP
+        delete process.env.DISABLE_GUEST_LOGIN
+        try {
+          ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({ uuid: readOnlyGuestAccountUuid })
+
+          const result = await getLoginCapabilities(mockCtx, mockDb, mockBranding, mockToken)
+
+          expect(result).toEqual({ signUpEnabled: true, guestLoginAvailable: true })
+        } finally {
+          restoreEnv('DISABLE_SIGNUP', prevSignup)
+          restoreEnv('DISABLE_GUEST_LOGIN', prevGuest)
+        }
+      })
+
+      test('should report guestLoginAvailable=false when guest person missing', async () => {
+        const prevSignup = process.env.DISABLE_SIGNUP
+        const prevGuest = process.env.DISABLE_GUEST_LOGIN
+        delete process.env.DISABLE_SIGNUP
+        delete process.env.DISABLE_GUEST_LOGIN
+        try {
+          ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(null)
+
+          const result = await getLoginCapabilities(mockCtx, mockDb, mockBranding, mockToken)
+
+          expect(result).toEqual({ signUpEnabled: true, guestLoginAvailable: false })
+        } finally {
+          restoreEnv('DISABLE_SIGNUP', prevSignup)
+          restoreEnv('DISABLE_GUEST_LOGIN', prevGuest)
+        }
+      })
+
+      test('should report signUpEnabled=false when DISABLE_SIGNUP=true', async () => {
+        const prevSignup = process.env.DISABLE_SIGNUP
+        const prevGuest = process.env.DISABLE_GUEST_LOGIN
+        process.env.DISABLE_SIGNUP = 'true'
+        delete process.env.DISABLE_GUEST_LOGIN
+        try {
+          ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({ uuid: readOnlyGuestAccountUuid })
+
+          const result = await getLoginCapabilities(mockCtx, mockDb, mockBranding, mockToken)
+
+          expect(result).toEqual({ signUpEnabled: false, guestLoginAvailable: true })
+        } finally {
+          restoreEnv('DISABLE_SIGNUP', prevSignup)
+          restoreEnv('DISABLE_GUEST_LOGIN', prevGuest)
+        }
+      })
+
+      test('should report guestLoginAvailable=false when DISABLE_GUEST_LOGIN=true (no DB lookup)', async () => {
+        const prevSignup = process.env.DISABLE_SIGNUP
+        const prevGuest = process.env.DISABLE_GUEST_LOGIN
+        delete process.env.DISABLE_SIGNUP
+        process.env.DISABLE_GUEST_LOGIN = 'true'
+        try {
+          ;(mockDb.person.findOne as jest.Mock).mockClear()
+
+          const result = await getLoginCapabilities(mockCtx, mockDb, mockBranding, mockToken)
+
+          expect(result).toEqual({ signUpEnabled: true, guestLoginAvailable: false })
+          expect(mockDb.person.findOne).not.toHaveBeenCalled()
+        } finally {
+          restoreEnv('DISABLE_SIGNUP', prevSignup)
+          restoreEnv('DISABLE_GUEST_LOGIN', prevGuest)
+        }
+      })
+
+      test('L-AUTH-1: caches the guest-person lookup within TTL (single DB hit)', async () => {
+        const prevSignup = process.env.DISABLE_SIGNUP
+        const prevGuest = process.env.DISABLE_GUEST_LOGIN
+        delete process.env.DISABLE_SIGNUP
+        delete process.env.DISABLE_GUEST_LOGIN
+        try {
+          ;(mockDb.person.findOne as jest.Mock).mockClear()
+          ;(mockDb.person.findOne as jest.Mock).mockResolvedValue({ uuid: readOnlyGuestAccountUuid })
+
+          const r1 = await getLoginCapabilities(mockCtx, mockDb, mockBranding, mockToken)
+          const r2 = await getLoginCapabilities(mockCtx, mockDb, mockBranding, mockToken)
+
+          expect(r1).toEqual({ signUpEnabled: true, guestLoginAvailable: true })
+          expect(r2).toEqual({ signUpEnabled: true, guestLoginAvailable: true })
+          // Second call within TTL must be served from cache -> exactly one DB hit.
+          expect(mockDb.person.findOne).toHaveBeenCalledTimes(1)
+        } finally {
+          restoreEnv('DISABLE_SIGNUP', prevSignup)
+          restoreEnv('DISABLE_GUEST_LOGIN', prevGuest)
+        }
+      })
     })
   })
 
@@ -1791,6 +2156,29 @@ describe('account operations', () => {
           )
         }
       })
+
+      test('should fail with Forbidden when DISABLE_SIGNUP=true', async () => {
+        const prev = process.env.DISABLE_SIGNUP
+        process.env.DISABLE_SIGNUP = 'true'
+        const signUpByEmailSpy = jest.spyOn(utils, 'signUpByEmail')
+        try {
+          await expect(
+            signUp(mockCtx, mockDb, mockBranding, mockToken, {
+              email: mockEmail,
+              password: mockPassword,
+              firstName: mockFirstName,
+              lastName: mockLastName
+            })
+          ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+          expect(signUpByEmailSpy).not.toHaveBeenCalled()
+        } finally {
+          if (prev === undefined) {
+            delete process.env.DISABLE_SIGNUP
+          } else {
+            process.env.DISABLE_SIGNUP = prev
+          }
+        }
+      })
     })
 
     describe('confirm', () => {
@@ -1855,6 +2243,74 @@ describe('account operations', () => {
         await expect(confirm(mockCtx, mockDb, mockBranding, mockToken)).rejects.toThrow(
           new PlatformError(new Status(Severity.ERROR, platform.status.PersonNotFound, { person: mockAccountId }))
         )
+      })
+
+      test('should auto-join workspace after confirming email when invite info is present in token', async () => {
+        const mockInviteId = 'invite-uuid'
+        const mockWorkspaceUrl = 'test-workspace'
+        const mockWorkspaceUuid = 'ws-uuid' as WorkspaceUuid
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        }
+        const mockInvite: any = {
+          id: mockInviteId,
+          workspaceUuid: mockWorkspaceUuid,
+          email: mockEmail,
+          remainingUses: 1,
+          expiresOn: Date.now() + 100000,
+          role: AccountRole.User
+        }
+        const mockWorkspace: any = {
+          uuid: mockWorkspaceUuid,
+          url: mockWorkspaceUrl,
+          name: 'Test Workspace',
+          region: 'us'
+        }
+        const joinResult = {
+          account: mockAccountId,
+          workspace: mockWorkspaceUuid,
+          workspaceUrl: mockWorkspaceUrl,
+          endpoint: 'endpoint',
+          role: AccountRole.User,
+          token: 'mocked-token'
+        }
+
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: mockAccountId,
+          extra: { confirmEmail: mockEmail, inviteId: mockInviteId, workspaceUrl: mockWorkspaceUrl }
+        })
+
+        jest.spyOn(utils, 'confirmEmail').mockResolvedValue(mockSocialId._id)
+        jest.spyOn(utils, 'confirmHulyIds').mockResolvedValue()
+        jest.spyOn(utils, 'getWorkspaceJoinInfo').mockResolvedValue({
+          email: mockEmail,
+          invite: mockInvite,
+          workspace: mockWorkspace
+        } as any)
+        jest.spyOn(utils, 'doJoinByInvite').mockResolvedValue(joinResult as any)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+
+        const result = await confirm(mockCtx, mockDb, mockBranding, mockToken)
+
+        expect(utils.confirmEmail).toHaveBeenCalledWith(mockCtx, mockDb, mockAccountId, mockEmail)
+        expect(utils.getWorkspaceJoinInfo).toHaveBeenCalledWith(
+          mockCtx,
+          mockDb,
+          mockEmail,
+          mockInviteId,
+          mockWorkspaceUrl
+        )
+        expect(utils.doJoinByInvite).toHaveBeenCalled()
+        expect(result).toEqual(joinResult)
       })
     })
 
@@ -1945,6 +2401,28 @@ describe('account operations', () => {
           await expect(signUpOtp(mockCtx, mockDb, mockBranding, mockToken, testCase as any)).rejects.toThrow(
             new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
           )
+        }
+      })
+
+      test('should fail with Forbidden when DISABLE_SIGNUP=true', async () => {
+        const prev = process.env.DISABLE_SIGNUP
+        process.env.DISABLE_SIGNUP = 'true'
+        const getEmailSocialIdSpy = jest.spyOn(utils, 'getEmailSocialId')
+        try {
+          await expect(
+            signUpOtp(mockCtx, mockDb, mockBranding, mockToken, {
+              email: mockEmail,
+              firstName: mockFirstName,
+              lastName: mockLastName
+            })
+          ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+          expect(getEmailSocialIdSpy).not.toHaveBeenCalled()
+        } finally {
+          if (prev === undefined) {
+            delete process.env.DISABLE_SIGNUP
+          } else {
+            process.env.DISABLE_SIGNUP = prev
+          }
         }
       })
     })
@@ -2249,6 +2727,142 @@ describe('account operations', () => {
             action: 'verify'
           })
         ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.AccountAlreadyExists, {})))
+      })
+    })
+
+    describe('signUpJoin', () => {
+      const mockInviteId = 'invite-uuid'
+      const mockWorkspaceUrl = 'test-workspace'
+      const mockWorkspaceUuid = 'ws-uuid' as WorkspaceUuid
+      const mockInvite: any = {
+        id: mockInviteId,
+        workspaceUuid: mockWorkspaceUuid,
+        email: mockEmail,
+        remainingUses: 1,
+        expiresOn: Date.now() + 100000,
+        role: AccountRole.User
+      }
+      const mockWorkspace: any = {
+        uuid: mockWorkspaceUuid,
+        url: mockWorkspaceUrl,
+        name: 'Test Workspace',
+        region: 'us'
+      }
+      const baseParams = {
+        email: mockEmail,
+        password: mockPassword,
+        first: mockFirstName,
+        last: mockLastName,
+        inviteId: mockInviteId,
+        workspaceUrl: mockWorkspaceUrl
+      }
+
+      test('should NOT auto-confirm and should send confirmation with invite info when MAIL_URL is configured', async () => {
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+        const mockPerson = {
+          uuid: mockPersonId,
+          firstName: mockFirstName,
+          lastName: mockLastName
+        }
+
+        jest.spyOn(utils, 'getWorkspaceJoinInfo').mockResolvedValue({
+          email: mockEmail,
+          invite: mockInvite,
+          workspace: mockWorkspace
+        } as any)
+        jest.spyOn(utils, 'signUpByEmail').mockResolvedValue({
+          account: mockAccountId,
+          socialId: mockSocialId._id
+        })
+        jest.spyOn(utils, 'sendEmailConfirmation').mockResolvedValue()
+        jest.spyOn(utils, 'doJoinByInvite').mockResolvedValue({} as any)
+        ;(mockDb.person.findOne as jest.Mock).mockResolvedValue(mockPerson)
+        ;(getMetadata as jest.Mock).mockReturnValue('http://mail-service.com')
+
+        const result = await signUpJoin(mockCtx, mockDb, mockBranding, mockToken, baseParams)
+
+        // signUpByEmail must NOT mark the new account/social-id as confirmed
+        expect(utils.signUpByEmail).toHaveBeenCalledWith(
+          mockCtx,
+          mockDb,
+          mockBranding,
+          mockEmail,
+          mockPassword,
+          mockFirstName,
+          mockLastName,
+          false
+        )
+        // Confirmation email must be sent, threading the invite info through the token
+        expect(utils.sendEmailConfirmation).toHaveBeenCalledWith(
+          mockCtx,
+          mockBranding,
+          mockAccountId,
+          mockEmail,
+          expect.objectContaining({ inviteId: mockInviteId, workspaceUrl: mockWorkspaceUrl })
+        )
+        // Workspace join must be deferred until after email confirmation
+        expect(utils.doJoinByInvite).not.toHaveBeenCalled()
+        expect(result).toEqual({
+          account: mockAccountId,
+          name: 'John Doe',
+          socialId: mockSocialId._id,
+          token: undefined
+        })
+      })
+
+      test('should auto-confirm and join when MAIL_URL is not configured (dev fallback)', async () => {
+        const mockSocialId = {
+          _id: 'social-id' as PersonId,
+          personUuid: mockAccountId,
+          type: SocialIdType.EMAIL,
+          value: mockEmail,
+          key: `email:${mockEmail}`
+        }
+        const joinResult = {
+          account: mockAccountId,
+          workspace: mockWorkspaceUuid,
+          workspaceUrl: mockWorkspaceUrl,
+          endpoint: 'endpoint',
+          role: AccountRole.User,
+          token: 'mocked-token'
+        }
+
+        jest.spyOn(utils, 'getWorkspaceJoinInfo').mockResolvedValue({
+          email: mockEmail,
+          invite: mockInvite,
+          workspace: mockWorkspace
+        } as any)
+        jest.spyOn(utils, 'signUpByEmail').mockResolvedValue({
+          account: mockAccountId,
+          socialId: mockSocialId._id
+        })
+        jest.spyOn(utils, 'sendEmailConfirmation').mockResolvedValue()
+        jest.spyOn(utils, 'doJoinByInvite').mockResolvedValue(joinResult as any)
+        ;(getMetadata as jest.Mock).mockReturnValue('') // No mail service configured
+
+        const result = await signUpJoin(mockCtx, mockDb, mockBranding, mockToken, baseParams)
+
+        expect(utils.sendEmailConfirmation).not.toHaveBeenCalled()
+        expect(utils.doJoinByInvite).toHaveBeenCalled()
+        expect(result).toEqual(joinResult)
+      })
+
+      test('should fail with missing required fields', async () => {
+        const testCases = [
+          { ...baseParams, password: '' },
+          { ...baseParams, first: '' }
+        ]
+        for (const testCase of testCases) {
+          await expect(signUpJoin(mockCtx, mockDb, mockBranding, mockToken, testCase as any)).rejects.toThrow(
+            new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {}))
+          )
+        }
       })
     })
   })
@@ -2671,6 +3285,156 @@ describe('account operations', () => {
         )
       })
     })
+
+    describe('getAccountInfo', () => {
+      const callerAccount = 'caller-account-uuid' as AccountUuid
+      const otherAccount = 'other-account-uuid' as AccountUuid
+
+      const accountInfoDb = {
+        account: {
+          findOne: jest.fn()
+        }
+      } as unknown as AccountDB
+
+      beforeEach(() => {
+        jest.clearAllMocks()
+      })
+
+      test('returns own info when accountId matches caller', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: callerAccount, extra: {} })
+        ;(accountInfoDb.account.findOne as jest.Mock).mockResolvedValue({
+          uuid: callerAccount,
+          timezone: 'America/New_York',
+          locale: 'en-US',
+          tfaSecret: 'secret'
+        })
+
+        const result = await getAccountInfo(mockCtx, accountInfoDb, mockBranding, mockToken, {
+          accountId: callerAccount
+        })
+
+        expect(result).toEqual({ timezone: 'America/New_York', locale: 'en-US', tfaEnabled: true })
+        expect(accountInfoDb.account.findOne).toHaveBeenCalledWith({ uuid: callerAccount })
+      })
+
+      test('rejects cross-account lookup for non-admin, non-service caller', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: callerAccount, extra: {} })
+
+        await expect(
+          getAccountInfo(mockCtx, accountInfoDb, mockBranding, mockToken, { accountId: otherAccount })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {})))
+
+        expect(accountInfoDb.account.findOne).not.toHaveBeenCalled()
+      })
+
+      test('allows admin to read other account info', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: callerAccount, extra: { admin: 'true' } })
+        ;(accountInfoDb.account.findOne as jest.Mock).mockResolvedValue({
+          uuid: otherAccount,
+          timezone: 'Europe/London',
+          locale: 'en-GB',
+          tfaSecret: null
+        })
+
+        const result = await getAccountInfo(mockCtx, accountInfoDb, mockBranding, mockToken, {
+          accountId: otherAccount
+        })
+
+        expect(result).toEqual({ timezone: 'Europe/London', locale: 'en-GB', tfaEnabled: false })
+        expect(accountInfoDb.account.findOne).toHaveBeenCalledWith({ uuid: otherAccount })
+      })
+
+      test('allows workspace service token to read other account info', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+          account: callerAccount,
+          extra: { service: 'workspace' }
+        })
+        ;(accountInfoDb.account.findOne as jest.Mock).mockResolvedValue({
+          uuid: otherAccount,
+          timezone: 'Asia/Tokyo',
+          locale: 'ja-JP',
+          tfaSecret: null
+        })
+
+        const result = await getAccountInfo(mockCtx, accountInfoDb, mockBranding, mockToken, {
+          accountId: otherAccount
+        })
+
+        expect(result).toEqual({ timezone: 'Asia/Tokyo', locale: 'ja-JP', tfaEnabled: false })
+      })
+
+      test('throws BadRequest when accountId is missing', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: callerAccount, extra: {} })
+
+        await expect(
+          getAccountInfo(mockCtx, accountInfoDb, mockBranding, mockToken, { accountId: '' as AccountUuid })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.BadRequest, {})))
+
+        expect(accountInfoDb.account.findOne).not.toHaveBeenCalled()
+      })
+
+      test('throws AccountNotFound when account does not exist', async () => {
+        ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: callerAccount, extra: {} })
+        ;(accountInfoDb.account.findOne as jest.Mock).mockResolvedValue(null)
+
+        await expect(
+          getAccountInfo(mockCtx, accountInfoDb, mockBranding, mockToken, { accountId: callerAccount })
+        ).rejects.toThrow(new PlatformError(new Status(Severity.ERROR, platform.status.AccountNotFound, {})))
+      })
+    })
+  })
+
+  describe('checkJoin', () => {
+    const mockInvite = {
+      id: 'invite-uuid',
+      workspaceUuid: 'workspace-uuid' as WorkspaceUuid,
+      role: AccountRole.User,
+      expiresOn: 0,
+      remainingUses: -1
+    }
+
+    test('should return workspace login info if user is already a member', async () => {
+      const mockEmail = 'user@example.com'
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ value: mockEmail })
+
+      jest.spyOn(utils, 'getWorkspaceInvite').mockResolvedValue(mockInvite as any)
+      jest.spyOn(utils, 'checkInvite').mockResolvedValue(mockInvite.workspaceUuid)
+      jest.spyOn(utils, 'getWorkspaceById').mockResolvedValue(mockWorkspace as any)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(AccountRole.User)
+
+      const mockLoginInfo = {
+        account: mockAccount.uuid,
+        role: AccountRole.User,
+        token: 'workspace-token'
+      }
+      jest.spyOn(utils, 'selectWorkspace').mockResolvedValue(mockLoginInfo as any)
+
+      const result = await checkJoin(mockCtx, mockDb, mockBranding, mockToken, { inviteId: 'invite-uuid' })
+
+      expect(result).toEqual({
+        account: mockAccount.uuid,
+        role: AccountRole.User,
+        token: 'workspace-token'
+      })
+      expect(mockDb.getWorkspaceRole).toHaveBeenCalledWith(mockAccount.uuid, mockWorkspace.uuid)
+      expect(mockDb.updateWorkspaceRole).not.toHaveBeenCalled()
+    })
+
+    test('should throw Forbidden error if user is not a member', async () => {
+      const mockEmail = 'user@example.com'
+      ;(mockDb.socialId.findOne as jest.Mock).mockResolvedValue({ value: mockEmail })
+
+      jest.spyOn(utils, 'getWorkspaceInvite').mockResolvedValue(mockInvite as any)
+      jest.spyOn(utils, 'checkInvite').mockResolvedValue(mockInvite.workspaceUuid)
+      jest.spyOn(utils, 'getWorkspaceById').mockResolvedValue(mockWorkspace as any)
+      ;(mockDb.getWorkspaceRole as jest.Mock).mockResolvedValue(null)
+
+      await expect(checkJoin(mockCtx, mockDb, mockBranding, mockToken, { inviteId: 'invite-uuid' })).rejects.toThrow(
+        new PlatformError(new Status(Severity.ERROR, platform.status.Forbidden, {}))
+      )
+
+      expect(mockDb.getWorkspaceRole).toHaveBeenCalledWith(mockAccount.uuid, mockWorkspace.uuid)
+    })
   })
 })
 
@@ -2820,5 +3584,289 @@ describe('getSubscriptions', () => {
     })
 
     await expect(getSubscriptions(mockCtx, mockDb, mockBranding, 'test-token', {})).rejects.toThrow(PlatformError)
+  })
+})
+
+describe('merge specified persons', () => {
+  const mockCtx = {
+    error: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn()
+  } as unknown as MeasureContext
+
+  const mockBranding = null
+  const workspaceUuid = 'caller-workspace-uuid' as WorkspaceUuid
+  const callerUuid = 'caller-account-uuid' as AccountUuid
+  const primaryPerson = 'primary-person-uuid' as PersonUuid
+  const secondaryPerson = 'secondary-person-uuid' as PersonUuid
+  const params = { primaryPerson, secondaryPerson }
+
+  let mockDb: any
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    jest.restoreAllMocks()
+
+    mockDb = {
+      account: {
+        findOne: jest.fn().mockResolvedValue(null)
+      },
+      person: {
+        findOne: jest.fn().mockImplementation(async ({ uuid }: { uuid: PersonUuid }) => ({ uuid }))
+      },
+      socialId: {
+        find: jest.fn().mockResolvedValue([])
+      },
+      getWorkspaceRole: jest.fn().mockResolvedValue(null)
+    }
+    ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+      account: callerUuid,
+      workspace: workspaceUuid,
+      extra: {}
+    })
+  })
+
+  // The caller maintains the workspace, and neither merged person belongs to another one.
+  const asWorkspaceMaintainer = (): void => {
+    mockDb.getWorkspaceRole.mockImplementation(async (account: AccountUuid) =>
+      account === callerUuid ? AccountRole.Maintainer : null
+    )
+  }
+
+  describe('mergeSpecifiedPersons', () => {
+    test('should throw BadRequest for empty params', async () => {
+      await expect(
+        mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', {
+          primaryPerson: '' as PersonUuid,
+          secondaryPerson
+        })
+      ).rejects.toThrow(PlatformError)
+
+      expect(mockDb.getWorkspaceRole).not.toHaveBeenCalled()
+    })
+
+    test('should throw Forbidden for a token without workspace', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({ account: callerUuid, extra: {} })
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await expect(mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)).rejects.toThrow(
+        PlatformError
+      )
+
+      expect(spy).not.toHaveBeenCalled()
+      // Pins the workspace guard itself rather than the role lookup that follows it.
+      expect(mockDb.getWorkspaceRole).not.toHaveBeenCalled()
+    })
+
+    test('should throw Forbidden when caller is below Maintainer', async () => {
+      mockDb.getWorkspaceRole.mockResolvedValue(AccountRole.User)
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await expect(mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)).rejects.toThrow(
+        PlatformError
+      )
+
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    test('should throw Forbidden when the secondary person is an account of another workspace', async () => {
+      asWorkspaceMaintainer()
+      mockDb.account.findOne.mockImplementation(async ({ uuid }: { uuid: AccountUuid }) =>
+        uuid === secondaryPerson ? { uuid } : null
+      )
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await expect(mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)).rejects.toThrow(
+        PlatformError
+      )
+
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    test('should throw Forbidden when the primary person is an account of another workspace', async () => {
+      asWorkspaceMaintainer()
+      mockDb.account.findOne.mockImplementation(async ({ uuid }: { uuid: AccountUuid }) =>
+        uuid === primaryPerson ? { uuid } : null
+      )
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await expect(mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)).rejects.toThrow(
+        PlatformError
+      )
+
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    test('should merge workspace contacts without accounts for a Maintainer', async () => {
+      asWorkspaceMaintainer()
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)
+
+      expect(spy).toHaveBeenCalledWith(mockDb, primaryPerson, secondaryPerson)
+    })
+
+    test('should merge a contact into a member of the caller workspace', async () => {
+      mockDb.getWorkspaceRole.mockImplementation(async (account: AccountUuid) =>
+        account === secondaryPerson ? null : AccountRole.Maintainer
+      )
+      mockDb.account.findOne.mockImplementation(async ({ uuid }: { uuid: AccountUuid }) =>
+        uuid === primaryPerson ? { uuid } : null
+      )
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)
+
+      expect(spy).toHaveBeenCalledWith(mockDb, primaryPerson, secondaryPerson)
+    })
+
+    test('should throw Forbidden when a login capable social id would move onto a foreign account', async () => {
+      // A maintainer minting a person that carries their own email and merging it into a
+      // co-member would hand them that member's account through password recovery.
+      mockDb.getWorkspaceRole.mockImplementation(async (account: AccountUuid) =>
+        account === secondaryPerson ? null : AccountRole.Maintainer
+      )
+      mockDb.account.findOne.mockImplementation(async ({ uuid }: { uuid: AccountUuid }) =>
+        uuid === primaryPerson ? { uuid } : null
+      )
+      mockDb.socialId.find.mockResolvedValue([{ _id: 'attacker-email', type: SocialIdType.EMAIL }])
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await expect(mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)).rejects.toThrow(
+        PlatformError
+      )
+
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    test('should allow a login capable social id to move onto the caller own account', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: primaryPerson as unknown as AccountUuid,
+        workspace: workspaceUuid,
+        extra: {}
+      })
+      mockDb.getWorkspaceRole.mockImplementation(async (account: AccountUuid) =>
+        account === secondaryPerson ? null : AccountRole.Maintainer
+      )
+      mockDb.account.findOne.mockImplementation(async ({ uuid }: { uuid: AccountUuid }) =>
+        uuid === primaryPerson ? { uuid } : null
+      )
+      mockDb.socialId.find.mockResolvedValue([{ _id: 'own-email', type: SocialIdType.EMAIL }])
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)
+
+      expect(spy).toHaveBeenCalledWith(mockDb, primaryPerson, secondaryPerson)
+    })
+
+    test('should throw Forbidden when merging the platform guest account', async () => {
+      asWorkspaceMaintainer()
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await expect(
+        mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', {
+          primaryPerson: readOnlyGuestAccountUuid as PersonUuid,
+          secondaryPerson
+        })
+      ).rejects.toThrow(PlatformError)
+
+      expect(spy).not.toHaveBeenCalled()
+    })
+
+    test('should merge for an allowed service token', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: systemAccountUuid,
+        extra: { service: 'tool' }
+      })
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)
+
+      expect(spy).toHaveBeenCalledWith(mockDb, primaryPerson, secondaryPerson)
+      expect(mockDb.getWorkspaceRole).not.toHaveBeenCalled()
+    })
+
+    test('should merge for a global admin token', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: callerUuid,
+        extra: { admin: 'true' }
+      })
+      const spy = jest.spyOn(utils, 'doMergePersons').mockResolvedValue()
+
+      await mergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)
+
+      expect(spy).toHaveBeenCalledWith(mockDb, primaryPerson, secondaryPerson)
+      expect(mockDb.getWorkspaceRole).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('canMergeSpecifiedPersons', () => {
+    beforeEach(() => {
+      asWorkspaceMaintainer()
+    })
+
+    // The merge dialog awaits this predicate without a catch, so refusals must be answered,
+    // not thrown: a rejection leaves it spinning on a disabled Save button forever.
+    test('should return false without looking persons up when caller does not maintain a workspace', async () => {
+      mockDb.getWorkspaceRole.mockResolvedValue(null)
+
+      expect(await canMergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)).toBe(false)
+      expect(mockDb.person.findOne).not.toHaveBeenCalled()
+    })
+
+    test('should return false when a person is an account of another workspace', async () => {
+      mockDb.account.findOne.mockImplementation(async ({ uuid }: { uuid: AccountUuid }) =>
+        uuid === secondaryPerson ? { uuid } : null
+      )
+
+      expect(await canMergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)).toBe(false)
+      expect(mockDb.person.findOne).not.toHaveBeenCalled()
+    })
+
+    test('should return false for equal persons without authorizing or looking them up', async () => {
+      const result = await canMergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', {
+        primaryPerson,
+        secondaryPerson: primaryPerson
+      })
+
+      expect(result).toBe(false)
+      expect(mockDb.person.findOne).not.toHaveBeenCalled()
+      expect(mockDb.getWorkspaceRole).not.toHaveBeenCalled()
+    })
+
+    test('should return true for a Maintainer when secondary has no verified social ids', async () => {
+      const result = await canMergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)
+
+      expect(result).toBe(true)
+      expect(mockDb.socialId.find).toHaveBeenCalledWith({ personUuid: secondaryPerson, verifiedOn: { $ne: null } })
+    })
+
+    test('should return false when secondary person has verified social ids', async () => {
+      mockDb.socialId.find.mockResolvedValue([{ _id: 'verified-social-id' }])
+
+      const result = await canMergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)
+
+      expect(result).toBe(false)
+    })
+
+    test('should allow an allowed service token', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: systemAccountUuid,
+        extra: { service: 'tool' }
+      })
+
+      expect(await canMergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)).toBe(true)
+      expect(mockDb.getWorkspaceRole).not.toHaveBeenCalled()
+    })
+
+    test('should allow a global admin token', async () => {
+      ;(decodeTokenVerbose as jest.Mock).mockReturnValue({
+        account: callerUuid,
+        extra: { admin: 'true' }
+      })
+
+      expect(await canMergeSpecifiedPersons(mockCtx, mockDb, mockBranding, 'test-token', params)).toBe(true)
+      expect(mockDb.getWorkspaceRole).not.toHaveBeenCalled()
+    })
   })
 })

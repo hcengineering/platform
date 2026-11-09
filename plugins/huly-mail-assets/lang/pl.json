@@ -1,0 +1,20 @@
+{
+  "string": {
+    "IntegrationLabel": "Poczta Huly",
+    "IntegrationDescription": "Podłącz swoją skrzynkę Huly, aby wysyłać, odbierać i zarządzać wiadomościami e-mail",
+    "Connect": "Podłącz",
+    "ConnectHulyMail": "Podłącz skrzynkę Huly",
+    "Cancel": "Anuluj",
+    "Email": "Adres e-mail",
+    "Status": "Status",
+    "FailedToConnect": "Usługa pocztowa Huly jest niedostępna",
+    "TotalMessages": "Razem wiadomości:",
+    "Configure": "Skonfiguruj pocztę Huly",
+    "ChannelSpace": "Przestrzeń dla kanału wiadomości",
+    "PersonSpaceInfo": "Poczta będzie dla Ciebie dostępna",
+    "SharedSpaceInfo": "Poczta będzie dostępna dla wszystkich uczestników przestrzeni",
+    "Mailbox": "Skrzynka pocztowa",
+    "MailboxesNotConfigured": "Nie znaleziono skrzynek pocztowych",
+    "ConfigureMailBoxes": "Aby zacząć, dodaj skrzynkę pocztową w sekcji `Skrzynki pocztowe`"
+  }
+}

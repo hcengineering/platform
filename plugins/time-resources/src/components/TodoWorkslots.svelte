@@ -13,7 +13,8 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import calendar, { AccessLevel, Calendar, generateEventId } from '@hcengineering/calendar'
+  import calendar, { AccessLevel, generateEventId } from '@hcengineering/calendar'
+  import { EventReminders } from '@hcengineering/calendar-resources'
   import contact, { getCurrentEmployee } from '@hcengineering/contact'
   import { Ref, getCurrentAccount } from '@hcengineering/core'
   import { createQuery, getClient } from '@hcengineering/presentation'
@@ -31,10 +32,38 @@
   const query = createQuery()
 
   let slots: WorkSlot[] = []
+  let reminders: number[] = []
+  let remindersHydrated = false
+  let remindersKey = ''
+  let currentTodoId: Ref<ToDo> | undefined
+
+  $: if (todo?._id !== undefined && currentTodoId !== todo._id) {
+    currentTodoId = todo._id
+    remindersHydrated = false
+    reminders = []
+    remindersKey = ''
+  }
 
   $: query.query(time.class.WorkSlot, { attachedTo: todo._id }, (res) => {
     slots = res
+    if (!remindersHydrated) {
+      reminders = [...(slots[0]?.reminders ?? [])]
+      remindersHydrated = true
+      remindersKey = JSON.stringify(reminders)
+    }
   })
+
+  $: {
+    if (!remindersHydrated || slots.length === 0) {
+      // no-op
+    } else {
+      const nextKey = JSON.stringify(reminders)
+      if (nextKey !== remindersKey) {
+        remindersKey = nextKey
+        void syncRemindersForSlots()
+      }
+    }
+  }
 
   async function change (e: CustomEvent<{ startDate: number, dueDate: number, slot: Ref<WorkSlot> }>): Promise<void> {
     const { startDate, dueDate, slot } = e.detail
@@ -72,14 +101,22 @@
       access: AccessLevel.Owner,
       user: currentAccount.primarySocialId,
       visibility: todo.visibility === 'public' ? 'public' : 'freeBusy',
-      reminders: []
+      reminders
     })
     Analytics.handleEvent(TimeEvents.ToDoScheduled, { id: todo._id })
   }
 
+  async function syncRemindersForSlots (): Promise<void> {
+    await Promise.all(
+      slots.map(async (slot) => {
+        await client.update(slot, { reminders })
+      })
+    )
+  }
+
   async function remove (e: CustomEvent<{ _id: Ref<WorkSlot> }>): Promise<void> {
     const object = slots.find((p) => p._id === e.detail._id)
-    if (object) {
+    if (object !== undefined) {
       showPopup(
         contact.component.DeleteConfirmationPopup,
         {
@@ -98,4 +135,11 @@
   }
 </script>
 
-<Workslots {slots} fixed={'toDo'} on:change={change} on:dueChange={dueChange} on:create={create} on:remove={remove} />
+<div class="flex-col">
+  <Workslots {slots} fixed={'toDo'} on:change={change} on:dueChange={dueChange} on:create={create} on:remove={remove} />
+  {#if slots.length > 0}
+    <div class="flex pt-4">
+      <EventReminders bind:reminders />
+    </div>
+  {/if}
+</div>

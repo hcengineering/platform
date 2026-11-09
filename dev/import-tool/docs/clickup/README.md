@@ -20,6 +20,8 @@ docker run \
   --workspace workspace-id
 ```
 
+Instead of `--user` and `--password` you can authenticate with an API token, which also works for accounts that sign in with Google or another single sign-on provider. See [Authentication](../../README.md#authentication).
+
 #### User Mapping
 * Users must be created in the platform before import (Under *Contacts/Employee*)
 * ClickUp assignees are mapped to platform users by full name (e.g., "Jane Doe")

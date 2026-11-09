@@ -591,6 +591,11 @@
       "shouldPublish": false
     },
     {
+      "packageName": "@hcengineering/gantt",
+      "projectFolder": "packages/gantt",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@hcengineering/highlight",
       "projectFolder": "packages/highlight",
       "shouldPublish": true
@@ -2219,6 +2224,11 @@
     {
       "packageName": "@hcengineering/pod-notification",
       "projectFolder": "services/notification/pod-notification",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@hcengineering/pod-events-processor",
+      "projectFolder": "services/notification/pod-events-processor",
       "shouldPublish": false
     },
     {

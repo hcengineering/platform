@@ -111,6 +111,7 @@
       opacity: 0.8;
       transition: top 200ms;
       pointer-events: none;
+      -webkit-user-select: none;
       user-select: none;
     }
     input:focus + .label,

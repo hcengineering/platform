@@ -357,11 +357,21 @@ const MoveRight = (doc: Doc | undefined, evt: Event): void => {
   select(evt, 1, $focusStore.focus, 'horizontal')
 }
 
-function ShowActions (doc: Doc | Doc[] | undefined, evt: Event): void {
+function ShowActions (
+  doc: Doc | Doc[] | undefined,
+  evt: Event,
+  props?: {
+    props?: { space?: Ref<Space> }
+  }
+): void {
   if (get(restrictionStore).disableActions) return
   evt.preventDefault()
 
-  showPopup(view.component.ActionsPopup, { viewContext: $contextStore.getLastContext() }, 'top')
+  showPopup(
+    view.component.ActionsPopup,
+    { viewContext: $contextStore.getLastContext(), space: props?.props?.space },
+    'top'
+  )
 }
 
 function ShowPreview (doc: Doc | Doc[] | undefined, evt: Event): void {

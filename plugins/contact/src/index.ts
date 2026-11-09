@@ -190,6 +190,7 @@ export interface Employee extends Person {
   statuses?: number
   position?: string | null
   personUuid?: AccountUuid
+  timezone?: string
 }
 
 /**
@@ -385,6 +386,7 @@ export const contactPlugin = plugin(contactId, {
     UserProfile: '' as IntlString,
     DeactivatedAccount: '' as IntlString,
     LocalTime: '' as IntlString,
+    Timezone: '' as IntlString,
     Everyone: '' as IntlString,
     Here: '' as IntlString,
     EveryoneDescription: '' as IntlString,

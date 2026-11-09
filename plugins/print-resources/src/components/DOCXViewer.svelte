@@ -8,8 +8,9 @@
   import { type Blob, type BlobMetadata, type Ref } from '@hcengineering/core'
   import { getMetadata } from '@hcengineering/platform'
   import presentation, { getFileUrl } from '@hcengineering/presentation'
-  import { convertToHTML } from '@hcengineering/print'
-  import { EmbeddedHTML, Spinner, themeStore } from '@hcengineering/ui'
+  import print, { convertForPreview, type ConvertedPreview } from '@hcengineering/print'
+  import { Button, EmbeddedHTML, EmbeddedPDF, Label, Spinner, themeStore } from '@hcengineering/ui'
+  import { onDestroy } from 'svelte'
 
   export let value: Ref<Blob>
   export let name: string
@@ -17,27 +18,49 @@
   export let metadata: BlobMetadata | undefined
 
   let isLoading = true
-  let convertedFile: string | undefined
+  let failed = false
+  let convertedFile: ConvertedPreview | undefined
+  let request: AbortController | undefined
 
   const token = getMetadata(presentation.metadata.Token) ?? ''
 
-  $: if (value !== undefined) {
+  async function loadPreview (file: Ref<Blob> | undefined): Promise<void> {
+    request?.abort()
+    const controller = new AbortController()
+    request = controller
     isLoading = true
+    failed = false
     convertedFile = undefined
 
-    convertToHTML(value, token).then(
-      (res) => {
-        convertedFile = res
-        isLoading = false
-      },
-      (err: any) => {
-        Analytics.handleError(err)
+    try {
+      if (file === undefined) {
+        throw new Error('Missing document')
+      }
+      const result = await convertForPreview(file, token, controller.signal)
+      if (!controller.signal.aborted && file === value) {
+        convertedFile = result
+      }
+    } catch (err) {
+      if (!controller.signal.aborted && file === value) {
+        failed = true
+        Analytics.handleError(err instanceof Error ? err : new Error(String(err)))
+      }
+    } finally {
+      if (!controller.signal.aborted && file === value) {
         isLoading = false
       }
-    )
+    }
   }
 
-  $: src = convertedFile === undefined ? '' : getFileUrl(convertedFile as Ref<Blob>, name)
+  $: void loadPreview(value)
+
+  onDestroy(() => {
+    request?.abort()
+  })
+
+  $: previewName = convertedFile?.contentType === 'application/pdf' ? name.replace(/\.docx$/i, '') + '.pdf' : name
+  $: src = convertedFile === undefined ? '' : getFileUrl(convertedFile.id as Ref<Blob>, previewName)
+  $: originalSrc = value === undefined ? '' : getFileUrl(value, name)
 
   $: colors = $themeStore.dark
     ? `
@@ -264,26 +287,43 @@
   `
 </script>
 
-{#if src}
-  {#if isLoading}
-    <div class="centered">
-      <Spinner size="medium" />
+{#if isLoading}
+  <div class="centered">
+    <Spinner size="medium" />
+  </div>
+{:else if failed}
+  <div class="centered failed">
+    <Label label={presentation.string.FailedToPreview} />
+    <div class="flex-row-center flex-gap-2">
+      <Button label={print.string.Retry} on:click={() => loadPreview(value)} />
+      {#if originalSrc}
+        <a href={originalSrc} download={name}>
+          <Label label={presentation.string.DownloadOriginal} />
+        </a>
+      {/if}
     </div>
-  {:else}
-    <EmbeddedHTML {src} {name} {css} />
-  {/if}
+  </div>
+{:else if src}
+  {#key src}
+    {#if convertedFile?.contentType === 'application/pdf'}
+      <EmbeddedPDF {src} name={previewName} />
+    {:else}
+      <EmbeddedHTML {src} {name} {css} />
+    {/if}
+  {/key}
 {/if}
 
 <style lang="scss">
-  iframe {
-    border: none;
-  }
   .centered {
     flex-grow: 1;
-    width: 100;
-    height: 100;
+    width: 100%;
+    min-height: 20rem;
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+  .failed {
+    flex-direction: column;
+    gap: 1rem;
   }
 </style>

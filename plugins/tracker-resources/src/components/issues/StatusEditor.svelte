@@ -33,6 +33,7 @@
   import { createEventDispatcher } from 'svelte'
 
   import tracker from '../../plugin'
+  import { groupStatusesByCategory, statusCategoriesCollapseKey } from '../../statusCategories'
   import IssueStatusIcon from './IssueStatusIcon.svelte'
   import StatusPresenter from './StatusPresenter.svelte'
 
@@ -84,7 +85,12 @@
 
     showPopup(
       SelectPopup,
-      { value: statusesInfo, placeholder: tracker.string.SetStatus },
+      {
+        value: statusesInfo,
+        placeholder: tracker.string.SetStatus,
+        collapsibleCategories: true,
+        collapsedCategoriesKey: statusCategoriesCollapseKey
+      },
       eventToHTMLElement(event),
       changeStatus
     )
@@ -119,14 +125,18 @@
 
   $: selectedStatus = getSelectedStatus(statuses, value, defaultIssueStatus)
   $: selectedStatusLabel = shouldShowLabel ? selectedStatus?.name : undefined
-  $: statusesInfo = statuses?.map((s) => {
-    return {
-      id: s._id,
-      component: StatusPresenter,
-      props: { value: s, size: 'small', space: value.space },
-      isSelected: selectedStatus?._id === s._id
-    }
-  })
+  $: statusesInfo =
+    statuses !== undefined
+      ? groupStatusesByCategory(statuses, (c) => client.getModel().findObject(c)).map(({ status: s, category }) => {
+        return {
+          id: s._id,
+          component: StatusPresenter,
+          props: { value: s, size: 'small', space: value.space },
+          isSelected: selectedStatus?._id === s._id,
+          category: category !== undefined ? { label: category.label, icon: category.icon } : undefined
+        }
+      })
+      : undefined
   $: smallgap = size === 'inline' || size === 'small'
 </script>
 

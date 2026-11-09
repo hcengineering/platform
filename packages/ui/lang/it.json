@@ -49,6 +49,7 @@
         "DueDatePopupOverdueDescription": "{value, plural, =1 {1 giorno di ritardo} other {# giorni di ritardo}}",
         "English": "Inglese",
         "Russian": "Русский",
+        "Polish": "Polski",
         "Portuguese": "Português",
         "PortugueseBrazil": "Português (Brasil)",
         "Spanish": "Español",

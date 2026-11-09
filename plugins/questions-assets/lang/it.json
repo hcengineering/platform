@@ -30,6 +30,8 @@
     "SingleChoiceQuestion": "Selezione singola (non valutata)",
     "TypePercentage": "Percentuale",
     "TypeQuestionOption": "Opzione",
-    "TypeRank": "Classifica"
+    "TypeRank": "Classifica",
+    "ConfigLabel": "Domande",
+    "ConfigDescription": "Creazione di domande e valutazioni usata da formazioni, quiz e sondaggi"
   }
 }

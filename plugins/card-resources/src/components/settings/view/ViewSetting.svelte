@@ -259,7 +259,7 @@
       const parentMixins = hierarchy
         .getDescendants(parent)
         .map((p) => hierarchy.getClass(p))
-        .filter((p) => hierarchy.isMixin(p._id) && p.extends && ancestors.has(p.extends))
+        .filter((p) => hierarchy.isMixin(p._id) && ancestors.has(hierarchy.getBaseClass(p._id)))
 
       parentMixins.forEach((it) => {
         hierarchy.getOwnAttributes(it._id).forEach((attr) => {

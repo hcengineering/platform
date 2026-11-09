@@ -204,6 +204,7 @@
 
   & > * {
     pointer-events: none;
+    -webkit-user-select: none;
     user-select: none;
     -webkit-user-drag: none;
   }
@@ -517,6 +518,11 @@
         margin: 0 -.25rem 0 1rem;
         padding: .25rem;
       }
+      /* Paired with `.search.shrink` below: when the consumer designates the
+         search group as the row's shrink target, the extra group must keep
+         its natural width — otherwise both groups shrink proportionally and
+         the trailing buttons get clipped anyway. */
+      &.freeze { flex-shrink: 0; }
     }
     &.before {
       gap: var(--spacing-0_5);
@@ -543,6 +549,19 @@
 
     .hulyHeader-row { min-height: var(--spacing-6_5); }
     .hulyHeader-buttonsGroup.search { flex-direction: row-reverse; }
+    /* Opt-in via <Header shrinkSearch>. `flex: 1 1 0` makes the group's used
+       width a pure function of the row width minus the frozen siblings, i.e.
+       independent of its own content — which is what lets a consumer measure
+       the space it got and collapse its controls without a feedback loop.
+       `justify-content: flex-end` is "pack towards main-end", and main-end in
+       this row-reverse group is the LEFT edge, so the content keeps sitting
+       where it did before instead of drifting to the right. */
+    .hulyHeader-buttonsGroup.search.shrink {
+      flex: 1 1 0;
+      min-width: 0;
+      justify-content: flex-end;
+      overflow: hidden;
+    }
     .hulyHeader-buttonsGroup.actions { margin-left: 1rem; }
   }
   &:not(.doubleRow) {
@@ -1220,6 +1239,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     user-select: none;
+    -webkit-user-select: none;
   }
   .ac-header__counter {
     flex-shrink: 0;
@@ -1241,6 +1261,7 @@
     -webkit-line-clamp: 2;
     line-clamp: 2;
     user-select: none;
+    -webkit-user-select: none;
   }
 
   .ac-header__icon-button {
@@ -1319,6 +1340,7 @@
       color: var(--dark-color);
       cursor: pointer;
       user-select: none;
+      -webkit-user-select: none;
 
       &.selected {
         border-top: .125rem solid transparent;
@@ -1764,6 +1786,7 @@
     color: var(--theme-dark-color);
     box-shadow: inset 0 -1px 0 0 var(--theme-table-border-color);
     user-select: none;
+    -webkit-user-select: none;
     // z-index: 5;
 
     &.sortable { cursor: pointer; }
@@ -2015,6 +2038,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     user-select: none;
+    -webkit-user-select: none;
 
     min-width: 0;
     font-size: .75rem;
@@ -2101,6 +2125,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     user-select: none;
+    -webkit-user-select: none;
     min-width: 0;
 
     &.selected { color: var(--caption-color); }

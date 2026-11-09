@@ -39,6 +39,7 @@
   import view from '../../plugin'
   import { SelectionFocusProvider, selectionLimit } from '../../selection'
   import { noCategory } from '../../viewOptions'
+  import { deselectAllItemsLabel, selectAllItemsLabel, toggleGroupSelection } from './ListHeader.svelte.helpers'
 
   export let groupByKey: string
   export let category: PrimitiveType | AggregateValue
@@ -187,28 +188,21 @@
         </div>
       {/if}
     </div>
-    {#if createItemDialog !== undefined && createItemLabel !== undefined}
+    {#if (createItemDialog !== undefined && createItemLabel !== undefined) || items.length > 0}
       <div class:on-hover={!mouseOver} class="flex-row-center">
-        <Button icon={IconAdd} kind={'ghost'} showTooltip={{ label: createItemLabel }} on:click={handleCreateItem} />
-        <Button
-          icon={selected.length > 0 ? IconBack : IconCheck}
-          kind={'ghost'}
-          showTooltip={{ label: view.string.Select }}
-          on:click={() => {
-            let newSelection = [...$selection]
-            if (selected.length > 0) {
-              const smap = new Map(selected.map((it) => [it._id, it]))
-              newSelection = newSelection.filter((it) => !smap.has(it._id))
-            } else {
-              for (const s of items.slice(0, selectionLimit)) {
-                if (!selectionIds.has(s._id)) {
-                  newSelection.push(s)
-                }
-              }
-            }
-            listProvider.selection.set(newSelection)
-          }}
-        />
+        {#if createItemDialog !== undefined && createItemLabel !== undefined}
+          <Button icon={IconAdd} kind={'ghost'} showTooltip={{ label: createItemLabel }} on:click={handleCreateItem} />
+        {/if}
+        {#if items.length > 0}
+          <Button
+            icon={selected.length > 0 ? IconBack : IconCheck}
+            kind={'ghost'}
+            showTooltip={{ label: selected.length > 0 ? deselectAllItemsLabel : selectAllItemsLabel }}
+            on:click={() => {
+              listProvider.selection.set(toggleGroupSelection($selection, items, selectionLimit))
+            }}
+          />
+        {/if}
       </div>
     {/if}
   </div>

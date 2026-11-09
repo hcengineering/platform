@@ -75,6 +75,7 @@
   .toggle-label {
     color: var(--global-primary-TextColor);
     user-select: none;
+    -webkit-user-select: none;
   }
   .toggle {
     overflow: hidden;

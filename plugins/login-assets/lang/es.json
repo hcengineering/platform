@@ -100,6 +100,7 @@
     "SSOPasswordDescription": "Tu cuenta utiliza inicio de sesión externo. Configura una contraseña mediante confirmación por correo electrónico.",
     "SendSetupLink": "Enviar enlace de configuración",
     "SSOPasswordEmailSent": "Revisa tu correo electrónico para encontrar un enlace para configurar la contraseña.",
-    "SSONoEmailLinked": "No hay dirección de correo electrónico vinculada a tu cuenta. Añade una en Configuración de la cuenta → Gestionar identidades primero."
+    "SSONoEmailLinked": "No hay dirección de correo electrónico vinculada a tu cuenta. Añade una en Configuración de la cuenta → Gestionar identidades primero.",
+    "CreateSampleProjects": "Crear proyectos de ejemplo y contenido de demostración"
   }
 }

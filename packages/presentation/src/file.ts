@@ -62,11 +62,53 @@ export function getFileUrl (file: string, filename?: string): string {
   return storage.getFileUrl(workspace, file, filename)
 }
 
+/**
+ * Error thrown by registered upload guards (see {@link setUploadGuard}) when the
+ * current workspace is not allowed to upload new files (e.g. plan limit reached
+ * and grace period expired). Caller code should handle this distinct from generic
+ * upload failures and surface a user-friendly message + upgrade CTA.
+ *
+ * @public
+ */
+export class UploadRestrictedError extends Error {
+  constructor (
+    public readonly reason: string,
+    message?: string
+  ) {
+    super(message ?? reason)
+    this.name = 'UploadRestrictedError'
+  }
+}
+
+/** @public */
+export type UploadGuard = (file: File) => Promise<void> | void
+
+let uploadGuard: UploadGuard | undefined
+
+/**
+ * Register a synchronous/async guard called before every {@link uploadFile}.
+ * Throw an {@link UploadRestrictedError} from the guard to block the upload.
+ * Pass `undefined` to clear the guard.
+ *
+ * The guard lives in `presentation` to keep upload restriction concerns out of
+ * every individual call site, and to avoid a dependency from `presentation` to
+ * higher-level plugins (billing-resources) — DI inversion via a setter.
+ *
+ * @public
+ */
+export function setUploadGuard (guard: UploadGuard | undefined): void {
+  uploadGuard = guard
+}
+
 /** @public */
 export async function uploadFile (
   file: File,
   uuid?: Ref<PlatformBlob>
 ): Promise<{ uuid: Ref<PlatformBlob>, metadata: Record<string, any> }> {
+  if (uploadGuard !== undefined) {
+    await uploadGuard(file)
+  }
+
   uuid ??= generateFileId() as Ref<PlatformBlob>
 
   const token = getToken()

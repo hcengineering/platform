@@ -1169,6 +1169,7 @@ export class PullRequestSyncManager extends IssueSyncManagerBase implements DocS
       rank: calcRank(lastOne, undefined),
       comments: 0,
       subIssues: 0,
+      startDate: null,
       dueDate: null,
       parents: [],
       reportedTime: 0,

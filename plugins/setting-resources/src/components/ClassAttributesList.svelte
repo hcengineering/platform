@@ -31,6 +31,7 @@
   import {
     Action,
     AnySvelteComponent,
+    IconCopy,
     IconDelete,
     IconEdit,
     Menu,
@@ -39,9 +40,11 @@
   } from '@hcengineering/ui'
   import { getContextActions, SortableList } from '@hcengineering/view-resources'
   import settings from '../plugin'
+  import { isAttributeUsed } from '../attributeUsage'
   import ClassAttributeRow from './ClassAttributeRow.svelte'
   import { makeRank } from '@hcengineering/rank'
   import EditAttribute from './EditAttribute.svelte'
+  import { TypeIdentifier } from '@hcengineering/model'
 
   export let _class: Ref<Class<Doc>>
   export let ofClass: Ref<Class<Doc>> | undefined = undefined
@@ -97,6 +100,23 @@
     showPopup(EditAttribute, { attribute, exist }, 'top', update)
   }
 
+  export async function overrideAttribute (source: AnyAttribute): Promise<void> {
+    const newSeq = await client.createDoc(core.class.CustomSequence, core.space.Workspace, {
+      prefix: '',
+      sequence: 0,
+      attachedTo: core.class.CustomSequence
+    })
+    const _id = await client.createDoc(core.class.Attribute, core.space.Model, {
+      ...source,
+      type: TypeIdentifier(newSeq),
+      attributeOf: _class
+    })
+    const attribute = await client.findOne(core.class.Attribute, _id)
+    if (attribute !== undefined) {
+      showPopup(EditAttribute, { attribute, exist: true }, 'top', update)
+    }
+  }
+
   export async function removeAttribute (attribute: AnyAttribute, exist: boolean): Promise<void> {
     showPopup(
       MessageBox,
@@ -114,7 +134,7 @@
 
   async function showMenu (ev: MouseEvent, attribute: AnyAttribute): Promise<void> {
     hovered = attribute._id
-    const exist = (await client.findOne(attribute.attributeOf, { [attribute.name]: { $exists: true } })) !== undefined
+    const exist = await isAttributeUsed(client, attribute)
     const actions: Action[] = [
       {
         label: presentation.string.Edit,
@@ -125,6 +145,15 @@
       }
     ]
     if (attribute.isCustom === true) {
+      if (attribute.attributeOf !== _class && attribute.type._class === core.class.TypeIdentifier) {
+        actions.push({
+          label: settings.string.OverrideAttribute,
+          icon: IconCopy,
+          action: async () => {
+            await overrideAttribute(attribute)
+          }
+        })
+      }
       actions.push({
         label: presentation.string.Remove,
         icon: IconDelete,

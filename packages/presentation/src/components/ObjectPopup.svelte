@@ -43,7 +43,7 @@
   export let selectedObjects: Ref<Doc>[] = []
   export let ignoreObjects: Ref<Doc>[] = []
   export let shadows: boolean = true
-  export let width: 'medium' | 'large' | 'full' | 'auto' = 'medium'
+  export let width: 'medium' | 'large' | 'full' | 'auto' | 'resizable' = 'medium'
   export let size: 'small' | 'medium' | 'large' = 'large'
 
   export let searchMode: 'field' | 'fulltext' | 'disabled' | 'spotlight' = 'field'

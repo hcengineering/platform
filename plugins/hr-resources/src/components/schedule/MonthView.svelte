@@ -76,7 +76,9 @@
   export let editableList: Ref<Employee>[]
 
   export let staffDepartmentMap: Map<Ref<Staff>, Department[]>
-  export let holidays: Map<Ref<Department>, Date[]>
+
+  export let holidays: Date[]
+  export let holidaysMap: Map<Ref<Department>, Date[]>
 
   const todayDate = new Date()
 
@@ -191,7 +193,7 @@
     if (requests.length === 0) return
     const weekend = isWeekend(day)
     const holiday =
-      holidays?.size > 0 && isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidays), day)
+      holidaysMap?.size > 0 && isHoliday(getHolidayDatesForEmployee(staffDepartmentMap, staff._id, holidaysMap), day)
     if (day && (weekend || holiday) && requests.some((req) => noWeekendHolidayType.includes(req.type))) {
       return
     }
@@ -307,6 +309,7 @@
             {#each values as value}
               {@const day = getDay(startDate, value)}
               {@const today = areDatesEqual(todayDate, day)}
+              {@const holiday = isHoliday(holidays, day)}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-no-static-element-interactions -->
               <div
@@ -321,6 +324,7 @@
                 <div
                   class="timeline-day-header__day flex-col-center justify-center"
                   class:timeline-day-header__day--today={today}
+                  class:timeline-day-header__day--holiday={holiday && !today}
                 >
                   {day.getDate()}
                 </div>
@@ -361,7 +365,7 @@
                 {@const today = areDatesEqual(todayDate, day)}
                 {@const weekend = isWeekend(day)}
                 {@const holiday = isHoliday(
-                  getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidays),
+                  getHolidayDatesForEmployee(staffDepartmentMap, employee._id, holidaysMap),
                   day
                 )}
                 {@const requests = getRequests(employeeRequests, day, day, employee._id)}
@@ -472,6 +476,12 @@
       &.timeline-day-header__day--today {
         color: white;
         background-color: #3871e0;
+        border-radius: 0.375rem;
+      }
+
+      &.timeline-day-header__day--holiday {
+        color: white;
+        background-color: #d32f2f;
         border-radius: 0.375rem;
       }
     }

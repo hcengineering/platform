@@ -34,6 +34,8 @@ docker run \
   --teamspace teamspace-name-to-be-created
 ```
 
+Instead of `--user` and `--password` you can authenticate with an API token, which also works for accounts that sign in with Google or another single sign-on provider. See [Authentication](../../README.md#authentication).
+
 #### Limitations
 * Notion databases are not imported (CSV format not supported)
 * Comments are not included in Notion exports, so they will not be imported

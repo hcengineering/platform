@@ -93,6 +93,7 @@
     "Window": "Janela",
     "MeetingEmptyTitle": "Reunião encerrada?",
     "MeetingEmptyMessage": "Todos os participantes saíram. Você será desconectado em 1 minuto. Deseja permanecer?",
-    "StayInRoom": "Permanecer na sala"
+    "StayInRoom": "Permanecer na sala",
+    "ScreenSharedBy": "{name} está a partilhar o ecrã"
   }
 }

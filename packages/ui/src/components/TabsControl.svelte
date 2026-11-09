@@ -93,6 +93,7 @@
       height: 4.5rem;
       color: var(--theme-dark-color);
       cursor: pointer;
+      -webkit-user-select: none;
       user-select: none;
 
       &.selected {

@@ -53,6 +53,8 @@
     "ExportFilterEffectiveOnly": "Yalnızca geçerli belgeler",
     "ExportFilterSkipArchivedObsolete": "Arşivlenmiş ve geçersiz hariç tümü",
     "ExportFilterAll": "Tüm belgeler",
+    "ExportChildDocuments": "Alt belgeleri dışa aktar",
+    "ExportChildDocumentsDescription": "Seçili belgelere ekli belgeleri de dışa aktar",
     "ExportResultRecordTitle": "{workspace} çalışma alanından belge dışa aktarma ({date})"
   }
 }

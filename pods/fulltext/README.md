@@ -26,6 +26,9 @@ Fulltext indexing service for the Platform. Provides full-text search capabiliti
 - **`VERSION`** - Service version (default: `'0.7.0'`)
 - **`DB_PREPARE`** - Enable database prepared statements (default: `'true'`)
 - **`STORAGE_CONFIG`** - Storage configuration (see storage service documentation)
+- **`ELASTIC_TLS_CA_FILE`** - Path to a PEM encoded CA certificate (bundle) used to verify the Elasticsearch/OpenSearch server certificate, e.g. for self-signed or cluster-internal CAs (default: system trust store)
+- **`ELASTIC_TLS_VERIFY`** - Set to `false` to skip TLS certificate verification for Elasticsearch/OpenSearch (default: verification enabled)
+  - Insecure, a warning is logged on startup; prefer `ELASTIC_TLS_CA_FILE`
 
 ## Features
 

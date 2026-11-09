@@ -118,6 +118,7 @@
         "UserProfile": "사용자 프로필",
         "DeactivatedAccount": "비활성화된 계정",
         "LocalTime": "현지 시간",
+        "Timezone": "시간대",
         "Everyone": "모두",
         "Here": "여기",
         "EveryoneDescription": "이 {title}의 모든 멤버에게 알림",
@@ -149,6 +150,7 @@
         "WorkspaceStatusIn1Hour": "1시간 후",
         "WorkspaceStatusIn4Hours": "4시간 후",
         "WorkspaceStatusEndOfDay": "오늘 종료",
-        "WorkspaceStatusPickDate": "날짜 선택"
+        "WorkspaceStatusPickDate": "날짜 선택",
+        "HideInactive": "비활성 숨기기"
     }
 }

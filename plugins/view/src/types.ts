@@ -311,6 +311,23 @@ export interface ReferenceObjectProvider extends Class<Doc> {
 /**
  * @public
  */
+export interface ReferenceVersion {
+  id: Ref<Doc>
+  objectclass: Ref<Class<Doc>>
+  label: string
+  fixed?: boolean
+}
+
+/**
+ * @public
+ */
+export interface ReferenceVersionsProvider extends Class<Doc> {
+  provider: Resource<<T extends Doc>(client: Client, ref: Ref<T>, doc?: T) => Promise<ReferenceVersion[]>>
+}
+
+/**
+ * @public
+ */
 export interface ObjectTooltip extends Class<Doc> {
   provider: Resource<(client: Client, doc?: Doc | null) => Promise<LabelAndProps | undefined>>
 }
@@ -740,6 +757,12 @@ export interface ViewOption {
   defaultValue: any
   label: IntlString
   hidden?: (viewOptions: ViewOptions) => boolean
+  /**
+   * Key of another toggle-ViewOption in the same `other` array; this option is
+   * only shown in the Customize-View popup when that parent toggle is on.
+   * Plain data field (no function) so it survives model serialization.
+   */
+  dependsOn?: string
   actionTarget?: 'query' | 'category' | 'display' | 'options'
   action?: Resource<(value: any, ...params: any) => any>
 }

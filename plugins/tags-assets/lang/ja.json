@@ -39,6 +39,7 @@
     "Expert": "エキスパート",
     "Meaningfull": "意味あり",
     "Initial": "初期",
-    "NumberLabels": "{count, plural, =0 {ラベルなし} =1 {1 ラベル} other {# ラベル}}"
+    "NumberLabels": "{count, plural, =0 {ラベルなし} =1 {1 ラベル} other {# ラベル}}",
+    "UsageCount": "使用回数"
   }
 }

@@ -95,6 +95,9 @@ export class TVacancy extends TProject implements Vacancy {
 
   @Prop(TypeCollection(survey.class.Poll), survey.string.Polls)
     polls?: Collection<Poll>
+
+  @Prop(TypeCollection(tags.class.TagReference, task.string.TaskLabels), task.string.TaskLabels)
+    labels?: number
 }
 
 @Mixin(recruit.mixin.Candidate, contact.class.Person)

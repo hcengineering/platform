@@ -52,6 +52,7 @@
 <div bind:this={openedContainerRef}>
   <div
     class="flex-col background-accent-bg-color border-divider-color border-radius-1 pt-1 pb-1 pr-2 pl-2"
+    style:-webkit-user-select="none"
     style:user-select="none"
   >
     <TextArea

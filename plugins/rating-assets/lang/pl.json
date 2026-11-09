@@ -1,0 +1,12 @@
+{
+  "string": {
+    "Rating": "Ocena",
+    "RatingWidget": "Widżet oceny",
+    "RatingWidgetEmpty": "Nie masz ulubionych dokumentów. Jeśli chcesz tu coś zobaczyć, polub jakiś dokument (kliknij gwiazdkę przy jakimś dokumencie).",
+    "Level": "Poziom",
+    "MonthOps": "{month}: {ops, plural, =1 {1 działanie}, few {# działania} other {# działań}}",
+    "MonthNoOps": "{month}, Brak działań",
+    "AddStar": "Polub",
+    "AddStarAria": "Reakcja polubienia"
+  }
+}

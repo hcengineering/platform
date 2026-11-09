@@ -44,6 +44,7 @@
     "ValidateFail": "Einige Pflichtfragen wurden nicht beantwortet",
     "ValidateInfo": "So wird das Formular für die Benutzer aussehen. Versuchen Sie, Antworten einzugeben und Optionen auszuwählen, um die Umfrage zu testen. Das grüne Symbol oben zeigt an, dass das Formular korrekt ausgefüllt ist.",
     "ValidateOk": "Das Formular ist korrekt ausgefüllt",
+    "EditAnswers": "Antworten bearbeiten",
     "ConfigLabel": "Umfragen",
     "ConfigDescription": "Erweiterung zur Verwaltung von Umfragen"
   }

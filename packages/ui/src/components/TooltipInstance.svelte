@@ -501,6 +501,7 @@
     border: 1px solid var(--theme-popup-divider);
     border-radius: 0.75rem;
     box-shadow: var(--theme-popup-shadow);
+    -webkit-user-select: none;
     user-select: none;
 
     &.doublePadding {
@@ -540,6 +541,7 @@
   .nub {
     position: fixed;
     // background-color: rgba(255, 255, 0, .5);
+    -webkit-user-select: none;
     user-select: none;
     pointer-events: none;
 
@@ -634,6 +636,7 @@
     border: 1px solid var(--theme-popup-divider);
     border-radius: 0.25rem;
     box-shadow: var(--theme-popup-shadow);
+    -webkit-user-select: none;
     user-select: none;
     display: flex;
     align-items: center;

@@ -44,6 +44,17 @@ export interface ExportOptions {
   query?: DocumentQuery<Doc>
 }
 
+export function sanitizeSpaceFileName (name: string): string {
+  const sanitized = name
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f]/g, '')
+    .replace(/[/\\:*?"<>|]/g, '_')
+    .replace(/\.{2,}/g, '_')
+    .trim()
+    .replace(/^\.+/, '')
+  return sanitized.length > 0 ? sanitized : 'unnamed'
+}
+
 export class WorkspaceExporter {
   private readonly jsonSerializer: UnifiedJsonSerializer
   private readonly csvSerializer: UnifiedCsvSerializer
@@ -81,6 +92,7 @@ export class WorkspaceExporter {
     )
 
     const limiter = new RateLimiter(50)
+    const usedSpaceNames = new Set<string>()
     // Process each space
     for (const [spaceId, spaceDocs] of docsBySpace) {
       const space = allSpaces.get(spaceId)
@@ -89,7 +101,12 @@ export class WorkspaceExporter {
         continue
       }
 
-      const spaceName = space.name ?? spaceId
+      let spaceName = sanitizeSpaceFileName(space.name ?? spaceId)
+      if (usedSpaceNames.has(spaceName)) {
+        // Different spaces may share the same (sanitized) name, avoid overwriting
+        spaceName = `${spaceName}-${spaceId}`
+      }
+      usedSpaceNames.add(spaceName)
       const spaceDir = path.join(outputDir, spaceName)
 
       // Convert all docs to UnifiedDoc format

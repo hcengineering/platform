@@ -58,6 +58,11 @@ export interface ImageOptions {
 
   loadingImgSrc?: string
   getBlobRef: (fileId: Ref<Blob>, filename?: string, size?: number) => Promise<{ src: string, srcset: string }>
+  /**
+   * Resolves a loadable URL for the image file when the node is rendered to HTML.
+   * Without it, a `platform://` placeholder is rendered, which a browser cannot load.
+   */
+  getFileUrl?: (fileId: Ref<Blob>) => string
 }
 
 /**
@@ -139,7 +144,7 @@ export const ImageNode = Node.create<ImageOptions>({
     )
     const fileId = imgAttributes['file-id']
     if (fileId != null) {
-      imgAttributes.src = `platform://platform/files/workspace/?file=${fileId}`
+      imgAttributes.src = this.options.getFileUrl?.(fileId) ?? `platform://platform/files/workspace/?file=${fileId}`
     }
 
     return ['div', divAttributes, ['img', imgAttributes]]

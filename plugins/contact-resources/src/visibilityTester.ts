@@ -14,8 +14,10 @@
 // limitations under the License.
 //
 
-import contact, { type Person, type Employee } from '@hcengineering/contact'
+import contact, { getCurrentEmployee, type Person, type Employee } from '@hcengineering/contact'
+import { getCurrentAccount } from '@hcengineering/core'
 import { getClient } from '@hcengineering/presentation'
+import { canKick } from './kickEmployee'
 
 export async function canResendInvitation (employee: Employee): Promise<boolean> {
   return !employee.active
@@ -26,4 +28,8 @@ export async function canMergePersons (person: Person): Promise<boolean> {
   const hierarchy = client.getHierarchy()
 
   return hierarchy.hasMixin(person, contact.mixin.Employee)
+}
+
+export async function canKickEmployee (employee: Employee | Employee[] | undefined): Promise<boolean> {
+  return canKick(employee, getCurrentAccount().uuid, getCurrentEmployee())
 }

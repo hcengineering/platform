@@ -19,7 +19,9 @@
   import { clearSettingsStore, settingsStore } from '@hcengineering/setting-resources'
   import {
     ButtonIcon,
+    ButtonMenu,
     defineSeparators,
+    DropdownIntlItem,
     EditBox,
     getCurrentLocation,
     IconDelete,
@@ -28,13 +30,15 @@
     navigate,
     Scroller,
     secondNavSeparators,
-    showPopup
+    showPopup,
+    IconLink
   } from '@hcengineering/ui'
   import { exportProcess } from '../../exporter'
   import view from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
   import process from '../../plugin'
   import ContextEditor from './ContextEditor.svelte'
+  import BindingsEditor from './BindingsEditor.svelte'
   import Navigator from './Navigator.svelte'
   import ProcesssSetting from './ProcesssSetting.svelte'
   import StatesInlineEditor from './StatesInlineEditor.svelte'
@@ -137,10 +141,37 @@
     showPopup(ProcesssSetting, { value })
   }
 
-  function handleExport (): void {
+  function handleBindings (): void {
+    showPopup(BindingsEditor, { process: value })
+  }
+
+  const EXPORT_WITH_SLOTS = 'with-slots'
+  const EXPORT_WITHOUT_SLOTS = 'without-slots'
+
+  let exportItems: DropdownIntlItem[]
+  $: exportItems = [
+    {
+      id: EXPORT_WITH_SLOTS,
+      label: process.string.ExportWithSlots
+    },
+    {
+      id: EXPORT_WITHOUT_SLOTS,
+      label: process.string.ExportWithoutSlots
+    }
+  ]
+
+  function onExportSelected (event: CustomEvent<string | number>): void {
+    if (event.detail === EXPORT_WITH_SLOTS) {
+      handleExport(true)
+    } else if (event.detail === EXPORT_WITHOUT_SLOTS) {
+      handleExport(false)
+    }
+  }
+
+  function handleExport (withSlots: boolean): void {
     if (value === undefined) return
     const str = JSON.stringify(
-      exportProcess(value).docs.map((doc) => {
+      exportProcess(value, withSlots).docs.map((doc) => {
         const { modifiedBy, modifiedOn, createdBy, createdOn, ...rest } = doc
         return rest
       })
@@ -171,13 +202,24 @@
               placeholder={process.string.Untitled}
             />
             <div class="flex-row-center flex-gap-2">
+              {#if value.requiredSlots && Object.keys(value.requiredSlots).length > 0}
+                <ButtonIcon
+                  icon={IconLink}
+                  tooltip={{ label: process.string.Bindings, direction: 'bottom' }}
+                  size="small"
+                  kind="secondary"
+                  on:click={handleBindings}
+                />
+              {/if}
               <ButtonIcon icon={IconSettings} size="small" kind="secondary" on:click={handleSettings} />
-              <ButtonIcon
+              <ButtonMenu
                 icon={IconDownload}
                 tooltip={{ label: process.string.Export, direction: 'bottom' }}
                 size="small"
                 kind="secondary"
-                on:click={handleExport}
+                items={exportItems}
+                noSelection
+                on:selected={onExportSelected}
               />
               <ButtonIcon
                 icon={IconDetails}

@@ -164,7 +164,14 @@ async function processCardExecutions (control: ProcessControl, record: ProcessMe
   }
 
   // we should update timers, probably context value changed
-  if (record.event.some((p) => p === process.trigger.OnCardUpdate || p === process.trigger.WhenFieldChanges)) {
+  if (
+    record.event.some(
+      (p) =>
+        p === process.trigger.OnCardUpdate ||
+        p === process.trigger.WhenFieldChanges ||
+        p === process.trigger.WhenRequiredFieldsFilled
+    )
+  ) {
     await updateTimers(control, record)
   }
 }

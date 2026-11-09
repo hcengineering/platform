@@ -32,9 +32,11 @@ import {
   type WorkspaceUserOperation,
   type WorkspaceUuid
 } from '@hcengineering/core'
-import platform, { PlatformError, Severity, Status } from '@hcengineering/platform'
+import platform, { PlatformError, Severity, Status, unknownStatus } from '@hcengineering/platform'
 import type {
   AccountAggregatedInfo,
+  ApiTokenInfo,
+  ApiTokenResult,
   Integration,
   IntegrationKey,
   IntegrationSecret,
@@ -55,6 +57,7 @@ import type {
   Subscription,
   SubscriptionData,
   UserProfile,
+  WorkspaceConfiguration,
   WorkspaceLoginInfo,
   WorkspaceOperation
 } from './types'
@@ -134,7 +137,11 @@ export interface AccountClient {
   getWorkspacesInfo: (workspaces: WorkspaceUuid[]) => Promise<WorkspaceInfoWithStatus[]>
   updateLastVisit: (workspaces: WorkspaceUuid[]) => Promise<void>
   getRegionInfo: () => Promise<RegionInfo[]>
-  createWorkspace: (name: string, region?: string) => Promise<WorkspaceLoginInfo>
+  createWorkspace: (
+    name: string,
+    region?: string,
+    configuration?: WorkspaceConfiguration
+  ) => Promise<WorkspaceLoginInfo>
   signUpOtp: (email: string, first: string, last: string) => Promise<OtpInfo>
   /**
    * Deprecated. Only to be used for dev setups without mail service.
@@ -142,6 +149,7 @@ export interface AccountClient {
   signUp: (email: string, password: string, first: string, last: string) => Promise<LoginInfo>
   login: (email: string, password: string) => Promise<LoginInfo>
   loginAsGuest: () => Promise<LoginInfo>
+  getLoginCapabilities: () => Promise<{ signUpEnabled: boolean, guestLoginAvailable: boolean }>
   isReadOnlyGuest: () => Promise<boolean>
   getPerson: () => Promise<Person>
   getPersonInfo: (account: PersonUuid) => Promise<PersonInfo>
@@ -237,7 +245,7 @@ export interface AccountClient {
   addEmailSocialId: (email: string) => Promise<OtpInfo>
   addHulyAssistantSocialId: () => Promise<PersonId>
   refreshHulyAssistantToken: () => Promise<void>
-  updatePasswordAgingRule: (days: number) => Promise<void>
+  updatePasswordAgingRule: (days?: number) => Promise<void>
   checkPasswordAging: () => Promise<boolean>
 
   setMyProfile: (profile: Partial<Omit<UserProfile, 'personUuid'>>) => Promise<void>
@@ -255,6 +263,9 @@ export interface AccountClient {
   getWorkspaceUsersWithPermission: (params: { permission: string }) => Promise<AccountUuid[]>
 
   verify2fa: (code: string) => Promise<LoginInfo>
+  createApiToken: (name: string, workspaceUuid: WorkspaceUuid, expiryDays: number) => Promise<ApiTokenResult>
+  listApiTokens: () => Promise<ApiTokenInfo[]>
+  revokeApiToken: (tokenId: string) => Promise<void>
 
   setCookie: () => Promise<void>
   deleteCookie: () => Promise<void>
@@ -311,7 +322,7 @@ class AccountClientImpl implements AccountClient {
     return await withRetryUntilMaxAttempts(async () => {
       const response = await fetch(concatLink(this.url, '/providers'))
 
-      return await response.json()
+      return await readJsonResponse(response)
     })()
   }
 
@@ -330,7 +341,7 @@ class AccountClientImpl implements AccountClient {
       body: JSON.stringify(request)
     })
 
-    const result = await response.json()
+    const result = await readJsonResponse(response)
     if (result.error != null) {
       throw new PlatformError(result.error)
     }
@@ -545,7 +556,7 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
-  async updatePasswordAgingRule (days: number): Promise<void> {
+  async updatePasswordAgingRule (days?: number): Promise<void> {
     const request = {
       method: 'updatePasswordAgingRule' as const,
       params: { days }
@@ -668,10 +679,14 @@ class AccountClientImpl implements AccountClient {
     return await this.rpc(request)
   }
 
-  async createWorkspace (workspaceName: string, region?: string): Promise<WorkspaceLoginInfo> {
+  async createWorkspace (
+    workspaceName: string,
+    region?: string,
+    configuration?: WorkspaceConfiguration
+  ): Promise<WorkspaceLoginInfo> {
     const request = {
       method: 'createWorkspace' as const,
-      params: { workspaceName, region }
+      params: { workspaceName, region, configuration }
     }
 
     return await this.rpc(request)
@@ -707,6 +722,15 @@ class AccountClientImpl implements AccountClient {
   async loginAsGuest (): Promise<LoginInfo> {
     const request = {
       method: 'loginAsGuest' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
+  async getLoginCapabilities (): Promise<{ signUpEnabled: boolean, guestLoginAvailable: boolean }> {
+    const request = {
+      method: 'getLoginCapabilities' as const,
       params: {}
     }
 
@@ -1224,12 +1248,39 @@ class AccountClientImpl implements AccountClient {
     await this.rpc(request)
   }
 
+  async createApiToken (name: string, workspaceUuid: WorkspaceUuid, expiryDays: number): Promise<ApiTokenResult> {
+    const request = {
+      method: 'createApiToken' as const,
+      params: { name, workspaceUuid, expiryDays }
+    }
+
+    return await this.rpc(request)
+  }
+
+  async listApiTokens (): Promise<ApiTokenInfo[]> {
+    const request = {
+      method: 'listApiTokens' as const,
+      params: {}
+    }
+
+    return await this.rpc(request)
+  }
+
+  async revokeApiToken (tokenId: string): Promise<void> {
+    const request = {
+      method: 'revokeApiToken' as const,
+      params: { tokenId }
+    }
+
+    await this.rpc(request)
+  }
+
   async setCookie (): Promise<void> {
     const url = concatLink(this.url, '/cookie')
     const response = await fetch(url, { ...this.request, method: 'PUT' })
 
     if (!response.ok) {
-      const result = await response.json()
+      const result = await readJsonResponse(response)
       if (result.error != null) {
         throw new PlatformError(result.error)
       }
@@ -1241,7 +1292,7 @@ class AccountClientImpl implements AccountClient {
     const response = await fetch(url, { ...this.request, method: 'DELETE' })
 
     if (!response.ok) {
-      const result = await response.json()
+      const result = await readJsonResponse(response)
       if (result.error != null) {
         throw new PlatformError(result.error)
       }
@@ -1377,6 +1428,25 @@ class AccountClientImpl implements AccountClient {
 
     await this.rpc(request)
   }
+}
+
+/**
+ * Parses the JSON body of an account service response.
+ * Error responses with a JSON body (e.g. a Status in `error`) are returned as is,
+ * anything else (a proxy error page, an empty body, etc.) is reported with the HTTP status.
+ */
+async function readJsonResponse (response: Response): Promise<any> {
+  const text = await response.text()
+  try {
+    const result = JSON.parse(text)
+    if (response.ok || result?.error != null) {
+      return result
+    }
+  } catch {
+    // Not a JSON body, reported below with the HTTP status
+  }
+  const status = `${response.status} ${response.statusText}`.trim()
+  throw new PlatformError(unknownStatus(`Unexpected response from account service: ${status}`))
 }
 
 function withRetry<T, F extends (...args: any[]) => Promise<T>> (

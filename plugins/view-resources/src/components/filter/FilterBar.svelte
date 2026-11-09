@@ -13,13 +13,13 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
-  import { getResource } from '@hcengineering/platform'
+  import { AccountRole, Class, Doc, DocumentQuery, Ref, Space, getCurrentAccount } from '@hcengineering/core'
   import { getClient, reduceCalls } from '@hcengineering/presentation'
-  import { Button, IconAdd, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
-  import { Filter, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
+  import { Button, IconAdd, IconClose, eventToHTMLElement, getCurrentLocation, showPopup } from '@hcengineering/ui'
+  import { Filter, FilterMode, FilteredView, ViewOptions, Viewlet } from '@hcengineering/view'
   import { createEventDispatcher } from 'svelte'
-  import { filterStore, removeFilter, selectedFilterStore, updateFilter } from '../../filter'
+  import { filterStore, removeFilter, selectedFilterStore, setFilters, updateFilter } from '../../filter'
+  import { makeFilterQuery } from '../../filter/query-builder'
   import view from '../../plugin'
   import { activeViewlet, getActiveViewletId, makeViewletKey } from '../../utils'
   import { getViewOptions, viewOptionStore } from '../../viewOptions'
@@ -32,17 +32,24 @@
   export let query: DocumentQuery<Doc>
   export let viewOptions: ViewOptions | undefined = undefined
   export let hideSaveButtons: boolean = false
+  // Tracker IssuesView renders its own inline chip strip via <InlineFilterChips>
+  // and sets hideChips=true so this component shrinks to just the SaveAs row.
+  // Every other consumer keeps the legacy chip rendering — the redesign only
+  // covers Tracker.
+  export let hideChips: boolean = false
 
   const client = getClient()
   const hierarchy = client.getHierarchy()
   const dispatch = createEventDispatcher()
 
-  function onChange (e: Filter | undefined) {
-    if (e === undefined) return
-    updateFilter(e)
+  const account = getCurrentAccount()
+  const canSaveFilteredView = account.role !== AccountRole.ReadOnlyGuest && account.role !== AccountRole.DocGuest
+
+  function onChange (e: Filter | undefined): void {
+    if (e !== undefined) updateFilter(e)
   }
 
-  function add (e: MouseEvent) {
+  function add (e: MouseEvent): void {
     const target = eventToHTMLElement(e)
     showPopup(
       FilterTypePopup,
@@ -57,11 +64,11 @@
     )
   }
 
-  async function saveFilteredView () {
+  async function saveFilteredView (): Promise<void> {
     showPopup(FilterSave, { viewOptions, _class })
   }
 
-  async function saveCurrentFilteredView (filter: FilteredView | undefined) {
+  async function saveCurrentFilteredView (filter: FilteredView | undefined): Promise<void> {
     if (filter !== undefined) {
       const filters = JSON.stringify($filterStore)
       await client.update(filter, {
@@ -78,67 +85,21 @@
     }
   }
 
+  const resolveMode = async (id: Ref<FilterMode>): Promise<FilterMode | undefined> =>
+    await client.findOne(view.class.FilterMode, { _id: id })
+
   const makeQuery = reduceCalls(async (query: DocumentQuery<Doc>, filters: Filter[]): Promise<void> => {
-    const newQuery = hierarchy.clone(query)
-    for (let i = 0; i < filters.length; i++) {
-      const filter = filters[i]
-      const mode = await client.findOne(view.class.FilterMode, { _id: filter.mode })
-      if (mode === undefined) continue
-      const result = await getResource(mode.result)
-      const newValue = await result(filter, () => {
-        makeQuery(query, filters)
-      })
-
-      let filterKey = filter.key.key
-
-      const attr = client.getHierarchy().getAttribute(filter.key._class, filter.key.key)
-      if (client.getHierarchy().isMixin(attr.attributeOf)) {
-        filterKey = attr.attributeOf + '.' + filter.key.key
-      }
-
-      if (newQuery[filterKey] === null || newQuery[filterKey] === undefined) {
-        newQuery[filterKey] = newValue
-      } else {
-        let merged = false
-        for (const key in newValue) {
-          if (newQuery[filterKey][key] === undefined) {
-            if (key === '$in' && typeof newQuery[filterKey] === 'string') {
-              newQuery[filterKey] = { $in: newValue[key].filter((p: any) => p === newQuery[filterKey]) }
-            } else {
-              newQuery[filterKey][key] = newValue[key]
-            }
-            merged = true
-            continue
-          }
-          if (key === '$in') {
-            newQuery[filterKey][key] = newQuery[filterKey][key].filter((p: any) => newValue[key].includes(p))
-            merged = true
-            continue
-          }
-          if (key === '$nin') {
-            newQuery[filterKey][key] = [...newQuery[filterKey][key], ...newValue[key]]
-            merged = true
-            continue
-          }
-          if (key === '$lt') {
-            newQuery[filterKey][key] =
-              newQuery[filterKey][key] < newValue[key] ? newQuery[filterKey][key] : newValue[key]
-            merged = true
-            continue
-          }
-          if (key === '$gt') {
-            newQuery[filterKey][key] =
-              newQuery[filterKey][key] > newValue[key] ? newQuery[filterKey][key] : newValue[key]
-            merged = true
-            continue
-          }
-        }
-        if (!merged) {
-          Object.assign(newQuery[filterKey], newValue)
-        }
-      }
-    }
-    dispatch('change', newQuery)
+    // Pass a real refresh callback (6th arg) instead of the no-op default in
+    // makeFilterQuery. A filter's async result-fn invokes refresh when its
+    // underlying data resolves/changes (e.g. lookup filters that load their
+    // value set asynchronously) so the query must be rebuilt and re-dispatched.
+    // This restores develop's behaviour, where the inline makeQuery passed
+    // `() => makeQuery(query, filters)` to each filter's result(). reduceCalls
+    // coalesces the re-entrant call, so this cannot spin into an infinite loop.
+    const next = await makeFilterQuery(query, filters, resolveMode, undefined, hierarchy, () => {
+      void makeQuery(query, filters)
+    })
+    dispatch('change', next)
   })
 
   $: makeQuery(query, $filterStore)
@@ -166,9 +127,18 @@
     }
     return false
   }
+
+  $: hasFilters = $filterStore !== undefined && $filterStore.length > 0
+  $: showSaveRow =
+    visible &&
+    hasFilters &&
+    !hideSaveButtons &&
+    canSaveFilteredView &&
+    (hideChips || selectedFilterChanged($selectedFilterStore, $filterStore, $activeViewlet, $viewOptionStore))
+  $: showChipRow = visible && hasFilters && !hideChips
 </script>
 
-{#if visible && $filterStore && $filterStore.length > 0}
+{#if showChipRow}
   <div class="filterbar-container">
     <div class="filters">
       {#each $filterStore as filter, i}
@@ -187,9 +157,25 @@
       <div class="add-filter">
         <Button size={'small'} icon={IconAdd} kind={'ghost'} on:click={add} />
       </div>
+      <!-- Clear-all affordance for the legacy (non-Tracker) consumers that
+           render their chips here. The Tracker path sets hideChips=true so
+           this row never renders — its clear-all lives in <InlineFilterChips>
+           instead, avoiding a duplicate button. Mirrors the pre-redesign
+           FilterButton toggle (IconClose + view.string.ClearFilters). -->
+      <div class="clear-filters">
+        <Button
+          size={'small'}
+          icon={IconClose}
+          label={view.string.ClearFilters}
+          kind={'ghost'}
+          on:click={() => {
+            setFilters([])
+          }}
+        />
+      </div>
     </div>
 
-    {#if !hideSaveButtons}
+    {#if !hideSaveButtons && canSaveFilteredView}
       <div class="flex gap-1-5">
         <Button
           icon={view.icon.Views}
@@ -212,6 +198,31 @@
       </div>
     {/if}
   </div>
+{:else if showSaveRow}
+  <!-- Tracker IssuesView path: chips render elsewhere; this row only
+       shows SaveAs / Save buttons when there is something to save. -->
+  <div class="filterbar-saveas-container">
+    <div class="flex gap-1-5">
+      <Button
+        icon={view.icon.Views}
+        label={view.string.SaveAs}
+        width={'fit-content'}
+        on:click={async () => {
+          await saveFilteredView()
+        }}
+      />
+      {#if selectedFilterChanged($selectedFilterStore, $filterStore, $activeViewlet, $viewOptionStore)}
+        <Button
+          icon={view.icon.Views}
+          label={view.string.Save}
+          width={'fit-content'}
+          on:click={async () => {
+            await saveCurrentFilteredView($selectedFilterStore)
+          }}
+        />
+      {/if}
+    </div>
+  </div>
 {/if}
 
 <style lang="scss">
@@ -220,7 +231,7 @@
     grid-template-columns: auto auto;
     justify-content: space-between;
     align-items: center;
-    padding: var(--spacing-1) var(--spacing-2) var(--spacing-1) var(--spacing-2);
+    padding: var(--spacing-1) var(--spacing-2);
     width: 100%;
     min-width: 0;
     background-color: var(--theme-comp-header-color);
@@ -238,25 +249,19 @@
     .add-filter {
       margin-bottom: 0.375rem;
     }
-
-    // .filter-button {
-    //   display: flex;
-    //   align-items: baseline;
-    //   flex-shrink: 0;
-    //   padding: 0 0.375rem;
-    //   height: 1.5rem;
-    //   min-width: 1.5rem;
-    //   white-space: nowrap;
-    //   line-height: 150%;
-    //   color: var(--accent-color);
-    //   background-color: transparent;
-    //   border-radius: 0.25rem;
-    //   transition-duration: background-color 0.15s ease-in-out;
-
-    //   &:hover {
-    //     color: var(--caption-color);
-    //     background-color: var(--noborder-bg-hover);
-    //   }
-    // }
+    .clear-filters {
+      margin-bottom: 0.375rem;
+      margin-left: 0.25rem;
+    }
+  }
+  .filterbar-saveas-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: var(--spacing-1) var(--spacing-2);
+    width: 100%;
+    min-width: 0;
+    background-color: var(--theme-comp-header-color);
+    border-bottom: 1px solid var(--theme-divider-color);
   }
 </style>

@@ -81,7 +81,14 @@
       {/each}
     {/if}
   {:else if node.type === MarkupNodeType.paragraph}
-    <p class="p-inline" class:overflow-label={true} style:margin="0" class:contrast={!colorInherit} class:colorInherit>
+    <p
+      class="p-inline"
+      class:overflow-label={true}
+      style:margin="0"
+      class:contrast={!colorInherit}
+      class:colorInherit
+      dir="auto"
+    >
       <LiteNodes {nodes} {parseEmojisFunction} {colorInherit} />
     </p>
   {:else if node.type === MarkupNodeType.blockquote}

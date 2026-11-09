@@ -53,6 +53,8 @@
         "ExportFilterEffectiveOnly": "유효한 문서만",
         "ExportFilterSkipArchivedObsolete": "보관/폐기 제외 전체",
         "ExportFilterAll": "모든 문서",
+        "ExportChildDocuments": "하위 문서 내보내기",
+        "ExportChildDocumentsDescription": "선택한 문서에 첨부된 문서도 함께 내보냅니다",
         "ExportResultRecordTitle": "{workspace} 워크스페이스 문서 내보내기 ({date})"
     }
 }

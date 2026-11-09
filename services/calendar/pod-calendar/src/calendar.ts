@@ -26,6 +26,7 @@ import { areEqualMarkups, htmlToMarkup, isEmptyMarkup, jsonToHTML, markupToJSON 
 import { deepEqual } from 'fast-equals'
 import { OAuth2Client } from 'google-auth-library'
 import { calendar_v3 } from 'googleapis'
+import { getEventLocation } from './conference'
 import { getRateLimitter, RateLimiter } from './rateLimiter'
 import { type Token } from './types'
 import {
@@ -358,7 +359,7 @@ export class CalendarClient {
       })
       event.description = description
     }
-    if (current.location !== event.location) {
+    if (current.location !== getEventLocation(event)) {
       res = true
       this.ctx.info('Update event diff: location', {
         calendarId: current.calendar,

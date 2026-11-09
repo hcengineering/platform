@@ -53,6 +53,8 @@
     "ExportFilterEffectiveOnly": "Export only effective documents",
     "ExportFilterSkipArchivedObsolete": "All documents except archived and obsolete",
     "ExportFilterAll": "All documents",
+    "ExportChildDocuments": "Export child documents",
+    "ExportChildDocumentsDescription": "Also export documents attached to the selected ones",
     "ExportResultRecordTitle": "Export of documents from {workspace} workspace ({date})"
   }
 }

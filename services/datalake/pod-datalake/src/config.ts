@@ -38,6 +38,12 @@ export interface Config {
   Secure: boolean
   Readonly: boolean
   Cache: CacheConfig
+  /**
+   * Maximum size of a single file accepted by the upload endpoint, in bytes.
+   * Independent of plan-level workspace quota — this is a hard service-level
+   * cap to protect the storage backend and temp directory.
+   */
+  MaxFileSize: number
 }
 
 const parseNumber = (str: string | undefined): number | undefined => (str !== undefined ? Number(str) : undefined)
@@ -93,7 +99,10 @@ const config: Config = (() => {
       enabled: process.env.CACHE_ENABLED !== 'false',
       blobSize: (parseNumber(process.env.CACHE_BLOB_SIZE) ?? 64) * 1024, // Default 64KB
       blobCount: parseNumber(process.env.CACHE_BLOB_COUNT) ?? 1000
-    }
+    },
+    // Configured in megabytes via MAX_FILE_SIZE_MB (default 5120 MB = 5 GiB,
+    // e.g. set to 10240 for 10 GiB).
+    MaxFileSize: (parseNumber(process.env.MAX_FILE_SIZE_MB) ?? 5120) * 1024 * 1024
   }
 
   const missingEnv = (Object.keys(params) as Array<keyof Config>).filter((key) => params[key] === undefined)

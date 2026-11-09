@@ -330,6 +330,7 @@
     min-width: 0;
     min-height: 29rem;
     max-height: 29rem;
+    -webkit-user-select: none;
     user-select: none;
 
     :global(.mobile-theme) & {

@@ -82,6 +82,8 @@
     "SectionUnlocked": "部分 {section} 已解锁",
     "LayoutAuto": "自动",
     "SingleColumn": "单列",
+    "BaseType": "基础类型",
+    "BaseTypeDescription": "仅将此类型用作父类型。只能从其子类型创建卡片。",
     "TwoColumns": "两列",
     "Grid": "网格",
     "RichtextProperties": "富文本字段",
