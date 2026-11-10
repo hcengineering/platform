@@ -270,7 +270,9 @@ function defineSpaceType (builder: Builder): void {
       availablePermissions: [
         core.permission.UpdateSpace,
         core.permission.ArchiveSpace,
-        core.permission.ForbidDeleteObject
+        core.permission.ForbidDeleteObject,
+        core.permission.ForbidCreateObject,
+        core.permission.ForbidUpdateObject
       ]
     },
     testManagement.descriptors.ProjectType

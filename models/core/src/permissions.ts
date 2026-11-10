@@ -68,6 +68,32 @@ export function definePermissions (builder: Builder): void {
     core.class.Permission,
     core.space.Model,
     {
+      label: core.string.ForbidCreateObject,
+      txClass: core.class.TxCreateDoc,
+      forbid: true,
+      scope: 'space',
+      description: core.string.ForbidCreateObjectDescription
+    },
+    core.permission.ForbidCreateObject
+  )
+
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
+      label: core.string.ForbidUpdateObject,
+      txClass: core.class.TxUpdateDoc,
+      forbid: true,
+      scope: 'space',
+      description: core.string.ForbidUpdateObjectDescription
+    },
+    core.permission.ForbidUpdateObject
+  )
+
+  builder.createDoc(
+    core.class.Permission,
+    core.space.Model,
+    {
       label: core.string.UpdateSpace,
       scope: 'space',
       description: core.string.UpdateSpaceDescription
