@@ -21,6 +21,7 @@
     "Talent": "Talent",
     "TalentCreateLabel": "Talent",
     "CreateTalent": "New Talent",
+    "TalentCreated": "Talent created",
     "CreateTalentDialogClose": "Do you want to close this dialog?",
     "CreateTalentDialogCloseNote": "All changes will be lost",
     "ResumeDraft": "Resume draft",

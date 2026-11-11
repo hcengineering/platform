@@ -21,6 +21,7 @@
     "Talent": "人才",
     "TalentCreateLabel": "人才",
     "CreateTalent": "新人才",
+    "TalentCreated": "人才已创建",
     "CreateTalentDialogClose": "您要关闭此对话框吗？",
     "CreateTalentDialogCloseNote": "所有更改将会丢失",
     "ResumeDraft": "简历草稿",

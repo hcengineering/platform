@@ -20,6 +20,7 @@
     "Talent": "Соискатель",
     "TalentCreateLabel": "Соискатель",
     "CreateTalent": "Новый Соискатель",
+    "TalentCreated": "Соискатель создан",
     "CreateTalentDialogClose": "Вы действительно хотите закрыть окно?",
     "CreateTalentDialogCloseNote": "Все внесенные изменения будут потеряны",
     "ResumeDraft": "Восстановить черновик",

@@ -21,6 +21,7 @@
     ChannelProvider,
     combineName,
     findContacts,
+    formatName,
     Person
   } from '@hcengineering/contact'
   import { ChannelsDropdown, EditableAvatar, PersonPresenter } from '@hcengineering/contact-resources'
@@ -39,7 +40,7 @@
     type Blob,
     type PersonId
   } from '@hcengineering/core'
-  import { getMetadata, getResource, setPlatformStatus, unknownError } from '@hcengineering/platform'
+  import { getMetadata, getResource, setPlatformStatus, translate, unknownError } from '@hcengineering/platform'
   import presentation, {
     Card,
     createQuery,
@@ -56,6 +57,7 @@
   import { recognizeDocument } from '@hcengineering/rekoni'
   import tags, { findTagCategory, TagElement, TagReference } from '@hcengineering/tags'
   import {
+    addNotification,
     Button,
     Component,
     createFocusManager,
@@ -69,11 +71,13 @@
     MiniToggle,
     showPopup,
     Spinner,
-    ActionIcon
+    ActionIcon,
+    themeStore
   } from '@hcengineering/ui'
   import { createEventDispatcher, onDestroy } from 'svelte'
   import recruit from '../plugin'
   import { getCandidateIdentifier } from '../utils'
+  import CandidateCreatedNotification from './CandidateCreatedNotification.svelte'
   import YesNo from './YesNo.svelte'
   import IconShuffle from './icons/Shuffle.svelte'
 
@@ -296,6 +300,12 @@
     }
 
     await applyOps.commit()
+    addNotification(
+      await translate(recruit.string.TalentCreated, {}, $themeStore.language),
+      formatName(candidate.name),
+      CandidateCreatedNotification,
+      { candidateId: _id }
+    )
     draftController.remove()
     dispatch('close', _id)
     resetObject()
