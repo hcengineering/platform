@@ -22,6 +22,7 @@
   import { EmptyMarkup, isEmptyMarkup } from '@hcengineering/text'
   import { createEventDispatcher } from 'svelte'
   import { getObjectId } from '@hcengineering/view-resources'
+  import { keepsUnsentDraft } from './draftSync'
   import { ThrottledCaller } from '@hcengineering/ui'
   import { getSpace, editingMessageStore } from '@hcengineering/activity-resources'
 
@@ -62,24 +63,41 @@
   }
 
   let inputRef: AttachmentRefInput
-  let currentMessage: MessageDraft = chatMessage ?? currentDraft ?? getDefault()
+  // Copy the stored draft: the object in draftsStore is shared with any other input showing the same draft, and
+  // onUpdate() below mutates currentMessage in place.
+  let currentMessage: MessageDraft = chatMessage ?? (currentDraft != null ? { ...currentDraft } : getDefault())
   let _id = currentMessage._id
   let inputContent = currentMessage.message
+  // What this input showed when it loaded the draft; content still equal to it was not edited here.
+  let loadedMessage: MessageDraft = { ...currentMessage }
 
-  $: if (currentDraft != null) {
-    createdMessageQuery.query(_class, { _id, space: getSpace(object) }, (result: ChatMessage[]) => {
-      if (result.length > 0 && _id !== chatMessage?._id) {
-        // Ouch we have got comment with same id created already.
-        clear()
-      }
-    })
+  // The same draft (and message _id) can be open in several inputs at once, e.g. in the channel view and in the
+  // sidebar. Watch for the message being created to clear this input when it was sent from another one.
+  $: hasContent = !isEmptyMarkup(currentMessage.message) || (currentMessage.attachments ?? 0) > 0
+  $: if (currentDraft != null || (shouldSaveDraft && hasContent)) {
+    createdMessageQuery.query(_class, { _id, space: getSpace(object) }, onMessageCreated)
   } else {
     createdMessageQuery.unsubscribe()
   }
 
+  function onMessageCreated (result: ChatMessage[]): void {
+    if (result.length === 0 || _id === chatMessage?._id) return
+    // Ouch we have got comment with same id created already.
+    if (keepsUnsentDraft(currentMessage, loadedMessage, result[0])) {
+      // Content typed here and not sent is kept as a new draft
+      _id = generateId()
+      currentMessage = { ...currentMessage, _id }
+    } else {
+      // Stale copy of the draft that was sent
+      clear()
+    }
+  }
+
   function clear (): void {
     currentMessage = getDefault()
+    loadedMessage = { ...currentMessage }
     _id = currentMessage._id
+    inputContent = currentMessage.message
     inputRef.removeDraft(false)
   }
 
