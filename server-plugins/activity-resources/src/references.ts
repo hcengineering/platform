@@ -48,7 +48,15 @@ import {
   getReceiversInfo,
   type NotificationProviderControl
 } from '@hcengineering/server-notification-resources'
-import { areEqualJson, extractReferences, jsonToMarkup, markupToJSON } from '@hcengineering/text-core'
+import {
+  areEqualJson,
+  extractReferences,
+  jsonToMarkup,
+  markupToJSON,
+  type MarkupNode,
+  MarkupNodeType,
+  traverseNode
+} from '@hcengineering/text-core'
 
 export function isDocMentioned (doc: Ref<Doc>, content: string): boolean {
   const references = []
@@ -389,7 +397,7 @@ export function getReferencesData (
         collection: 'references',
         srcDocId,
         srcDocClass,
-        message: ref.parentNode !== null ? jsonToMarkup(ref.parentNode) : '',
+        message: getReferenceMessage(node, ref.parentNode),
         attachedDocId,
         attachedDocClass
       })
@@ -397,6 +405,43 @@ export function getReferencesData (
   }
 
   return result
+}
+
+/**
+ * Messages with up to this many characters of text are kept as a whole in a backlink.
+ */
+export const fullReferenceMessageMaxLength = 500
+
+function getTextLength (node: MarkupNode): number {
+  let length = 0
+  traverseNode(node, (el) => {
+    if (el.type === MarkupNodeType.text) {
+      length += el.text?.length ?? 0
+    } else if (el.type === MarkupNodeType.reference) {
+      length += String(el.attrs?.label ?? '').length
+    }
+    return true
+  })
+  return length
+}
+
+/**
+ * Builds the backlink message for a reference.
+ * Small messages are kept as a whole, for large ones only the block containing
+ * the reference is kept and an ellipsis marks that the rest of the text is omitted.
+ */
+export function getReferenceMessage (doc: MarkupNode, parentNode: MarkupNode | null): Markup {
+  if (parentNode === null) return ''
+
+  const isOnlyBlock = doc.content?.length === 1 && doc.content[0] === parentNode
+  if (parentNode === doc || isOnlyBlock) return jsonToMarkup(parentNode)
+
+  if (getTextLength(doc) <= fullReferenceMessageMaxLength) return jsonToMarkup(doc)
+
+  return jsonToMarkup({
+    ...parentNode,
+    content: [...(parentNode.content ?? []), { type: MarkupNodeType.text, text: ' …' }]
+  })
 }
 
 async function createReferenceTxes (
