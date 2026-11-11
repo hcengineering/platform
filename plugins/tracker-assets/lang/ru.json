@@ -260,6 +260,7 @@
     "TimeSpendHours": "{value} ч",
     "TimeSpendMinutes": "{value} м",
     "ChildEstimation": "Оценка подзадач",
+    "ShowEstimationSum": "Показывать сумму оценок в группах",
     "ChildReportedTime": "Время подзадач",
     "CapacityValue": "из {value} д",
     "NewRelatedIssue": "Завести связанную задачу",
