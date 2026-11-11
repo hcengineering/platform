@@ -1105,8 +1105,25 @@
               props={{ ...currentView.componentProps, currentSpace, currentView, workbenchWidth }}
             />
           {:else if $accessDeniedStore}
-            <div class="flex-center h-full">
-              <h2><Label label={workbench.string.AccessDenied} /></h2>
+            {@const accessDenied = typeof $accessDeniedStore === 'object' ? $accessDeniedStore : undefined}
+            <div class="flex-col-center justify-center flex-gap-4 h-full">
+              <h2>
+                <Label
+                  label={accessDenied?.label ?? workbench.string.AccessDenied}
+                  params={accessDenied?.params ?? {}}
+                />
+              </h2>
+              {#if accessDenied?.link !== undefined}
+                {@const link = accessDenied.link}
+                <Button
+                  label={link.label}
+                  labelParams={link.params ?? {}}
+                  kind={'primary'}
+                  on:click={() => {
+                    navigate(link.location)
+                  }}
+                />
+              {/if}
             </div>
           {:else}
             <SpaceView {currentSpace} {currentView} {createItemDialog} {createItemLabel} />
