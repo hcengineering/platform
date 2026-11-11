@@ -397,6 +397,27 @@ function defineDocument (builder: Builder): void {
     document.action.UnlockContent
   )
 
+  createAction(
+    builder,
+    {
+      action: view.actionImpl.CopyDocumentMarkdown,
+      actionProps: {
+        contentClass: document.class.Document,
+        contentField: 'content'
+      },
+      label: view.string.CopyDocumentMarkdown,
+      icon: view.icon.Print,
+      input: 'focus',
+      category: document.category.Document,
+      target: document.class.Document,
+      context: {
+        mode: ['context', 'browser'],
+        group: 'copy'
+      }
+    },
+    document.action.CopyDocumentMarkdown
+  )
+
   // Notifications
 
   builder.mixin(document.class.Document, core.class.Class, activity.mixin.ActivityDoc, {})
