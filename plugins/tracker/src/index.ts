@@ -782,6 +782,14 @@ const pluginState = plugin(trackerId, {
     UnsetParentIssue: '' as IntlString,
     ForbidCreateProjectPermission: '' as IntlString,
     ForbidCreateProjectPermissionDescription: '' as IntlString,
+    CommentOnIssuePermission: '' as IntlString,
+    CommentOnIssuePermissionDescription: '' as IntlString,
+    EditIssuePermission: '' as IntlString,
+    EditIssuePermissionDescription: '' as IntlString,
+    TransitionIssuePermission: '' as IntlString,
+    TransitionIssuePermissionDescription: '' as IntlString,
+    DeleteIssuePermission: '' as IntlString,
+    DeleteIssuePermissionDescription: '' as IntlString,
     SchedulingMode: '' as IntlString,
     SchedulingModeAuto: '' as IntlString,
     SchedulingModeManual: '' as IntlString,
@@ -821,7 +829,11 @@ const pluginState = plugin(trackerId, {
     SubIssue: '' as Ref<TaskType>
   },
   permission: {
-    ForbidCreateProject: '' as Ref<Permission>
+    ForbidCreateProject: '' as Ref<Permission>,
+    CommentOnIssue: '' as Ref<Permission>,
+    EditIssue: '' as Ref<Permission>,
+    TransitionIssue: '' as Ref<Permission>,
+    DeleteIssue: '' as Ref<Permission>
   }
 })
 export default pluginState
