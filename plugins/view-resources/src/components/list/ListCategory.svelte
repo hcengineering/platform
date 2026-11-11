@@ -46,6 +46,7 @@
   import { FocusSelection, SelectionFocusProvider, focusStore } from '../../selection'
   import ListHeader from './ListHeader.svelte'
   import ListItem from './ListItem.svelte'
+  import { isPointInside, isUpperHalf } from './dragUtils'
 
   export let category: PrimitiveType | AggregateValue
   export let headerComponent: AttributeModel | undefined
@@ -142,6 +143,13 @@
           { ...finalResultQuery, ...docKeys },
           (res) => {
             items = res
+            if (
+              dragHiddenId !== undefined &&
+              dragSourceId === undefined &&
+              !res.some((it) => it._id === dragHiddenId)
+            ) {
+              dragHiddenId = undefined
+            }
             loading = false
             const focusDoc = items.find((it) => it._id === $focusStore.focus?._id)
             if (focusDoc) {
@@ -224,6 +232,11 @@
   const client = getClient()
 
   let dragItemIndex: number | undefined
+  // The doc dragged out of this (source) group: its row is hidden, not removed, until the drag ends.
+  let dragHiddenId: Ref<Doc> | undefined
+  let dragSourceId: Ref<Doc> | undefined
+  // The doc dragged in from another group and shown here as a preview row.
+  let dragPreviewId: Ref<Doc> | undefined
 
   function dragswap (ev: MouseEvent, i: number): boolean {
     if (dragItemIndex === undefined || !byRank) return false
@@ -243,57 +256,46 @@
 
   let div: HTMLDivElement
 
-  function isBorder (ev: MouseEvent, direction: 'top' | 'bottom'): boolean {
-    const target = ev.target as HTMLDivElement
-    return Math.abs(ev.clientY - target.getBoundingClientRect()[direction]) < 5
-  }
-
   function dragEnterCat (ev: MouseEvent): void {
     ev.preventDefault()
     if (dragItemIndex === undefined && dragItem.doc !== undefined) {
       const index = items.findIndex((p) => p._id === dragItem.doc?._id)
       if (index !== -1) {
         dragItemIndex = index
+        dragHiddenId = undefined
         return
       }
       const props = _newObjectProps(dragItem.doc)
-      if (props !== undefined) {
-        if (isBorder(ev, 'top')) {
+      // Only the leaf group shows a preview (dragenter bubbles to the parent groups too). Do not expand a collapsed
+      // group just because the pointer passes over it, it still accepts the drop.
+      if (props !== undefined && lastLevel && !collapsed) {
+        if (isUpperHalf(div.getBoundingClientRect(), ev.clientY)) {
           items.unshift(dragItem.doc)
           dragItemIndex = 0
-          items = items
-          dispatch('row-focus', dragItem)
-        } else if (isBorder(ev, 'bottom')) {
+        } else {
           items.push(dragItem.doc)
           dragItemIndex = items.length - 1
-          items = items
-          dispatch('row-focus', dragItem)
         }
+        dragPreviewId = dragItem.doc._id
+        items = items
+        dispatch('row-focus', dragItem)
       }
     }
   }
 
   function dragLeaveCat (ev: MouseEvent): void {
-    ev.stopPropagation()
+    // dragleave also fires when moving between child elements, ignore it while the pointer is still inside the group.
+    if (isPointInside(div.getBoundingClientRect(), ev.clientX, ev.clientY)) return
     if (dragItemIndex !== undefined) {
-      items.splice(dragItemIndex, 1)
-      items = items
+      const doc = items[dragItemIndex]
+      if (doc !== undefined && doc._id === dragSourceId) {
+        dragHiddenId = doc._id
+      } else {
+        items.splice(dragItemIndex, 1)
+        items = items
+        dragPreviewId = undefined
+      }
       dragItemIndex = undefined
-    }
-  }
-
-  function dragItemLeave (ev: MouseEvent, i: number): void {
-    if (dragItemIndex !== undefined) {
-      const isLastItem = i === limited.length - 1
-      const isFirstItemWithoutHeader = i === 0 && disableHeader
-      if (isFirstItemWithoutHeader && isBorder(ev, 'top')) {
-        return
-      }
-      if (isLastItem && isBorder(ev, 'bottom')) {
-        return
-      }
-      ev.stopPropagation()
-      ev.preventDefault()
     }
   }
 
@@ -314,7 +316,7 @@
     ev.stopPropagation()
     ev.preventDefault()
     const update: DocumentUpdate<Doc> = {}
-    if (dragItemIndex !== undefined && viewOptions.orderBy?.[0] === 'rank') {
+    if (dragItemIndex !== undefined && lastLevel && viewOptions.orderBy?.[0] === 'rank') {
       const prev = limited[dragItemIndex - 1] as DocWithRank
       const next = limited[dragItemIndex + 1] as DocWithRank
       try {
@@ -351,6 +353,17 @@
 
   const dragEndListener: any = (ev: DragEvent, initIndex: number) => {
     ev.preventDefault()
+    dragSourceId = undefined
+    if (ev.dataTransfer?.dropEffect === 'none') {
+      // Drag was cancelled or dropped outside of a group, show the source row again.
+      dragHiddenId = undefined
+    } else if (dragHiddenId !== undefined) {
+      // Dropped into another group: the query update removes the row, unless the drop changed nothing.
+      const hiddenId = dragHiddenId
+      setTimeout(() => {
+        if (dragSourceId === undefined && dragHiddenId === hiddenId) dragHiddenId = undefined
+      }, 1000)
+    }
     const rect = listDiv.getBoundingClientRect()
     const inRect = ev.clientY > rect.top && ev.clientY < rect.top + rect.height
     if (!inRect) {
@@ -362,6 +375,21 @@
         dragItem.revert = undefined
       }
     }
+  }
+
+  // dragend bubbles from the drag source to the window, so every group resets its drag state when any drag ends and
+  // drops its preview row on a cancelled drag (Escape keeps the pointer inside the hovered group, so no dragleave
+  // removes it). After a successful drop the preview row stays until the query refreshes the group.
+  function windowDragEnd (ev: DragEvent): void {
+    if (ev.dataTransfer?.dropEffect === 'none' && dragPreviewId !== undefined) {
+      const previewId = dragPreviewId
+      items = items.filter((it) => it._id !== previewId)
+    }
+    if (!lastLevel && items.length > 0) {
+      items = []
+    }
+    dragPreviewId = undefined
+    dragItemIndex = undefined
   }
 
   function dragStartHandler (e: CustomEvent<any>): void {
@@ -376,9 +404,12 @@
       ev.dataTransfer.dropEffect = 'move'
     }
     ev.target?.addEventListener('dragend', (e) => dragEndListener(e, i))
+    dragSourceId = docObject._id
+    dragHiddenId = undefined
     dragItem = {
       doc: docObject,
       revert: () => {
+        dragHiddenId = undefined
         const d = items.find((it) => it._id === docObject._id)
         if (d === undefined) {
           items.splice(i, 0, docObject)
@@ -439,6 +470,8 @@
   }
 </script>
 
+<svelte:window on:dragend={windowDragEnd} />
+
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
   in:fade|local={{ duration: 50 }}
@@ -449,7 +482,7 @@
   class:category-one={oneCat}
   class:category-last={lastCat}
   class:disableHeader
-  on:drop|preventDefault={drop}
+  on:drop={dropItemHandle}
   on:dragover={dragOverCat}
   on:dragenter={dragEnterCat}
   on:dragleave={dragLeaveCat}
@@ -533,6 +566,7 @@
                 selected={isSelected(docObject, $focusStore)}
                 {readonly}
                 checked={selectedObjectIdsSet.has(docObject._id)}
+                dragHidden={docObject._id === dragHiddenId}
                 last={i === limited.length - 1 && HLimited >= itemProj.length}
                 lastCat={i === limited.length - 1 && (oneCat || lastCat) && HLimited >= itemProj.length}
                 on:dragstart={(e) => {
@@ -543,9 +577,6 @@
                     e.stopPropagation()
                     e.preventDefault()
                   }
-                }}
-                on:dragleave={(e) => {
-                  dragItemLeave(e, i)
                 }}
                 on:dragover={(e) => {
                   dragover(e, i)
