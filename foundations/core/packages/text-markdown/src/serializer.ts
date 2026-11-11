@@ -435,6 +435,14 @@ export const storeMarks: Record<string, MarkProcessor> = {
     mixable: true,
     expelEnclosingWhitespace: false,
     escape: true
+  },
+  'inline-comment': {
+    // Inline comments have no markdown representation, keep only the text
+    open: '',
+    close: '',
+    mixable: true,
+    expelEnclosingWhitespace: false,
+    escape: true
   }
 }
 
@@ -553,10 +561,13 @@ export class MarkdownState implements IState {
   // :: (Node)
   // Render the given node as a block.
   render (node: MarkupNode, parent: MarkupNode, index: number): void {
-    if (this.nodes[node.type] === undefined) {
-      throw new Error('Token type `' + node.type + '` not supported by Markdown renderer')
+    const processor = this.nodes[node.type]
+    if (processor === undefined) {
+      // Unknown node type, render its content (if any) instead of failing the whole document
+      this.renderContent(node)
+      return
     }
-    this.nodes[node.type](this, node, parent, index)
+    processor(this, node, parent, index)
   }
 
   // :: (Node)
@@ -626,7 +637,8 @@ export class MarkdownState implements IState {
   }
 
   renderNodeInline (state: InlineState, index: number): void {
-    state.marks = state.node?.marks ?? []
+    // Unknown marks have no markdown representation, ignore them and keep the text
+    state.marks = (state.node?.marks ?? []).filter((mark) => this.marks[mark.type] !== undefined)
     this.updateHardBreakMarks(state, index)
 
     const leading = this.adjustLeading(state)
@@ -872,7 +884,7 @@ export class MarkdownState implements IState {
     if (value === undefined) {
       const info = this.marks[mark.type]
       if (info == null) {
-        throw new Error(`No info for mark ${mark.type}`)
+        return ''
       }
       value = open ? info.open : info.close
     }

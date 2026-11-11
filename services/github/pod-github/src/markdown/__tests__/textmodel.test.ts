@@ -844,7 +844,7 @@ A list of closed updated issues`
 
     expect(msg).toEqual('* test1 \\\n  *Italic*\n* test2 **BOLD**')
   })
-  it('check serialize throw unsupported', () => {
+  it('check serialize skips unsupported', () => {
     const node: MarkupNode = {
       content: [
         {
@@ -869,9 +869,7 @@ A list of closed updated issues`
       ],
       type: MarkupNodeType.doc
     }
-    expect(() => serializeMessage(node, 'ref://', 'http://')).toThrowError(
-      'Token type `textqwe` not supported by Markdown renderer'
-    )
+    expect(serializeMessage(node, 'ref://', 'http://')).toEqual('* test1 ')
   })
 
   it('check markdown state', () => {
