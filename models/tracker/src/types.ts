@@ -364,6 +364,9 @@ export class TTimeSpendReport extends TAttachedDoc implements TimeSpendReport {
   @Prop(TypeRef(tracker.class.Issue), tracker.string.Issue)
   declare attachedTo: Ref<Issue>
 
+  @Prop(TypeRef(tracker.class.Project), tracker.string.Project)
+  declare space: Ref<Project>
+
   @Prop(TypeRef(contact.mixin.Employee), contact.string.Employee)
     employee!: Ref<Employee>
 
