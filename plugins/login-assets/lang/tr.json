@@ -3,7 +3,9 @@
     "RequiredField": "Gerekli alan {field}",
     "FieldsDoNotMatch": "{field}, {field2} ile eşleşmiyor",
     "ConnectingToServer": "Sunucuya bağlanılıyor....",
-    "IncorrectValue": "Yanlış değer {field}"
+    "IncorrectValue": "Yanlış değer {field}",
+    "OidcGroupNotAllowed": "Hesabınızın oturum açma yetkisi yok.",
+    "OidcRoleSyncFailed": "Çalışma alanı erişiminiz eşitlenemedi. Lütfen yeniden oturum açmayı deneyin."
   },
   "string": {
     "ChangePassword": "Parolayı değiştir",
