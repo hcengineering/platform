@@ -10,8 +10,10 @@
     "format": "format src",
     "svelte-check": "do-svelte-check",
     "build:watch": "compile ui",
+    "test": "jest --passWithNoTests --silent",
     "_phase:build": "compile ui",
     "_phase:format": "format src",
+    "_phase:test": "jest --passWithNoTests --silent",
     "_phase:validate": "compile validate"
   },
   "devDependencies": {
