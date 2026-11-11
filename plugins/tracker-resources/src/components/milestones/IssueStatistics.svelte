@@ -24,6 +24,10 @@
   export let capacity: number | undefined = undefined
   export let category: string | undefined = undefined
 
+  // Days are shown in the project's working-day length only when all issues share one project.
+  $: firstSpace = docs?.[0]?.space
+  $: space = docs?.every((it) => it.space === firstSpace) === true ? firstSpace : undefined
+
   $: ids = new Set(docs?.map((it) => it._id) ?? [])
 
   $: noParents = docs?.filter((it) => !ids.has(it.attachedTo))
@@ -88,10 +92,10 @@
       <EstimationProgressCircle value={totalReported} max={totalEstimation} />
       <div class="w-2 min-w-2" />
       {#if totalReported > 0}
-        <TimePresenter value={totalReported} />
+        <TimePresenter value={totalReported} {space} />
         /
       {/if}
-      <TimePresenter value={totalEstimation} />
+      <TimePresenter value={totalEstimation} {space} />
       {#if capacity}
         <Label label={tracker.string.CapacityValue} params={{ value: capacity }} />
       {/if}

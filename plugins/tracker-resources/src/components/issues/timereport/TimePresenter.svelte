@@ -13,25 +13,27 @@
 // limitations under the License.
 -->
 <script lang="ts">
+  import { type Ref, type Space } from '@hcengineering/core'
   import { getEmbeddedLabel, translate } from '@hcengineering/platform'
+  import { type Project } from '@hcengineering/tracker'
   import { themeStore, tooltip } from '@hcengineering/ui'
   import tracker from '../../../plugin'
+  import { activeProjects } from '../../../utils'
+  import { getHoursPerDay, splitTime } from './working-hours'
 
   export let id: string | undefined = undefined
   export let kind: 'link' | undefined = undefined
   export let value: number
   export let accent: boolean = false
-
-  // TODO: Make configurable?
-  const hoursInWorkingDay = 8
+  // Project of the presented value; its `hoursPerDay` defines the length of a day.
+  export let space: Ref<Space> | undefined = undefined
 
   let label = ''
 
-  $: days = Math.floor(value / hoursInWorkingDay)
-  $: hours = Math.floor(value % hoursInWorkingDay)
-  $: minutes = Math.round((value % 1) * 60)
+  $: hoursPerDay = getHoursPerDay(space !== undefined ? $activeProjects.get(space as Ref<Project>) : undefined)
+  $: parts = splitTime(value, hoursPerDay)
 
-  $: void getLabel(days, hours, minutes, $themeStore.language)
+  $: void getLabel(parts.days, parts.hours, parts.minutes, $themeStore.language)
 
   async function getLabel (days: number, hours: number, minutes: number, language: string): Promise<void> {
     try {

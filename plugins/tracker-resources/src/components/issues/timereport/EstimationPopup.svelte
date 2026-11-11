@@ -108,7 +108,7 @@
       </div>
       <Label label={tracker.string.RemainingTime} />
       <div class="ml-2 mr-4">
-        <TimePresenter value={object.remainingTime} />
+        <TimePresenter value={object.remainingTime} space={object.space} />
       </div>
     </div>
   </svelte:fragment>
