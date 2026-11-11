@@ -40,7 +40,7 @@ import core, {
 } from '@hcengineering/core'
 import notification, { type MentionInboxNotification, type NotificationType } from '@hcengineering/notification'
 import { getPerson } from '@hcengineering/server-contact'
-import { type StorageAdapter, type TriggerControl } from '@hcengineering/server-core'
+import { canAuthorGrantMentionAccess, type StorageAdapter, type TriggerControl } from '@hcengineering/server-core'
 import {
   getAllowedProviders,
   getCommonNotificationTxes,
@@ -115,9 +115,12 @@ export async function getPersonNotificationTxes (
     if (employee?.personUuid != null && employee.personUuid !== senderAccount) {
       collaborators = [employee.personUuid]
 
-      const collaboratorsTx = getCollaboratorsTxes(control, employee.personUuid, doc)
-
-      res.push(...collaboratorsTx)
+      if (
+        !isProtectedMentionTarget(doc, control) ||
+        await canAuthorGrantMentionAccess(ctx, senderId, doc, control)
+      ) {
+        res.push(...getCollaboratorsTxes(control, employee.personUuid, doc))
+      }
     }
   }
 
@@ -250,6 +253,20 @@ function getCollaboratorsTxes (control: TriggerControl, receiver: AccountUuid, o
   }
 
   return res
+}
+
+function isProtectedMentionTarget (doc: Doc, control: TriggerControl): boolean {
+  const classCollaborators = getClassCollaborators(control.modelDb, control.hierarchy, doc._class)
+  if (classCollaborators?.provideSecurity === true) return true
+
+  // Conservative extra case. Note that provideAttachedSecurity on the classes
+  // of documents attached to this one (e.g. comments) is not checked here:
+  // guest-tier accounts can read those via a Collaborator on this document,
+  // which upstream also creates unconditionally (see PR description).
+  return (
+    (doc as { attachedTo?: Ref<Doc> }).attachedTo !== undefined &&
+    classCollaborators?.provideAttachedSecurity === true
+  )
 }
 
 function isMarkupType (type: Ref<Class<Type<any>>>): boolean {
