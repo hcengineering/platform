@@ -42,6 +42,8 @@ import { derived, get, writable } from 'svelte/store'
 
 import setting from '@hcengineering/setting'
 import workbench from './plugin'
+import { resolveTabLocation } from './tabLocation'
+import { openWorkbenchTab } from './tabNavigation'
 import { locationWorkspaceStore } from './utils'
 
 export const tabIdStore = writable<Ref<WorkbenchTab> | undefined>()
@@ -177,16 +179,13 @@ export function getTabLocation (tab: Pick<WorkbenchTab, 'location'>): Location {
 }
 
 export async function OpenInNewTab (loc: Location): Promise<void> {
-  const client = getClient()
-  const data = await getTabDataByLocation(loc)
-  const name = data.name ?? (await translate(data.label, {}, get(languageStore)))
-  const url = locationToUrl(loc)
-  await client.createDoc(workbench.class.WorkbenchTab, core.space.Workspace, {
-    attachedTo: getCurrentAccount().uuid,
-    location: url,
-    isPinned: false,
-    name
-  })
+  // NavLink only calls this after the capability accepted the target. Other callers,
+  // such as the context-menu action, keep their browser-tab fallback when it does not.
+  if (getMetadata(presentation.metadata.CanOpenInNewTab)?.(loc) !== true) {
+    window.open(locationToUrl(loc), '_blank')
+    return
+  }
+  await openWorkbenchTab(loc, getTabDataByLocation)
 }
 
 export async function closeTab (tab: WorkbenchTab): Promise<void> {
@@ -259,14 +258,16 @@ export async function unpinTab (tab: WorkbenchTab): Promise<void> {
   await client.update(tab, { isPinned: false })
 }
 
-export async function getTabDataByLocation (loc: Location): Promise<{
-  name?: string
-  label: IntlString
-  icon?: Asset
-  iconComponent?: AnyComponent
-  iconProps?: Record<string, any>
-}> {
-  const client = getClient()
+export async function getTabDataByLocation (
+  loc: Location,
+  client = getClient()
+): Promise<{
+    name?: string
+    label: IntlString
+    icon?: Asset
+    iconComponent?: AnyComponent
+    iconProps?: Record<string, any>
+  }> {
   const appAlias = loc.path[2]
   const application = client.getModel().findAllSync<Application>(workbench.class.Application, { alias: appAlias })[0]
 
@@ -287,8 +288,8 @@ export async function getTabDataByLocation (loc: Location): Promise<{
   } else {
     const special = loc.path[3]
     const specialLabel = application?.navigatorModel?.specials?.find((s) => s.id === special)?.label
-    const resolvedLoc = await getResolvedLocation(loc, application)
-    name = await getDefaultTabName(resolvedLoc)
+    const resolvedLoc = await resolveTabLocation(loc, application)
+    name = await getDefaultTabName(resolvedLoc, client)
     label = specialLabel ?? application?.label ?? workbench.string.Tab
     icon = application?.icon
   }
@@ -296,16 +297,8 @@ export async function getTabDataByLocation (loc: Location): Promise<{
   return { name, label, icon, iconComponent, iconProps }
 }
 
-async function getResolvedLocation (loc: Location, app?: Application): Promise<Location> {
-  if (app?.locationResolver === undefined) return loc
-
-  const resolver = await getResource(app.locationResolver)
-  return (await resolver(loc))?.loc ?? loc
-}
-
-async function getDefaultTabName (loc: Location): Promise<string | undefined> {
+async function getDefaultTabName (loc: Location, client: ReturnType<typeof getClient>): Promise<string | undefined> {
   if (loc.fragment == null) return
-  const client = getClient()
   const hierarchy = client.getHierarchy()
   const [, id, _class] = decodeURIComponent(loc.fragment).split('|')
   if (_class == null) return

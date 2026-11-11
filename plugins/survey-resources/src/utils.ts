@@ -18,6 +18,7 @@ import survey, { surveyId, type Poll, type PollData, type Survey } from '@hcengi
 import { getClient, MessageBox } from '@hcengineering/presentation'
 import {
   type Location,
+  type LocationResolutionOptions,
   type ResolvedLocation,
   getCurrentResolvedLocation,
   getPanelURI,
@@ -40,11 +41,15 @@ export function makePollData (source: Survey): PollData {
   }
 }
 
-export async function generateSurveyLocation (loc: Location, id: Ref<Survey>): Promise<ResolvedLocation | undefined> {
+export async function generateSurveyLocation (
+  loc: Location,
+  id: Ref<Survey>,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const client = getClient()
   const doc = await client.findOne(survey.class.Survey, { _id: id }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find survey ${id}.`)
     return undefined
   }
@@ -67,11 +72,15 @@ export async function generateSurveyLocation (loc: Location, id: Ref<Survey>): P
   }
 }
 
-export async function generatePollLocation (loc: Location, id: Ref<Poll>): Promise<ResolvedLocation | undefined> {
+export async function generatePollLocation (
+  loc: Location,
+  id: Ref<Poll>,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const client = getClient()
   const doc = await client.findOne(survey.class.Poll, { _id: id }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find poll ${id}.`)
     return undefined
   }
@@ -95,7 +104,10 @@ export async function generatePollLocation (loc: Location, id: Ref<Poll>): Promi
   }
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+export async function resolveLocation (
+  loc: Location,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== surveyId) {
     return undefined
   }
@@ -109,10 +121,10 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   }
 
   if (loc.path[3] === 'poll') {
-    return await generatePollLocation(loc, loc.path[4] as Ref<Poll>)
+    return await generatePollLocation(loc, loc.path[4] as Ref<Poll>, options)
   }
 
-  return await generateSurveyLocation(loc, loc.path[3] as Ref<Survey>)
+  return await generateSurveyLocation(loc, loc.path[3] as Ref<Survey>, options)
 }
 
 export async function getSurveyLink (doc: Doc): Promise<Location> {

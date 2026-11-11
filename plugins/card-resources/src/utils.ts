@@ -61,6 +61,7 @@ import {
   type IconProps,
   type Location,
   navigate,
+  type LocationResolutionOptions,
   type ResolvedLocation,
   showPopup
 } from '@hcengineering/ui'
@@ -392,7 +393,10 @@ export async function duplicateCard (origin: Card, config?: CopySettings): Promi
   navigate(loc)
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+export async function resolveLocation (
+  loc: Location,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== cardId) {
     return undefined
   }
@@ -400,7 +404,7 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   const id = loc.path[3]
   const specialItems = ['browser', 'type', 'all']
   if (loc.path[4] === undefined && id !== undefined && !specialItems.includes(id)) {
-    return await generateLocation(loc, id)
+    return await generateLocation(loc, id, options)
   }
 }
 
@@ -410,11 +414,15 @@ export async function editSpace (value: CardSpace | undefined): Promise<void> {
   }
 }
 
-async function generateLocation (loc: Location, id: string): Promise<ResolvedLocation | undefined> {
+async function generateLocation (
+  loc: Location,
+  id: string,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const client = getClient()
   const doc = await client.findOne(card.class.Card, { _id: id as Ref<Card> })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     return undefined
   }
   const appComponent = loc.path[0] ?? ''

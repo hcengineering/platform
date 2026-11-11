@@ -25,7 +25,13 @@ import { type Document, type Teamspace, documentId, getFirstRank } from '@hcengi
 import { getMetadata, translate } from '@hcengineering/platform'
 import presentation, { getClient } from '@hcengineering/presentation'
 import { makeRank } from '@hcengineering/rank'
-import { type Location, type ResolvedLocation, getCurrentResolvedLocation, getPanelURI } from '@hcengineering/ui'
+import {
+  type Location,
+  type LocationResolutionOptions,
+  type ResolvedLocation,
+  getCurrentResolvedLocation,
+  getPanelURI
+} from '@hcengineering/ui'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 import { workbenchId } from '@hcengineering/workbench'
 import slugify from 'slugify'
@@ -92,7 +98,10 @@ export async function createEmptyDocument (
   await client.createDoc(document.class.Document, space, object, id)
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+export async function resolveLocation (
+  loc: Location,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== documentId) {
     return undefined
   }
@@ -101,18 +110,22 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   const id = parseDocumentId(shortLink)
 
   if (id !== undefined) {
-    return await generateLocation(loc, id)
+    return await generateLocation(loc, id, options)
   }
 
   return undefined
 }
 
-export async function generateLocation (loc: Location, id: Ref<Document>): Promise<ResolvedLocation | undefined> {
+export async function generateLocation (
+  loc: Location,
+  id: Ref<Document>,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
   const doc = await client.findOne(document.class.Document, { _id: id }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find document ${id}.`)
     return undefined
   }

@@ -15,7 +15,13 @@
 
 import cardPlugin, { type Card, type MasterTag } from '@hcengineering/card'
 import type { Class, Doc, Ref } from '@hcengineering/core'
-import { navigate, getCurrentResolvedLocation, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import {
+  navigate,
+  getCurrentResolvedLocation,
+  type Location,
+  type LocationResolutionOptions,
+  type ResolvedLocation
+} from '@hcengineering/ui'
 import { chatId } from '@hcengineering/chat'
 import { getClient } from '@hcengineering/presentation'
 import { type LocationData } from '@hcengineering/workbench'
@@ -92,7 +98,10 @@ export function navigateToAll (): void {
   navigate(loc)
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+export async function resolveLocation (
+  loc: Location,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== chatId) {
     return undefined
   }
@@ -100,19 +109,20 @@ export async function resolveLocation (loc: Location): Promise<ResolvedLocation 
   const [_id, _class] = decodeObjectURI(loc.path[3])
 
   if (_id != null && _class != null && _id !== '' && _class !== '') {
-    return await generateLocation(loc, _id, _class)
+    return await generateLocation(loc, _id, _class, options)
   }
 }
 
 async function generateLocation (
   loc: Location,
   _id: Ref<Doc>,
-  _class: Ref<Class<Doc>>
+  _class: Ref<Class<Doc>>,
+  options?: LocationResolutionOptions
 ): Promise<ResolvedLocation | undefined> {
   const client = getClient()
   const doc = await client.findOne(_class, { _id })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     return undefined
   }
   const appComponent = loc.path[0] ?? ''

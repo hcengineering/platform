@@ -16,7 +16,13 @@
 import type { Doc, Ref } from '@hcengineering/core'
 import drive, { type File, type Drive, type Folder, driveId } from '@hcengineering/drive'
 import { getClient } from '@hcengineering/presentation'
-import { getCurrentResolvedLocation, getPanelURI, type Location, type ResolvedLocation } from '@hcengineering/ui'
+import {
+  getCurrentResolvedLocation,
+  getPanelURI,
+  type Location,
+  type LocationResolutionOptions,
+  type ResolvedLocation
+} from '@hcengineering/ui'
 import view, { type ObjectPanel } from '@hcengineering/view'
 import { accessDeniedStore } from '@hcengineering/view-resources'
 
@@ -67,35 +73,42 @@ export function getFileLink (_id: Ref<File>): Location {
   return loc
 }
 
-export async function resolveLocation (loc: Location): Promise<ResolvedLocation | undefined> {
+export async function resolveLocation (
+  loc: Location,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   if (loc.path[2] !== driveId) {
     return undefined
   }
 
   if (loc.path[3] === 'file' && loc.path[4] !== undefined) {
     const fileId = loc.path[4] as Ref<File>
-    return await generateFileLocation(loc, fileId)
+    return await generateFileLocation(loc, fileId, options)
   }
 
   if (loc.path[3] === 'folder' && loc.path[4] !== undefined) {
     const folderId = loc.path[4] as Ref<Folder>
-    return await generateFolderLocation(loc, folderId)
+    return await generateFolderLocation(loc, folderId, options)
   }
 
   if (loc.path[3] !== undefined) {
     const driveId = loc.path[3] as Ref<Drive>
-    return await generateDriveLocation(loc, driveId)
+    return await generateDriveLocation(loc, driveId, options)
   }
 
   return undefined
 }
 
-export async function generateFolderLocation (loc: Location, id: Ref<Folder>): Promise<ResolvedLocation | undefined> {
+export async function generateFolderLocation (
+  loc: Location,
+  id: Ref<Folder>,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
   const doc = await client.findOne(drive.class.Folder, { _id: id }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find folder ${id}.`)
     return undefined
   }
@@ -115,12 +128,16 @@ export async function generateFolderLocation (loc: Location, id: Ref<Folder>): P
   }
 }
 
-export async function generateFileLocation (loc: Location, id: Ref<File>): Promise<ResolvedLocation | undefined> {
+export async function generateFileLocation (
+  loc: Location,
+  id: Ref<File>,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
   const doc = await client.findOne(drive.class.File, { _id: id }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find file ${id}.`)
     return undefined
   }
@@ -143,12 +160,16 @@ export async function generateFileLocation (loc: Location, id: Ref<File>): Promi
   }
 }
 
-export async function generateDriveLocation (loc: Location, id: Ref<Drive>): Promise<ResolvedLocation | undefined> {
+export async function generateDriveLocation (
+  loc: Location,
+  id: Ref<Drive>,
+  options?: LocationResolutionOptions
+): Promise<ResolvedLocation | undefined> {
   const client = getClient()
 
   const doc = await client.findOne(drive.class.Drive, { _id: id }, { showArchived: true })
   if (doc === undefined) {
-    accessDeniedStore.set(true)
+    if (options?.background !== true) accessDeniedStore.set(true)
     console.error(`Could not find drive ${id}.`)
     return undefined
   }

@@ -104,6 +104,7 @@
   import communication from '@hcengineering/communication'
   import { getContext, onDestroy, onMount, tick } from 'svelte'
   import { subscribeMobile } from '../mobile'
+  import { registerWorkbenchTabNavigation } from '../tabNavigation'
   import workbench from '../plugin'
   import { buildNavModel, isAllowedToRole, logOut, workspacesStore } from '../utils'
   import AccountPopup from './AccountPopup.svelte'
@@ -268,6 +269,8 @@
     syncSidebarState()
     syncWorkbenchTab()
   })
+
+  onMount(registerWorkbenchTabNavigation)
 
   const workspaceId = $location.path[1]
 
