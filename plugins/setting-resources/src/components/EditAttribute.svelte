@@ -43,6 +43,7 @@
   import view from '@hcengineering/view-resources/src/plugin'
   import setting from '../plugin'
   import { clearSettingsStore } from '../store'
+  import { defaultValueUpdate, nextDefaultValue } from '../attributeDefaultValue'
 
   export let attribute: AnyAttribute
   export let exist: boolean
@@ -77,9 +78,7 @@
     if (newLabel !== attribute.label) {
       update.label = newLabel
     }
-    if (defaultValue !== attribute.defaultValue) {
-      update.defaultValue = defaultValue
-    }
+    Object.assign(update, defaultValueUpdate(defaultValue, attribute.defaultValue))
     if (icon !== attribute.icon) {
       update.icon = icon
     }
@@ -144,7 +143,7 @@
       extra = e.detail?.extra ?? {}
     } else {
       index = e.detail?.index ?? index
-      defaultValue = e.detail?.defaultValue ?? defaultValue
+      defaultValue = nextDefaultValue(e.detail, defaultValue)
       extra = e.detail?.extra ?? extra
     }
   }

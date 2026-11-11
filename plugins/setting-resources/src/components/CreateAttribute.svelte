@@ -44,6 +44,7 @@
   import { IconPicker } from '@hcengineering/view-resources'
   import setting from '../plugin'
   import { clearSettingsStore } from '../store'
+  import { nextDefaultValue } from '../attributeDefaultValue'
   import { debug } from 'console'
 
   export let _class: Ref<Class<Doc>>
@@ -125,7 +126,7 @@
       extra = e.detail?.extra ?? {}
     } else {
       index = e.detail?.index ?? index
-      defaultValue = e.detail?.defaultValue ?? defaultValue
+      defaultValue = nextDefaultValue(e.detail, defaultValue)
       extra = e.detail?.extra ?? extra
     }
   }
