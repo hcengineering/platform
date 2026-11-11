@@ -375,6 +375,24 @@ export function createActions (builder: Builder, issuesId: string, componentsId:
     override: [view.action.Open]
   })
 
+  createAction(
+    builder,
+    {
+      action: tracker.actionImpl.CopyIssueTemplateToProject,
+      label: tracker.string.CopyToProject,
+      icon: view.icon.Copy,
+      input: 'any',
+      category: tracker.category.Tracker,
+      target: tracker.class.IssueTemplate,
+      context: {
+        mode: ['context', 'browser'],
+        application: tracker.app.Tracker,
+        group: 'associate'
+      }
+    },
+    tracker.action.CopyIssueTemplateToProject
+  )
+
   createAction(builder, {
     action: view.actionImpl.ShowPopup,
     actionProps: {
