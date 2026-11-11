@@ -13,6 +13,8 @@
 // limitations under the License.
 //
 
+import { getReconnectDelay } from './reconnect'
+
 const WS_CLOSE_NORMAL = 1000
 
 export type UnsubscribeCallback = () => Promise<boolean>
@@ -99,7 +101,7 @@ export class HulypulseClient implements Disposable {
   private ws: WebSocket | null = null
   private closed_manually = false
   private reconnectTimeout: any | undefined
-  private readonly RECONNECT_INTERVAL_MS = 1000
+  private reconnectAttempt = 0
 
   private readonly subscribes = new Map<string, Callback<any>[]>()
 
@@ -141,30 +143,41 @@ export class HulypulseClient implements Disposable {
       this.ws = ws
 
       ws.onopen = () => {
+        if (this.ws !== ws) {
+          return
+        }
+        this.reconnectAttempt = 0
         this.resubscribe()
         this.startPing()
         resolve(undefined)
       }
 
       ws.onerror = (event) => {
+        if (this.ws !== ws) {
+          return
+        }
         this.reconnect()
       }
 
       ws.onclose = (event) => {
+        if (this.ws !== ws) {
+          return
+        }
         this.reconnect()
       }
 
       ws.onmessage = (event) => {
+        if (this.ws !== ws) {
+          return
+        }
+        // Any message from the server proves the connection is alive
+        this.resetPingTimeout()
         try {
           if (event.data === 'ping') {
             this.ws?.send('pong')
             return
           }
           if (event.data === 'pong') {
-            if (this.pingTimeout !== undefined) {
-              clearTimeout(this.pingTimeout)
-              this.pingTimeout = undefined
-            }
             return
           }
 
@@ -227,17 +240,24 @@ export class HulypulseClient implements Disposable {
       if (this.ws?.readyState === WebSocket.OPEN) {
         this.ws.send('ping')
       }
-      if (this.pingTimeout !== undefined) {
-        clearTimeout(this.pingTimeout)
-      }
-      this.pingTimeout = setTimeout(() => {
-        if (this.ws?.readyState !== WebSocket.OPEN) {
-          console.warn('WS-server not responding to ping, closing connection')
-          clearInterval(this.pingInterval)
-          this.ws?.close(WS_CLOSE_NORMAL)
-        }
-      }, this.PING_TIMEOUT_MS)
     }, this.PING_INTERVAL_MS)
+    this.resetPingTimeout()
+  }
+
+  /** (Re)starts the dead-connection timer; called on connect and on every message received from the server. */
+  private resetPingTimeout (): void {
+    if (this.pingTimeout !== undefined) {
+      clearTimeout(this.pingTimeout)
+    }
+    this.pingTimeout = setTimeout(() => {
+      this.pingTimeout = undefined
+      console.warn('WS-server not responding to ping, closing connection')
+      const ws = this.ws
+      // Detach the stale socket, so its late close/error events do not trigger a second reconnect
+      this.ws = null
+      ws?.close(WS_CLOSE_NORMAL)
+      this.reconnect()
+    }, this.PING_TIMEOUT_MS)
   }
 
   private stopPing (): void {
@@ -263,9 +283,12 @@ export class HulypulseClient implements Disposable {
     this.stopPing()
 
     if (!this.closed_manually) {
+      const delay = getReconnectDelay(this.reconnectAttempt)
       this.reconnectTimeout = setTimeout(() => {
+        this.reconnectTimeout = undefined
+        this.reconnectAttempt++
         void this.connect()
-      }, this.RECONNECT_INTERVAL_MS)
+      }, delay)
     }
   }
 
@@ -468,7 +491,6 @@ export class HulypulseClient implements Disposable {
       }, this.SEND_TIMEOUT_MS)
       this.pending.set(id, { resolve, reject, send_timeout: sendTimeout })
       this.ws.send(JSON.stringify(message))
-      this.startPing() // reset ping timer on any send
     })
   }
 }
