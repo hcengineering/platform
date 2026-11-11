@@ -19,10 +19,65 @@ jest.mock('../../config', () => ({
   }
 }))
 
-import { PullRequestSyncManager } from '../pullrequests'
+import {
+  buildPullRequestTicketBacklinkBody,
+  extractTrackerIdentifiersFromPullRequest,
+  getPullRequestTicketLinkMarker,
+  isPullRequestTicketTargetIssue,
+  PullRequestSyncManager
+} from '../pullrequests'
 /* eslint-enable import/first */
 
 describe('PullRequestSyncManager', () => {
+  describe('extractTrackerIdentifiersFromPullRequest', () => {
+    it('extracts unique tracker identifiers from title and body in encounter order', () => {
+      const result = extractTrackerIdentifiersFromPullRequest(
+        'fix: ABC-123 settle refunds',
+        'Refs abc-123, DEF-4, and XYZ-389.'
+      )
+
+      expect(result).toEqual(['ABC-123', 'DEF-4', 'XYZ-389'])
+    })
+
+    it('ignores text without tracker-like identifiers', () => {
+      expect(extractTrackerIdentifiersFromPullRequest('release v0.7.423', 'No linked ticket')).toEqual([])
+    })
+  })
+
+  describe('buildPullRequestTicketBacklinkBody', () => {
+    it('includes a stable marker and the Huly issue link', () => {
+      const repository = {
+        _id: 'repo-id',
+        nodeId: 'repo-node',
+        name: 'svc'
+      } as any
+      const marker = getPullRequestTicketLinkMarker(repository, 42, 'ABC-123')
+      const body = buildPullRequestTicketBacklinkBody(
+        'ABC-123',
+        'https://example.com/workbench/workspace/tracker/ABC-123',
+        marker
+      )
+
+      expect(body).toContain('<!-- huly-pr-ticket-link:repo-node:42:ABC-123 -->')
+      expect(body).toContain('https://example.com/workbench/workspace/tracker/ABC-123')
+      expect(body).toContain('Huly&reg;: ABC-123')
+    })
+  })
+
+  describe('isPullRequestTicketTargetIssue', () => {
+    it('does not treat a missing issue as a ticket target', () => {
+      expect(isPullRequestTicketTargetIssue()).toBe(false)
+    })
+
+    it('treats ordinary tracker issues as ticket targets', () => {
+      expect(isPullRequestTicketTargetIssue({ _class: 'tracker:class:Issue' } as any)).toBe(true)
+    })
+
+    it('does not treat GitHub pull request mirrors as ticket targets', () => {
+      expect(isPullRequestTicketTargetIssue({ _class: 'github:class:GithubPullRequest' } as any)).toBe(false)
+    })
+  })
+
   describe('getReviewers', () => {
     let manager: PullRequestSyncManager
     let mockProvider: any
