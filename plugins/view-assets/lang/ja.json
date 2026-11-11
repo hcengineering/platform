@@ -76,6 +76,8 @@
     "Grouping": "グループ化",
     "Ordering": "順序",
     "Manual": "手動",
+    "Ascending": "昇順",
+    "Descending": "降順",
     "FilteredViews": "フィルターされたビュー",
     "NewFilteredView": "新しいフィルターされたビュー",
     "FilteredViewName": "フィルターされたビュー名",

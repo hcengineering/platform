@@ -76,6 +76,8 @@
     "Grouping": "Agrupamento",
     "Ordering": "Ordenação",
     "Manual": "Manual",
+    "Ascending": "Crescente",
+    "Descending": "Decrescente",
     "FilteredViews": "Vistas filtradas",
     "NewFilteredView": "Nova vista filtrada",
     "FilteredViewName": "Nome da vista filtrada",

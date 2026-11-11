@@ -79,6 +79,8 @@
     "Grouping": "分组",
     "Ordering": "排序",
     "Manual": "手动",
+    "Ascending": "升序",
+    "Descending": "降序",
 
     "FilteredViews": "筛选视图",
     "NewFilteredView": "新筛选视图",
