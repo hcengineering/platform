@@ -22,7 +22,9 @@
     getPlatformColorDef,
     themeStore,
     Label,
-    Component
+    Component,
+    ButtonBase,
+    IconUndo
   } from '@hcengineering/ui'
   import emojiPlugin from '@hcengineering/emoji'
   import { createEventDispatcher } from 'svelte'
@@ -36,6 +38,7 @@
   export let color: number | number[] = 0
   export let showColor: boolean = true
   export let showEmoji: boolean = true
+  export let showReset: boolean = false
 
   const dispatch = createEventDispatcher()
 
@@ -104,6 +107,20 @@
       }}
     />
   {/if}
+  {#if showReset}
+    <div class="reset">
+      <ButtonBase
+        type={'type-button'}
+        kind={'tertiary'}
+        size={'small'}
+        icon={IconUndo}
+        label={view.string.ResetToDefault}
+        on:click={() => {
+          dispatch('close', { icon: undefined, color: undefined })
+        }}
+      />
+    </div>
+  {/if}
 </div>
 
 <style lang="scss">
@@ -128,6 +145,13 @@
       min-height: 0;
       max-height: calc(100% - 4rem);
     }
+  }
+  .reset {
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid var(--theme-divider-color);
   }
   .subheader {
     margin: 0.75rem 1rem 0;

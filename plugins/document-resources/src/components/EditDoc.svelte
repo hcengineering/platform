@@ -175,10 +175,14 @@
       const icons = [document.icon.Document, document.icon.Teamspace]
       const update = async (result: any): Promise<void> => {
         if (result !== undefined && result !== null && doc !== undefined) {
-          await client.update(doc, { icon: result.icon, color: result.color })
+          if (result.icon === undefined) {
+            await client.update(doc, { $unset: { icon: true, color: true } })
+          } else {
+            await client.update(doc, { icon: result.icon, color: result.color })
+          }
         }
       }
-      showPopup(IconPicker, { icon, color, icons }, 'top', update, update)
+      showPopup(IconPicker, { icon, color, icons, showReset: true }, 'top', update, update)
     }
   }
 

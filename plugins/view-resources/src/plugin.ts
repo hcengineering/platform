@@ -50,6 +50,7 @@ export default mergeIds(viewId, typedView, {
     LabelYes: '' as IntlString,
     LabelNo: '' as IntlString,
     ChooseAColor: '' as IntlString,
+    ResetToDefault: '' as IntlString,
 
     DeletePopupNoPermissionTitle: '' as IntlString,
     DeletePopupNoPermissionLabel: '' as IntlString,
