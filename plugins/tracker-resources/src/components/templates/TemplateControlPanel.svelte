@@ -117,6 +117,7 @@
       countLabel: tracker.string.NumberLabels
     }}
     on:open={async (evt) => {
+      if (issue.labels?.includes(evt.detail._id) === true) return
       await client.update(issue, { $push: { labels: evt.detail._id } })
     }}
     on:delete={onTagDelete}
