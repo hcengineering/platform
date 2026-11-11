@@ -75,6 +75,7 @@
   const changeMonth = (offset: number): void => {
     viewDate.setMonth(viewDate.getMonth() + offset)
     days = renderCellStyles(viewDate, $deviceInfo.firstDayOfWeek)
+    dispatch('changeMonth', new Date(viewDate))
   }
 </script>
 
