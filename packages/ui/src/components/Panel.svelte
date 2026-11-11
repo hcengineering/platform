@@ -36,6 +36,7 @@
   import IconScaleFull from './icons/ScaleFull.svelte'
 
   import plugin from '../plugin'
+  import { getInitialPanelAside, isPanelAsideHidden, setPanelAsideHidden } from '../panelAside'
 
   export let innerWidth: number = 0
   export let panelWidth: number = 0
@@ -58,6 +59,7 @@
   export let hideExtra: boolean = false
   export let overflowExtra: boolean = false
   export let element: HTMLElement | undefined = undefined
+  export let persistAside: boolean = true
 
   export function getAside (): string | boolean {
     if (customAside) return selectedAside
@@ -76,6 +78,10 @@
   }
 
   const dispatch = createEventDispatcher()
+
+  if (persistAside) {
+    selectedAside = getInitialPanelAside(selectedAside, customAside !== undefined, isPanelAsideHidden())
+  }
 
   let asideFloat: boolean = false
   let asideShown: boolean = selectedAside !== false
@@ -133,6 +139,8 @@
   const handleAside = (): void => {
     asideShown = !asideShown
     hideAside = !asideShown
+    // A floating aside (narrow panel) is an overlay; closing it should not hide the aside of wide panels.
+    if (persistAside && !asideFloat) setPanelAsideHidden(hideAside)
   }
 
   const handleSelectAside = (result: { detail: any }, sw: boolean = true): void => {
