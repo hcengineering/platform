@@ -13,10 +13,10 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import { Contact, getCurrentEmployee, Person } from '@hcengineering/contact'
-  import { DocumentQuery, FindOptions, Ref } from '@hcengineering/core'
+  import { Contact, getCurrentEmployee, getFieldSearch, Person } from '@hcengineering/contact'
+  import { DocumentQuery, FindOptions, getObjectValue, Ref } from '@hcengineering/core'
   import type { Asset, IntlString } from '@hcengineering/platform'
-  import presentation, { createQuery } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import {
     AnySvelteComponent,
     EditWithIcon,
@@ -56,6 +56,7 @@
 
   let search: string = ''
   let objects: Contact[] = []
+  let queryResult: Contact[] = []
   let contacts: Contact[] = []
 
   const categorizedPersons = new Map<Ref<Person>, AssigneeCategory>()
@@ -63,21 +64,25 @@
   const dispatch = createEventDispatcher()
   const query = createQuery()
 
+  $: nameSearch = getFieldSearch(getClient().getHierarchy(), contact.mixin.Employee, searchField, search)
   $: query.query<Contact>(
     contact.mixin.Employee,
     {
       ...(docQuery ?? {}),
-      [searchField]: { $like: '%' + search + '%' },
+      [searchField]: { $like: nameSearch.like },
       _id: {
         ...(typeof docQuery?._id === 'object' ? docQuery._id : {}),
         $nin: ignoreUsers
       }
     },
     (result) => {
-      objects = result
+      queryResult = result
     },
     { ...(options ?? {}), limit: 200, sort: { name: 1 } }
   )
+
+  // Filter outside of the query callback: the live query is not re-run when only the client side part changes
+  $: objects = queryResult.filter((it) => nameSearch.matches(getObjectValue(searchField, it)))
 
   let dataLoading = false
 

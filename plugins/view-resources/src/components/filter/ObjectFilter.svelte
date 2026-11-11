@@ -23,6 +23,7 @@
     Space,
     type WithLookup
   } from '@hcengineering/core'
+  import { getFieldSearch } from '@hcengineering/contact'
   import { getResourceC, translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
   import ui, {
@@ -117,10 +118,11 @@
       targets.add(object)
     }
 
+    const fieldSearch = getFieldSearch(hierarchy, targetClass, clazz.filteringKey ?? '', search)
     const resultQuery =
       search !== '' && clazz.filteringKey !== undefined
         ? {
-            [clazz.filteringKey]: { $like: '%' + search + '%' },
+            [clazz.filteringKey]: { $like: fieldSearch.like },
             _id: { $in: Array.from(targets.keys()) }
           }
         : {
@@ -128,7 +130,7 @@
           }
     const options = clazz.sortingKey !== undefined ? { sort: { [clazz.sortingKey]: SortingOrder.Ascending } } : {}
     objectsPromise = client.findAll(targetClass, resultQuery, options)
-    values = await objectsPromise
+    values = (await objectsPromise).filter((it) => fieldSearch.matches(getObjectValue(clazz.filteringKey ?? '', it)))
     if (grouppingManager !== undefined) {
       values = grouppingManager.groupValues(values as Doc[], targets)
     }

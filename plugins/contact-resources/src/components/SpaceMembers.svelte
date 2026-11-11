@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee, Person } from '@hcengineering/contact'
+  import contact, { Employee, getNameSearch, Person } from '@hcengineering/contact'
   import {
     AccountRole,
     DocumentQuery,
@@ -52,11 +52,14 @@
 
   async function getUsers (accounts: AccountUuid[], search: string): Promise<Employee[]> {
     const employeeRefs = accounts.map((acc) => $employeeRefByAccountUuidStore.get(acc)).filter(notEmpty)
+    const nameSearch = getNameSearch(search)
     const query: DocumentQuery<Employee> =
-      isSearch > 0 ? { name: { $like: '%' + search + '%' } } : { _id: { $in: employeeRefs } }
+      isSearch > 0 ? { name: { $like: nameSearch.like } } : { _id: { $in: employeeRefs } }
     query.active = true
 
-    const employees = await client.findAll(contact.mixin.Employee, query, { sort: { name: SortingOrder.Descending } })
+    const employees = (
+      await client.findAll(contact.mixin.Employee, query, { sort: { name: SortingOrder.Descending } })
+    ).filter((it) => nameSearch.matches(it.name))
     members = new Set(employees.filter((p) => employeeRefs.includes(p._id)).map((p) => p._id))
 
     return employees

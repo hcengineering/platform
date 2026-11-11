@@ -13,7 +13,7 @@
 // limitations under the License.
 -->
 <script lang="ts">
-  import contact, { Employee } from '@hcengineering/contact'
+  import contact, { Employee, getNameSearch } from '@hcengineering/contact'
   import core, { Doc, FindResult, getObjectValue, Ref, SortingOrder, Space } from '@hcengineering/core'
   import { translate } from '@hcengineering/platform'
   import presentation, { getClient } from '@hcengineering/presentation'
@@ -69,17 +69,18 @@
       targets.add(object)
     }
 
+    const nameSearch = getNameSearch(search)
     const resultQuery =
       search !== ''
         ? {
-            name: { $like: '%' + search + '%' },
+            name: { $like: nameSearch.like },
             _id: { $in: Array.from(targets.keys()) }
           }
         : {
             _id: { $in: Array.from(targets.keys()) }
           }
     objectsPromise = client.findAll(contact.mixin.Employee, resultQuery, { sort: { name: SortingOrder.Ascending } })
-    values = await objectsPromise
+    values = (await objectsPromise).filter((it) => nameSearch.matches(it.name))
     if (targets.has(undefined)) {
       values.unshift(undefined)
     }
