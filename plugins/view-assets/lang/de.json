@@ -120,6 +120,7 @@
     "TableCopiedToClipboard": "Tabelle in die Zwischenablage kopiert",
     "TableCopyFailed": "Tabelle konnte nicht in die Zwischenablage kopiert werden",
     "PublicView": "Öffentlich",
+    "OverwriteWithCurrentFilters": "Mit aktuellen Filtern überschreiben",
 
     "ChooseIcon": "Symbol wählen",
     "IconColor": "Symbolfarbe wählen",
