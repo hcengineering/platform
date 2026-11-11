@@ -3,7 +3,8 @@
     "RequiredField": "必須フィールド {field}",
     "FieldsDoNotMatch": "{field} が {field2} と一致しません",
     "ConnectingToServer": "サーバーに接続中....",
-    "IncorrectValue": "不正な値 {field}"
+    "IncorrectValue": "不正な値 {field}",
+    "OidcGroupNotAllowed": "このアカウントにはサインインする権限がありません。"
   },
   "string": {
     "LogIn": "ログイン",

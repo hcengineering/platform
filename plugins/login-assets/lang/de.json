@@ -3,7 +3,8 @@
     "RequiredField": "Pflichtfeld {field}",
     "FieldsDoNotMatch": "{field} stimmt nicht mit {field2} überein",
     "ConnectingToServer": "Verbindung zum Server wird hergestellt....",
-    "IncorrectValue": "Ungültiger Wert für {field}"
+    "IncorrectValue": "Ungültiger Wert für {field}",
+    "OidcGroupNotAllowed": "Ihr Konto ist für die Anmeldung nicht berechtigt."
   },
   "string": {
     "ChangePassword": "Passwort ändern",

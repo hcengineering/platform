@@ -18,8 +18,10 @@
 //
 /* eslint-disable @typescript-eslint/unbound-method */
 
+import { type MeasureContext } from '@hcengineering/core'
 import Router from 'koa-router'
 import { Issuer, Strategy } from 'openid-client'
+import { authorizeOpenidUser } from '../oidcAuthorization'
 import { registerOidcStrategyWithRetry, registerOpenid, shouldWarnOnAttempt } from '../openid'
 import { handleProviderAuth } from '../utils'
 
@@ -479,5 +481,108 @@ describe('B. registerOpenid wiring — non-blocking startup, 503 pending window,
 
     expect(discover).toHaveBeenCalledTimes(1)
     expect(passport.use).not.toHaveBeenCalled()
+  })
+})
+
+const issuer = 'https://login.microsoftonline.com/tenant-id/v2.0'
+const measureCtx = { info: jest.fn() } as unknown as MeasureContext
+
+describe('OpenID callback authorization', () => {
+  const previousAllowedGroups = process.env.OPENID_ALLOWED_GROUPS
+  const previousSignup = process.env.OPENID_SIGNUP_FOR_ALLOWED_GROUPS
+  const previousTrust = process.env.OPENID_TRUST_EMAIL
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    process.env.OPENID_ALLOWED_GROUPS = 'engineering'
+    delete process.env.OPENID_SIGNUP_FOR_ALLOWED_GROUPS
+    delete process.env.OPENID_TRUST_EMAIL
+  })
+
+  afterAll(() => {
+    if (previousAllowedGroups === undefined) delete process.env.OPENID_ALLOWED_GROUPS
+    else process.env.OPENID_ALLOWED_GROUPS = previousAllowedGroups
+    if (previousSignup === undefined) delete process.env.OPENID_SIGNUP_FOR_ALLOWED_GROUPS
+    else process.env.OPENID_SIGNUP_FOR_ALLOWED_GROUPS = previousSignup
+    if (previousTrust === undefined) delete process.env.OPENID_TRUST_EMAIL
+    else process.env.OPENID_TRUST_EMAIL = previousTrust
+  })
+
+  test('rejects a non-member before the provider account handler can create anything', async () => {
+    const handleProviderAuthMock = jest.fn()
+
+    const result = await authorizeOpenidUser(
+      measureCtx,
+      { sub: 'subject', _idClaims: { sub: 'subject', groups: ['other-group'], email: 'user@example.com' } },
+      issuer,
+      false,
+      handleProviderAuthMock
+    )
+
+    expect(result).toBe('/login?oidcError=group_not_allowed')
+    expect(handleProviderAuthMock).not.toHaveBeenCalled()
+    expect(measureCtx.info).toHaveBeenCalledWith('oidc_groups_not_allowed', {
+      sub: 'subject',
+      email: 'user@example.com'
+    })
+    expect(JSON.stringify((measureCtx.info as jest.Mock).mock.calls)).not.toContain('other-group')
+  })
+
+  test('logs a distinct overage event without group values', async () => {
+    const handleProviderAuthMock = jest.fn()
+
+    await authorizeOpenidUser(
+      measureCtx,
+      { _idClaims: { sub: 'subject', _claim_names: { groups: 'source' } } },
+      issuer,
+      false,
+      handleProviderAuthMock
+    )
+
+    expect(handleProviderAuthMock).not.toHaveBeenCalled()
+    expect(measureCtx.info).toHaveBeenCalledWith('oidc_groups_overage', { sub: 'subject', email: undefined })
+  })
+
+  test('rejects a missing groups claim before the provider account handler', async () => {
+    const handleProviderAuthMock = jest.fn()
+
+    await authorizeOpenidUser(measureCtx, { _idClaims: { sub: 'subject' } }, issuer, false, handleProviderAuthMock)
+
+    expect(handleProviderAuthMock).not.toHaveBeenCalled()
+    expect(measureCtx.info).toHaveBeenCalledWith('oidc_groups_missing', { sub: 'subject', email: undefined })
+  })
+
+  test('preserves signup disabling when no allowlist is configured', async () => {
+    delete process.env.OPENID_ALLOWED_GROUPS
+    const handleProviderAuthMock = jest.fn().mockResolvedValue('/login/auth')
+
+    await authorizeOpenidUser(measureCtx, { _idClaims: {} }, issuer, true, handleProviderAuthMock)
+
+    expect(handleProviderAuthMock).toHaveBeenCalledWith('', true)
+  })
+
+  test('does not enable signup with an empty allowlist', async () => {
+    process.env.OPENID_ALLOWED_GROUPS = ' , '
+    process.env.OPENID_SIGNUP_FOR_ALLOWED_GROUPS = 'true'
+    const handleProviderAuthMock = jest.fn().mockResolvedValue('/login/auth')
+
+    await authorizeOpenidUser(measureCtx, { _idClaims: {} }, issuer, true, handleProviderAuthMock)
+
+    expect(handleProviderAuthMock).toHaveBeenCalledWith('', true)
+  })
+
+  test('permits OIDC signup for an allowed group only when explicitly enabled', async () => {
+    process.env.OPENID_SIGNUP_FOR_ALLOWED_GROUPS = 'true'
+    const handleProviderAuthMock = jest.fn().mockResolvedValue('/login/auth')
+
+    await authorizeOpenidUser(
+      measureCtx,
+      { _idClaims: { groups: ['engineering'], email: 'user@example.com', xms_edov: true } },
+      issuer,
+      true,
+      handleProviderAuthMock
+    )
+
+    expect(handleProviderAuthMock).toHaveBeenCalledWith('user@example.com', false)
   })
 })

@@ -17,6 +17,7 @@
   import { getMetadata, setMetadata } from '@hcengineering/platform'
   import presentation from '@hcengineering/presentation'
   import {
+    Label,
     Location,
     Popup,
     Scroller,
@@ -62,6 +63,7 @@
   const useOTP = getMetadata(presentation.metadata.MailUrl) != null && getMetadata(presentation.metadata.MailUrl) !== ''
   let navigateUrl: string | undefined
   let tfaToken: string | undefined = undefined
+  let oidcGroupNotAllowed = false
 
   onDestroy(location.subscribe(updatePageLoc))
 
@@ -91,6 +93,7 @@
 
     navigateUrl = loc.query?.navigateUrl ?? undefined
     tfaToken = loc.query?.token ?? undefined
+    oidcGroupNotAllowed = loc.query?.oidcError === 'group_not_allowed'
   }
 
   async function chooseToken (): Promise<void> {
@@ -157,6 +160,9 @@
         <Scroller padding={'1rem 0'}>
           <div class="form-content">
             {#if page === 'login'}
+              {#if oidcGroupNotAllowed}
+                <div class="oidc-error"><Label label={login.status.OidcGroupNotAllowed} /></div>
+              {/if}
               {#if localLoginHidden}
                 <ProvidersOnlyForm />
               {:else}
@@ -205,6 +211,15 @@
     height: 100%;
     object-fit: cover;
     object-position: left top;
+  }
+
+  .oidc-error {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    color: var(--system-error-color);
+    background-color: var(--theme-button-default);
+    border: 1px solid var(--system-error-60-color);
+    border-radius: 0.5rem;
   }
   .backd {
     position: relative;
