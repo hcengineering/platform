@@ -8,6 +8,7 @@
     "NewDirectMessage": "新しいダイレクトメッセージ",
     "ChannelName": "名前",
     "ChannelNamePlaceholder": "チャンネル",
+    "ChannelNameAlreadyExists": "この名前のチャンネルは既に存在します",
     "ChannelDescription": "説明",
     "Channel": "チャンネル",
     "DirectMessage": "ダイレクトメッセージ",

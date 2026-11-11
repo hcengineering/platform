@@ -8,6 +8,7 @@
     "NewDirectMessage": "Yeni Direkt Mesaj",
     "ChannelName": "İsim",
     "ChannelNamePlaceholder": "Kanal",
+    "ChannelNameAlreadyExists": "Bu ada sahip bir kanal zaten var",
     "ChannelDescription": "Açıklama",
     "Channel": "Kanal",
     "DirectMessage": "Direkt mesaj",

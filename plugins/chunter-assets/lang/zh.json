@@ -8,6 +8,7 @@
     "NewDirectMessage": "新建直连消息",
     "ChannelName": "名称",
     "ChannelNamePlaceholder": "频道",
+    "ChannelNameAlreadyExists": "已存在同名频道",
     "ChannelDescription": "描述",
     "Channel": "频道",
     "DirectMessage": "直连消息",

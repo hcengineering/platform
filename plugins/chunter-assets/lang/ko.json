@@ -8,6 +8,7 @@
         "NewDirectMessage": "새 다이렉트 메시지",
         "ChannelName": "이름",
         "ChannelNamePlaceholder": "채널",
+        "ChannelNameAlreadyExists": "같은 이름의 채널이 이미 존재합니다",
         "ChannelDescription": "설명",
         "Channel": "채널",
         "DirectMessage": "다이렉트 메시지",

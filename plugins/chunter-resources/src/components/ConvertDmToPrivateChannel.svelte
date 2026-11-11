@@ -15,17 +15,31 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
 
-  import { getClient, Card } from '@hcengineering/presentation'
+  import { createQuery, getClient, Card } from '@hcengineering/presentation'
   import { DirectMessage } from '@hcengineering/chunter'
   import workbench from '@hcengineering/workbench'
   import { getResource } from '@hcengineering/platform'
-  import { EditBox } from '@hcengineering/ui'
+  import { EditBox, Label } from '@hcengineering/ui'
 
   import chunter from '../plugin'
+  import { isChannelNameTaken } from '../channelName'
 
   export let dm: DirectMessage
 
   let name = ''
+
+  let existingNames: string[] = []
+  const channelsQuery = createQuery()
+  channelsQuery.query(
+    chunter.class.Channel,
+    { archived: false },
+    (res) => {
+      existingNames = res.map((it) => it.name)
+    },
+    { projection: { name: 1 } }
+  )
+
+  $: isNameTaken = isChannelNameTaken(name, existingNames)
 
   const dispatch = createEventDispatcher()
 
@@ -34,7 +48,7 @@
 
     await client.updateDoc(dm._class, dm.space, dm._id, {
       _class: chunter.class.Channel,
-      name
+      name: name.trim()
     } as any)
 
     const navigate = await getResource(workbench.actionImpl.Navigate)
@@ -55,7 +69,7 @@
   label={chunter.string.ConvertToPrivate}
   okLabel={chunter.string.ConvertToPrivate}
   okAction={convertDmToPrivateChannel}
-  canSave={!!name}
+  canSave={name.trim() !== '' && !isNameTaken}
   on:close={() => {
     dispatch('close')
   }}
@@ -67,4 +81,13 @@
     placeholder={chunter.string.ChannelNamePlaceholder}
     autoFocus
   />
+  {#if isNameTaken}
+    <span class="text-sm channel-name-error"><Label label={chunter.string.ChannelNameAlreadyExists} /></span>
+  {/if}
 </Card>
+
+<style lang="scss">
+  .channel-name-error {
+    color: var(--theme-error-color);
+  }
+</style>

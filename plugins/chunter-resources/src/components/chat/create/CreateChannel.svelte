@@ -15,13 +15,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte'
   import { ModernEditbox, ButtonMenu, Label, Modal, TextArea, Toggle } from '@hcengineering/ui'
-  import presentation, { getClient } from '@hcengineering/presentation'
+  import presentation, { createQuery, getClient } from '@hcengineering/presentation'
   import core, { AccountRole, getCurrentAccount, setWorkspaceGuestAutoJoinRoles } from '@hcengineering/core'
   import contact, { getCurrentEmployee } from '@hcengineering/contact'
 
   import Lock from '../../icons/Lock.svelte'
   import chunter from '../../../plugin'
   import { openChannel } from '../../../navigation'
+  import { isChannelNameTaken } from '../../../channelName'
 
   const dispatch = createEventDispatcher()
   const client = getClient()
@@ -58,7 +59,20 @@
   $: visibilityLabel =
     visibilityOptions.find(({ id }) => id === selectedVisibilityId)?.label ?? visibilityOptions[0].label
 
-  $: canSave = !!channelName
+  let existingNames: string[] = []
+  const channelsQuery = createQuery()
+  // Archived channels are excluded: archiving is how channels are removed, so their names can be reused.
+  channelsQuery.query(
+    chunter.class.Channel,
+    { archived: false },
+    (res) => {
+      existingNames = res.map((it) => it.name)
+    },
+    { projection: { name: 1 } }
+  )
+
+  $: isNameTaken = isChannelNameTaken(channelName, existingNames)
+  $: canSave = channelName.trim() !== '' && !isNameTaken
 
   async function save (): Promise<void> {
     const myAcc = getCurrentAccount().uuid
@@ -67,7 +81,7 @@
     if (!space) return
 
     const channelId = await client.createDoc(chunter.class.Channel, core.space.Space, {
-      name: channelName,
+      name: channelName.trim(),
       description: '',
       private: selectedVisibilityId === 'private',
       archived: false,
@@ -96,7 +110,16 @@
   on:close
 >
   <div class="hulyModal-content__titleGroup" style="padding: 0">
-    <ModernEditbox bind:value={channelName} label={chunter.string.NewChannel} size="large" kind="ghost" />
+    <ModernEditbox
+      bind:value={channelName}
+      label={chunter.string.NewChannel}
+      size="large"
+      kind="ghost"
+      error={isNameTaken}
+    />
+    {#if isNameTaken}
+      <span class="channel-name-error text-sm"><Label label={chunter.string.ChannelNameAlreadyExists} /></span>
+    {/if}
     <TextArea
       placeholder={chunter.string.TopicOptional}
       width="100%"
@@ -145,6 +168,11 @@
 </Modal>
 
 <style lang="scss">
+  .channel-name-error {
+    margin: 0 var(--spacing-2);
+    color: var(--theme-error-color);
+  }
+
   .create-channel-join-line:global(.hulyModal-content__settingsSet-line) {
     justify-content: flex-start;
     align-items: flex-start;

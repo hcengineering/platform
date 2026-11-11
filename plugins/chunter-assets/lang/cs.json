@@ -8,6 +8,7 @@
     "NewDirectMessage": "Nová přímá zpráva",
     "ChannelName": "Název",
     "ChannelNamePlaceholder": "Kanál",
+    "ChannelNameAlreadyExists": "Kanál s tímto názvem již existuje",
     "ChannelDescription": "Popis",
     "Channel": "Kanál",
     "DirectMessage": "Přímá zpráva",
