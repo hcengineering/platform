@@ -14,7 +14,7 @@
  -->
 <script lang="ts">
   import attachment, { Attachment } from '@hcengineering/attachment'
-  import core, { AttachedData, Doc, makeCollabId, Ref } from '@hcengineering/core'
+  import core, { AttachedData, Doc, fillDefaults, makeCollabId, Ref } from '@hcengineering/core'
   import { DraftController, draftsStore, getClient, deleteFile, createMarkup } from '@hcengineering/presentation'
   import tags from '@hcengineering/tags'
   import { isEmptyMarkup } from '@hcengineering/text'
@@ -22,6 +22,7 @@
   import { Button, ExpandCollapse, Scroller } from '@hcengineering/ui'
   import { onDestroy } from 'svelte'
   import tracker from '../plugin'
+  import { createIssueTypeMixinDefaults } from '../utils'
   import Collapsed from './icons/Collapsed.svelte'
   import Expanded from './icons/Expanded.svelte'
   import DraftIssueChildList from './templates/DraftIssueChildList.svelte'
@@ -104,6 +105,7 @@
         cvalue.description = await createMarkup(collabId, subIssue.description)
       }
 
+      fillDefaults(client.getHierarchy(), cvalue, tracker.class.Issue)
       await client.addCollection(
         tracker.class.Issue,
         project._id,
@@ -113,6 +115,7 @@
         cvalue,
         childId
       )
+      await createIssueTypeMixinDefaults(client, childId, project._id, subIssue.kind)
       if ((subIssue.labels?.length ?? 0) > 0) {
         for (const label of subIssue.labels) {
           await client.addCollection(tags.class.TagReference, project._id, childId, tracker.class.Issue, 'labels', {
