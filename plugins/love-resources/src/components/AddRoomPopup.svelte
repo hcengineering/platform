@@ -1,6 +1,6 @@
 <script lang="ts">
   import core, { Class, Data, generateId, type Doc, Ref } from '@hcengineering/core'
-  import { Floor, getFreePosition, Office, Room, RoomAccess, RoomType } from '@hcengineering/love'
+  import { Floor, getFreePosition, Office, Room, RoomAccess, RoomLanguage, RoomType } from '@hcengineering/love'
   import { translate } from '@hcengineering/platform'
   import { getClient } from '@hcengineering/presentation'
   import setting, { type OfficeSettings } from '@hcengineering/setting'
@@ -8,6 +8,14 @@
   import { createEventDispatcher } from 'svelte'
   import love from '../plugin'
   import { rooms, selectedFloor } from '../stores'
+  import { languagesDisplayData } from '../types'
+
+  function getDefaultLanguage (): RoomLanguage {
+    const locale = navigator.language
+    if (locale in languagesDisplayData) return locale as RoomLanguage
+    const lang = locale.split('-')[0]
+    return (lang in languagesDisplayData ? lang : 'en') as RoomLanguage
+  }
 
   export let floor: Ref<Floor>
 
@@ -73,7 +81,7 @@
       height: 1,
       type: val.type,
       access: val.access,
-      language: 'en',
+      language: getDefaultLanguage(),
       startWithTranscription: defaultTranscription,
       startWithRecording: defaultRecording,
       description: null
