@@ -1863,6 +1863,8 @@
 
   .antiTable-body__row {
     position: relative;
+    scroll-margin-top: 3rem;
+    scroll-margin-bottom: 2.5rem;
     height: 3.25rem;
     color: var(--theme-caption-color);
     background-color: var(--theme-table-row-color);
