@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 
+import { aiBotAccountEmail } from '@hcengineering/ai-bot'
 import OpenAI from 'openai'
 
 interface Config {
@@ -26,6 +27,7 @@ interface Config {
   AvatarPath: string
   AvatarName: string
   AvatarContentType: string
+  Email: string
   Password: string
   OpenAIKey: string
   OpenAIModel: OpenAI.ChatModel
@@ -58,6 +60,7 @@ const config: Config = (() => {
     AvatarPath: process.env.AVATAR_PATH ?? './assets/avatar.png',
     AvatarName: process.env.AVATAR_NAME ?? 'huly_ai_bot_avatar',
     AvatarContentType: process.env.AVATAR_CONTENT_TYPE ?? 'image/png',
+    Email: process.env.AI_BOT_EMAIL ?? aiBotAccountEmail,
     Password: process.env.PASSWORD ?? 'password',
     OpenAIKey: process.env.OPENAI_API_KEY ?? '',
     OpenAIModel: (process.env.OPENAI_MODEL ?? 'gpt-4o-mini') as OpenAI.ChatModel,
