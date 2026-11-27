@@ -138,10 +138,12 @@ describe('handleStripeWebhook', () => {
 
     const constructEventMock = jest.fn(() => event)
 
+    const retrieveMock = jest.fn().mockResolvedValue({ id: 'sub_123', status: 'active' })
     ;(Stripe as unknown as jest.Mock).mockImplementation(() => ({
       webhooks: {
         constructEvent: constructEventMock
-      }
+      },
+      subscriptions: { retrieve: retrieveMock }
     }))
 
     const accountClient = {
@@ -165,6 +167,8 @@ describe('handleStripeWebhook', () => {
       res as Response
     )
 
+    await new Promise((resolve) => setImmediate(resolve))
+
     expect(constructEventMock).toHaveBeenCalledWith(req.body, 'sig_header', webhookSecret)
 
     expect(accountClient.upsertSubscription).toHaveBeenCalledWith(
@@ -173,6 +177,44 @@ describe('handleStripeWebhook', () => {
 
     expect(statusMock).toHaveBeenCalledWith(200)
     expect(jsonMock).toHaveBeenCalledWith({ received: true })
+  })
+
+  test('writes the current Stripe subscription, not a stale event payload', async () => {
+    const stale = { id: 'sub_123', status: 'active' }
+    const current = { id: 'sub_123', status: 'canceled' }
+    const event = {
+      id: 'evt_old',
+      type: 'customer.subscription.updated',
+      created: 1,
+      data: { object: stale }
+    } as unknown as Stripe.Event
+
+    const retrieveMock = jest.fn().mockResolvedValue(current)
+    ;(Stripe as unknown as jest.Mock).mockImplementation(() => ({
+      webhooks: { constructEvent: jest.fn(() => event) },
+      subscriptions: { retrieve: retrieveMock }
+    }))
+    const accountClient = { upsertSubscription: jest.fn() }
+    ;(getAccountClient as jest.Mock).mockReturnValue(accountClient)
+    ;(transformStripeSubscriptionToData as jest.Mock).mockImplementation((_ctx: any, sub: any) => ({
+      id: sub.id,
+      status: sub.status,
+      providerData: {}
+    }))
+
+    await handleStripeWebhook(
+      ctx,
+      accountsUrl,
+      serviceToken,
+      webhookSecret,
+      stripeApiKey,
+      req as Request,
+      res as Response
+    )
+    await new Promise((resolve) => setImmediate(resolve))
+
+    expect(retrieveMock).toHaveBeenCalledWith('sub_123')
+    expect(accountClient.upsertSubscription).toHaveBeenCalledWith(expect.objectContaining({ status: 'canceled' }))
   })
 
   test('fetches subscription for invoice events and upserts it (via helper)', async () => {

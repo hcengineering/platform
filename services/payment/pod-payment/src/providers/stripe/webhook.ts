@@ -70,7 +70,7 @@ export async function handleStripeWebhook (
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
-        void handleSubscriptionUpdated(ctx, accountsUrl, serviceToken, event).catch((err) => {
+        void handleSubscriptionUpdated(ctx, accountsUrl, serviceToken, stripe, event).catch((err) => {
           ctx.error('Failed to process Stripe webhook event', { event, err })
         })
         break
@@ -82,7 +82,7 @@ export async function handleStripeWebhook (
             const subscriptionEvent = await createSubscriptionEventFromInvoiceEvent(ctx, stripe, event)
             if (subscriptionEvent == null) return
 
-            await handleSubscriptionUpdated(ctx, accountsUrl, serviceToken, subscriptionEvent)
+            await handleSubscriptionUpdated(ctx, accountsUrl, serviceToken, stripe, subscriptionEvent, false)
           } catch (err) {
             ctx.error('Failed to process Stripe invoice event', { event, err })
           }
@@ -102,19 +102,45 @@ export async function handleStripeWebhook (
 }
 
 /**
+ * Stripe may deliver subscription events out of order and retries failed ones, so the payload of
+ * an event can be older than the state already stored. Read the subscription as it is now instead.
+ */
+async function fetchCurrentSubscription (
+  ctx: MeasureContext,
+  stripe: Stripe,
+  eventSubscription: Stripe.Subscription
+): Promise<Stripe.Subscription> {
+  try {
+    return await stripe.subscriptions.retrieve(eventSubscription.id)
+  } catch (err: any) {
+    if (err?.code === 'resource_missing') {
+      ctx.warn('Subscription no longer exists in Stripe, using the event payload', {
+        subscriptionId: eventSubscription.id
+      })
+      return eventSubscription
+    }
+    throw err
+  }
+}
+
+/**
  * Handle subscription.created/updated/deleted
+ * @param refetch false when `event.data.object` was already read from Stripe (invoice events)
  */
 async function handleSubscriptionUpdated (
   ctx: MeasureContext,
   accountsUrl: string,
   serviceToken: string,
-  event: Stripe.Event
+  stripe: Stripe,
+  event: Stripe.Event,
+  refetch: boolean = true
 ): Promise<void> {
-  const subscription = event.data.object as Stripe.Subscription
-  if (subscription == null) {
+  const eventSubscription = event.data.object as Stripe.Subscription
+  if (eventSubscription == null) {
     ctx.error('Missing subscription data', { event })
     throw new Error('Missing subscription data')
   }
+  const subscription = refetch ? await fetchCurrentSubscription(ctx, stripe, eventSubscription) : eventSubscription
 
   const subscriptionData = transformStripeSubscriptionToData(ctx, subscription)
 
